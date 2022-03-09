@@ -22,4 +22,13 @@ function parseTopCountDescription(desc) {
   return topsArray;
 }
 
-module.exports = parseTopCountDescription;
+function parseUsername(title) {
+  const res = title.replace("In how many top X map leaderboards is ", "")
+    .replace("?", "");  
+  return res;
+}
+
+module.exports = {
+  parseTopCountDescription,
+  parseUsername
+};
