@@ -15,8 +15,6 @@ client.on("messageCreate", async (msg) => await onNewMessage(msg))
 
 async function onStartup() {
   console.log("SnipeID is now running.");
-
-  const channel = await client.channels.cache.get(process.env.CHANNEL_ID);
 }
 
 async function onNewMessage(msg) {
@@ -24,12 +22,11 @@ async function onNewMessage(msg) {
 
   if(msg.channelId === process.env.CHANNEL_ID) {
     if(msg.author.id === BATHBOT_USER_ID) {
-      // await channel.send("Calculating score...");
+      // await channel.send("Calculating score...")
       const embeds = msg.embeds; // always 0
       const len = embeds.length;
       const index = embeds.findIndex(
-        embed => embed.title.toLowerCase()
-          .startsWith("in how many top x map leaderboards is")
+        embed => embed.title !== undefined && embed.title.toLowerCase().startsWith("in how many top x map leaderboards is")
       );
 
       if(index === -1) {
