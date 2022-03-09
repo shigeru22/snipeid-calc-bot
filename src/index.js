@@ -26,7 +26,7 @@ async function onNewMessage(msg) {
       const embeds = msg.embeds; // always 0
       const len = embeds.length;
       const index = embeds.findIndex(
-        embed => embed.title !== undefined && embed.title.toLowerCase().startsWith("in how many top x map leaderboards is")
+        embed => (embed.title !== undefined || embed.title !== null) && embed.title.toLowerCase().startsWith("in how many top x map leaderboards is")
       );
 
       if(index === -1) {
