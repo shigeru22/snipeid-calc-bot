@@ -42,7 +42,7 @@ async function onNewMessage(msg) {
 
       // [ top_1, top_8, top_15, top_25, top_50 ]
       const topCounts = parser(desc);
-
+      
       console.log(topCounts);
     }
   }
