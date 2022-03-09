@@ -3,7 +3,7 @@
 const dotenv = require("dotenv");
 const Discord = require("discord.js");
 const counter = require("./utils/counter.js");
-const parser = require("./utils/parser.js");
+const { parseTopCountDescription, parseUsername } = require("./utils/parser.js");
 
 dotenv.config();
 const client = new Discord.Client({ intents: [ "GUILDS", "GUILD_MESSAGES" ]});
@@ -36,14 +36,26 @@ async function onNewMessage(msg) {
         return;
       }
 
-      console.log("[LOG] Calculating points data.");
-
+      const title = embeds[index].title;
       const desc = embeds[index].description;
 
+      const username = parseUsername(title);
+
       // [ top_1, top_8, top_15, top_25, top_50 ]
-      const topCounts = parser(desc);
-      
-      console.log(topCounts);
+      const topCounts = parseTopCountDescription(desc);
+
+      const draft = counter(
+        topCounts[0],
+        topCounts[1],
+        topCounts[2],
+        topCounts[3],
+        topCounts[4],
+        username
+      );
+
+      await channel.send({ embeds: [ draft ] });
+
+      console.log("[LOG] Calculating points for username: " + username);
     }
   }
 }
