@@ -24,9 +24,8 @@ async function onNewMessage(msg) {
     if(msg.author.id === BATHBOT_USER_ID) {
       // await channel.send("Calculating score...")
       const embeds = msg.embeds; // always 0
-      const len = embeds.length;
       const index = embeds.findIndex(
-        embed => (embed.title !== undefined || embed.title !== null) && embed.title.toLowerCase().startsWith("in how many top x map leaderboards is")
+        embed => typeof(embed.title) === "string" && embed.title.toLowerCase().startsWith("in how many top x map leaderboards is")
       );
 
       if(index === -1) {
