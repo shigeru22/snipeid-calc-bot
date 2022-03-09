@@ -13,9 +13,9 @@ async function onStartup() {
   console.log("SnipeID is now running.");
 
   const channel = await client.channels.cache.get(process.env.CHANNEL_ID);
-  // await channel.send("Hello, world!");
+  const draft = counter(33, 477, 876, 1378, 2234, "Venta");
 
-  counter(727, 727, 727, 727, 727);
+  console.log(draft.description);
 }
 
 client.login(process.env.BOT_TOKEN);
