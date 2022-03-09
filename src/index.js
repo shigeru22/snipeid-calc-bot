@@ -15,7 +15,9 @@ async function onStartup() {
   const channel = await client.channels.cache.get(process.env.CHANNEL_ID);
   const draft = counter(33, 477, 876, 1378, 2234, "Venta");
 
-  console.log(draft.description);
+  // console.log(draft.title);
+  // console.log(draft.description);
+  channel.send({embeds: [draft]});
 }
 
 client.login(process.env.BOT_TOKEN);
