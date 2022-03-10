@@ -1,8 +1,18 @@
 const Discord = require("discord.js");
 
+function calculatePoints(top_1, top_8, top_15, top_25, top_50) {
+  return top_1 * 5 +
+    (top_8 - top_1) * 3 +
+    (top_15 - top_8) * 2 +
+    (top_25 - top_15) +
+    (top_50 - top_25);
+}
+
 function counter(top_1, top_8, top_15, top_25, top_50, username) {
-  const points = top_1*5 + (top_8 - top_1)*3 + (top_15 - top_8)*2 + (top_25 - top_15) + (top_50 - top_25);
   const draft = new Discord.MessageEmbed();
+
+  const points = calculatePoints(top_1, top_8, top_15, top_25, top_50);
+
   draft.setTitle("Points for "+ username + ":");
   draft.setDescription("```"
   + ((top_1*5).toString().padEnd(6)) + "= " + (+ top_1 +" x 5").toString().padStart(19) + "\n"
@@ -11,9 +21,12 @@ function counter(top_1, top_8, top_15, top_25, top_50, username) {
   + ((top_25 - top_15).toString().padEnd(6)) +"= " + ("("+ top_25 +" - " + top_15 + ") x 1").toString().padStart(19) + "\n"
   + ((top_50 - top_25).toString().padEnd(6)) +"= " + ("("+ top_50 +" - " + top_25 + ") x 1").toString().padStart(19) + "\n```"
   + "\n= **" + points + "** points.");
-  
   draft.setColor("#ff0000");
+
   return draft;
 }
 
-module.exports = counter;
+module.exports = {
+  calculatePoints,
+  counter
+};

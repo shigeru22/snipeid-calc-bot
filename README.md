@@ -21,6 +21,7 @@ For development purposes, create the development environment. Make sure to insta
     - `BOT_TOKEN`: Token for the bot. May be obtained from Build-A-Bot section in Bot settings.
     - `CHANNEL_ID`: Channel ID to listen Bathbot command on. In [osu!snipe Indonesia](https://discord.gg/8F9c4AxSc2), it's a `#verification` channel.
         To copy the ID, enable [Developer Mode](https://techswift.org/2020/09/17/how-to-enable-developer-mode-in-discord/) in Discord Advanced Settings, right-click on your specified channel and click `Copy ID`.
+    - `OSUHOW_EMOJI_ID`: (Optional) Emoji ID for receiving certain points ( ͡° ͜ʖ ͡°).
 6. Install the dependencies for the project.
 
     ```shell
@@ -37,4 +38,4 @@ For production purposes, deploy as a worker to [Heroku](https://heroku.com) or a
 
 ## License
 
-[MIT](LICENSE.md)
+[MIT](LICENSE)
