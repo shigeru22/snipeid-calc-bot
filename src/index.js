@@ -14,6 +14,7 @@ client.on("ready", async () => await onStartup());
 client.on("messageCreate", async (msg) => await onNewMessage(msg))
 
 async function onStartup() {
+  client.user.setActivity("Bathbot everyday", { type: "WATCHING" });
   console.log("SnipeID is now running.");
 }
 
