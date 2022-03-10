@@ -1,14 +1,9 @@
 function parseTopCountDescription(desc) {
-  const res = desc.replace(/```(\n)*/g, "");
-  const tops = res.split("\n");
+  const tops = desc.replace(/```(\n)*/g, "").split("\n");
 
   const len = tops.length;
   for(let i = 0; i < len; i++) {
-    const temp = tops[i];
-    
-    tops[i] = temp.replace(/Top /g, "");
-    tops[i] = tops[i].replace(/ /g, "");
-    tops[i] = tops[i].replace(/,/g, "");
+    tops[i] = tops[i].replace(/Top /g, "").replace(/ /g, "").replace(/,/g, "");
   }
 
   const topsArray = [];
@@ -23,8 +18,7 @@ function parseTopCountDescription(desc) {
 }
 
 function parseUsername(title) {
-  const res = title.replace("In how many top X map leaderboards is ", "")
-    .replace("?", "");  
+  const res = title.replace("In how many top X map leaderboards is ", "").replace("?", "");  
   return res;
 }
 
