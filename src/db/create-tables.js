@@ -63,10 +63,26 @@ function validateRolesConfig() {
   }
 
   for(let i = 0; i < len; i++) {
-    if(typeof(roles[i].discordId) !== "number" || !roles[i].discordId || roles[i].discordId <= 0) {
-      console.log("[ERROR] An error occurred while validating role index " + i + ": discordId must be number and higher than 0.");
+    if(typeof(roles[i].discordId) !== "string" || !roles[i].discordId || roles[i].discordId.length <= 0) {
+      console.log("[ERROR] An error occurred while validating role index " + i + ": discordId must be in snowflake ID string format.");
       console.log("Exiting...");
       return false;
+    }
+
+    try {
+      const tempId = BigInt(roles[i].discordId);
+      if(tempId.toString() !== roles[i].discordId) {
+        console.log("[ERROR] An error occurred while validating role index " + i + ": discordId parsing outputs a different value.");
+        console.log("Exiting...");
+        return false;
+      }
+    }
+    catch (e) {
+      if(e instanceof Error) {
+        console.log("[ERROR] An error occurred while validating role index " + i + ": " + e.message);
+        console.log("Exiting...");
+        return false;
+      }
     }
 
     if(typeof(roles[i].name) !== "string" || !roles[i].name || roles[i].name === "") {
@@ -76,7 +92,7 @@ function validateRolesConfig() {
     }
   }
 
-  console.log("Role data validation completed.")
+  console.log("Role data validation completed.");
   return true;
 }
 
@@ -96,8 +112,9 @@ function createTables() {
 }
 
 function importRoles() {
+  console.log("Importing roles...");
+
   const roles = Config.roles;
-  roles.forEach(role => console.log(role.discordId + ": " + role.name));
 }
 
 function main() {

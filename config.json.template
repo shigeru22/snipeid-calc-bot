@@ -1,15 +1,15 @@
 {
   "roles": [
     {
-      "discordId": 250000000000000000,
+      "discordId": "250000000000000000",
       "name": "250 points"
     },
     {
-      "discordId": 500000000000000000,
+      "discordId": "500000000000000000",
       "name": "500 points"
     },
     {
-      "discordId": 100000000000000000,
+      "discordId": "100000000000000000",
       "name": "1000 points"
     }
   ]
