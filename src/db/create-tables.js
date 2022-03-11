@@ -107,17 +107,73 @@ function printRolesFormat() {
   console.log("  }");
 }
 
-function createTables() {
+async function createTables(db) {
   console.log("Creating tables...");
+
+  if(!(db instanceof Client)) {
+    console.log("[ERROR] Invalid variable given: Not a node-postgres Client.");
+    console.log("Exiting...");
+    return false;
+  }
+
+  try {
+    await db.connect();
+
+    await db.query(`
+      CREATE TABLE users (
+        userId integer PRIMARY KEY,
+        discordId varchar(255) NOT NULL,
+        osuId integer NOT NULL
+      );
+    `);
+    
+    await db.query(`
+      CREATE TABLE roles (
+        roleId integer PRIMARY KEY,
+        discordId varchar(255) NOT NULL,
+        roleName varchar(255) NOT NULL
+      );
+    `);
+
+    await db.query(`
+      CREATE TABLE assignments (
+        assignmentId integer PRIMARY KEY,
+        userId integer NOT NULL,
+        roleId integer NOT NULL,
+        points integer DEFAULT 0,
+        lastUpdate timestamp DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT fk_user
+          FOREIGN KEY(userId) REFERENCES users(userId),
+        CONSTRAINT fk_role
+          FOREIGN KEY(roleId) REFERENCES roles(roleId)
+      );
+    `);
+
+    console.log("Table creation completed.");
+    return true;
+  }
+  catch (e) {
+    if(e instanceof Error) {
+      console.log("[ERROR] An error occurred while querying database: " + e.message);
+    }
+    else {
+      console.log("[ERROR] An unknown error occurred.");
+    }
+
+    return false;
+  }
+  finally {
+    db.end();
+  }
 }
 
-function importRoles() {
+function importRoles(db) {
   console.log("Importing roles...");
 
   const roles = Config.roles;
 }
 
-function main() {
+async function main() {
   if(!validateEnvironmentVariables()) {
     process.exit(1);
   }
@@ -126,8 +182,24 @@ function main() {
     process.exit(1);
   }
 
-  createTables();
-  importRoles();
+  console.log(
+    "Using " + process.env.DB_USERNAME + "@" + process.env.DB_HOST + ":" + process.env.DB_PORT +
+    ", in database named " + process.env.DB_DATABASE
+  );
+
+  const db = new Client({
+    host: process.env.DB_HOST,
+    port: parseInt(process.env.DB_PORT, 10),
+    user: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE
+  });
+
+  if(!(await createTables(db))) {
+    process.exit(1);
+  }
+
+  importRoles(db);
 }
 
 main();
