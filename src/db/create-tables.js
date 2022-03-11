@@ -117,11 +117,9 @@ async function createTables(db) {
   }
 
   try {
-    await db.connect();
-
     await db.query(`
       CREATE TABLE users (
-        userId integer PRIMARY KEY,
+        userId serial PRIMARY KEY,
         discordId varchar(255) NOT NULL,
         osuId integer NOT NULL
       );
@@ -129,7 +127,7 @@ async function createTables(db) {
     
     await db.query(`
       CREATE TABLE roles (
-        roleId integer PRIMARY KEY,
+        roleId serial PRIMARY KEY,
         discordId varchar(255) NOT NULL,
         roleName varchar(255) NOT NULL
       );
@@ -137,7 +135,7 @@ async function createTables(db) {
 
     await db.query(`
       CREATE TABLE assignments (
-        assignmentId integer PRIMARY KEY,
+        assignmentId serial PRIMARY KEY,
         userId integer NOT NULL,
         roleId integer NOT NULL,
         points integer DEFAULT 0,
@@ -162,15 +160,47 @@ async function createTables(db) {
 
     return false;
   }
-  finally {
-    db.end();
-  }
 }
 
-function importRoles(db) {
+async function importRoles(db) {
   console.log("Importing roles...");
 
+  if(!(db instanceof Client)) {
+    console.log("[ERROR] Invalid variable given: Not a node-postgres Client.");
+    console.log("Exiting...");
+    return false;
+  }
+
   const roles = Config.roles;
+  const len = roles.length;
+
+  let query = "INSERT INTO roles (discordId, roleName) VALUES ";
+  roles.forEach((role, index) => {
+    query += "('" + role.discordId + "', '" + role.name + "')";
+    if(index < len - 1) {
+      query += ", ";
+    }
+    else {
+      query += ";";
+    }
+  });
+
+  try {
+    await db.query(query);
+
+    console.log("Role import completed.");
+    return true;
+  }
+  catch (e) {
+    if(e instanceof Error) {
+      console.log("[ERROR] An error occurred while querying database: " + e.message);
+    }
+    else {
+      console.log("[ERROR] An unknown error occurred.");
+    }
+
+    return false;
+  }
 }
 
 async function main() {
@@ -195,11 +225,21 @@ async function main() {
     database: process.env.DB_DATABASE
   });
 
+  console.log("Connecting to database...");
+  await db.connect();
+
   if(!(await createTables(db))) {
+    await db.end();
     process.exit(1);
   }
 
-  importRoles(db);
+  if(!(await importRoles(db))) {
+    await db.end();
+    process.exit(1);
+  }
+
+  await db.end();
+  console.log("Data import finished successfully.");
 }
 
 main();
