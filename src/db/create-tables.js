@@ -2,6 +2,7 @@
 
 const dotenv = require("dotenv");
 const { Client } = require("pg");
+const Config = require("../../config.json");
 
 dotenv.config();
 
@@ -42,8 +43,61 @@ function validateEnvironmentVariables() {
   return true;
 }
 
+function validateRolesConfig() {
+  console.log("Validating role data from config.json...");
+
+  const roles = Config.roles;
+  if(!roles) {
+    console.log("[ERROR] Roles array is not defined. Define in config.json with the following format:");
+    printRolesFormat();
+    console.log("Exiting...");
+    return false;
+  }
+
+  const len = roles.length;
+  if(len <= 0) {
+    console.log("[ERROR] Roles must not be empty. Define in config.json with the following format:");
+    printRolesFormat();
+    console.log("Exiting...");
+    return false;
+  }
+
+  for(let i = 0; i < len; i++) {
+    if(typeof(roles[i].discordId) !== "number" || !roles[i].discordId || roles[i].discordId <= 0) {
+      console.log("[ERROR] An error occurred while validating role index " + i + ": discordId must be number and higher than 0.");
+      console.log("Exiting...");
+      return false;
+    }
+
+    if(typeof(roles[i].name) !== "string" || !roles[i].name || roles[i].name === "") {
+      console.log("[ERROR] An error occurred while validating role index " + i + ". name must be string and not empty.");
+      console.log("Exiting...");
+      return false;
+    }
+  }
+
+  console.log("Role data validation completed.")
+  return true;
+}
+
+function printRolesFormat() {
+  console.log("  {");
+  console.log("     \"roles\": [");
+  console.log("       {");
+  console.log("         \"discordId\": number,");
+  console.log("         \"name\": string");
+  console.log("       }, // ...");
+  console.log("     ]");
+  console.log("  }");
+}
+
 function createTables() {
   console.log("Creating tables...");
+}
+
+function importRoles() {
+  const roles = Config.roles;
+  roles.forEach(role => console.log(role.discordId + ": " + role.name));
 }
 
 function main() {
@@ -51,7 +105,12 @@ function main() {
     process.exit(1);
   }
 
+  if(!validateRolesConfig()) {
+    process.exit(1);
+  }
+
   createTables();
+  importRoles();
 }
 
 main();
