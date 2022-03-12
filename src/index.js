@@ -2,6 +2,7 @@
 
 const dotenv = require("dotenv");
 const Discord = require("discord.js");
+const { validateEnvironmentVariables } = require("./utils/env");
 const { calculatePoints, counter } = require("./utils/counter");
 const { parseTopCountDescription, parseUsername } = require("./utils/parser");
 const { greet, agree, disagree, notUnderstood } = require("./utils/message");
@@ -16,7 +17,7 @@ client.on("messageCreate", async (msg) => await onNewMessage(msg))
 
 async function onStartup() {
   client.user.setActivity("Bathbot everyday", { type: "WATCHING" });
-  console.log("SnipeID is now running.");
+  console.log(process.env.BOT_NAME + " is now running.");
 }
 
 async function onNewMessage(msg) {
@@ -71,14 +72,13 @@ async function onNewMessage(msg) {
         let reply = "";
 
         if(contents[1] === "link") {
-          reply = "You need to specify your osu! user ID: `@SnipeID link [osu! user ID]`"
+          reply = "You need to specify your osu! user ID: `@" + process.env.BOT_NAME + " link [osu! user ID]`"
         }
         else if(contents[1] === "hi" || contents[1] === "hello") {
           reply = greet();
         }
         else if(contents[1].includes("right")) {
           const val = Math.random();
-          console.log(val);
           if(val >= 0.5) {
             reply = agree();
           }
@@ -94,6 +94,10 @@ async function onNewMessage(msg) {
       }
     }
   }
+}
+
+if(!validateEnvironmentVariables()) {
+  process.exit(0);
 }
 
 client.login(process.env.BOT_TOKEN);
