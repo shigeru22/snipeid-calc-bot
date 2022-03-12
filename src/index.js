@@ -65,14 +65,20 @@ async function onNewMessage(msg) {
     }
     else {
       const mentionedUsers = msg.mentions.users;
-      const contents = msg.content.split(" ");
       const isClientMentioned = mentionedUsers.has(client.user.id);
+
+      const contents = msg.content.split(/\s+/g); // split by one or more spaces
 
       if(isClientMentioned && contents[0].includes(client.user.id)) {
         let reply = "";
 
         if(contents[1] === "link") {
-          reply = "You need to specify your osu! user ID: `@" + process.env.BOT_NAME + " link [osu! user ID]`"
+          if(typeof(contents[2]) === "string") {
+            reply = "Processing ID: " + parseInt(contents[2], 10);
+          }
+          else {
+            reply = "You need to specify your osu! user ID: `@" + process.env.BOT_NAME + " link [osu! user ID]`";
+          }
         }
         else if(contents[1] === "hi" || contents[1] === "hello") {
           reply = greet();
