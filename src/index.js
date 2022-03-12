@@ -2,8 +2,9 @@
 
 const dotenv = require("dotenv");
 const Discord = require("discord.js");
-const { calculatePoints, counter } = require("./utils/counter.js");
-const { parseTopCountDescription, parseUsername } = require("./utils/parser.js");
+const { calculatePoints, counter } = require("./utils/counter");
+const { parseTopCountDescription, parseUsername } = require("./utils/parser");
+const { greet, agree, disagree, notUnderstood } = require("./utils/message");
 
 dotenv.config();
 const client = new Discord.Client({ intents: [ "GUILDS", "GUILD_MESSAGES" ]});
@@ -63,44 +64,33 @@ async function onNewMessage(msg) {
     }
     else {
       const mentionedUsers = msg.mentions.users;
+      const contents = msg.content.split(" ");
       const isClientMentioned = mentionedUsers.has(client.user.id);
 
-      if(isClientMentioned) {
-        const message = msg.content.toLowerCase();
+      if(isClientMentioned && contents[0].includes(client.user.id)) {
+        let reply = "";
 
-        if(message.includes("hi")) {
-          await channel.send("Yes");
+        if(contents[1] === "link") {
+          reply = "You need to specify your osu! user ID: `@SnipeID link [osu! user ID]`"
         }
-        else if(message.includes("test")) {
-          await channel.send("Testing with specified values.");
-
-          const points = calculatePoints(0, 121, 199, 213, 407);
-          const draft = counter(
-            0,
-            121,
-            199,
-            213,
-            407,
-            "Unknown User"
-          );
-
-          const sentMessage = await channel.send({ embeds: [ draft ] });
-          
-          if(typeof(process.env.OSUHOW_EMOJI_ID) === "string") {
-            if(points.toString().includes("727")) {
-              try {
-                const emoji = client.emojis.cache.get(process.env.OSUHOW_EMOJI_ID);
-                sentMessage.react(emoji);
-              }
-              catch (e) {
-                await channel.send("Error occurred: " + e.message);
-              }
-            }
+        else if(contents[1] === "hi" || contents[1] === "hello") {
+          reply = greet();
+        }
+        else if(contents[1].includes("right")) {
+          const val = Math.random();
+          console.log(val);
+          if(val >= 0.5) {
+            reply = agree();
+          }
+          else {
+            reply = disagree();
           }
         }
         else {
-          await channel.send("?");
+          reply = notUnderstood();
         }
+
+        await channel.send(reply);
       }
     }
   }
