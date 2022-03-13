@@ -16,6 +16,21 @@ function validateEnvironmentVariables() {
     return false;
   }
 
+  if(typeof(process.env.OSU_CLIENT_ID) !== "string" || !process.env.OSU_CLIENT_ID) {
+    console.log("[ERROR] OSU_CLIENT_ID must be defined in environment variables. Exiting.");
+    return false;
+  }
+
+  if(parseInt(process.env.OSU_CLIENT_ID, 10) === NaN) {
+    console.log("[ERROR] OSU_CLIENT_ID must be number. Exiting.");
+    return false;
+  }
+
+  if(typeof(process.env.OSU_CLIENT_SECRET) !== "string" || !process.env.OSU_CLIENT_SECRET) {
+    console.log("[ERROR] OSU_CLIENT_SECRET must be defined in environment variables. Exiting.");
+    return false;
+  }
+
   console.log("Environment variable checks completed.");
   return true;
 }
