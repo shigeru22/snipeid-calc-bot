@@ -11,6 +11,14 @@ const HTTPStatus = {
 	INTERNAL_SERVER_ERROR: 500
 };
 
+const OsuUserStatus = {
+  USER: 1,
+  BOT: 2,
+  DELETED: 3,
+  NOT_FOUND: 4
+};
+
 module.exports = {
-  HTTPStatus
+  HTTPStatus,
+  OsuUserStatus
 };

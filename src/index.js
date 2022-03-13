@@ -6,7 +6,8 @@ const { validateEnvironmentVariables } = require("./utils/env");
 const { calculatePoints, counter } = require("./utils/counter");
 const { parseTopCountDescription, parseUsername } = require("./utils/parser");
 const { greet, agree, disagree, notUnderstood } = require("./utils/message");
-const { getAccessToken } = require("./utils/osu");
+const { getAccessToken, getUserByOsuId } = require("./utils/osu");
+const { OsuUserStatus } = require("./utils/common");
 
 dotenv.config();
 const client = new Discord.Client({ intents: [ "GUILDS", "GUILD_MESSAGES" ]});
@@ -16,15 +17,34 @@ const BATHBOT_USER_ID = "297073686916366336";
 let token = "";
 let expired = new Date(0);
 
+async function getToken() {
+  const now = new Date();
+  if(now.getTime() >= expired.getTime()) {
+    console.log("[LOG] Access token expired. Requesting new access token...");
+    const response = await getAccessToken(process.env.OSU_CLIENT_ID, process.env.OSU_CLIENT_SECRET);
+
+    if(Object.keys(response).length === 0) {
+      console.log("[LOG] Unable to request access token. osu! site might be down?");
+      return 0;
+    }
+    else {
+      token = response.token;
+      expired = response.expire;
+    }
+  }
+
+  return token;
+}
+
 client.on("ready", async () => await onStartup());
-client.on("messageCreate", async (msg) => await onNewMessage(msg))
+client.on("messageCreate", async (msg) => await onNewMessage(msg));
 
 async function onStartup() {
   console.log("[LOG] Requesting access token...");
   const response = await getAccessToken(process.env.OSU_CLIENT_ID, process.env.OSU_CLIENT_SECRET);
   
   if(Object.keys(response).length === 0) {
-    console.log("[LOG] Unable to request access token. osu! site might be down?");
+    console.log("[LOG] Unable to request access token. osu! API might be down?");
   }
   else {
     token = response.token;
@@ -89,13 +109,40 @@ async function onNewMessage(msg) {
 
         if(contents[1] === "link") {
           if(typeof(contents[2]) === "string") {
-            reply = "Processing ID: " + parseInt(contents[2], 10);
+            const userId = parseInt(contents[2], 10);
+
+            if(userId > 0) {
+              const tempToken = await getToken();
+  
+              if(tempToken === 0) {
+                reply = "**Error:** Unable to retrieve osu! client authorizations. Maybe the API is down?";
+              }
+              else {
+                const response = await getUserByOsuId(tempToken, userId);
+
+                if(response.status === OsuUserStatus.BOT) {
+                  reply = "**Error:** Unable to link ID: User type is Bot.";
+                }
+                else if(response.status === OsuUserStatus.NOT_FOUND) {
+                  reply = "**Error:** Unable to link ID: User not found.";
+                }
+                else if(response.status === OsuUserStatus.DELETED) {
+                  reply = "**Error:** Unable to link ID: User is deleted.";
+                }
+                else {
+                  reply = "Retrieved username: " + response.username; // TODO: insert to database with specified discord ID
+                }
+              }
+            }
+            else {
+              reply = "**Error:** ID must be in numbers. Open your osu! profile and copy ID from the last part of the example in the URL:\nhttps://osu.ppy.sh/users/2581664, then 2581664 is your ID.";
+            }
           }
           else {
             reply = "You need to specify your osu! user ID: `@" + process.env.BOT_NAME + " link [osu! user ID]`";
           }
         }
-        else if(contents[1] === "hi" || contents[1] === "hello") {
+        else if(contents[1] === "hi" || contents[1] === "hello") { // TODO: move elses and below to parent if (accept all channels)
           reply = greet();
         }
         else if(contents[1].includes("right")) {
