@@ -6,18 +6,33 @@ const { validateEnvironmentVariables } = require("./utils/env");
 const { calculatePoints, counter } = require("./utils/counter");
 const { parseTopCountDescription, parseUsername } = require("./utils/parser");
 const { greet, agree, disagree, notUnderstood } = require("./utils/message");
+const { getAccessToken } = require("./utils/osu");
 
 dotenv.config();
 const client = new Discord.Client({ intents: [ "GUILDS", "GUILD_MESSAGES" ]});
 
 const BATHBOT_USER_ID = "297073686916366336";
 
+let token = "";
+let expired = new Date(0);
+
 client.on("ready", async () => await onStartup());
 client.on("messageCreate", async (msg) => await onNewMessage(msg))
 
 async function onStartup() {
+  console.log("[LOG] Requesting access token...");
+  const response = await getAccessToken(process.env.OSU_CLIENT_ID, process.env.OSU_CLIENT_SECRET);
+  
+  if(Object.keys(response).length === 0) {
+    console.log("[LOG] Unable to request access token. osu! site might be down?");
+  }
+  else {
+    token = response.token;
+    expired = response.expire;
+  }
+
   client.user.setActivity("Bathbot everyday", { type: "WATCHING" });
-  console.log(process.env.BOT_NAME + " is now running.");
+  console.log("[LOG] " + process.env.BOT_NAME + " is now running.");
 }
 
 async function onNewMessage(msg) {
