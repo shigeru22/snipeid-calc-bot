@@ -154,6 +154,7 @@ async function onNewMessage(msg) {
                     }
                     case DatabaseErrors.DUPLICATED: {
                       reply = "**Error:** Unable to link ID: osu! ID already linked to other Discord user.";
+                      break;
                     }
                     case DatabaseErrors.CLIENT_ERROR:
                     case DatabaseErrors.TYPE_ERROR: {

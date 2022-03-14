@@ -24,12 +24,27 @@ async function insertUser(pool, discordId, osuId) {
     return DatabaseErrors.TYPE_ERROR;
   }
 
-  const query = "INSERT INTO users (discordId, osuId) VALUES ($1, $2);";
-  const values = [ discordId, osuId ];
+  const selectQuery = "SELECT * FROM users WHERE osuId=$1;"
+  const selectValues = [ osuId ];
+
+  const insertQuery = "INSERT INTO users (discordId, osuId) VALUES ($1, $2);";
+  const insertValues = [ discordId, osuId ];
 
   try {  
     const client = await pool.connect();
-    await client.query(query, values);
+    
+    const result = await client.query(selectQuery, selectValues);
+    if(typeof(result.rows[0]) !== "undefined") {
+      if(result.rows[0].osuid === osuId) {
+        client.release();
+        return DatabaseErrors.DUPLICATED;
+      }
+    }
+
+    // TODO: handle same discord ID
+
+    await client.query(insertQuery, insertValues);
+
     client.release();
 
     console.log("[LOG] insertUser :: users: Inserted 1 row.");
