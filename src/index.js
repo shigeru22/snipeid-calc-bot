@@ -9,7 +9,7 @@ const { parseTopCountDescription, parseUsername } = require("./utils/parser");
 const { greet, agree, disagree, notUnderstood } = require("./utils/message");
 const { getAccessToken, getUserByOsuId } = require("./utils/osu");
 const { OsuUserStatus } = require("./utils/common");
-const { insertUser } = require("./utils/db");
+const { DatabaseErrors, insertUser } = require("./utils/db");
 
 dotenv.config();
 
@@ -142,11 +142,27 @@ async function onNewMessage(msg) {
                 else {
                   const discordId = msg.author.id;
                   const osuUsername = response.username;
-                  if(await insertUser(pool, discordId, osuId)) {
-                    reply = "Linked Discord user <@" + discordId + "> to osu! user **" + osuUsername + "**.";
-                  }
-                  else {
-                    reply = "**Error:** Unable to link ID: An error occurred with the database connection. Please contact bot administrator.";
+                  const result = await insertUser(pool, discordId, osuId)
+
+                  switch(result) {
+                    case DatabaseErrors.OK: 
+                      reply = "Linked Discord user <@" + discordId + "> to osu! user **" + osuUsername + "**.";
+                      break;
+                    case DatabaseErrors.CONNECTION_ERROR: {
+                      reply = "**Error:** Unable to link ID: An error occurred with the database connection. Please contact bot administrator.";
+                      break;
+                    }
+                    case DatabaseErrors.DUPLICATED: {
+                      reply = "**Error:** Unable to link ID: osu! ID already linked to other Discord user.";
+                    }
+                    case DatabaseErrors.CLIENT_ERROR:
+                    case DatabaseErrors.TYPE_ERROR: {
+                      reply = "**Error:** Client error has occurred. Please contact bot administrator.";
+                      break;
+                    }
+                    default: {
+                      reply = "**Error**: Unknown return value. Please contact bot administrator.";
+                    }
                   }
                 }
               }
