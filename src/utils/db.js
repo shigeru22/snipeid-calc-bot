@@ -4,8 +4,9 @@ const DatabaseErrors = {
   OK: 0,
   CONNECTION_ERROR: 1,
   TYPE_ERROR: 2,
-  DUPLICATED: 3,
-  CLIENT_ERROR: 4
+  DUPLICATED_DISCORD_ID: 3,
+  DUPLICATED_OSU_ID: 4,
+  CLIENT_ERROR: 5
 };
 
 async function insertUser(pool, discordId, osuId) {
@@ -24,24 +25,33 @@ async function insertUser(pool, discordId, osuId) {
     return DatabaseErrors.TYPE_ERROR;
   }
 
-  const selectQuery = "SELECT * FROM users WHERE osuId=$1;"
-  const selectValues = [ osuId ];
+  const selectDiscordIdQuery = "SELECT * FROM users WHERE discordId=$1";
+  const selectDiscordIdValues = [ discordId ];
+
+  const selectOsuIdQuery = "SELECT * FROM users WHERE osuId=$1;"
+  const selectOsuIdValues = [ osuId ];
 
   const insertQuery = "INSERT INTO users (discordId, osuId) VALUES ($1, $2);";
   const insertValues = [ discordId, osuId ];
 
   try {  
     const client = await pool.connect();
-    
-    const result = await client.query(selectQuery, selectValues);
-    if(typeof(result.rows[0]) !== "undefined") {
-      if(result.rows[0].osuid === osuId) {
+
+    const discordIdResult = await client.query(selectDiscordIdQuery, selectDiscordIdValues);
+    if(typeof(discordIdResult.rows[0]) !== "undefined") {
+      if(discordIdResult.rows[0].discordid === discordId) {
         client.release();
-        return DatabaseErrors.DUPLICATED;
+        return DatabaseErrors.DUPLICATED_DISCORD_ID;
       }
     }
-
-    // TODO: handle same discord ID
+    
+    const osuIdResult = await client.query(selectOsuIdQuery, selectOsuIdValues);
+    if(typeof(osuIdResult.rows[0]) !== "undefined") {
+      if(osuIdResult.rows[0].osuid === osuId) {
+        client.release();
+        return DatabaseErrors.DUPLICATED_OSU_ID;
+      }
+    }
 
     await client.query(insertQuery, insertValues);
 

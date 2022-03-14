@@ -152,7 +152,11 @@ async function onNewMessage(msg) {
                       reply = "**Error:** Unable to link ID: An error occurred with the database connection. Please contact bot administrator.";
                       break;
                     }
-                    case DatabaseErrors.DUPLICATED: {
+                    case DatabaseErrors.DUPLICATED_DISCORD_ID: {
+                      reply = "**Error:** Unable to link ID: You already linked your osu! ID. Please contact server moderators to make changes.";
+                      break;
+                    }
+                    case DatabaseErrors.DUPLICATED_OSU_ID: {
                       reply = "**Error:** Unable to link ID: osu! ID already linked to other Discord user.";
                       break;
                     }
