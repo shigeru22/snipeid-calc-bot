@@ -2,14 +2,25 @@
 
 const dotenv = require("dotenv");
 const Discord = require("discord.js");
+const { Pool } = require("pg");
 const { validateEnvironmentVariables } = require("./utils/env");
 const { calculatePoints, counter } = require("./utils/counter");
 const { parseTopCountDescription, parseUsername } = require("./utils/parser");
 const { greet, agree, disagree, notUnderstood } = require("./utils/message");
 const { getAccessToken, getUserByOsuId } = require("./utils/osu");
 const { OsuUserStatus } = require("./utils/common");
+const { insertUser } = require("./utils/db");
 
 dotenv.config();
+
+const pool = new Pool({
+  host: process.env.DB_HOST,
+  port: parseInt(process.env.DB_PORT, 10),
+  user: process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE
+});
+
 const client = new Discord.Client({ intents: [ "GUILDS", "GUILD_MESSAGES" ]});
 
 const BATHBOT_USER_ID = "297073686916366336";
@@ -60,7 +71,6 @@ async function onNewMessage(msg) {
 
   if(msg.channelId === process.env.CHANNEL_ID) {
     if(msg.author.id === BATHBOT_USER_ID) {
-      // await channel.send("Calculating score...")
       const embeds = msg.embeds; // always 0
       const index = embeds.findIndex(
         embed => typeof(embed.title) === "string" && embed.title.toLowerCase().startsWith("in how many top x map leaderboards is")
@@ -109,16 +119,16 @@ async function onNewMessage(msg) {
 
         if(contents[1] === "link") {
           if(typeof(contents[2]) === "string") {
-            const userId = parseInt(contents[2], 10);
+            const osuId = parseInt(contents[2], 10);
 
-            if(userId > 0) {
+            if(osuId > 0) {
               const tempToken = await getToken();
   
               if(tempToken === 0) {
                 reply = "**Error:** Unable to retrieve osu! client authorizations. Maybe the API is down?";
               }
               else {
-                const response = await getUserByOsuId(tempToken, userId);
+                const response = await getUserByOsuId(tempToken, osuId);
 
                 if(response.status === OsuUserStatus.BOT) {
                   reply = "**Error:** Unable to link ID: User type is Bot.";
@@ -130,7 +140,14 @@ async function onNewMessage(msg) {
                   reply = "**Error:** Unable to link ID: User is deleted.";
                 }
                 else {
-                  reply = "Retrieved username: " + response.username; // TODO: insert to database with specified discord ID
+                  const discordId = msg.author.id;
+                  const osuUsername = response.username;
+                  if(await insertUser(pool, discordId, osuId)) {
+                    reply = "Linked Discord user <@" + discordId + "> to osu! user **" + osuUsername + "**.";
+                  }
+                  else {
+                    reply = "**Error:** Unable to link ID: An error occurred with the database connection. Please contact bot administrator.";
+                  }
                 }
               }
             }
