@@ -10,9 +10,9 @@ async function importRoles(db, roles) {
   }
 
   const len = roles.length;
-  let query = "INSERT INTO roles (discordId, roleName) VALUES ";
+  let query = "INSERT INTO roles (discordId, roleName, minPoints) VALUES ";
   roles.forEach((role, index) => {
-    query += "('" + role.discordId + "', '" + role.name + "')";
+    query += "('" + role.discordId + "', '" + role.name + "', " + role.minPoints.toString() + ")";
     if(index < len - 1) {
       query += ", ";
     }

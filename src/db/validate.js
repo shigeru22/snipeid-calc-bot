@@ -77,7 +77,13 @@ function validateRolesConfig(roles) {
     }
 
     if(typeof(roles[i].name) !== "string" || !roles[i].name || roles[i].name === "") {
-      console.log("[ERROR] An error occurred while validating role index " + i + ". name must be string and not empty.");
+      console.log("[ERROR] An error occurred while validating role index " + i + ": name must be string and not empty.");
+      console.log("Exiting...");
+      return false;
+    }
+
+    if(typeof(roles[i].minPoints) !== "number" || !roles[i].minPoints) {
+      console.log("[ERROR] An error occurred while validating role index " + i + ": minPoints must be number.");
       console.log("Exiting...");
       return false;
     }

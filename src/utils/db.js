@@ -133,6 +133,22 @@ async function getDiscordUserByOsuId(pool, osuId) {
   }
 }
 
+/* assignment operations */
+
+async function insertAssignment(pool, userId, points) {
+  if(!(pool instanceof Pool)) {
+    console.log("[ERROR] insertAssignment :: pool must be a Pool object instance.");
+    return DatabaseErrors.TYPE_ERROR;
+  }
+
+  if(typeof(userId) !== "number") {
+    console.log("[ERROR] userId must be number.");
+    return DatabaseErrors.TYPE_ERROR;
+  }
+
+  
+}
+
 module.exports = {
   DatabaseErrors,
   insertUser,

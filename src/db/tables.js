@@ -22,7 +22,8 @@ async function createTables(db) {
       CREATE TABLE roles (
         roleId serial PRIMARY KEY,
         discordId varchar(255) NOT NULL,
-        roleName varchar(255) NOT NULL
+        roleName varchar(255) NOT NULL,
+        minPoints integer DEFAULT 0 NOT NULL
       );
     `);
 
