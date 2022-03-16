@@ -215,7 +215,7 @@ async function insertOrUpdateAssignment(pool, osuId, points) {
   }
 
   const selectAssignmentQuery = `SELECT
-      a."assignmentid", u."discordid", u."osuid", a."roleid", a."points", a."lastupdate"
+      a."assignmentid", a."userid", u."discordid", u."osuid", a."roleid", a."points", a."lastupdate"
     FROM
       assignments AS a
     JOIN
@@ -244,10 +244,16 @@ async function insertOrUpdateAssignment(pool, osuId, points) {
     if(assignmentResult.rows.length > 0) {
       // userId found, then update
       if(assignmentResult.rows[0].osuid === osuId) {
-        query = "UPDATE assignments SET roleid=$2, points=$3, lastupdate=$4 WHERE userid=$1";
+        // query = "UPDATE assignments SET roleid=$2, points=$3, lastupdate=$4 WHERE userid=$1"; // this doesn't update the timestamp!
         insert = false;
+
         userId = assignmentResult.rows[0].userid;
         discordId = assignmentResult.rows[0].discordid;
+
+        await client.query("DELETE FROM assignments WHERE assignmentid=$1", [ assignmentResult.rows[0].assignmentid ]);
+
+        query = "INSERT INTO assignments (assignmentid, userid, roleid, points, lastupdate) VALUES ($1, $2, $3, $4, $5)";
+        values.push(assignmentResult.rows[0].assignmentid);
       }
       else {
         client.release(); // should not fall here, but whatever
@@ -262,7 +268,6 @@ async function insertOrUpdateAssignment(pool, osuId, points) {
 
       const selectUserResult = await client.query(selectUserQuery, selectUserValues);
 
-      console.log(selectUserResult);
       if(selectUserResult.rows.length === 0) {
         client.release();
         console.log("[LOG] User not found. Won't update any data.");

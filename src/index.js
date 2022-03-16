@@ -9,7 +9,8 @@ const { parseTopCountDescription, parseUsername, parseOsuIdFromLink } = require(
 const { greet, agree, disagree, notUnderstood } = require("./utils/message");
 const { getAccessToken, getUserByOsuId } = require("./utils/osu");
 const { OsuUserStatus } = require("./utils/common");
-const { DatabaseErrors, AssignmentType, insertUser, getDiscordUserByOsuId, insertOrUpdateAssignment } = require("./utils/db");
+const { deltaTimeToString } = require("./utils/time");
+const { DatabaseErrors, AssignmentType, insertUser, insertOrUpdateAssignment } = require("./utils/db");
 
 dotenv.config();
 
@@ -133,8 +134,8 @@ async function onNewMessage(msg) {
               "<@" + assignmentResult.discordId + "> have " +
               (assignmentResult.delta >= 0 ? "gained" : "lost") +
               " **" + assignmentResult.delta + "** points " + 
-              "since " + Math.floor((today.getTime() - assignmentResult.lastUpdate.getTime()) / (1000 * 3600 * 24)) +
-              " days ago."
+              "since " + deltaTimeToString(today.getTime() - assignmentResult.lastUpdate.getTime()) +
+              " ago."
             );
             break;
         }
