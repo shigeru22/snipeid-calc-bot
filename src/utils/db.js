@@ -6,8 +6,14 @@ const DatabaseErrors = {
   TYPE_ERROR: 2,
   DUPLICATED_DISCORD_ID: 3,
   DUPLICATED_OSU_ID: 4,
-  NOT_FOUND: 5,
-  CLIENT_ERROR: 6
+  USER_NOT_FOUND: 5,
+  ROLES_EMPTY: 6,
+  CLIENT_ERROR: 7
+};
+
+const AssignmentType = {
+  INSERT: 0,
+  UPDATE: 1
 };
 
 /* user operations */
@@ -102,7 +108,7 @@ async function getDiscordUserByOsuId(pool, osuId) {
     client.release();
 
     if(typeof(discordUserResult.rows[0]) === "undefined")  {
-      return DatabaseErrors.NOT_FOUND;
+      return DatabaseErrors.USER_NOT_FOUND;
     }
 
     if(discordUserResult.rows[0].osuid !== osuId) {
@@ -135,22 +141,233 @@ async function getDiscordUserByOsuId(pool, osuId) {
 
 /* assignment operations */
 
-async function insertAssignment(pool, userId, points) {
+async function getAssignmentByOsuId(pool, osuId) {
   if(!(pool instanceof Pool)) {
-    console.log("[ERROR] insertAssignment :: pool must be a Pool object instance.");
+    console.log("[ERROR] getAssignmentByOsuId :: pool must be a Pool object instance.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
   if(typeof(userId) !== "number") {
-    console.log("[ERROR] userId must be number.");
+    console.log("[ERROR] getAssignmentByOsuId :: userId must be number.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
-  
+  const selectQuery = `SELECT
+      a."assignmentid", a."userid", u."discordid", u."osuid", a."roleid", a."points"
+    FROM
+      assignments AS a
+    JOIN
+	    users as u
+    ON
+      a."userid"=u."userid"
+    WHERE
+      u."osuid"=$1
+  `;
+  const selectValues = [ osuId ];
+
+  try {
+    const client = await pool.connect();
+
+    const discordUserResult = await client.query(selectQuery, selectValues);
+    client.release();
+
+    if(typeof(discordUserResult.rows[0]) === "undefined")  {
+      return DatabaseErrors.USER_NOT_FOUND;
+    }
+
+    if(discordUserResult.rows[0].osuid !== osuId) {
+      return DatabaseErrors.CLIENT_ERROR;
+    }
+
+    return {
+      userId: discordUserResult.rows[0].userid,
+      discordId: discordUserResult.rows[0].discordid,
+      osuId: discordUserResult.rows[0].osuid
+    };
+  }
+  catch (e) {
+    if(e instanceof Error) {
+      if(e.code === "ECONNREFUSED") {
+        console.log("[ERROR] getAssignmentByOsuId :: Database connection failed.");
+        return DatabaseErrors.CONNECTION_ERROR;
+      }
+      else {
+        console.log("[ERROR] getAssignmentByOsuId :: An error occurred while querying assignment: " + e.message);
+      }
+    }
+    else {
+      console.log("[ERROR] getAssignmentByOsuId :: Unknown error occurred.");
+    }
+
+    return DatabaseErrors.CLIENT_ERROR;
+  }
+}
+
+async function insertOrUpdateAssignment(pool, osuId, points) {
+  if(!(pool instanceof Pool)) {
+    console.log("[ERROR] insertOrUpdateAssignment :: pool must be a Pool object instance.");
+    return DatabaseErrors.TYPE_ERROR;
+  }
+
+  if(typeof(osuId) !== "number") {
+    console.log("[ERROR] insertOrUpdateAssignment :: osuId must be number.");
+    return DatabaseErrors.TYPE_ERROR;
+  }
+
+  const selectAssignmentQuery = `SELECT
+      a."assignmentid", u."discordid", u."osuid", a."roleid", a."points", a."lastupdate"
+    FROM
+      assignments AS a
+    JOIN
+      users as u
+    ON
+      a."userid"=u."userid"
+    WHERE
+      u."osuid"=$1
+  `;
+  const selectAssignmentValues = [ osuId ];
+
+  const selectRoleQuery = "SELECT roleid, minpoints FROM roles WHERE minpoints<$1 ORDER BY minpoints DESC LIMIT 1";
+  const selectRoleValues = [ points ];
+  let insert = true;
+
+  try {
+    const client = await pool.connect();
+
+    const assignmentResult = await client.query(selectAssignmentQuery, selectAssignmentValues);
+
+    let query = "";
+    const values = [];
+    let userId = 0;
+    let discordId = "";
+
+    if(assignmentResult.rows.length > 0) {
+      // userId found, then update
+      if(assignmentResult.rows[0].osuid === osuId) {
+        query = "UPDATE assignments SET roleid=$2, points=$3, lastupdate=$4 WHERE userid=$1";
+        insert = false;
+        userId = assignmentResult.rows[0].userid;
+        discordId = assignmentResult.rows[0].discordid;
+      }
+      else {
+        client.release(); // should not fall here, but whatever
+        console.log("[ERROR] insertOrUpdateAssignment :: Invalid osuId returned from the database.");
+        return DatabaseErrors.CLIENT_ERROR;
+      }
+    }
+    else {
+      // userId not found, then insert
+      const selectUserQuery = "SELECT userid, discordid, osuid FROM users WHERE osuid=$1";
+      const selectUserValues = [ osuId ];
+
+      const selectUserResult = await client.query(selectUserQuery, selectUserValues);
+
+      console.log(selectUserResult);
+      if(selectUserResult.rows.length === 0) {
+        client.release();
+        console.log("[LOG] User not found. Won't update any data.");
+        return DatabaseErrors.USER_NOT_FOUND;
+      }
+
+      query = "INSERT INTO assignments (userid, roleid, points, lastupdate) VALUES ($1, $2, $3, $4)";
+
+      userId = selectUserResult.rows[0].userid;
+      discordId = selectUserResult.rows[0].discordid;
+    }
+
+    const rolesResult = await client.query(selectRoleQuery, selectRoleValues);
+    if(rolesResult.rows.length === 0) {
+      client.release();
+      console.log("[ERROR] insertOrUpdateAssignment :: Role table is empty.");
+      return DatabaseErrors.ROLES_EMPTY; // role data empty
+    }
+    
+    if(rolesResult.rows[0].minPoints < points) {
+      client.release();
+      console.log("[ERROR] insertOrUpdateAssignment :: Invalid role returned due to wrong minimum points.");
+      return DatabaseErrors.CLIENT_ERROR;
+    }
+
+    values.push(userId, rolesResult.rows[0].roleid, points, new Date());
+    await client.query(query, values);
+
+    if(insert) {
+      console.log("[LOG] insertOrUpdateAssignment :: assignment: Inserted 1 row.");
+    }
+    else {
+      console.log("[LOG] insertOrUpdateAssignment :: assignment: Updated 1 row.");
+    }
+
+    return {
+      type: insert ? AssignmentType.INSERT : AssignmentType.UPDATE,
+      discordId: discordId,
+      delta: insert ? points : points - assignmentResult.rows[0].points,
+      lastUpdate: !insert ? assignmentResult.rows[0].lastupdate : null
+    };
+  }
+  catch (e) {
+    if(e instanceof Error) {
+      if(e.code === "ECONNREFUSED") {
+        console.log("[ERROR] insertOrUpdateAssignment :: Database connection failed.");
+        return DatabaseErrors.CONNECTION_ERROR;
+      }
+      else {
+        console.log("[ERROR] insertOrUpdateAssignment :: An error occurred while " + (insert ? "inserting" : "updating") + " assignment: " + e.message + "\n" + e.stack);
+      }
+    }
+    else {
+      console.log("[ERROR] insertOrUpdateAssignment :: Unknown error occurred.");
+    }
+
+    return DatabaseErrors.CLIENT_ERROR;
+  }
+}
+
+/* roles operations */
+
+async function getRolesList(pool) {
+  if(!(pool instanceof Pool)) {
+    console.log("[ERROR] getRolesList :: pool must be a Pool object instance.");
+    return DatabaseErrors.TYPE_ERROR;
+  }
+
+  const selectQuery = "SELECT * FROM roles ORDER BY 4 DESC";
+
+  try {
+    const client = await pool.connect();
+
+    const rolesResult = await client.query(selectQuery);
+    if(typeof(rolesResult.rows) === "undefined" || rolesResult.rows.length === 0) {
+      client.release();
+      return DatabaseErrors.USER_NOT_FOUND; // role data empty
+    }
+
+    return rolesResult.rows;
+  }
+  catch (e) {
+    if(e instanceof Error) {
+      if(e.code === "ECONNREFUSED") {
+        console.log("[ERROR] getRolesList :: Database connection failed.");
+        return DatabaseErrors.CONNECTION_ERROR;
+      }
+      else {
+        console.log("[ERROR] getRolesList :: An error occurred while querying roles: " + e.message);
+      }
+    }
+    else {
+      console.log("[ERROR] getRolesList :: Unknown error occurred.");
+    }
+
+    return DatabaseErrors.CLIENT_ERROR;
+  }
 }
 
 module.exports = {
   DatabaseErrors,
+  AssignmentType,
   insertUser,
-  getDiscordUserByOsuId
+  getDiscordUserByOsuId,
+  getAssignmentByOsuId,
+  insertOrUpdateAssignment,
+  getRolesList
 };

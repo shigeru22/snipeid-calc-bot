@@ -5,11 +5,11 @@ const Discord = require("discord.js");
 const { Pool } = require("pg");
 const { validateEnvironmentVariables } = require("./utils/env");
 const { calculatePoints, counter } = require("./utils/counter");
-const { parseTopCountDescription, parseUsername } = require("./utils/parser");
+const { parseTopCountDescription, parseUsername, parseOsuIdFromLink } = require("./utils/parser");
 const { greet, agree, disagree, notUnderstood } = require("./utils/message");
 const { getAccessToken, getUserByOsuId } = require("./utils/osu");
 const { OsuUserStatus } = require("./utils/common");
-const { DatabaseErrors, insertUser } = require("./utils/db");
+const { DatabaseErrors, AssignmentType, insertUser, getDiscordUserByOsuId, insertOrUpdateAssignment } = require("./utils/db");
 
 dotenv.config();
 
@@ -82,8 +82,12 @@ async function onNewMessage(msg) {
 
       const title = embeds[index].title;
       const desc = embeds[index].description;
+      const link = embeds[index].author.url;
 
       const username = parseUsername(title);
+      const osuId = parseOsuIdFromLink(link);
+
+      console.log("[LOG] Calculating points for username: " + username);
 
       // [ top_1, top_8, top_15, top_25, top_50 ]
       const topCounts = parseTopCountDescription(desc);
@@ -106,7 +110,35 @@ async function onNewMessage(msg) {
         }
       }
 
-      console.log("[LOG] Calculating points for username: " + username);
+      const assignmentResult = await insertOrUpdateAssignment(pool, typeof(osuId) === "number" ? osuId : parseInt(osuId, 10), points);
+      if(typeof(assignmentResult) === "number") {
+        switch(assignmentResult) {
+          case DatabaseErrors.USER_NOT_FOUND: break;
+          default:
+            await channel.send("**Error:** An error occurred while updating your points data. Please contact bot administrator.");
+        }
+      }
+      else {
+        const today = new Date();
+
+        switch(assignmentResult.type) {
+          case AssignmentType.INSERT:
+            await channel.send(
+              "<@" + assignmentResult.discordId + "> achieved " +
+              "**" + assignmentResult.delta + "** points. Go for those leaderboards!"
+            );
+            break;
+          case AssignmentType.UPDATE:
+            await channel.send(
+              "<@" + assignmentResult.discordId + "> have " +
+              (assignmentResult.delta >= 0 ? "gained" : "lost") +
+              " **" + assignmentResult.delta + "** points " + 
+              "since " + Math.floor((today.getTime() - assignmentResult.lastUpdate.getTime()) / (1000 * 3600 * 24)) +
+              " days ago."
+            );
+            break;
+        }
+      }
     }
     else {
       const mentionedUsers = msg.mentions.users;
