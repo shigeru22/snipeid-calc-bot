@@ -22,7 +22,12 @@ function parseUsername(title) {
   return res;
 }
 
+function parseOsuIdFromLink(url) {
+  return url.replace(/http(s)?:\/\/osu.ppy.sh\/u(sers)?\//g, "").split("/")[0];
+}
+
 module.exports = {
   parseTopCountDescription,
-  parseUsername
+  parseUsername,
+  parseOsuIdFromLink
 };
