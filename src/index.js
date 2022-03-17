@@ -139,7 +139,56 @@ async function onNewMessage(msg) {
             );
             break;
         }
+
+        try {
+          const server = await client.guilds.fetch(process.env.SERVER_ID);
+          let updated = false;
+
+          switch(assignmentResult.type) {
+            case AssignmentType.UPDATE:
+              if(assignmentResult.role.newRoleId !== assignmentResult.role.oldRoleId) {
+                const oldRole = await server.roles.fetch(assignmentResult.role.oldRoleId);
+                (await server.members.fetch(assignmentResult.discordId)).roles.remove(oldRole);
+                updated = true;
+              } // use fallthrough
+            case AssignmentType.INSERT:
+              if(
+                assignmentResult.type === AssignmentType.INSERT ||
+                (assignmentResult.type === AssignmentType.UPDATE &&
+                  assignmentResult.role.newRoleId !== assignmentResult.role.oldRoleId)
+              ) {
+                const newRole = await server.roles.fetch(assignmentResult.role.newRoleId);
+                (await server.members.fetch(assignmentResult.discordId)).roles.add(newRole);
+                updated = true;
+              }
+              break;
+          }
+
+          if(updated) {
+            await channel.send(
+              "You have been " + (assignmentResult.delta > 0 ? "promoted" : "demoted") +
+              " to **" + assignmentResult.role.newRoleName + "** role. " +
+              (assignmentResult.delta > 0 ? "Awesome!" : "Fight back at those leaderboards!")
+            );
+          }
+        }
+        catch (e) {
+          if(e instanceof Error) {
+            console.log("[ERROR] onNewMessage :: " + e.name + ": " + e.message + "\n" + e.stack);
+          }
+          else {
+            console.log("[ERROR] onNewMessage :: Unknown error occurred.");
+          }
+
+          reply = "**Error:** Unable to assign your role. Please contact bot administrator.";
+        }
       }
+
+      // if(assignmentResult.delta >= 0) {
+      //   if(assignmentResult.roleId !== 0) {
+      //     await channel.send("")
+      //   }
+      // }
     }
     else {
       const mentionedUsers = msg.mentions.users;
@@ -217,7 +266,7 @@ async function onNewMessage(msg) {
                           console.log("[ERROR] onNewMessage :: " + e.name + ": " + e.message + "\n" + e.stack);
                         }
                         else {
-                          console.log("[ERROR] Unknown error occurred.");
+                          console.log("[ERROR] onNewMessage :: Unknown error occurred.");
                         }
 
                         reply = "**Error:** Unable to assign your role. Please contact bot administrator.";

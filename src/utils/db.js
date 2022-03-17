@@ -214,7 +214,8 @@ async function insertOrUpdateAssignment(pool, osuId, points) {
     return DatabaseErrors.TYPE_ERROR;
   }
 
-  const selectAssignmentQuery = `SELECT
+  const selectAssignmentQuery = `
+    SELECT
       a."assignmentid", a."userid", u."discordid", u."osuid", a."roleid", a."points", a."lastupdate"
     FROM
       assignments AS a
@@ -227,7 +228,25 @@ async function insertOrUpdateAssignment(pool, osuId, points) {
   `;
   const selectAssignmentValues = [ osuId ];
 
-  const selectRoleQuery = "SELECT roleid, minpoints FROM roles WHERE minpoints<$1 ORDER BY minpoints DESC LIMIT 1";
+  const selectCurrentRoleQuery = `
+    SELECT
+      r."roleid", r."discordid", r."rolename", r."minpoints"
+    FROM
+      roles AS r
+    JOIN
+      assignments AS a
+    ON
+      r."roleid"=a."roleid"
+    JOIN
+      users AS u
+    ON
+      a."userid"=u."userid"
+    WHERE
+      u."osuid"=$1
+  `;
+  const selectCurrentRoleValues = [ osuId ];
+
+  const selectRoleQuery = "SELECT roleid, discordid, rolename, minpoints FROM roles WHERE minpoints<$1 ORDER BY minpoints DESC LIMIT 1";
   const selectRoleValues = [ points ];
   let insert = true;
 
@@ -235,6 +254,7 @@ async function insertOrUpdateAssignment(pool, osuId, points) {
     const client = await pool.connect();
 
     const assignmentResult = await client.query(selectAssignmentQuery, selectAssignmentValues);
+    const currentRoleResult = await client.query(selectCurrentRoleQuery, selectCurrentRoleValues);
 
     let query = "";
     const values = [];
@@ -303,9 +323,22 @@ async function insertOrUpdateAssignment(pool, osuId, points) {
       console.log("[LOG] insertOrUpdateAssignment :: assignment: Updated 1 row.");
     }
 
+    client.release();
+
+    const role = insert ? {
+      newRoleId: rolesResult.rows[0].discordid,
+      newRoleName: rolesResult.rows[0].rolename
+    } : {
+      oldRoleId: currentRoleResult.rows[0].discordid,
+      oldRoleName: currentRoleResult.rows[0].rolename,
+      newRoleId: rolesResult.rows[0].discordid,
+      newRoleName: rolesResult.rows[0].rolename
+    };
+
     return {
       type: insert ? AssignmentType.INSERT : AssignmentType.UPDATE,
-      discordId: discordId,
+      discordId,
+      role,
       delta: insert ? points : points - assignmentResult.rows[0].points,
       lastUpdate: !insert ? assignmentResult.rows[0].lastupdate : null
     };
