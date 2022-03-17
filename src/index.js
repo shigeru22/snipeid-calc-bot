@@ -22,7 +22,7 @@ const pool = new Pool({
   database: process.env.DB_DATABASE
 });
 
-const client = new Discord.Client({ intents: [ "GUILDS", "GUILD_MESSAGES" ]});
+const client = new Discord.Client({ intents: [ "GUILDS", "GUILD_MESSAGES", ]});
 
 const BATHBOT_USER_ID = "297073686916366336";
 
@@ -200,6 +200,28 @@ async function onNewMessage(msg) {
                     }
                     default: {
                       reply = "**Error**: Unknown return value. Please contact bot administrator.";
+                    }
+                  }
+
+                  if(result === DatabaseErrors.OK) {
+                    // assign role if available
+                    if(typeof(process.env.VERIFIED_ROLE_ID) === "string" && process.env.VERIFIED_ROLE_ID !== "") {
+                      try {
+                        const server = await client.guilds.fetch(process.env.SERVER_ID);
+                        const role = await server.roles.fetch(process.env.VERIFIED_ROLE_ID);
+
+                        (await server.members.fetch(discordId)).roles.add(role);
+                      }
+                      catch (e) {
+                        if(e instanceof Error) {
+                          console.log("[ERROR] onNewMessage :: " + e.name + ": " + e.message + "\n" + e.stack);
+                        }
+                        else {
+                          console.log("[ERROR] Unknown error occurred.");
+                        }
+
+                        reply = "**Error:** Unable to assign your role. Please contact bot administrator.";
+                      }
                     }
                   }
                 }
