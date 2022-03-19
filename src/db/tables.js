@@ -14,7 +14,8 @@ async function createTables(db) {
       CREATE TABLE users (
         userId serial PRIMARY KEY,
         discordId varchar(255) NOT NULL,
-        osuId integer NOT NULL
+        osuId integer NOT NULL,
+        userName varchar(255) NOT NULL
       );
     `);
     
