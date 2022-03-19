@@ -18,7 +18,7 @@ const AssignmentType = {
 
 /* user operations */
 
-async function insertUser(pool, discordId, osuId) {
+async function insertUser(pool, discordId, osuId, userName) {
   if(!(pool instanceof Pool)) {
     console.log("[ERROR] insertUser :: pool must be a Pool object instance.");
     return DatabaseErrors.TYPE_ERROR;
@@ -40,8 +40,8 @@ async function insertUser(pool, discordId, osuId) {
   const selectOsuIdQuery = "SELECT * FROM users WHERE osuId=$1;"
   const selectOsuIdValues = [ osuId ];
 
-  const insertQuery = "INSERT INTO users (discordId, osuId) VALUES ($1, $2);";
-  const insertValues = [ discordId, osuId ];
+  const insertQuery = "INSERT INTO users (discordId, osuId, userName) VALUES ($1, $2, $3)";
+  const insertValues = [ discordId, osuId, userName ];
 
   try {  
     const client = await pool.connect();
@@ -81,6 +81,43 @@ async function insertUser(pool, discordId, osuId) {
     }
     else {
       console.log("[ERROR] insertUser :: Unknown error occurred.");
+    }
+
+    return DatabaseErrors.CLIENT_ERROR;
+  }
+}
+
+async function updateUser(pool, osuId, userName) { // only username should be updateable, even that changes are from osu! API
+  if(!(pool instanceof Pool)) {
+    console.log("[ERROR] insertOrUpdateAssignment :: pool must be a Pool object instance.");
+    return DatabaseErrors.TYPE_ERROR;
+  }
+
+  if(typeof(osuId) !== "number") {
+    console.log("[ERROR] insertOrUpdateAssignment :: osuId must be number.");
+    return DatabaseErrors.TYPE_ERROR;
+  }
+
+  try {
+    const client = await pool.connect();
+    await client.query("UPDATE users SET username=$1 WHERE osuid=$2", [ userName, osuId ]);
+
+    client.release();
+    console.log("[LOG] updateUser :: users: Updated 1 row.");
+    return DatabaseErrors.OK;
+  }
+  catch (e) {
+    if(e instanceof Error) {
+      if(e.code === "ECONNREFUSED") {
+        console.log("[ERROR] updateUser :: Database connection failed.");
+        return DatabaseErrors.CONNECTION_ERROR;
+      }
+      else {
+        console.log("[ERROR] updateUser :: An error occurred while " + (insert ? "inserting" : "updating") + " assignment: " + e.message + "\n" + e.stack);
+      }
+    }
+    else {
+      console.log("[ERROR] updateUser :: Unknown error occurred.");
     }
 
     return DatabaseErrors.CLIENT_ERROR;
@@ -203,7 +240,7 @@ async function getAssignmentByOsuId(pool, osuId) {
   }
 }
 
-async function insertOrUpdateAssignment(pool, osuId, points) {
+async function insertOrUpdateAssignment(pool, osuId, points, userName) {
   if(!(pool instanceof Pool)) {
     console.log("[ERROR] insertOrUpdateAssignment :: pool must be a Pool object instance.");
     return DatabaseErrors.TYPE_ERROR;
@@ -216,7 +253,7 @@ async function insertOrUpdateAssignment(pool, osuId, points) {
 
   const selectAssignmentQuery = `
     SELECT
-      a."assignmentid", a."userid", u."discordid", u."osuid", a."roleid", a."points", a."lastupdate"
+      a."assignmentid", a."userid", u."discordid", u."osuid", u."username", a."roleid", a."points", a."lastupdate"
     FROM
       assignments AS a
     JOIN
@@ -266,6 +303,15 @@ async function insertOrUpdateAssignment(pool, osuId, points) {
       if(assignmentResult.rows[0].osuid === osuId) {
         // query = "UPDATE assignments SET roleid=$2, points=$3, lastupdate=$4 WHERE userid=$1"; // this doesn't update the timestamp!
         insert = false;
+
+        if(assignmentResult.rows[0].username !== userName) {
+          // update user
+          const ret = await updateUser(pool, osuId, userName);
+          if(ret !== DatabaseErrors.OK) {
+            client.release();
+            return ret;
+          }
+        }
 
         userId = assignmentResult.rows[0].userid;
         discordId = assignmentResult.rows[0].discordid;

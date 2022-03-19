@@ -125,7 +125,15 @@ async function onNewMessage(msg) {
         }
       }
 
-      const assignmentResult = await insertOrUpdateAssignment(pool, typeof(osuId) === "number" ? osuId : parseInt(osuId, 10), points);
+      const tempToken = await getToken();
+      if(tempToken === 0) {
+        await channel.send("**Error:** Unable to retrieve osu! client authorizations. Maybe the API is down?");
+        return;
+      }
+
+      const response = await getUserByOsuId(tempToken, typeof(osuId) === "number" ? osuId : parseInt(osuId, 10)); // TODO: handle deleted user
+
+      const assignmentResult = await insertOrUpdateAssignment(pool, typeof(osuId) === "number" ? osuId : parseInt(osuId, 10), points, response.username);
       if(typeof(assignmentResult) === "number") {
         switch(assignmentResult) {
           case DatabaseErrors.USER_NOT_FOUND: break;
@@ -238,7 +246,7 @@ async function onNewMessage(msg) {
                 else {
                   const discordId = msg.author.id;
                   const osuUsername = response.username;
-                  const result = await insertUser(pool, discordId, osuId)
+                  const result = await insertUser(pool, discordId, osuId, osuUsername);
 
                   switch(result) {
                     case DatabaseErrors.OK: 
