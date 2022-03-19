@@ -1,6 +1,12 @@
 const Discord = require("discord.js");
 
-function createLeaderboardEmbed(data) {
+/**
+ * 
+ * @param {*} data 
+ * @param {Date} lastUpdated 
+ * @returns 
+ */
+function createLeaderboardEmbed(data, lastUpdated) {
   const draft = new Discord.MessageEmbed();
   const len = data.length;
   let rankingsDesc = "";
@@ -14,6 +20,14 @@ function createLeaderboardEmbed(data) {
       }
     }
     draft.setDescription(rankingsDesc);
+    draft.setFooter({
+      text: "Last updated: " +
+        lastUpdated.getDate() + "/" +
+        (lastUpdated.getMonth() + 1) + "/" +
+        lastUpdated.getFullYear() + ", " +
+        lastUpdated.getHours() + ":" +
+        lastUpdated.getMinutes()
+    });
   }
   else {
     draft.setDescription("Ranking list is empty. Go for the first!");

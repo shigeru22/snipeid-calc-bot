@@ -7,8 +7,9 @@ const DatabaseErrors = {
   DUPLICATED_DISCORD_ID: 3,
   DUPLICATED_OSU_ID: 4,
   USER_NOT_FOUND: 5,
-  ROLES_EMPTY: 6,
-  CLIENT_ERROR: 7
+  NO_RECORD: 6,
+  ROLES_EMPTY: 7,
+  CLIENT_ERROR: 8
 };
 
 const AssignmentType = {
@@ -323,6 +324,50 @@ async function getAssignmentByOsuId(pool, osuId) {
   }
 }
 
+async function getLastAssignmentUpdate(pool) {
+  if(!(pool instanceof Pool)) {
+    console.log("[ERROR] getAllAssignments :: pool must be a Pool object instance.");
+    return DatabaseErrors.TYPE_ERROR;
+  }
+
+  const selectQuery = `
+    SELECT
+      a."lastupdate"
+    FROM
+      assignments AS a
+    ORDER BY
+      a."lastupdate" DESC
+    LIMIT 1;
+  `;
+
+  try {
+    const client = await pool.connect();
+    const result = await client.query(selectQuery);
+
+    if(typeof(result.rows[0].lastupdate) === "undefined") {
+      return DatabaseErrors.NO_RECORD;
+    }
+
+    return result.rows[0].lastupdate;
+  }
+  catch (e) {
+    if(e instanceof Error) {
+      if(e.code === "ECONNREFUSED") {
+        console.log("[ERROR] getAssignmentByOsuId :: Database connection failed.");
+        return DatabaseErrors.CONNECTION_ERROR;
+      }
+      else {
+        console.log("[ERROR] getAssignmentByOsuId :: An error occurred while querying assignment: " + e.message);
+      }
+    }
+    else {
+      console.log("[ERROR] getAssignmentByOsuId :: Unknown error occurred.");
+    }
+
+    return DatabaseErrors.CLIENT_ERROR;
+  }
+}
+
 async function insertOrUpdateAssignment(pool, osuId, points, userName) {
   if(!(pool instanceof Pool)) {
     console.log("[ERROR] insertOrUpdateAssignment :: pool must be a Pool object instance.");
@@ -552,6 +597,7 @@ module.exports = {
   getDiscordUserByOsuId,
   getAssignmentByOsuId,
   getAllAssignments,
+  getLastAssignmentUpdate,
   insertOrUpdateAssignment,
   getRolesList
 };

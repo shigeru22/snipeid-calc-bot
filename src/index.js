@@ -10,7 +10,7 @@ const { greet, agree, disagree, notUnderstood } = require("./utils/message");
 const { getAccessToken, getUserByOsuId } = require("./utils/osu");
 const { OsuUserStatus } = require("./utils/common");
 const { deltaTimeToString } = require("./utils/time");
-const { DatabaseErrors, AssignmentType, AssignmentSort, insertUser, getAllAssignments, insertOrUpdateAssignment } = require("./utils/db");
+const { DatabaseErrors, AssignmentType, AssignmentSort, insertUser, getAllAssignments, getLastAssignmentUpdate, insertOrUpdateAssignment } = require("./utils/db");
 const { createLeaderboardEmbed } = require("./utils/leaderboard");
 
 dotenv.config();
@@ -82,7 +82,9 @@ async function onNewMessage(msg) {
     if(isClientMentioned && contents[0].includes(client.user.id)) {
       if(contents[1] === "lb" || contents[1] === "leaderboard") {
         const rankings = await getAllAssignments(pool, AssignmentSort.POINTS, true);
-        const draft = createLeaderboardEmbed(rankings);
+        const lastUpdated = new Date(await getLastAssignmentUpdate(pool));
+        const draft = createLeaderboardEmbed(rankings, lastUpdated);
+
         await channel.send({ embeds: [ draft ] });
       }
     }
