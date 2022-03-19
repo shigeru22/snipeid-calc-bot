@@ -70,7 +70,21 @@ async function onStartup() {
 async function onNewMessage(msg) {
   const channel = await client.channels.cache.get(process.env.CHANNEL_ID);
 
-  if(msg.channelId === process.env.CHANNEL_ID) {
+  if(msg.channelId === process.env.LEADERBOARD_CHANNEL_ID) {
+    const channel = await client.channels.cache.get(process.env.LEADERBOARD_CHANNEL_ID);
+
+    const mentionedUsers = msg.mentions.users;
+    const isClientMentioned = mentionedUsers.has(client.user.id);
+
+    const contents = msg.content.split(/\s+/g); // split by one or more spaces
+
+    if(isClientMentioned && contents[0].includes(client.user.id)) {
+      if(contents[1] === "lb" || contents[1] === "leaderboard") {
+        await channel.send("Leaderboard goes here.");
+      }
+    }
+  }
+  else if(msg.channelId === process.env.CHANNEL_ID) {
     if(msg.author.id === BATHBOT_USER_ID) {
       const embeds = msg.embeds; // always 0
       const index = embeds.findIndex(
