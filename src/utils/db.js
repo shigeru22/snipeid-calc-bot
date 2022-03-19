@@ -16,6 +16,13 @@ const AssignmentType = {
   UPDATE: 1
 };
 
+const AssignmentSort = {
+  ID: 1,
+  ROLE_ID: 2,
+  POINTS: 3,
+  LAST_UPDATED: 4
+};
+
 /* user operations */
 
 async function insertUser(pool, discordId, osuId, userName) {
@@ -177,6 +184,82 @@ async function getDiscordUserByOsuId(pool, osuId) {
 }
 
 /* assignment operations */
+
+async function getAllAssignments(pool, sort, desc) {
+  if(!(pool instanceof Pool)) {
+    console.log("[ERROR] getAllAssignments :: pool must be a Pool object instance.");
+    return DatabaseErrors.TYPE_ERROR;
+  }
+
+  if(typeof(sort) !== "number") {
+    console.log("[ERROR] getAllAssignments :: userId must be number.");
+    return DatabaseErrors.TYPE_ERROR;
+  }
+
+  if(typeof(desc) !== "boolean") {
+    console.log("[ERROR] getAllAssignments :: desc must be boolean.");
+    return DatabaseErrors.TYPE_ERROR;
+  }
+
+  if(!isEnumAvailable(sort)) {
+    console.log("[ERROR] getAllAssignments :: sort value is not available in AssignmentSort enum.");
+    return DatabaseErrors.TYPE_ERROR;
+  }
+
+  const selectQuery = `
+    SELECT
+      a."assignmentid", u."username", r."rolename", a."points", a."lastupdate"
+    FROM
+      assignments AS a
+    JOIN
+      users AS u
+    ON
+      a."userid"=u."userid"
+    JOIN
+      roles AS r
+    ON
+      a."roleid"=r."roleid"
+    ORDER BY
+  ` +
+  (
+    sort === AssignmentSort.ID
+      ? `a."assignmentid"`
+      : sort === AssignmentSort.ROLE_ID
+        ? `a."roleid"`
+        : sort === AssignmentSort.POINTS
+          ? `a."points"`
+          : `a."lastupdate"`
+  ) +
+  (
+    desc && " DESC"
+  ) +
+  `
+    LIMIT 50;
+  `;
+
+  try {
+    const client = await pool.connect();
+    const response = await client.query(selectQuery);
+
+    return response.rows;
+  }
+  catch (e) {
+    if(e instanceof Error) {
+      if(e.code === "ECONNREFUSED") {
+        console.log("[ERROR] getAllAssignments :: Database connection failed.");
+        return DatabaseErrors.CONNECTION_ERROR;
+      }
+      else {
+        console.log("[ERROR] getAllAssignments :: An error occurred while querying assignment: " + e.message);
+      }
+    }
+    else {
+      console.log("[ERROR] getAllAssignments :: Unknown error occurred.");
+    }
+
+    return DatabaseErrors.CLIENT_ERROR;
+  }
+}
 
 async function getAssignmentByOsuId(pool, osuId) {
   if(!(pool instanceof Pool)) {
@@ -446,12 +529,29 @@ async function getRolesList(pool) {
   }
 }
 
+/* local functions */
+function isEnumAvailable(value) {
+  if(typeof(value) === "undefined") {
+    return undefined;
+  }
+
+  for(const prop in AssignmentSort) {
+    if(AssignmentSort[prop] === value) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 module.exports = {
   DatabaseErrors,
   AssignmentType,
+  AssignmentSort,
   insertUser,
   getDiscordUserByOsuId,
   getAssignmentByOsuId,
+  getAllAssignments,
   insertOrUpdateAssignment,
   getRolesList
 };
