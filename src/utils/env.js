@@ -16,6 +16,11 @@ function validateEnvironmentVariables() {
     return false;
   }
 
+  if(typeof(process.env.LEADERBOARD_CHANNEL_ID) !== "string" || !process.env.LEADERBOARD_CHANNEL_ID) {
+    console.log("[ERROR] LEADERBOARD_CHANNEL_ID must be defined in environment variables. Exiting.");
+    return false;
+  }
+
   if(typeof(process.env.SERVER_ID) === "string" && process.env.SERVER_ID !== "") {
     // verify role ID if server ID is defined
     if(typeof(process.env.VERIFIED_ROLE_ID) !== "string" || !process.env.VERIFIED_ROLE_ID) {
