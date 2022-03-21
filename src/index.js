@@ -8,9 +8,10 @@ const { calculatePoints, counter } = require("./utils/messages/counter");
 const { parseTopCountDescription, parseUsername, parseOsuIdFromLink } = require("./utils/parser");
 const { greet, agree, disagree, notUnderstood } = require("./utils/messages/msg");
 const { getAccessToken, getUserByOsuId } = require("./utils/api/osu");
-const { OsuUserStatus } = require("./utils/common");
+const { OsuUserStatus, DatabaseErrors, AssignmentType, AssignmentSort } = require("./utils/common");
 const { deltaTimeToString } = require("./utils/time");
-const { DatabaseErrors, AssignmentType, AssignmentSort, insertUser, getAllAssignments, getLastAssignmentUpdate, insertOrUpdateAssignment } = require("./utils/db/db");
+const { insertUser } = require("./utils/db/users");
+const { getAllAssignments, getLastAssignmentUpdate, insertOrUpdateAssignment } = require("./utils/db/assignments");
 const { createLeaderboardEmbed } = require("./utils/messages/leaderboard");
 
 dotenv.config();
