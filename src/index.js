@@ -4,14 +4,14 @@ const dotenv = require("dotenv");
 const Discord = require("discord.js");
 const { Pool } = require("pg");
 const { validateEnvironmentVariables } = require("./utils/env");
-const { calculatePoints, counter } = require("./utils/counter");
+const { calculatePoints, counter } = require("./utils/messages/counter");
 const { parseTopCountDescription, parseUsername, parseOsuIdFromLink } = require("./utils/parser");
-const { greet, agree, disagree, notUnderstood } = require("./utils/message");
-const { getAccessToken, getUserByOsuId } = require("./utils/osu");
+const { greet, agree, disagree, notUnderstood } = require("./utils/messages/msg");
+const { getAccessToken, getUserByOsuId } = require("./utils/api/osu");
 const { OsuUserStatus } = require("./utils/common");
 const { deltaTimeToString } = require("./utils/time");
-const { DatabaseErrors, AssignmentType, AssignmentSort, insertUser, getAllAssignments, getLastAssignmentUpdate, insertOrUpdateAssignment } = require("./utils/db");
-const { createLeaderboardEmbed } = require("./utils/leaderboard");
+const { DatabaseErrors, AssignmentType, AssignmentSort, insertUser, getAllAssignments, getLastAssignmentUpdate, insertOrUpdateAssignment } = require("./utils/db/db");
+const { createLeaderboardEmbed } = require("./utils/messages/leaderboard");
 
 dotenv.config();
 

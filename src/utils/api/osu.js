@@ -1,5 +1,5 @@
 const axios = require("axios").default;
-const { HTTPStatus, OsuUserStatus } = require("./common");
+const { HTTPStatus, OsuUserStatus } = require("../common");
 
 const OSU_API_ENDPOINT = "https://osu.ppy.sh/api/v2";
 
