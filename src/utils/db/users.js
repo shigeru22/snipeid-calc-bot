@@ -54,6 +54,55 @@ async function getDiscordUserByOsuId(pool, osuId) {
   }
 }
 
+async function getDiscordUserByDiscordId(pool, discordId) {
+  if(!(pool instanceof Pool)) {
+    console.log("[ERROR] getDiscordUserByDiscordId :: pool must be a Pool object instance.");
+    return DatabaseErrors.TYPE_ERROR;
+  }
+
+  if(typeof(discordId) !== "string") {
+    console.log("[ERROR] getDiscordUserByDiscordId :: discordId must be string.");
+    return DatabaseErrors.TYPE_ERROR;
+  }
+
+  const selectQuery = "SELECT * FROM users WHERE discordid=$1";
+  const selectValues = [ discordId ];
+
+  try {
+    const client = await pool.connect();
+
+    const result = await client.query(selectQuery, selectValues);
+    if(typeof(result.rows[0]) === "undefined") {
+      client.release();
+      return DatabaseErrors.USER_NOT_FOUND;
+    }
+
+    client.release();
+
+    return {
+      userId: result.rows[0].userid,
+      discordId: result.rows[0].discordid,
+      osuId: result.rows[0].osuid
+    };
+  }
+  catch (e) {
+    if(e instanceof Error) {
+      if(e.code === "ECONNREFUSED") {
+        console.log("[ERROR] getDiscordUserByDiscordId :: Database connection failed.");
+        return DatabaseErrors.CONNECTION_ERROR;
+      }
+      else {
+        console.log("[ERROR] getDiscordUserByDiscordId :: An error occurred while inserting user: " + e.message);
+      }
+    }
+    else {
+      console.log("[ERROR] getDiscordUserByDiscordId :: Unknown error occurred.");
+    }
+
+    return DatabaseErrors.CLIENT_ERROR;
+  }
+}
+
 async function insertUser(pool, discordId, osuId, userName) {
   if(!(pool instanceof Pool)) {
     console.log("[ERROR] insertUser :: pool must be a Pool object instance.");
@@ -162,6 +211,7 @@ async function updateUser(pool, osuId, userName) { // only username should be up
 
 module.exports = {
   getDiscordUserByOsuId,
+  getDiscordUserByDiscordId,
   insertUser,
   updateUser
 };

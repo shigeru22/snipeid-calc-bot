@@ -18,6 +18,12 @@ const OsuUserStatus = {
   NOT_FOUND: 4
 };
 
+const OsuStatsStatus = {
+  TYPE_ERROR: 1,
+  USER_NOT_FOUND: 2,
+  CLIENT_ERROR: 3
+};
+
 const DatabaseErrors = {
   OK: 0,
   CONNECTION_ERROR: 1,
@@ -73,6 +79,7 @@ function isSortEnumAvailable(value) {
 module.exports = {
   HTTPStatus,
   OsuUserStatus,
+  OsuStatsStatus,
 	DatabaseErrors,
 	AssignmentType,
 	AssignmentSort,

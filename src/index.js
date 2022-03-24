@@ -8,9 +8,10 @@ const { calculatePoints, counter } = require("./utils/messages/counter");
 const { parseTopCountDescription, parseUsername, parseOsuIdFromLink } = require("./utils/parser");
 const { greet, agree, disagree, notUnderstood } = require("./utils/messages/msg");
 const { getAccessToken, getUserByOsuId } = require("./utils/api/osu");
-const { OsuUserStatus, DatabaseErrors, AssignmentType, AssignmentSort } = require("./utils/common");
+const { getTopCounts } = require("./utils/api/osustats");
+const { OsuUserStatus, OsuStatsStatus, DatabaseErrors, AssignmentType, AssignmentSort } = require("./utils/common");
 const { deltaTimeToString } = require("./utils/time");
-const { insertUser } = require("./utils/db/users");
+const { getDiscordUserByDiscordId, insertUser } = require("./utils/db/users");
 const { getAllAssignments, getLastAssignmentUpdate, insertOrUpdateAssignment } = require("./utils/db/assignments");
 const { createLeaderboardEmbed } = require("./utils/messages/leaderboard");
 
@@ -310,6 +311,188 @@ async function onNewMessage(msg) {
           }
           else {
             reply = "You need to specify your osu! user ID: `@" + process.env.BOT_NAME + " link [osu! user ID]`";
+          }
+        }
+        else if(contents[1] === "count") {
+          const retrieveMessage = await channel.send("Retrieving user top counts...");
+
+          const user = await getDiscordUserByDiscordId(pool, msg.author.id);
+
+          // TODO: refactor to function (also used for <osc)
+
+          if(user === DatabaseErrors.USER_NOT_FOUND) {
+            reply = "**Error**: You haven't connected your osu! ID. Use Bathbot's `<osc` command instead or link your osu! ID using `@SnipeID link [osu! ID]`.";
+          }
+          else if(user === DatabaseErrors.CONNECTION_ERROR) {
+            reply = "**Error**: Database connection failed. Please contact bot administrator.";
+          }
+          else if(user === DatabaseErrors.CLIENT_ERROR) {
+            reply = "**Error**: Client error has occurred. Please contact bot administrator.";
+          }
+          else {
+            const tempToken = await getToken();
+  
+            if(tempToken === 0) {
+              reply = "**Error:** Unable to retrieve osu! client authorizations. Maybe the API is down?";
+            }
+            else {
+              const osuUser = await getUserByOsuId(tempToken, user.osuId); // get username using osu api
+
+              if(osuUser.status === OsuUserStatus.BOT) {
+                reply = "**Error:** Unable to link ID: User type is Bot.";
+              }
+              else if(osuUser.status === OsuUserStatus.NOT_FOUND) {
+                reply = "**Error:** Unable to link ID: User not found.";
+              }
+              else if(osuUser.status === OsuUserStatus.DELETED) {
+                reply = "**Error:** Unable to link ID: User is deleted.";
+              }
+              else {
+                const topCountsRequests = [];
+                const osuUsername = osuUser.username;
+
+                [ 1, 8, 15, 25, 50 ].forEach(rank => {
+                  topCountsRequests.push(getTopCounts(osuUsername, rank));
+                });
+
+                const topCountsResponses = await Promise.all(topCountsRequests);
+
+                let err = false;
+                topCountsResponses.forEach(res => {
+                  switch(res) {
+                    case OsuStatsStatus.USER_NOT_FOUND:
+                      reply = "**Error**: Username not found. Maybe osu! API haven't updated your username? (Use `<osc` instead)";
+                      err = true;
+                      break;
+                    case OsuStatsStatus.TYPE_ERROR: // fallthrough
+                    case OsuStatsStatus.CLIENT_ERROR:
+                      reply = "**Error**: Client error has occurred. Please contact bot administrator.";
+                      err = true;
+                  }
+                });
+
+                if(!err) {
+                  const topCounts = [ 0, 0, 0, 0, 0 ];
+                  topCountsResponses.forEach(res => {
+                    let idx = -1;
+
+                    switch(res.maxRank) {
+                      case 1: idx = 0; break;
+                      case 8: idx = 1; break;
+                      case 15: idx = 2; break;
+                      case 25: idx = 3; break;
+                      case 50: idx = 4; break;
+                    }
+
+                    // TODO: handle not found (which should not happen)
+
+                    topCounts[idx] = res.count;
+                  })
+
+                  const points = calculatePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3], topCounts[4]);
+                  const draft = counter(
+                    topCounts[0],
+                    topCounts[1],
+                    topCounts[2],
+                    topCounts[3],
+                    topCounts[4],
+                    osuUsername
+                  );
+
+                  await retrieveMessage.delete();
+                  const sentMessage = await channel.send({ embeds: [ draft ] });
+
+                  if(typeof(process.env.OSUHOW_EMOJI_ID) === "string") {
+                    if(points.toString().includes("727")) {
+                      const emoji = client.emojis.cache.get(process.env.OSUHOW_EMOJI_ID);
+                      sentMessage.react(emoji);
+                    }
+                  }
+
+                  if(tempToken === 0) {
+                    await channel.send("**Error:** Unable to retrieve osu! client authorizations. Maybe the API is down?");
+                    return;
+                  }
+
+                  const assignmentResult = await insertOrUpdateAssignment(pool, user.osuId, points, osuUsername);
+                  if(typeof(assignmentResult) === "number") {
+                    switch(assignmentResult) {
+                      case DatabaseErrors.USER_NOT_FOUND: break;
+                      default:
+                        await channel.send("**Error:** An error occurred while updating your points data. Please contact bot administrator.");
+                    }
+                  }
+                  else {
+                    const today = new Date();
+
+                    switch(assignmentResult.type) {
+                      case AssignmentType.INSERT:
+                        await channel.send(
+                          "<@" + assignmentResult.discordId + "> achieved " +
+                          "**" + assignmentResult.delta + "** points. Go for those leaderboards!"
+                        );
+                        break;
+                      case AssignmentType.UPDATE:
+                        await channel.send(
+                          "<@" + assignmentResult.discordId + "> have " +
+                          (assignmentResult.delta >= 0 ? "gained" : "lost") +
+                          " **" + assignmentResult.delta + "** points " + 
+                          "since " + deltaTimeToString(today.getTime() - assignmentResult.lastUpdate.getTime()) +
+                          " ago."
+                        );
+                        break;
+                    }
+
+                    try {
+                      const server = await client.guilds.fetch(process.env.SERVER_ID);
+                      let updated = false;
+
+                      switch(assignmentResult.type) {
+                        case AssignmentType.UPDATE:
+                          if(assignmentResult.role.newRoleId !== assignmentResult.role.oldRoleId) {
+                            const oldRole = await server.roles.fetch(assignmentResult.role.oldRoleId);
+                            (await server.members.fetch(assignmentResult.discordId)).roles.remove(oldRole);
+                            updated = true;
+                          } // use fallthrough
+                        case AssignmentType.INSERT:
+                          if(
+                            assignmentResult.type === AssignmentType.INSERT ||
+                            (assignmentResult.type === AssignmentType.UPDATE &&
+                              assignmentResult.role.newRoleId !== assignmentResult.role.oldRoleId)
+                          ) {
+                            const newRole = await server.roles.fetch(assignmentResult.role.newRoleId);
+                            (await server.members.fetch(assignmentResult.discordId)).roles.add(newRole);
+                            updated = true;
+                          }
+                          break;
+                      }
+
+                      if(updated) {
+                        await channel.send(
+                          "You have been " + (assignmentResult.delta > 0 ? "promoted" : "demoted") +
+                          " to **" + assignmentResult.role.newRoleName + "** role. " +
+                          (assignmentResult.delta > 0 ? "Awesome!" : "Fight back at those leaderboards!")
+                        );
+                      }
+                    }
+                    catch (e) {
+                      if(e instanceof Error) {
+                        console.log("[ERROR] onNewMessage :: " + e.name + ": " + e.message + "\n" + e.stack);
+                      }
+                      else {
+                        console.log("[ERROR] onNewMessage :: Unknown error occurred.");
+                      }
+
+                      await channel.send("**Error:** Unable to assign your role. Please contact bot administrator.");
+                    }
+                  }
+                  return;
+                }
+                else {
+                  await channel.send("**Error**: An error occurred while fetching data from osu!Stats.");
+                }
+              }
+            }
           }
         }
         else if(contents[1] === "hi" || contents[1] === "hello") { // TODO: move elses and below to parent if (accept all channels)
