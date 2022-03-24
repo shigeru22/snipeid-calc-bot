@@ -1,11 +1,5 @@
 const Discord = require("discord.js");
 
-/**
- * 
- * @param {*} data 
- * @param {Date} lastUpdated 
- * @returns 
- */
 function createLeaderboardEmbed(data, lastUpdated) {
   const draft = new Discord.MessageEmbed();
   const len = data.length;
