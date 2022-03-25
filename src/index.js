@@ -6,13 +6,13 @@ const { Pool } = require("pg");
 const { validateEnvironmentVariables } = require("./utils/env");
 const { calculatePoints } = require("./utils/messages/counter");
 const { parseTopCountDescription, parseUsername, parseOsuIdFromLink } = require("./utils/parser");
-const { greet, agree, disagree, notUnderstood } = require("./utils/messages/msg");
 const { getAccessToken } = require("./utils/api/osu");
 const { countPoints } = require("./utils/commands/points");
 const { addWysiReaction } = require("./utils/commands/reactions");
 const { updateUserData, fetchUser, fetchOsuUser, fetchOsuStats, insertUserData } = require("./utils/commands/userdata");
 const { addRole } = require("./utils/commands/roles");
 const { sendPointLeaderboard } = require("./utils/commands/leaderboards");
+const { sendMessage } = require("./utils/commands/conversations");
 
 dotenv.config();
 
@@ -70,22 +70,23 @@ async function onStartup() {
 }
 
 async function onNewMessage(msg) {
-  const channel = await client.channels.cache.get(process.env.CHANNEL_ID);
+  const contents = msg.content.split(/\s+/g); // split by one or more spaces
+  const isClientMentioned = msg.mentions.users.has(client.user.id) && contents[0].includes(client.user.id);;
+  let processed = false;
 
   if(msg.channelId === process.env.LEADERBOARD_CHANNEL_ID) {
     const channel = await client.channels.cache.get(process.env.LEADERBOARD_CHANNEL_ID);
 
-    const mentionedUsers = msg.mentions.users;
-    const contents = msg.content.split(/\s+/g); // split by one or more spaces
-    const isClientMentioned = mentionedUsers.has(client.user.id) && contents[0].includes(client.user.id);
-
     if(isClientMentioned) {
       if(contents[1] === "lb" || contents[1] === "leaderboard") {
         await sendPointLeaderboard(channel, pool);
+        processed = true;
       }
     }
   }
   else if(msg.channelId === process.env.CHANNEL_ID) {
+    const channel = await client.channels.cache.get(process.env.CHANNEL_ID);
+
     if(msg.author.id === BATHBOT_USER_ID) {
       const embeds = msg.embeds; // always 0
       const index = embeds.findIndex(
@@ -118,10 +119,6 @@ async function onNewMessage(msg) {
       await updateUserData(tempToken, client, channel, pool, osuId, points);
     }
     else {
-      const mentionedUsers = msg.mentions.users;
-      const contents = msg.content.split(/\s+/g); // split by one or more spaces
-      const isClientMentioned = mentionedUsers.has(client.user.id) && contents[0].includes(client.user.id);
-
       if(isClientMentioned) {
         if(contents[1] === "link") {
           if(typeof(contents[2]) !== "string") {
@@ -164,6 +161,7 @@ async function onNewMessage(msg) {
           }
 
           await addRole(client, channel, msg.author.id, process.env.VERIFIED_ROLE_ID);
+          processed = true;
         }
         else if(contents[1] === "count") {
           await channel.send("Retrieving user top counts...");
@@ -200,30 +198,14 @@ async function onNewMessage(msg) {
           }
 
           await updateUserData(tempToken, client, channel, pool, user.osuId, points);
-        }
-        else {
-          let reply = "";
-
-          if(contents[1] === "hi" || contents[1] === "hello") { // TODO: move elses and below to parent if (accept all channels)
-            reply = greet();
-          }
-          else if(contents[1].includes("right")) {
-            const val = Math.random();
-            if(val >= 0.5) {
-              reply = agree();
-            }
-            else {
-              reply = disagree();
-            }
-          }
-          else {
-            reply = notUnderstood();
-          }
-  
-          await channel.send(reply);
+          processed = true;
         }
       }
     }
+  }
+
+  if(!processed && isClientMentioned) {
+    await sendMessage(client, msg.channelId, contents);
   }
 }
 
