@@ -19,8 +19,8 @@ function createLeaderboardEmbed(data, lastUpdated) {
         lastUpdated.getDate() + "/" +
         (lastUpdated.getMonth() + 1) + "/" +
         lastUpdated.getFullYear() + ", " +
-        lastUpdated.getHours() + ":" +
-        lastUpdated.getMinutes()
+        lastUpdated.getHours().toString().padStart(2, "0") + ":" +
+        lastUpdated.getMinutes().toString().padStart(2, "0")
     });
   }
   else {
