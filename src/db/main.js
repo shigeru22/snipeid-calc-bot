@@ -1,10 +1,10 @@
-"use strict"
+"use strict";
 
 const dotenv = require("dotenv");
 const { Client } = require("pg");
-const { validateEnvironmentVariables, validateRolesConfig } = require("./validate");
-const { createTables } = require("./tables");
 const { importRoles } = require("./import");
+const { createTables } = require("./tables");
+const { validateEnvironmentVariables, validateRolesConfig } = require("./validate");
 const Config = require("../../config.json");
 
 dotenv.config();
@@ -22,7 +22,7 @@ async function main() {
 
   console.log(
     "Using " + process.env.DB_USERNAME + "@" + process.env.DB_HOST + ":" + process.env.DB_PORT +
-    ", in database named " + process.env.DB_DATABASE
+    ", in database named " + process.env.DB_DATABASE + "."
   );
 
   const db = new Client({

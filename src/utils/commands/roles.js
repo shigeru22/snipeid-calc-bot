@@ -7,7 +7,7 @@ async function addRole(client, channel, discordId, roleId) {
   }
 
   if(!(channel instanceof Discord.Channel)) {
-    console.log("[ERROR] addRole :: channel must be a Discord.channel object instance.");
+    console.log("[ERROR] addRole :: channel must be a Discord.Channel object instance.");
     process.exit(1);
   }
 

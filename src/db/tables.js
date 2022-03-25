@@ -4,7 +4,7 @@ async function createTables(db) {
   console.log("Creating tables...");
 
   if(!(db instanceof Client)) {
-    console.log("[ERROR] Invalid variable given: Not a node-postgres Client.");
+    console.log("[ERROR] createTables :: db must be a Client object instance.");
     console.log("Exiting...");
     return false;
   }

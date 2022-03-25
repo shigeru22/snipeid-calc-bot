@@ -2,13 +2,14 @@ const axios = require("axios").default;
 const { HTTPStatus, OsuUserStatus } = require("../common");
 
 const OSU_API_ENDPOINT = "https://osu.ppy.sh/api/v2";
+const OSU_TOKEN_ENDPOINT = "https://osu.ppy.sh/oauth/token";
 
 async function getAccessToken() {
   const id = parseInt(process.env.OSU_CLIENT_ID, 10);
   const secret = process.env.OSU_CLIENT_SECRET;
 
   try {
-    const response = await axios.post("https://osu.ppy.sh/oauth/token", {
+    const response = await axios.post(OSU_TOKEN_ENDPOINT, {
       client_id: id,
       client_secret: secret,
       grant_type: "client_credentials",
@@ -43,8 +44,13 @@ async function getAccessToken() {
 }
 
 async function getUserByOsuId(token, id) {
+  if(typeof(token) !== "string") {
+    console.log("[ERROR] getUserByOsuId :: token must be string.");
+    process.exit(1);
+  }
+
   if(typeof(id) !== "number") {
-    console.log("[ERROR] getUserByOsuId :: id argument passed is not number.");
+    console.log("[ERROR] getUserByOsuId :: id must be number.");
     process.exit(1);
   }
 

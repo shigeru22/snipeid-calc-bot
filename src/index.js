@@ -1,18 +1,18 @@
-"use strict"
+"use strict";
 
 const dotenv = require("dotenv");
 const Discord = require("discord.js");
 const { Pool } = require("pg");
 const { validateEnvironmentVariables } = require("./utils/env");
+const { getAccessToken } = require("./utils/api/osu");
 const { calculatePoints } = require("./utils/messages/counter");
 const { parseTopCountDescription, parseUsername, parseOsuIdFromLink } = require("./utils/parser");
-const { getAccessToken } = require("./utils/api/osu");
+const { sendMessage } = require("./utils/commands/conversations");
+const { sendPointLeaderboard } = require("./utils/commands/leaderboards");
 const { countPoints } = require("./utils/commands/points");
 const { addWysiReaction } = require("./utils/commands/reactions");
-const { updateUserData, fetchUser, fetchOsuUser, fetchOsuStats, insertUserData } = require("./utils/commands/userdata");
 const { addRole } = require("./utils/commands/roles");
-const { sendPointLeaderboard } = require("./utils/commands/leaderboards");
-const { sendMessage } = require("./utils/commands/conversations");
+const { updateUserData, fetchUser, fetchOsuUser, fetchOsuStats, insertUserData } = require("./utils/commands/userdata");
 
 dotenv.config();
 
@@ -75,7 +75,7 @@ async function onNewMessage(msg) {
   let processed = false;
 
   if(msg.channelId === process.env.LEADERBOARD_CHANNEL_ID) {
-    const channel = await client.channels.cache.get(process.env.LEADERBOARD_CHANNEL_ID);
+    const channel = client.channels.cache.get(process.env.LEADERBOARD_CHANNEL_ID);
 
     if(isClientMentioned) {
       if(contents[1] === "lb" || contents[1] === "leaderboard") {
@@ -85,7 +85,7 @@ async function onNewMessage(msg) {
     }
   }
   else if(msg.channelId === process.env.CHANNEL_ID) {
-    const channel = await client.channels.cache.get(process.env.CHANNEL_ID);
+    const channel = client.channels.cache.get(process.env.CHANNEL_ID);
 
     if(msg.author.id === BATHBOT_USER_ID) {
       const embeds = msg.embeds; // always 0

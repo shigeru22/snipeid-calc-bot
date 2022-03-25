@@ -4,8 +4,7 @@ async function importRoles(db, roles) {
   console.log("Importing roles...");
 
   if(!(db instanceof Client)) {
-    console.log("[ERROR] Invalid variable given: Not a node-postgres Client.");
-    console.log("Exiting...");
+    console.log("[ERROR] importRoles :: db must be a Client object instance.");
     return false;
   }
 
@@ -24,7 +23,7 @@ async function importRoles(db, roles) {
   try {
     await db.query(query);
 
-    console.log("Role import completed.");
+    console.log("[LOG] importRoles :: Role import completed.");
     return true;
   }
   catch (e) {
