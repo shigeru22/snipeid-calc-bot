@@ -1,16 +1,17 @@
 const axios = require("axios").default;
+const { LogSeverity, log } = require("../log");
 const { HTTPStatus, OsuStatsStatus } = require("../common");
 
 const OSUSTATS_API_ENDPOINT = "https://osustats.ppy.sh/api";
 
 async function getTopCounts(userName, maxRank) {
   if(typeof(userName) !== "string") {
-    console.log("[ERROR] getTopCounts :: userName must be string.");
+    log(LogSeverity.ERROR, "getTopCounts", "userName must be string.");
     return OsuStatsStatus.TYPE_ERROR;
   }
 
   if(typeof(maxRank) !== "number") {
-    console.log("[ERROR] getTopCounts :: maxRank must be number.");
+    log(LogSeverity.ERROR, "getTopCounts", "maxRank must be number.");
     return OsuStatsStatus.TYPE_ERROR;
   }
 
@@ -27,7 +28,7 @@ async function getTopCounts(userName, maxRank) {
     });
 
     if(response.status !== HTTPStatus.OK) {
-      console.log("[ERROR] getTopCounts :: osu!Stats returned status code " + response.status + ":\n" + response.data);
+      log(LogSeverity.ERROR, "getTopCounts", "osu!Stats returned status code " + response.status + ":\n" + response.data);
       return OsuStatsStatus.CLIENT_ERROR;
     }
 
@@ -54,10 +55,10 @@ async function getTopCounts(userName, maxRank) {
       }
     }
     else if(e instanceof Error) {
-      console.log("[ERROR] getTopCounts :: " + e.name + ": " + e.message);
+      log(LogSeverity.ERROR, "getTopCounts", e.name + ": " + e.message);
     }
     else {
-      console.log("[ERROR] getTopCounts :: Unknown error occurred.");
+      log(LogSeverity.ERROR, "getTopCounts", "Unknown error occurred.");
     }
 
     return OsuStatsStatus.CLIENT_ERROR;

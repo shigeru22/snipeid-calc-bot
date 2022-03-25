@@ -1,4 +1,5 @@
 const axios = require("axios").default;
+const { LogSeverity, log } = require("../log");
 const { HTTPStatus, OsuUserStatus } = require("../common");
 
 const OSU_API_ENDPOINT = "https://osu.ppy.sh/api/v2";
@@ -29,14 +30,15 @@ async function getAccessToken() {
   }
   catch (e) {
     if(axios.isAxiosError(e) || e instanceof Error) {
-      console.log("[ERROR] getAccessToken :: " + e.name + ": " + e.message);
+      log(LogSeverity.ERROR, "getAccessToken", e.name + ": " + e.message);
 
       if(response.status === HTTPStatus.UNAUTHORIZED) {
-        exitOnUnauthorizedError();
+        log(LogSeverity.ERROR, "getAccessToken", "Failed to authenticate client. Check OSU_CLIENT_ID and OSU_CLIENT_SECRET variables, and try again.");
+        process.exit(1);
       }
     }
     else {
-      console.log("[ERROR] getAccessToken :: Unknown error occurred.");
+      log(LogSeverity.ERROR, "getAccessToken", "Unknown error occurred.");
     }
 
     process.exit(1);
@@ -45,12 +47,12 @@ async function getAccessToken() {
 
 async function getUserByOsuId(token, id) {
   if(typeof(token) !== "string") {
-    console.log("[ERROR] getUserByOsuId :: token must be string.");
+    log(LogSeverity.ERROR, "getUserByOsuId", "token must be string.");
     process.exit(1);
   }
 
   if(typeof(id) !== "number") {
-    console.log("[ERROR] getUserByOsuId :: id must be number.");
+    log(LogSeverity.ERROR, "getUserByOsuId", "id must be number.");
     process.exit(1);
   }
 
@@ -103,20 +105,15 @@ async function getUserByOsuId(token, id) {
       }
     }
     else if(e instanceof Error) {
-      console.log("[ERROR] getUserByOsuId :: " + e.name + ": " + e.message);
+      log(LogSeverity.ERROR, "getUserByOsuId", e.name + ": " + e.message);
     }
     else {
-      console.log("[ERROR] getUserByOsuId :: Unknown error occurred.");
+      log(LogSeverity.ERROR, "getUserByOsuId", "Unknown error occurred.");
       process.exit(1);
     }
 
     return res;
   }
-}
-
-function exitOnUnauthorizedError() {
-  console.log("[ERROR] getAccessToken :: Failed to authenticate client. Check OSU_CLIENT_ID and OSU_CLIENT_SECRET variables, and try again.");
-  process.exit(1);
 }
 
 module.exports = {

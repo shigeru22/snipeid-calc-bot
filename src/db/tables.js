@@ -1,11 +1,11 @@
 const { Client } = require("pg");
+const { LogSeverity, log } = require("../utils/log");
 
 async function createTables(db) {
-  console.log("Creating tables...");
+  log(LogSeverity.LOG, "createTables", "Creating tables...");
 
   if(!(db instanceof Client)) {
-    console.log("[ERROR] createTables :: db must be a Client object instance.");
-    console.log("Exiting...");
+    log(LogSeverity.ERROR, "createTables", "db must be a Client object instance.");
     return false;
   }
 
@@ -42,15 +42,15 @@ async function createTables(db) {
       );
     `);
 
-    console.log("Table creation completed.");
+    log(LogSeverity.LOG, "createTables", "Table creation completed.");
     return true;
   }
   catch (e) {
     if(e instanceof Error) {
-      console.log("[ERROR] An error occurred while querying database: " + e.message);
+      log(LogSeverity.LOG, "createTables", "An error occurred while querying database: " + e.message);
     }
     else {
-      console.log("[ERROR] An unknown error occurred.");
+      log(LogSeverity.LOG, "createTables", "An unknown error occurred.");
     }
 
     return false;

@@ -1,14 +1,15 @@
 const Discord = require("discord.js");
+const { LogSeverity, log } = require("../log");
 const { greet, agree, disagree, notUnderstood } = require("../messages/msg");
 
 async function sendMessage(client, channelId, contents) {
   if(!(client instanceof Discord.Client)) {
-    console.log("[ERROR] sendMessage :: client must be a Discord.Client object instance.");
+    log(LogSeverity.ERROR, "sendMessage", "client must be a Discord.Client object instance.");
     process.exit(1);
   }
 
   if(typeof(channelId) !== "string") {
-    console.log("[ERROR] sendMessage :: channelId must be string in Snowflake ID format.");
+    log(LogSeverity.ERROR, "sendMessage", "channelId must be string in Snowflake ID format.");
     process.exit(1);
   }
 
@@ -35,10 +36,10 @@ async function sendMessage(client, channelId, contents) {
   }
 
   if(isUnderstood) {
-    console.log("[LOG] Chat response sent to channel: #" + channel.name);
+    log(LogSeverity.LOG, "sendMessage", "Chat response sent to channel: #" + channel.name);
   }
   else {
-    console.log("[LOG] Unknown command \"" + contents[1] + "\" response sent to channel: #" + channel.name);
+    log(LogSeverity.LOG, "sendMessage", "Unknown command \"" + contents[1] + "\" response sent to channel: #" + channel.name);
   }
   await channel.send(reply);
 }

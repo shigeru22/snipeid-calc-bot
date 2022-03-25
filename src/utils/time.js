@@ -1,6 +1,8 @@
+const { LogSeverity, log } = require("../utils/log");
+
 function deltaTimeToString(ms) {
   if(typeof(ms) !== "number") {
-    console.log("[ERROR] deltaTimeToString :: ms is not number.");
+    log(LogSeverity.ERROR, "deltaTimeToString", "deltaTimeToString :: ms is not number.");
     return 0;
   }
 

@@ -1,5 +1,6 @@
 const Discord = require("discord.js");
 const { Pool } = require("pg");
+const { LogSeverity, log } = require("../log");
 const { getUserByOsuId } = require("../api/osu");
 const { getTopCounts } = require("../api/osustats");
 const { insertOrUpdateAssignment } = require("../db/assignments");
@@ -9,32 +10,32 @@ const { deltaTimeToString } = require("../time");
 
 async function updateUserData(token, client, channel, pool, osuId, points) {
   if(typeof(token) !== "string") {
-    console.log("[ERROR] updateUserData :: token must be string.");
+    log(LogSeverity.ERROR, "updateUserData", "token must be string.");
     process.exit(1);
   }
 
   if(!(client instanceof Discord.Client)) {
-    console.log("[ERROR] updateUserData :: client must be a Discord.Client object instance.");
+    log(LogSeverity.ERROR, "updateUserData", "client must be a Discord.Client object instance.");
     process.exit(1);
   }
 
   if(!(channel instanceof Discord.Channel)) {
-    console.log("[ERROR] updateUserData :: channel must be a Discord.Channel object instance.");
+    log(LogSeverity.ERROR, "updateUserData", "channel must be a Discord.Channel object instance.");
     process.exit(1);
   }
 
   if(!(pool instanceof Pool)) {
-    console.log("[ERROR] updateUserData :: pool must be a Pool object instance.");
+    log(LogSeverity.ERROR, "updateUserData", "pool must be a Pool object instance.");
     process.exit(1);
   }
 
   if(typeof(osuId) !== "number" && typeof(osuId) !== "string") {
-    console.log("[ERROR] updateUserData :: osuId must be number or string.");
+    log(LogSeverity.ERROR, "updateUserData", "osuId must be number or string.");
     process.exit(1);
   }
 
   if(typeof(points) !== "number") {
-    console.log("[ERROR] updateUserData :: points must be number.");
+    log(LogSeverity.ERROR, "updateUserData", "points must be number.");
     process.exit(1);
   }
 
@@ -106,10 +107,10 @@ async function updateUserData(token, client, channel, pool, osuId, points) {
     }
     catch (e) {
       if(e instanceof Error) {
-        console.log("[ERROR] onNewMessage :: " + e.name + ": " + e.message + "\n" + e.stack);
+        log(LogSeverity.ERROR, "updateUserData", e.name + ": " + e.message + "\n" + e.stack);
       }
       else {
-        console.log("[ERROR] onNewMessage :: Unknown error occurred.");
+        log(LogSeverity.ERROR, "updateUserData", "Unknown error occurred.");
       }
 
       await channel.send("**Error:** Unable to assign your role. Please contact bot administrator.");
@@ -119,17 +120,17 @@ async function updateUserData(token, client, channel, pool, osuId, points) {
 
 async function fetchUser(channel, pool, discordId) {
   if(!(channel instanceof Discord.Channel)) {
-    console.log("[ERROR] fetchUser :: channel must be a Discord.Channel object instance.");
+    log(LogSeverity.ERROR, "fetchUser", "channel must be a Discord.Channel object instance.");
     process.exit(1);
   }
 
   if(!(pool instanceof Pool)) {
-    console.log("[ERROR] fetchUser :: pool must be a Pool object instance.");
+    log(LogSeverity.ERROR, "fetchUser", "pool must be a Pool object instance.");
     process.exit(1);
   }
 
   if(typeof(discordId) !== "string") {
-    console.log("[ERROR] fetchUser :: discordId must be string in Snowflake ID format.");
+    log(LogSeverity.ERROR, "fetchUser", "discordId must be string in Snowflake ID format.");
     process.exit(1);
   }
 
@@ -152,17 +153,17 @@ async function fetchUser(channel, pool, discordId) {
 
 async function fetchOsuUser(channel, token, osuId) {
   if(!(channel instanceof Discord.Channel)) {
-    console.log("[ERROR] fetchOsuUser :: channel must be a Discord.Channel object instance.");
+    log(LogSeverity.ERROR, "fetchOsuUser", "channel must be a Discord.Channel object instance.");
     process.exit(1);
   }
 
   if(typeof(token) !== "string") {
-    console.log("[ERROR] fetchOsuUser :: token must be string.");
+    log(LogSeverity.ERROR, "fetchOsuUser", "token must be string.");
     process.exit(1);
   }
 
   if(typeof(osuId) !== "number" && typeof(osuId) !== "string") {
-    console.log("[ERROR] fetchOsuUser :: osuId must be number or string.");
+    log(LogSeverity.ERROR, "fetchOsuUser", "osuId must be number or string.");
     process.exit(1);
   }
 
@@ -188,12 +189,12 @@ async function fetchOsuUser(channel, token, osuId) {
 
 async function fetchOsuStats(channel, osuUsername) {
   if(!(channel instanceof Discord.Channel)) {
-    console.log("[ERROR] fetchOsuStats :: channel must be a Discord.Channel object instance.");
+    log(LogSeverity.ERROR, "fetchOsuStats", "channel must be a Discord.Channel object instance.");
     process.exit(1);
   }
 
   if(typeof(osuUsername) !== "string") {
-    console.log("[ERROR] fetchOsuStats :: osuUsername must be string.");
+    log(LogSeverity.ERROR, "fetchOsuStats", "osuUsername must be string.");
     process.exit(1);
   }
   
@@ -238,27 +239,27 @@ async function fetchOsuStats(channel, osuUsername) {
 
 async function insertUserData(channel, pool, discordId, osuId, osuUsername) {
   if(!(channel instanceof Discord.Channel)) {
-    console.log("[ERROR] insertUserData :: channel must be a Discord.Channel object instance.");
+    log(LogSeverity.ERROR, "insertUserData", "channel must be a Discord.Channel object instance.");
     process.exit(1);
   }
 
   if(!(pool instanceof Pool)) {
-    console.log("[ERROR] insertUserData :: pool must be a Pool object instance.");
+    log(LogSeverity.ERROR, "insertUserData", "pool must be a Pool object instance.");
     process.exit(1);
   }
 
   if(typeof(discordId) !== "string") {
-    console.log("[ERROR] insertUserData :: discordId must be string.");
+    log(LogSeverity.ERROR, "insertUserData", "discordId must be string.");
     process.exit(1);
   }
 
   if(typeof(osuId) !== "number" && typeof(osuId) !== "string") {
-    console.log("[ERROR] insertUserData :: osuId must be number or string.");
+    log(LogSeverity.ERROR, "insertUserData", "osuId must be number or string.");
     process.exit(1);
   }
 
   if(typeof(osuUsername) !== "string") {
-    console.log("[ERROR] insertUserData :: osuUsername must be string.");
+    log(LogSeverity.ERROR, "insertUserData", "osuUsername must be string.");
     process.exit(1);
   }
 

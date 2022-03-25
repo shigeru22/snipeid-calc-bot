@@ -1,20 +1,21 @@
 const Discord = require("discord.js");
-const { calculatePoints, counter } = require("../messages/counter");
+const { LogSeverity, log } = require("../log");
+const { counter } = require("../messages/counter");
 
 async function countPoints(channel, username, topCounts) {
   if(!(channel instanceof Discord.Channel)) {
-    console.log("[ERROR] countPoints :: channel must be a Discord.Channel object instance.");
+    log(LogSeverity.ERROR, "countPoints", "channel must be a Discord.Channel object instance.");
     process.exit(1);
   }
 
   if(typeof(username) !== "string") {
-    console.log("[ERROR] countPoints :: username must be string.");
+    log(LogSeverity.ERROR, "countPoints", "username must be string.");
     process.exit(1);
   }
 
   // TODO: validate topCounts array
 
-  console.log("[LOG] countPoints :: Calculating points for username: " + username);
+  log(LogSeverity.LOG, "countPoints", "Calculating points for username: " + username);
   const draft = counter(
     topCounts[0],
     topCounts[1],

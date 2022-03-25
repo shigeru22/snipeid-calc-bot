@@ -1,10 +1,11 @@
 const { Client } = require("pg");
+const { LogSeverity, log } = require("../utils/log");
 
 async function importRoles(db, roles) {
-  console.log("Importing roles...");
+  log(LogSeverity.LOG, "importRoles", "Importing roles...");
 
   if(!(db instanceof Client)) {
-    console.log("[ERROR] importRoles :: db must be a Client object instance.");
+    log(LogSeverity.LOG, "importRoles", "db must be a Client object instance.");
     return false;
   }
 
@@ -23,15 +24,15 @@ async function importRoles(db, roles) {
   try {
     await db.query(query);
 
-    console.log("[LOG] importRoles :: Role import completed.");
+    log(LogSeverity.LOG, "importRoles", "Role import completed.");
     return true;
   }
   catch (e) {
     if(e instanceof Error) {
-      console.log("[ERROR] An error occurred while querying database: " + e.message);
+      log(LogSeverity.ERROR, "importRoles", "An error occurred while querying database: " + e.message);
     }
     else {
-      console.log("[ERROR] An unknown error occurred.");
+      log(LogSeverity.ERROR, "importRoles", "An unknown error occurred.");
     }
 
     return false;

@@ -1,24 +1,25 @@
 const { Pool } = require("pg");
+const { LogSeverity, log } = require("../log");
 const { DatabaseErrors, AssignmentType, AssignmentSort, isSortEnumAvailable } = require("../common");
 
 async function getAllAssignments(pool, sort, desc) {
   if(!(pool instanceof Pool)) {
-    console.log("[ERROR] getAllAssignments :: pool must be a Pool object instance.");
+    log(LogSeverity.ERROR, "getAllAssignments", "pool must be a Pool object instance.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
   if(typeof(sort) !== "number") {
-    console.log("[ERROR] getAllAssignments :: userId must be number.");
+    log(LogSeverity.ERROR, "getAllAssignments", "userId must be number.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
   if(typeof(desc) !== "boolean") {
-    console.log("[ERROR] getAllAssignments :: desc must be boolean.");
+    log(LogSeverity.ERROR, "getAllAssignments", "desc must be boolean.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
   if(!isSortEnumAvailable(sort)) {
-    console.log("[ERROR] getAllAssignments :: sort value is not available in AssignmentSort enum.");
+    log(LogSeverity.ERROR, "getAllAssignments", "sort value is not available in AssignmentSort enum.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
@@ -62,15 +63,15 @@ async function getAllAssignments(pool, sort, desc) {
   catch (e) {
     if(e instanceof Error) {
       if(e.code === "ECONNREFUSED") {
-        console.log("[ERROR] getAllAssignments :: Database connection failed.");
+        log(LogSeverity.ERROR, "getAllAssignments", "Database connection failed.");
         return DatabaseErrors.CONNECTION_ERROR;
       }
       else {
-        console.log("[ERROR] getAllAssignments :: An error occurred while querying assignment: " + e.message);
+        log(LogSeverity.ERROR, "getAllAssignments", "An error occurred while querying assignment: " + e.message);
       }
     }
     else {
-      console.log("[ERROR] getAllAssignments :: Unknown error occurred.");
+      log(LogSeverity.ERROR, "getAllAssignments", "Unknown error occurred.");
     }
 
     return DatabaseErrors.CLIENT_ERROR;
@@ -79,12 +80,12 @@ async function getAllAssignments(pool, sort, desc) {
 
 async function getAssignmentByOsuId(pool, osuId) {
   if(!(pool instanceof Pool)) {
-    console.log("[ERROR] getAssignmentByOsuId :: pool must be a Pool object instance.");
+    log(LogSeverity.ERROR, "getAssignmentByOsuId", "pool must be a Pool object instance.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
   if(typeof(userId) !== "number") {
-    console.log("[ERROR] getAssignmentByOsuId :: userId must be number.");
+    log(LogSeverity.ERROR, "getAssignmentByOsuId", "userId must be number.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
@@ -124,15 +125,15 @@ async function getAssignmentByOsuId(pool, osuId) {
   catch (e) {
     if(e instanceof Error) {
       if(e.code === "ECONNREFUSED") {
-        console.log("[ERROR] getAssignmentByOsuId :: Database connection failed.");
+        log(LogSeverity.ERROR, "getAssignmentByOsuId", "Database connection failed.");
         return DatabaseErrors.CONNECTION_ERROR;
       }
       else {
-        console.log("[ERROR] getAssignmentByOsuId :: An error occurred while querying assignment: " + e.message);
+        log(LogSeverity.ERROR, "getAssignmentByOsuId", "An error occurred while querying assignment: " + e.message);
       }
     }
     else {
-      console.log("[ERROR] getAssignmentByOsuId :: Unknown error occurred.");
+      log(LogSeverity.ERROR, "getAssignmentByOsuId", "Unknown error occurred.");
     }
 
     return DatabaseErrors.CLIENT_ERROR;
@@ -141,7 +142,7 @@ async function getAssignmentByOsuId(pool, osuId) {
 
 async function getLastAssignmentUpdate(pool) {
   if(!(pool instanceof Pool)) {
-    console.log("[ERROR] getLastAssignmentUpdate :: pool must be a Pool object instance.");
+    log(LogSeverity.ERROR, "getLastAssignmentUpdate", "pool must be a Pool object instance.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
@@ -168,15 +169,15 @@ async function getLastAssignmentUpdate(pool) {
   catch (e) {
     if(e instanceof Error) {
       if(e.code === "ECONNREFUSED") {
-        console.log("[ERROR] getLastAssignmentUpdate :: Database connection failed.");
+        log(LogSeverity.ERROR, "getLastAssignmentUpdate", "Database connection failed.");
         return DatabaseErrors.CONNECTION_ERROR;
       }
       else {
-        console.log("[ERROR] getLastAssignmentUpdate :: An error occurred while querying assignment: " + e.message);
+        log(LogSeverity.ERROR, "getLastAssignmentUpdate", "An error occurred while querying assignment: " + e.message);
       }
     }
     else {
-      console.log("[ERROR] getLastAssignmentUpdate :: Unknown error occurred.");
+      log(LogSeverity.ERROR, "getLastAssignmentUpdate", "Unknown error occurred.");
     }
 
     return DatabaseErrors.CLIENT_ERROR;
@@ -185,12 +186,12 @@ async function getLastAssignmentUpdate(pool) {
 
 async function insertOrUpdateAssignment(pool, osuId, points, userName) {
   if(!(pool instanceof Pool)) {
-    console.log("[ERROR] insertOrUpdateAssignment :: pool must be a Pool object instance.");
+    log(LogSeverity.ERROR, "insertOrUpdateAssignment", "pool must be a Pool object instance.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
   if(typeof(osuId) !== "number") {
-    console.log("[ERROR] insertOrUpdateAssignment :: osuId must be number.");
+    log(LogSeverity.ERROR, "insertOrUpdateAssignment", "osuId must be number.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
@@ -266,7 +267,7 @@ async function insertOrUpdateAssignment(pool, osuId, points, userName) {
       }
       else {
         client.release(); // should not fall here, but whatever
-        console.log("[ERROR] insertOrUpdateAssignment :: Invalid osuId returned from the database.");
+        log(LogSeverity.ERROR, "insertOrUpdateAssignment", "Invalid osuId returned from the database.");
         return DatabaseErrors.CLIENT_ERROR;
       }
     }
@@ -279,7 +280,7 @@ async function insertOrUpdateAssignment(pool, osuId, points, userName) {
 
       if(selectUserResult.rows.length === 0) {
         client.release();
-        console.log("[LOG] User not found. Won't update any data.");
+        log(LogSeverity.LOG, "insertOrUpdateAssignment", "User not found. Skipping assignment data update.");
         return DatabaseErrors.USER_NOT_FOUND;
       }
 
@@ -292,13 +293,13 @@ async function insertOrUpdateAssignment(pool, osuId, points, userName) {
     const rolesResult = await client.query(selectRoleQuery, selectRoleValues);
     if(rolesResult.rows.length === 0) {
       client.release();
-      console.log("[ERROR] insertOrUpdateAssignment :: Role table is empty.");
+      log(LogSeverity.ERROR, "insertOrUpdateAssignment", "Role table is empty.");
       return DatabaseErrors.ROLES_EMPTY; // role data empty
     }
     
     if(rolesResult.rows[0].minPoints < points) {
       client.release();
-      console.log("[ERROR] insertOrUpdateAssignment :: Invalid role returned due to wrong minimum points.");
+      log(LogSeverity.ERROR, "insertOrUpdateAssignment", "Invalid role returned due to wrong minimum points.");
       return DatabaseErrors.CLIENT_ERROR;
     }
 
@@ -306,10 +307,10 @@ async function insertOrUpdateAssignment(pool, osuId, points, userName) {
     await client.query(query, values);
 
     if(insert) {
-      console.log("[LOG] insertOrUpdateAssignment :: assignment: Inserted 1 row.");
+      log(LogSeverity.LOG, "insertOrUpdateAssignment", "assignment: Inserted 1 row.");
     }
     else {
-      console.log("[LOG] insertOrUpdateAssignment :: assignment: Updated 1 row.");
+      log(LogSeverity.LOG, "insertOrUpdateAssignment", "assignment: Updated 1 row.");
     }
 
     client.release();
@@ -335,15 +336,15 @@ async function insertOrUpdateAssignment(pool, osuId, points, userName) {
   catch (e) {
     if(e instanceof Error) {
       if(e.code === "ECONNREFUSED") {
-        console.log("[ERROR] insertOrUpdateAssignment :: Database connection failed.");
+        log(LogSeverity.ERROR, "insertOrUpdateAssignment", "Database connection failed.");
         return DatabaseErrors.CONNECTION_ERROR;
       }
       else {
-        console.log("[ERROR] insertOrUpdateAssignment :: An error occurred while " + (insert ? "inserting" : "updating") + " assignment: " + e.message + "\n" + e.stack);
+        log(LogSeverity.ERROR, "insertOrUpdateAssignment", "An error occurred while " + (insert ? "inserting" : "updating") + " assignment: " + e.message + "\n" + e.stack);
       }
     }
     else {
-      console.log("[ERROR] insertOrUpdateAssignment :: Unknown error occurred.");
+      log(LogSeverity.ERROR, "insertOrUpdateAssignment", "Unknown error occurred.");
     }
 
     return DatabaseErrors.CLIENT_ERROR;

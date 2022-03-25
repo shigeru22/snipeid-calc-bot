@@ -1,14 +1,15 @@
 const { Pool } = require("pg");
+const { LogSeverity, log } = require("../log");
 const { DatabaseErrors } = require("../common");
 
 async function getDiscordUserByOsuId(pool, osuId) {
   if(!(pool instanceof Pool)) {
-    console.log("[ERROR] getDiscordUserByOsuId :: pool must be a Pool object instance.");
+    log(LogSeverity.ERROR, "getDiscordUserByOsuId", "pool must be a Pool object instance.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
   if(typeof(osuId) !== "number") {
-    console.log("[ERROR] getDiscordUserByOsuId :: osuId must be number.");
+    log(LogSeverity.ERROR, "getDiscordUserByOsuId", "osuId must be number.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
@@ -26,7 +27,7 @@ async function getDiscordUserByOsuId(pool, osuId) {
     }
 
     if(discordUserResult.rows[0].osuid !== osuId) {
-      console.log("[ERROR] getDiscordUserByOsuId :: Invalid row returned.");
+      log(LogSeverity.ERROR, "getDiscordUserByOsuId", "Invalid row returned.");
       return DatabaseErrors.CLIENT_ERROR;
     }
 
@@ -39,15 +40,15 @@ async function getDiscordUserByOsuId(pool, osuId) {
   catch (e) {
     if(e instanceof Error) {
       if(e.code === "ECONNREFUSED") {
-        console.log("[ERROR] getDiscordUserByOsuId :: Database connection failed.");
+        log(LogSeverity.ERROR, "getDiscordUserByOsuId", "Database connection failed.");
         return DatabaseErrors.CONNECTION_ERROR;
       }
       else {
-        console.log("[ERROR] getDiscordUserByOsuId :: An error occurred while inserting user: " + e.message);
+        log(LogSeverity.ERROR, "getDiscordUserByOsuId", "An error occurred while inserting user: " + e.message);
       }
     }
     else {
-      console.log("[ERROR] getDiscordUserByOsuId :: Unknown error occurred.");
+      log(LogSeverity.ERROR, "getDiscordUserByOsuId", "Unknown error occurred.");
     }
 
     return DatabaseErrors.CLIENT_ERROR;
@@ -56,12 +57,12 @@ async function getDiscordUserByOsuId(pool, osuId) {
 
 async function getDiscordUserByDiscordId(pool, discordId) {
   if(!(pool instanceof Pool)) {
-    console.log("[ERROR] getDiscordUserByDiscordId :: pool must be a Pool object instance.");
+    log(LogSeverity.ERROR, "getDiscordUserByDiscordId", "pool must be a Pool object instance.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
   if(typeof(discordId) !== "string") {
-    console.log("[ERROR] getDiscordUserByDiscordId :: discordId must be string.");
+    log(LogSeverity.ERROR, "getDiscordUserByDiscordId", "discordId must be string.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
@@ -88,15 +89,15 @@ async function getDiscordUserByDiscordId(pool, discordId) {
   catch (e) {
     if(e instanceof Error) {
       if(e.code === "ECONNREFUSED") {
-        console.log("[ERROR] getDiscordUserByDiscordId :: Database connection failed.");
+        log(LogSeverity.ERROR, "getDiscordUserByDiscordId", "Database connection failed.");
         return DatabaseErrors.CONNECTION_ERROR;
       }
       else {
-        console.log("[ERROR] getDiscordUserByDiscordId :: An error occurred while inserting user: " + e.message);
+        log(LogSeverity.ERROR, "getDiscordUserByDiscordId", "An error occurred while inserting user: " + e.message);
       }
     }
     else {
-      console.log("[ERROR] getDiscordUserByDiscordId :: Unknown error occurred.");
+      log(LogSeverity.ERROR, "getDiscordUserByDiscordId", "Unknown error occurred.");
     }
 
     return DatabaseErrors.CLIENT_ERROR;
@@ -105,17 +106,17 @@ async function getDiscordUserByDiscordId(pool, discordId) {
 
 async function insertUser(pool, discordId, osuId, userName) {
   if(!(pool instanceof Pool)) {
-    console.log("[ERROR] insertUser :: pool must be a Pool object instance.");
+    log(LogSeverity.ERROR, "insertUser", "pool must be a Pool object instance.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
   if(typeof(discordId) !== "string") {
-    console.log("[ERROR] insertUser :: discordId must be string.");
+    log(LogSeverity.ERROR, "insertUser", "discordId must be string.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
   if(typeof(osuId) !== "number") {
-    console.log("[ERROR] insertUser :: osuId must be number.");
+    log(LogSeverity.ERROR, "insertUser", "osuId must be number.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
@@ -151,21 +152,21 @@ async function insertUser(pool, discordId, osuId, userName) {
 
     client.release();
 
-    console.log("[LOG] insertUser :: users: Inserted 1 row.");
+    log(LogSeverity.LOG, "insertUser", "users: Inserted 1 row.");
     return DatabaseErrors.OK;
   }
   catch (e) {
     if(e instanceof Error) {
       if(e.code === "ECONNREFUSED") {
-        console.log("[ERROR] insertUser :: Database connection failed.");
+        log(LogSeverity.ERROR, "insertUser", "Database connection failed.");
         return DatabaseErrors.CONNECTION_ERROR;
       }
       else {
-        console.log("[ERROR] insertUser :: An error occurred while inserting user: " + e.message);
+        log(LogSeverity.ERROR, "insertUser", "An error occurred while inserting user: " + e.message);
       }
     }
     else {
-      console.log("[ERROR] insertUser :: Unknown error occurred.");
+      log(LogSeverity.ERROR, "insertUser", "Unknown error occurred.");
     }
 
     return DatabaseErrors.CLIENT_ERROR;
@@ -174,12 +175,12 @@ async function insertUser(pool, discordId, osuId, userName) {
 
 async function updateUser(pool, osuId, userName) { // only username should be updateable, even that changes are from osu! API
   if(!(pool instanceof Pool)) {
-    console.log("[ERROR] updateUser :: pool must be a Pool object instance.");
+    log(LogSeverity.ERROR, "updateUser", "pool must be a Pool object instance.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
   if(typeof(osuId) !== "number") {
-    console.log("[ERROR] updateUser :: osuId must be number.");
+    log(LogSeverity.ERROR, "updateUser", "osuId must be number.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
@@ -188,21 +189,21 @@ async function updateUser(pool, osuId, userName) { // only username should be up
     await client.query("UPDATE users SET username=$1 WHERE osuid=$2", [ userName, osuId ]);
 
     client.release();
-    console.log("[LOG] updateUser :: users: Updated 1 row.");
+    log(LogSeverity.ERROR, "updateUser", "users: Updated 1 row.");
     return DatabaseErrors.OK;
   }
   catch (e) {
     if(e instanceof Error) {
       if(e.code === "ECONNREFUSED") {
-        console.log("[ERROR] updateUser :: Database connection failed.");
+        log(LogSeverity.ERROR, "updateUser", "Database connection failed.");
         return DatabaseErrors.CONNECTION_ERROR;
       }
       else {
-        console.log("[ERROR] updateUser :: An error occurred while " + (insert ? "inserting" : "updating") + " assignment: " + e.message + "\n" + e.stack);
+        log(LogSeverity.ERROR, "updateUser", "An error occurred while updating user: " + e.message + "\n" + e.stack);
       }
     }
     else {
-      console.log("[ERROR] updateUser :: Unknown error occurred.");
+      log(LogSeverity.ERROR, "updateUser", "Unknown error occurred.");
     }
 
     return DatabaseErrors.CLIENT_ERROR;

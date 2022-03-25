@@ -1,20 +1,21 @@
 const Discord = require("discord.js");
+const { LogSeverity, log } = require("../log");
 
 async function addWysiReaction(client, message, topCounts, points) {
   if(!(client instanceof Discord.Client)) {
-    console.log("[ERROR] addWysiReaction :: client must be a Discord.Client object instance.");
+    log(LogSeverity.ERROR, "addWysiReaction", "client must be a Discord.Client object instance.");
     process.exit(1);
   }
 
   if(!(message instanceof Discord.Message)) {
-    console.log("[ERROR] addWysiReaction :: message must be string.");
+    log(LogSeverity.ERROR, "addWysiReaction", "message must be string.");
     process.exit(1);
   }
 
   // TODO: validate topCounts array
 
   if(typeof(points) !== "number") {
-    console.log("[ERROR] addWysiReaction :: points must be number.");
+    log(LogSeverity.ERROR, "addWysiReaction", "points must be number.");
     process.exit(1);
   }
 
@@ -31,6 +32,8 @@ async function addWysiReaction(client, message, topCounts, points) {
   }
 
   if(wysi) {
+    log(LogSeverity.LOG, "addWysiReaction", "727 element detected. Adding reaction to message.");
+
     const emoji = client.emojis.cache.get(process.env.OSUHOW_EMOJI_ID);
     await message.react(emoji);
   }

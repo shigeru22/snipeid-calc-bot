@@ -2,6 +2,7 @@
 
 const dotenv = require("dotenv");
 const { Client } = require("pg");
+const { LogSeverity, log } = require("../utils/log");
 const { importRoles } = require("./import");
 const { createTables } = require("./tables");
 const { validateEnvironmentVariables, validateRolesConfig } = require("./validate");
@@ -20,7 +21,7 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(
+  log(LogSeverity.LOG, "main",
     "Using " + process.env.DB_USERNAME + "@" + process.env.DB_HOST + ":" + process.env.DB_PORT +
     ", in database named " + process.env.DB_DATABASE + "."
   );
@@ -33,7 +34,7 @@ async function main() {
     database: process.env.DB_DATABASE
   });
 
-  console.log("Connecting to database...");
+  log(LogSeverity.LOG, "main", "Connecting to database...");
   await db.connect();
 
   if(!(await createTables(db))) {
@@ -47,7 +48,7 @@ async function main() {
   }
 
   await db.end();
-  console.log("Data import finished successfully.");
+  log(LogSeverity.LOG, "main", "Data import finished successfully.");
 }
 
 main();

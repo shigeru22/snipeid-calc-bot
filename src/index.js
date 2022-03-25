@@ -4,6 +4,7 @@ const dotenv = require("dotenv");
 const Discord = require("discord.js");
 const { Pool } = require("pg");
 const { validateEnvironmentVariables } = require("./utils/env");
+const { LogSeverity, log } = require("./utils/log");
 const { getAccessToken } = require("./utils/api/osu");
 const { calculatePoints } = require("./utils/messages/counter");
 const { parseTopCountDescription, parseUsername, parseOsuIdFromLink } = require("./utils/parser");
@@ -34,11 +35,11 @@ let expired = new Date(0);
 async function getToken() {
   const now = new Date();
   if(now.getTime() >= expired.getTime()) {
-    console.log("[LOG] Access token expired. Requesting new access token...");
+    log(LogSeverity.LOG, "getToken", "Access token expired. Requesting new access token...");
     const response = await getAccessToken(process.env.OSU_CLIENT_ID, process.env.OSU_CLIENT_SECRET);
 
     if(Object.keys(response).length === 0) {
-      console.log("[LOG] Unable to request access token. osu! site might be down?");
+      log(LogSeverity.WARN, "getToken", "Unable to request access token. osu! site might be down?");
       return 0;
     }
     else {
@@ -54,11 +55,11 @@ client.on("ready", async () => await onStartup());
 client.on("messageCreate", async (msg) => await onNewMessage(msg));
 
 async function onStartup() {
-  console.log("[LOG] Requesting access token...");
+  log(LogSeverity.LOG, "onStartup", "Requesting access token...");
   const response = await getAccessToken(process.env.OSU_CLIENT_ID, process.env.OSU_CLIENT_SECRET);
   
   if(Object.keys(response).length === 0) {
-    console.log("[LOG] Unable to request access token. osu! API might be down?");
+    log(LogSeverity.WARN, "onStartup", "Unable to request access token. osu! API might be down?");
   }
   else {
     token = response.token;
@@ -66,7 +67,7 @@ async function onStartup() {
   }
 
   client.user.setActivity("Bathbot everyday", { type: "WATCHING" });
-  console.log("[LOG] " + process.env.BOT_NAME + " is now running.");
+  log(LogSeverity.LOG, "onStartup", process.env.BOT_NAME + " is now running.");
 }
 
 async function onNewMessage(msg) {
@@ -156,7 +157,8 @@ async function onNewMessage(msg) {
           }
 
           if(typeof(process.env.VERIFIED_ROLE_ID) !== "string" || process.env.VERIFIED_ROLE_ID === "") {
-            console.log("[LOG] VERIFIED_ROLE_ID not set. Role granting skipped.");
+            log(LogSeverity.LOG, "onNewMessage", "VERIFIED_ROLE_ID not set. Role granting skipped.");
+            processed = true;
             return;
           }
 

@@ -1,9 +1,10 @@
 const { Pool } = require("pg");
+const { LogSeverity, log } = require("../log");
 const { DatabaseErrors } = require("../common");
 
 async function getRolesList(pool) {
   if(!(pool instanceof Pool)) {
-    console.log("[ERROR] getRolesList :: pool must be a Pool object instance.");
+    log(LogSeverity.ERROR, "getRolesList", "pool must be a Pool object instance.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
@@ -23,15 +24,15 @@ async function getRolesList(pool) {
   catch (e) {
     if(e instanceof Error) {
       if(e.code === "ECONNREFUSED") {
-        console.log("[ERROR] getRolesList :: Database connection failed.");
+        log(LogSeverity.ERROR, "getRolesList", "Database connection failed.");
         return DatabaseErrors.CONNECTION_ERROR;
       }
       else {
-        console.log("[ERROR] getRolesList :: An error occurred while querying roles: " + e.message);
+        log(LogSeverity.ERROR, "getRolesList", "An error occurred while querying roles: " + e.message);
       }
     }
     else {
-      console.log("[ERROR] getRolesList :: Unknown error occurred.");
+      log(LogSeverity.ERROR, "getRolesList", "Unknown error occurred.");
     }
 
     return DatabaseErrors.CLIENT_ERROR;
