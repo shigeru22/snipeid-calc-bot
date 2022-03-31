@@ -1,10 +1,10 @@
-const { Pool } = require("pg");
+const { Client } = require("pg");
 const { LogSeverity, log } = require("../log");
 const { DatabaseErrors } = require("../common");
 
-async function getDiscordUserByOsuId(pool, osuId) {
-  if(!(pool instanceof Pool)) {
-    log(LogSeverity.ERROR, "getDiscordUserByOsuId", "pool must be a Pool object instance.");
+async function getDiscordUserByOsuId(db, osuId) {
+  if(!(db instanceof Client)) {
+    log(LogSeverity.ERROR, "getDiscordUserByOsuId", "db must be a Client object instance.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
@@ -17,10 +17,7 @@ async function getDiscordUserByOsuId(pool, osuId) {
   const selectValues = [ osuId ];
 
   try {
-    const client = await pool.connect();
-
-    const discordUserResult = await client.query(selectQuery, selectValues);
-    client.release();
+    const discordUserResult = await db.query(selectQuery, selectValues);
 
     if(typeof(discordUserResult.rows[0]) === "undefined")  {
       return DatabaseErrors.USER_NOT_FOUND;
@@ -55,9 +52,9 @@ async function getDiscordUserByOsuId(pool, osuId) {
   }
 }
 
-async function getDiscordUserByDiscordId(pool, discordId) {
-  if(!(pool instanceof Pool)) {
-    log(LogSeverity.ERROR, "getDiscordUserByDiscordId", "pool must be a Pool object instance.");
+async function getDiscordUserByDiscordId(db, discordId) {
+  if(!(db instanceof Client)) {
+    log(LogSeverity.ERROR, "getDiscordUserByDiscordId", "db must be a Client object instance.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
@@ -70,15 +67,10 @@ async function getDiscordUserByDiscordId(pool, discordId) {
   const selectValues = [ discordId ];
 
   try {
-    const client = await pool.connect();
-
-    const result = await client.query(selectQuery, selectValues);
+    const result = await db.query(selectQuery, selectValues);
     if(typeof(result.rows[0]) === "undefined") {
-      client.release();
       return DatabaseErrors.USER_NOT_FOUND;
     }
-
-    client.release();
 
     return {
       userId: result.rows[0].userid,
@@ -104,9 +96,9 @@ async function getDiscordUserByDiscordId(pool, discordId) {
   }
 }
 
-async function insertUser(pool, discordId, osuId, userName) {
-  if(!(pool instanceof Pool)) {
-    log(LogSeverity.ERROR, "insertUser", "pool must be a Pool object instance.");
+async function insertUser(db, discordId, osuId, userName) {
+  if(!(db instanceof Client)) {
+    log(LogSeverity.ERROR, "insertUser", "db must be a Client object instance.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
@@ -130,27 +122,21 @@ async function insertUser(pool, discordId, osuId, userName) {
   const insertValues = [ discordId, osuId, userName ];
 
   try {  
-    const client = await pool.connect();
-
-    const discordIdResult = await client.query(selectDiscordIdQuery, selectDiscordIdValues);
+    const discordIdResult = await db.query(selectDiscordIdQuery, selectDiscordIdValues);
     if(typeof(discordIdResult.rows[0]) !== "undefined") {
       if(discordIdResult.rows[0].discordid === discordId) {
-        client.release();
         return DatabaseErrors.DUPLICATED_DISCORD_ID;
       }
     }
     
-    const osuIdResult = await client.query(selectOsuIdQuery, selectOsuIdValues);
+    const osuIdResult = await db.query(selectOsuIdQuery, selectOsuIdValues);
     if(typeof(osuIdResult.rows[0]) !== "undefined") {
       if(osuIdResult.rows[0].osuid === osuId) {
-        client.release();
         return DatabaseErrors.DUPLICATED_OSU_ID;
       }
     }
 
-    await client.query(insertQuery, insertValues);
-
-    client.release();
+    await db.query(insertQuery, insertValues);
 
     log(LogSeverity.LOG, "insertUser", "users: Inserted 1 row.");
     return DatabaseErrors.OK;
@@ -173,9 +159,9 @@ async function insertUser(pool, discordId, osuId, userName) {
   }
 }
 
-async function updateUser(pool, osuId, userName) { // only username should be updateable, even that changes are from osu! API
-  if(!(pool instanceof Pool)) {
-    log(LogSeverity.ERROR, "updateUser", "pool must be a Pool object instance.");
+async function updateUser(db, osuId, userName) { // only username should be updateable, even that changes are from osu! API
+  if(!(db instanceof Client)) {
+    log(LogSeverity.ERROR, "updateUser", "db must be a Client object instance.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
@@ -185,10 +171,8 @@ async function updateUser(pool, osuId, userName) { // only username should be up
   }
 
   try {
-    const client = await pool.connect();
-    await client.query("UPDATE users SET username=$1 WHERE osuid=$2", [ userName, osuId ]);
+    await db.query("UPDATE users SET username=$1 WHERE osuid=$2", [ userName, osuId ]);
 
-    client.release();
     log(LogSeverity.ERROR, "updateUser", "users: Updated 1 row.");
     return DatabaseErrors.OK;
   }

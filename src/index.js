@@ -2,7 +2,7 @@
 
 const dotenv = require("dotenv");
 const Discord = require("discord.js");
-const { Pool } = require("pg");
+const { Client } = require("pg");
 const { validateEnvironmentVariables } = require("./utils/env");
 const { LogSeverity, log } = require("./utils/log");
 const { getAccessToken } = require("./utils/api/osu");
@@ -17,7 +17,7 @@ const { updateUserData, fetchUser, fetchOsuUser, fetchOsuStats, insertUserData }
 
 dotenv.config();
 
-const pool = new Pool({
+const db = new Client({
   host: process.env.DB_HOST,
   port: parseInt(process.env.DB_PORT, 10),
   user: process.env.DB_USERNAME,
@@ -54,6 +54,19 @@ async function getToken() {
   return token;
 }
 
+if (process.platform === "win32") {
+  var rl = require("readline").createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
+  rl.on("SIGINT", function () {
+    process.emit("SIGINT");
+  });
+}
+
+process.on("SIGINT", async () => await onExit());
+
 client.on("ready", async () => await onStartup());
 client.on("messageCreate", async (msg) => await onNewMessage(msg));
 
@@ -69,6 +82,9 @@ async function onStartup() {
     expired = response.expire;
   }
 
+  log(LogSeverity.LOG, "onStartup", "Connecting to database...");
+  await db.connect();
+
   client.user.setActivity("Bathbot everyday", { type: "WATCHING" });
   log(LogSeverity.LOG, "onStartup", process.env.BOT_NAME + " is now running.");
 }
@@ -83,7 +99,7 @@ async function onNewMessage(msg) {
 
     if(isClientMentioned) {
       if(contents[1] === "lb" || contents[1] === "leaderboard") {
-        await sendPointLeaderboard(channel, pool);
+        await sendPointLeaderboard(channel, db);
         processed = true;
       }
     }
@@ -120,14 +136,14 @@ async function onNewMessage(msg) {
         return;
       }
 
-      await updateUserData(tempToken, client, channel, pool, osuId, points);
+      await updateUserData(tempToken, client, channel, db, osuId, points);
     }
     else {
       if(isClientMentioned) {
         if(contents[1] === "count") {
           await channel.send("Retrieving user top counts...");
 
-          const user = await fetchUser(channel, pool, msg.author.id);
+          const user = await fetchUser(channel, db, msg.author.id);
           if(!user) {
             return;
           }
@@ -158,7 +174,7 @@ async function onNewMessage(msg) {
             return;
           }
 
-          await updateUserData(tempToken, client, channel, pool, user.osuId, points);
+          await updateUserData(tempToken, client, channel, db, user.osuId, points);
           processed = true;
         }
       }
@@ -202,7 +218,7 @@ async function onNewMessage(msg) {
         return;
       }
 
-      const result = await insertUserData(channel, pool, msg.author.id, osuId, osuUser.username);
+      const result = await insertUserData(channel, db, msg.author.id, osuId, osuUser.username);
       if(!result) {
         return;
       }
@@ -221,6 +237,17 @@ async function onNewMessage(msg) {
   if(!processed && isClientMentioned) {
     await sendMessage(client, msg.channelId, contents);
   }
+}
+
+async function onExit() {
+  log(LogSeverity.LOG, "onExit", "Exit signal received. Cleaning up process...");
+
+  client.destroy();
+  await db.end();
+
+  log(LogSeverity.LOG, "onExit", "Cleanup success. Exiting...");
+
+  process.exit(0);
 }
 
 if(!validateEnvironmentVariables()) {

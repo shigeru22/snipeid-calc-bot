@@ -1,5 +1,5 @@
 const Discord = require("discord.js");
-const { Pool } = require("pg");
+const { Client } = require("pg");
 const { LogSeverity, log } = require("../log");
 const { getUserByOsuId } = require("../api/osu");
 const { getTopCounts } = require("../api/osustats");
@@ -8,7 +8,7 @@ const { getDiscordUserByDiscordId, insertUser } = require("../db/users");
 const { DatabaseErrors, AssignmentType, OsuUserStatus, OsuStatsStatus } = require("../common");
 const { deltaTimeToString } = require("../time");
 
-async function updateUserData(token, client, channel, pool, osuId, points) {
+async function updateUserData(token, client, channel, db, osuId, points) {
   if(typeof(token) !== "string") {
     log(LogSeverity.ERROR, "updateUserData", "token must be string.");
     process.exit(1);
@@ -24,8 +24,8 @@ async function updateUserData(token, client, channel, pool, osuId, points) {
     process.exit(1);
   }
 
-  if(!(pool instanceof Pool)) {
-    log(LogSeverity.ERROR, "updateUserData", "pool must be a Pool object instance.");
+  if(!(db instanceof Client)) {
+    log(LogSeverity.ERROR, "updateUserData", "db must be a Client object instance.");
     process.exit(1);
   }
 
@@ -44,7 +44,7 @@ async function updateUserData(token, client, channel, pool, osuId, points) {
     typeof(osuId) === "number" ? osuId : parseInt(osuId, 10)
   ); // TODO: handle deleted user
 
-  const assignmentResult = await insertOrUpdateAssignment(pool, typeof(osuId) === "number" ? osuId : parseInt(osuId, 10), points, response.username);
+  const assignmentResult = await insertOrUpdateAssignment(db, typeof(osuId) === "number" ? osuId : parseInt(osuId, 10), points, response.username);
   if(typeof(assignmentResult) === "number") {
     switch(assignmentResult) {
       case DatabaseErrors.USER_NOT_FOUND: break;
@@ -118,14 +118,14 @@ async function updateUserData(token, client, channel, pool, osuId, points) {
   }
 }
 
-async function fetchUser(channel, pool, discordId) {
+async function fetchUser(channel, db, discordId) {
   if(!(channel instanceof Discord.Channel)) {
     log(LogSeverity.ERROR, "fetchUser", "channel must be a Discord.Channel object instance.");
     process.exit(1);
   }
 
-  if(!(pool instanceof Pool)) {
-    log(LogSeverity.ERROR, "fetchUser", "pool must be a Pool object instance.");
+  if(!(db instanceof Client)) {
+    log(LogSeverity.ERROR, "fetchUser", "db must be a Client object instance.");
     process.exit(1);
   }
 
@@ -134,7 +134,7 @@ async function fetchUser(channel, pool, discordId) {
     process.exit(1);
   }
 
-  const user = await getDiscordUserByDiscordId(pool, discordId);
+  const user = await getDiscordUserByDiscordId(db, discordId);
 
   switch(user) {
     case DatabaseErrors.USER_NOT_FOUND:
@@ -237,14 +237,14 @@ async function fetchOsuStats(channel, osuUsername) {
   return topCounts;
 }
 
-async function insertUserData(channel, pool, discordId, osuId, osuUsername) {
+async function insertUserData(channel, db, discordId, osuId, osuUsername) {
   if(!(channel instanceof Discord.Channel)) {
     log(LogSeverity.ERROR, "insertUserData", "channel must be a Discord.Channel object instance.");
     process.exit(1);
   }
 
-  if(!(pool instanceof Pool)) {
-    log(LogSeverity.ERROR, "insertUserData", "pool must be a Pool object instance.");
+  if(!(db instanceof Client)) {
+    log(LogSeverity.ERROR, "insertUserData", "db must be a Client object instance.");
     process.exit(1);
   }
 
@@ -264,7 +264,7 @@ async function insertUserData(channel, pool, discordId, osuId, osuUsername) {
   }
 
   const result = await insertUser(
-    pool,
+    db,
     discordId,
     typeof(osuId) === "number" ? osuId : parseInt(number, 10),
     osuUsername
