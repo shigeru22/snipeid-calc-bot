@@ -1,21 +1,18 @@
-const { Pool } = require("pg");
+const { Client } = require("pg");
 const { LogSeverity, log } = require("../log");
 const { DatabaseErrors } = require("../common");
 
-async function getRolesList(pool) {
-  if(!(pool instanceof Pool)) {
-    log(LogSeverity.ERROR, "getRolesList", "pool must be a Pool object instance.");
+async function getRolesList(db) {
+  if(!(db instanceof Client)) {
+    log(LogSeverity.ERROR, "getRolesList", "db must be a Client object instance.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
   const selectQuery = "SELECT * FROM roles ORDER BY 4 DESC";
 
   try {
-    const client = await pool.connect();
-
-    const rolesResult = await client.query(selectQuery);
+    const rolesResult = await db.query(selectQuery);
     if(typeof(rolesResult.rows) === "undefined" || rolesResult.rows.length === 0) {
-      client.release();
       return DatabaseErrors.ROLES_EMPTY;
     }
 
