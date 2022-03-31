@@ -194,6 +194,11 @@ async function onNewMessage(msg) {
         return;
       }
 
+      if(!osuUser.isCountryCodeAllowed) {
+        await channel.send("**Error:** Wrong country code from osu! profile. Please contact server moderators.");
+        return;
+      }
+
       const result = await insertUserData(channel, pool, msg.author.id, osuId, osuUser.username);
       if(!result) {
         return;
