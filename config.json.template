@@ -1,0 +1,19 @@
+{
+  "roles": [
+    {
+      "discordId": "250000000000000000",
+      "name": "250 points",
+      "minPoints": 250
+    },
+    {
+      "discordId": "500000000000000000",
+      "name": "500 points",
+      "minPoints": 500
+    },
+    {
+      "discordId": "100000000000000000",
+      "name": "1000 points",
+      "minPoints": 1000
+    }
+  ]
+}

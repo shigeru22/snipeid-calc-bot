@@ -1,29 +1,94 @@
-"use strict"
+"use strict";
 
 const dotenv = require("dotenv");
 const Discord = require("discord.js");
-const { calculatePoints, counter } = require("./utils/counter.js");
-const { parseTopCountDescription, parseUsername } = require("./utils/parser.js");
+const { Pool } = require("pg");
+const { validateEnvironmentVariables } = require("./utils/env");
+const { LogSeverity, log } = require("./utils/log");
+const { getAccessToken } = require("./utils/api/osu");
+const { calculatePoints } = require("./utils/messages/counter");
+const { parseTopCountDescription, parseUsername, parseOsuIdFromLink } = require("./utils/parser");
+const { sendMessage } = require("./utils/commands/conversations");
+const { sendPointLeaderboard } = require("./utils/commands/leaderboards");
+const { countPoints } = require("./utils/commands/points");
+const { addWysiReaction } = require("./utils/commands/reactions");
+const { addRole } = require("./utils/commands/roles");
+const { updateUserData, fetchUser, fetchOsuUser, fetchOsuStats, insertUserData } = require("./utils/commands/userdata");
 
 dotenv.config();
-const client = new Discord.Client({ intents: [ "GUILDS", "GUILD_MESSAGES" ]});
+
+const pool = new Pool({
+  host: process.env.DB_HOST,
+  port: parseInt(process.env.DB_PORT, 10),
+  user: process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE
+});
+
+const client = new Discord.Client({ intents: [ "GUILDS", "GUILD_MESSAGES", ]});
 
 const BATHBOT_USER_ID = "297073686916366336";
 
+let token = "";
+let expired = new Date(0);
+
+async function getToken() {
+  const now = new Date();
+  if(now.getTime() >= expired.getTime()) {
+    log(LogSeverity.LOG, "getToken", "Access token expired. Requesting new access token...");
+    const response = await getAccessToken(process.env.OSU_CLIENT_ID, process.env.OSU_CLIENT_SECRET);
+
+    if(Object.keys(response).length === 0) {
+      log(LogSeverity.WARN, "getToken", "Unable to request access token. osu! site might be down?");
+      return 0;
+    }
+    else {
+      token = response.token;
+      expired = response.expire;
+    }
+  }
+
+  return token;
+}
+
 client.on("ready", async () => await onStartup());
-client.on("messageCreate", async (msg) => await onNewMessage(msg))
+client.on("messageCreate", async (msg) => await onNewMessage(msg));
 
 async function onStartup() {
+  log(LogSeverity.LOG, "onStartup", "Requesting access token...");
+  const response = await getAccessToken(process.env.OSU_CLIENT_ID, process.env.OSU_CLIENT_SECRET);
+  
+  if(Object.keys(response).length === 0) {
+    log(LogSeverity.WARN, "onStartup", "Unable to request access token. osu! API might be down?");
+  }
+  else {
+    token = response.token;
+    expired = response.expire;
+  }
+
   client.user.setActivity("Bathbot everyday", { type: "WATCHING" });
-  console.log("SnipeID is now running.");
+  log(LogSeverity.LOG, "onStartup", process.env.BOT_NAME + " is now running.");
 }
 
 async function onNewMessage(msg) {
-  const channel = await client.channels.cache.get(process.env.CHANNEL_ID);
+  const contents = msg.content.split(/\s+/g); // split by one or more spaces
+  const isClientMentioned = msg.mentions.users.has(client.user.id) && contents[0].includes(client.user.id);;
+  let processed = false;
 
-  if(msg.channelId === process.env.CHANNEL_ID) {
+  if(msg.channelId === process.env.LEADERBOARD_CHANNEL_ID) {
+    const channel = client.channels.cache.get(process.env.LEADERBOARD_CHANNEL_ID);
+
+    if(isClientMentioned) {
+      if(contents[1] === "lb" || contents[1] === "leaderboard") {
+        await sendPointLeaderboard(channel, pool);
+        processed = true;
+      }
+    }
+  }
+  else if(msg.channelId === process.env.CHANNEL_ID) {
+    const channel = client.channels.cache.get(process.env.CHANNEL_ID);
+
     if(msg.author.id === BATHBOT_USER_ID) {
-      // await channel.send("Calculating score...")
       const embeds = msg.embeds; // always 0
       const index = embeds.findIndex(
         embed => typeof(embed.title) === "string" && embed.title.toLowerCase().startsWith("in how many top x map leaderboards is")
@@ -35,75 +100,119 @@ async function onNewMessage(msg) {
 
       const title = embeds[index].title;
       const desc = embeds[index].description;
+      const link = embeds[index].author.url;
 
       const username = parseUsername(title);
+      const osuId = parseOsuIdFromLink(link);
 
       // [ top_1, top_8, top_15, top_25, top_50 ]
       const topCounts = parseTopCountDescription(desc);
       const points = calculatePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3], topCounts[4]);
-      const draft = counter(
-        topCounts[0],
-        topCounts[1],
-        topCounts[2],
-        topCounts[3],
-        topCounts[4],
-        username
-      );
+      const message = await countPoints(channel, username, topCounts);
+      await addWysiReaction(client, message, topCounts, points);
 
-      const sentMessage = await channel.send({ embeds: [ draft ] });
-
-      if(typeof(process.env.OSUHOW_EMOJI_ID) === "string") {
-        if(points.toString().includes("727")) {
-          const emoji = client.emojis.cache.get(process.env.OSUHOW_EMOJI_ID);
-          sentMessage.react(emoji);
-        }
+      const tempToken = await getToken();
+      if(tempToken === 0) {
+        await channel.send("**Error:** Unable to retrieve osu! client authorizations. Maybe the API is down?");
+        return;
       }
 
-      console.log("[LOG] Calculating points for username: " + username);
+      await updateUserData(tempToken, client, channel, pool, osuId, points);
     }
     else {
-      const mentionedUsers = msg.mentions.users;
-      const isClientMentioned = mentionedUsers.has(client.user.id);
-
       if(isClientMentioned) {
-        const message = msg.content.toLowerCase();
-
-        if(message.includes("hi")) {
-          await channel.send("Yes");
-        }
-        else if(message.includes("test")) {
-          await channel.send("Testing with specified values.");
-
-          const points = calculatePoints(0, 121, 199, 213, 407);
-          const draft = counter(
-            0,
-            121,
-            199,
-            213,
-            407,
-            "Unknown User"
-          );
-
-          const sentMessage = await channel.send({ embeds: [ draft ] });
-          
-          if(typeof(process.env.OSUHOW_EMOJI_ID) === "string") {
-            if(points.toString().includes("727")) {
-              try {
-                const emoji = client.emojis.cache.get(process.env.OSUHOW_EMOJI_ID);
-                sentMessage.react(emoji);
-              }
-              catch (e) {
-                await channel.send("Error occurred: " + e.message);
-              }
-            }
+        if(contents[1] === "link") {
+          if(typeof(contents[2]) !== "string") {
+            await channel.send("You need to specify your osu! user ID: `@" + process.env.BOT_NAME + " link [osu! user ID]`");
+            return;
           }
+
+          const osuId = parseInt(contents[2], 10);
+
+          if(isNaN(osuId)) {
+            await channel.send("**Error:** ID must be in numbers. Open your osu! profile and copy ID from the last part of the example in the URL:\nhttps://osu.ppy.sh/users/2581664, then 2581664 is your ID.");
+            return;
+          }
+
+          if(osuId <= 0) {
+            await channel.send("**Error:** I see what you did there. That's funny.");
+            return;
+          }
+          
+          const tempToken = await getToken();
+
+          if(tempToken === 0) {
+            await channel.send("**Error:** Unable to retrieve osu! client authorizations. Maybe the API is down?");
+            return;
+          }
+
+          const osuUser = await fetchOsuUser(channel, tempToken, osuId);
+          if(!osuUser) {
+            return;
+          }
+
+          const result = await insertUserData(channel, pool, msg.author.id, osuId, osuUser.username);
+          if(!result) {
+            return;
+          }
+
+          if(typeof(process.env.VERIFIED_ROLE_ID) !== "string" || process.env.VERIFIED_ROLE_ID === "") {
+            log(LogSeverity.LOG, "onNewMessage", "VERIFIED_ROLE_ID not set. Role granting skipped.");
+            processed = true;
+            return;
+          }
+
+          await addRole(client, channel, msg.author.id, process.env.VERIFIED_ROLE_ID);
+          processed = true;
         }
-        else {
-          await channel.send("?");
+        else if(contents[1] === "count") {
+          await channel.send("Retrieving user top counts...");
+
+          const user = await fetchUser(channel, pool, msg.author.id);
+          if(!user) {
+            return;
+          }
+
+          let tempToken = await getToken();
+          if(tempToken === 0) {
+            await channel.send("**Error:** Unable to retrieve osu! client authorizations. Maybe the API is down?");
+            return;
+          }
+
+          const osuUser = await fetchOsuUser(channel, tempToken, user.osuId);
+          if(!osuUser) {
+            return;
+          }
+          
+          const topCounts = await fetchOsuStats(channel, osuUser.username);
+          if(!topCounts) {
+            return;
+          }
+
+          const points = calculatePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3], topCounts[4]);
+          const message = await countPoints(channel, osuUser.username, topCounts);
+          await addWysiReaction(client, message, topCounts, points);
+
+          tempToken = await getToken();
+          if(tempToken === 0) {
+            await channel.send("**Error:** Unable to retrieve osu! client authorizations. Maybe the API is down?");
+            return;
+          }
+
+          await updateUserData(tempToken, client, channel, pool, user.osuId, points);
+          processed = true;
         }
       }
     }
   }
+
+  if(!processed && isClientMentioned) {
+    await sendMessage(client, msg.channelId, contents);
+  }
+}
+
+if(!validateEnvironmentVariables()) {
+  process.exit(0);
 }
 
 client.login(process.env.BOT_TOKEN);

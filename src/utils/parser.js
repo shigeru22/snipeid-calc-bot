@@ -18,11 +18,15 @@ function parseTopCountDescription(desc) {
 }
 
 function parseUsername(title) {
-  const res = title.replace("In how many top X map leaderboards is ", "").replace("?", "");  
-  return res;
+  return title.replace("In how many top X map leaderboards is ", "").replace("?", "");
+}
+
+function parseOsuIdFromLink(url) {
+  return url.replace(/http(s)?:\/\/osu.ppy.sh\/u(sers)?\//g, "").split("/")[0];
 }
 
 module.exports = {
   parseTopCountDescription,
-  parseUsername
+  parseUsername,
+  parseOsuIdFromLink
 };
