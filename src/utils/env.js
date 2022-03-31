@@ -28,6 +28,11 @@ function validateEnvironmentVariables() {
     return false;
   }
 
+  if(typeof(process.env.COUNTRY_CODE) !== "string" || !process.env.COUNTRY_CODE) {
+    log(LogSeverity.ERROR, "validateEnvironmentVariables", "COUNTRY_CODE must be defined in environment variables. Exiting.");
+    return false;
+  }
+
   if(typeof(process.env.SERVER_ID) === "string" && process.env.SERVER_ID !== "") {
     // verify role ID if server ID is defined
     if(typeof(process.env.VERIFIED_ROLE_ID) !== "string" || !process.env.VERIFIED_ROLE_ID) {
