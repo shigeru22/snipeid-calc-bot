@@ -51,6 +51,19 @@ async function getToken() {
   return token;
 }
 
+if (process.platform === "win32") {
+  var rl = require("readline").createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
+  rl.on("SIGINT", function () {
+    process.emit("SIGINT");
+  });
+}
+
+process.on("SIGINT", async () => await onExit());
+
 client.on("ready", async () => await onStartup());
 client.on("messageCreate", async (msg) => await onNewMessage(msg));
 
@@ -221,6 +234,17 @@ async function onNewMessage(msg) {
   if(!processed && isClientMentioned) {
     await sendMessage(client, msg.channelId, contents);
   }
+}
+
+async function onExit() {
+  log(LogSeverity.LOG, "onExit", "Exit signal received. Cleaning up process...");
+
+  client.destroy();
+  await db.end();
+
+  log(LogSeverity.LOG, "onExit", "Cleanup success. Exiting...");
+
+  process.exit(0);
 }
 
 if(!validateEnvironmentVariables()) {
