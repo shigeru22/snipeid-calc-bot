@@ -162,6 +162,8 @@ async function onNewMessage(msg) {
     }
   }
   else if(msg.channelId === process.env.VERIFICATION_CHANNEL_ID) {
+    const channel = client.channels.cache.get(process.env.VERIFICATION_CHANNEL_ID);
+
     if(contents[1] === "link") {
       if(typeof(contents[2]) !== "string") {
         await channel.send("You need to specify your osu! user ID: `@" + process.env.BOT_NAME + " link [osu! user ID]`");
