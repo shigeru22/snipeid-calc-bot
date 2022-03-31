@@ -84,7 +84,8 @@ async function getUserByOsuId(token, id) {
       else {
         res = {
           status: OsuUserStatus.USER,
-          username: response.data.username
+          username: response.data.username,
+          isCountryCodeAllowed: response.data.country.code === process.env.COUNTRY_CODE
         };
       }
     }
