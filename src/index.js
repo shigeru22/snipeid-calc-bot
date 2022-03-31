@@ -121,51 +121,7 @@ async function onNewMessage(msg) {
     }
     else {
       if(isClientMentioned) {
-        if(contents[1] === "link") {
-          if(typeof(contents[2]) !== "string") {
-            await channel.send("You need to specify your osu! user ID: `@" + process.env.BOT_NAME + " link [osu! user ID]`");
-            return;
-          }
-
-          const osuId = parseInt(contents[2], 10);
-
-          if(isNaN(osuId)) {
-            await channel.send("**Error:** ID must be in numbers. Open your osu! profile and copy ID from the last part of the example in the URL:\nhttps://osu.ppy.sh/users/2581664, then 2581664 is your ID.");
-            return;
-          }
-
-          if(osuId <= 0) {
-            await channel.send("**Error:** I see what you did there. That's funny.");
-            return;
-          }
-          
-          const tempToken = await getToken();
-
-          if(tempToken === 0) {
-            await channel.send("**Error:** Unable to retrieve osu! client authorizations. Maybe the API is down?");
-            return;
-          }
-
-          const osuUser = await fetchOsuUser(channel, tempToken, osuId);
-          if(!osuUser) {
-            return;
-          }
-
-          const result = await insertUserData(channel, pool, msg.author.id, osuId, osuUser.username);
-          if(!result) {
-            return;
-          }
-
-          if(typeof(process.env.VERIFIED_ROLE_ID) !== "string" || process.env.VERIFIED_ROLE_ID === "") {
-            log(LogSeverity.LOG, "onNewMessage", "VERIFIED_ROLE_ID not set. Role granting skipped.");
-            processed = true;
-            return;
-          }
-
-          await addRole(client, channel, msg.author.id, process.env.VERIFIED_ROLE_ID);
-          processed = true;
-        }
-        else if(contents[1] === "count") {
+        if(contents[1] === "count") {
           await channel.send("Retrieving user top counts...");
 
           const user = await fetchUser(channel, pool, msg.author.id);
@@ -203,6 +159,52 @@ async function onNewMessage(msg) {
           processed = true;
         }
       }
+    }
+  }
+  else if(msg.channelId === process.env.VERIFICATION_CHANNEL_ID) {
+    if(contents[1] === "link") {
+      if(typeof(contents[2]) !== "string") {
+        await channel.send("You need to specify your osu! user ID: `@" + process.env.BOT_NAME + " link [osu! user ID]`");
+        return;
+      }
+
+      const osuId = parseInt(contents[2], 10);
+
+      if(isNaN(osuId)) {
+        await channel.send("**Error:** ID must be in numbers. Open your osu! profile and copy ID from the last part of the example in the URL:\nhttps://osu.ppy.sh/users/2581664, then 2581664 is your ID.");
+        return;
+      }
+
+      if(osuId <= 0) {
+        await channel.send("**Error:** I see what you did there. That's funny.");
+        return;
+      }
+      
+      const tempToken = await getToken();
+
+      if(tempToken === 0) {
+        await channel.send("**Error:** Unable to retrieve osu! client authorizations. Maybe the API is down?");
+        return;
+      }
+
+      const osuUser = await fetchOsuUser(channel, tempToken, osuId);
+      if(!osuUser) {
+        return;
+      }
+
+      const result = await insertUserData(channel, pool, msg.author.id, osuId, osuUser.username);
+      if(!result) {
+        return;
+      }
+
+      if(typeof(process.env.VERIFIED_ROLE_ID) !== "string" || process.env.VERIFIED_ROLE_ID === "") {
+        log(LogSeverity.LOG, "onNewMessage", "VERIFIED_ROLE_ID not set. Role granting skipped.");
+        processed = true;
+        return;
+      }
+
+      await addRole(client, channel, msg.author.id, process.env.VERIFIED_ROLE_ID);
+      processed = true;
     }
   }
 
