@@ -73,8 +73,6 @@ async function updateUserData(token, client, channel, db, osuId, points) {
         break;
     }
 
-    console.log(assignmentResult);
-
     try {
       if(
         assignmentResult.role.newRoleId === "0" &&
