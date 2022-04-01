@@ -74,14 +74,33 @@ async function updateUserData(token, client, channel, db, osuId, points) {
     }
 
     try {
+      if(
+        assignmentResult.role.newRoleId === "0" &&
+        (typeof(assignmentResult.role.oldRoleId === "undefined") || (typeof(assignmentResult.role.oldRoleId) === "string" && assignmentResult.role.oldRoleId === "0"))
+      ) { // no role
+        log(LogSeverity.LOG, "updateUserData", "newRoleId is either zero or oldRoleId is not available. Skipping role granting.");
+        return;
+      }
+
+      if(assignmentResult.role.oldRoleId === assignmentResult.role.newRoleId) {
+        log(LogSeverity.LOG, "updateUserData", "Role is currently the same. Skipping role granting.");
+        return;
+      }
+
       const server = await client.guilds.fetch(process.env.SERVER_ID);
+      const member = await server.members.fetch(assignmentResult.discordId);
       let updated = false;
 
       switch(assignmentResult.type) {
         case AssignmentType.UPDATE:
           if(assignmentResult.role.newRoleId !== assignmentResult.role.oldRoleId) {
             const oldRole = await server.roles.fetch(assignmentResult.role.oldRoleId);
-            (await server.members.fetch(assignmentResult.discordId)).roles.remove(oldRole);
+            await member.roles.remove(oldRole);
+            log(LogSeverity.LOG, "updateUserData", "Role " + oldRole.name + " removed from user: " + member.user.username + "#" + member.user.discriminator);
+            if(assignmentResult.role.newRoleId === "0") {
+              log(LogSeverity.LOG, "updateUserData", "newRoleId is zero. Skipping role granting.");
+              break; // break if new role is no role 
+            }
             updated = true;
           } // use fallthrough
         case AssignmentType.INSERT:
@@ -91,7 +110,8 @@ async function updateUserData(token, client, channel, db, osuId, points) {
               assignmentResult.role.newRoleId !== assignmentResult.role.oldRoleId)
           ) {
             const newRole = await server.roles.fetch(assignmentResult.role.newRoleId);
-            (await server.members.fetch(assignmentResult.discordId)).roles.add(newRole);
+            await member.roles.add(newRole);
+            log(LogSeverity.LOG, "updateUserData", "Role " + newRole.name + " added to user: " + member.user.username + "#" + member.user.discriminator);
             updated = true;
           }
           break;
@@ -266,7 +286,7 @@ async function insertUserData(channel, db, discordId, osuId, osuUsername) {
   const result = await insertUser(
     db,
     discordId,
-    typeof(osuId) === "number" ? osuId : parseInt(number, 10),
+    typeof(osuId) === "number" ? osuId : parseInt(osuId, 10),
     osuUsername
   );
   switch(result) {

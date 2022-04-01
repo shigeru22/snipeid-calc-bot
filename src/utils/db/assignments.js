@@ -55,9 +55,7 @@ async function getAllAssignments(db, sort, desc) {
   `;
 
   try {
-    log(LogSeverity.DEBUG, "getAllAssignments", "Querying assignments.");
     const response = await db.query(selectQuery);
-    log(LogSeverity.DEBUG, "getAllAssignments", "Query completed.");
 
     return response.rows;
   }
@@ -157,7 +155,7 @@ async function getLastAssignmentUpdate(db) {
   try {
     const result = await db.query(selectQuery);
 
-    if(typeof(result.rows[0].lastupdate) === "undefined") {
+    if(typeof(result.rows[0]) === "undefined") {
       return DatabaseErrors.NO_RECORD;
     }
 
