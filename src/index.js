@@ -138,40 +138,7 @@ async function onNewMessage(msg) {
     else {
       if(isClientMentioned) {
         if(contents[1] === "count") {
-          await channel.send("Retrieving user top counts...");
-
-          const user = await fetchUser(channel, db, msg.author.id);
-          if(!user) {
-            return;
-          }
-
-          let tempToken = await getToken();
-          if(tempToken === 0) {
-            await channel.send("**Error:** Unable to retrieve osu! client authorizations. Maybe the API is down?");
-            return;
-          }
-
-          const osuUser = await fetchOsuUser(channel, tempToken, user.osuId);
-          if(!osuUser) {
-            return;
-          }
-          
-          const topCounts = await fetchOsuStats(channel, osuUser.username);
-          if(!topCounts) {
-            return;
-          }
-
-          const points = calculatePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3], topCounts[4]);
-          const message = await countPoints(channel, osuUser.username, topCounts);
-          await addWysiReaction(client, message, topCounts, points);
-
-          tempToken = await getToken();
-          if(tempToken === 0) {
-            await channel.send("**Error:** Unable to retrieve osu! client authorizations. Maybe the API is down?");
-            return;
-          }
-
-          await updateUserData(tempToken, client, channel, db, user.osuId, points);
+          await channel.send("This command is currently disabled.");
           processed = true;
         }
       }
