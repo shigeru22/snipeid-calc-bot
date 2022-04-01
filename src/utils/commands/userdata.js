@@ -74,7 +74,10 @@ async function updateUserData(token, client, channel, db, osuId, points) {
     }
 
     try {
-      if(assignmentResult.role.newRoleId === "0") { // no role
+      if(
+        assignmentResult.role.newRoleId === "0" &&
+        (typeof(assignmentResult.role.oldRoleId === "undefined") || (typeof(assignmentResult.role.oldRoleId) === "string" && assignmentResult.role.oldRoleId === "0"))
+      ) { // no role
         return;
       }
 
@@ -270,7 +273,7 @@ async function insertUserData(channel, db, discordId, osuId, osuUsername) {
   const result = await insertUser(
     db,
     discordId,
-    typeof(osuId) === "number" ? osuId : parseInt(number, 10),
+    typeof(osuId) === "number" ? osuId : parseInt(osuId, 10),
     osuUsername
   );
   switch(result) {
