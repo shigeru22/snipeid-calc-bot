@@ -63,6 +63,7 @@ if (process.platform === "win32") {
 }
 
 process.on("SIGINT", async () => await onExit());
+process.on("SIGTERM", async () => await onExit());
 
 client.on("ready", async () => await onStartup());
 client.on("messageCreate", async (msg) => await onNewMessage(msg));
