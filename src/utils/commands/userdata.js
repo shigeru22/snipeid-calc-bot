@@ -74,6 +74,10 @@ async function updateUserData(token, client, channel, db, osuId, points) {
     }
 
     try {
+      if(assignmentResult.role.newRoleId === "0") { // no role
+        return;
+      }
+
       const server = await client.guilds.fetch(process.env.SERVER_ID);
       let updated = false;
 

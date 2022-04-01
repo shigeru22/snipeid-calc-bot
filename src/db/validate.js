@@ -78,7 +78,7 @@ function validateRolesConfig(roles) {
       return false;
     }
 
-    if(typeof(roles[i].minPoints) !== "number" || !roles[i].minPoints) {
+    if(typeof(roles[i].minPoints) !== "number" || roles[i].minPoints < 0) {
       log(LogSeverity.ERROR, "validateRolesConfig", "An error occurred while validating role index " + i + ": minPoints must be number.");
       return false;
     }
