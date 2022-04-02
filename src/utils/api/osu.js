@@ -5,9 +5,19 @@ const { HTTPStatus, OsuUserStatus } = require("../common");
 const OSU_API_ENDPOINT = "https://osu.ppy.sh/api/v2";
 const OSU_TOKEN_ENDPOINT = "https://osu.ppy.sh/oauth/token";
 
-async function getAccessToken() {
-  const id = parseInt(process.env.OSU_CLIENT_ID, 10);
-  const secret = process.env.OSU_CLIENT_SECRET;
+async function getAccessToken(clientId, clientSecret) {
+  if(typeof(clientId) !== "string") {
+    log(LogSeverity.LOG, "getAccessToken", "clientId must be string.");
+    process.exit(1);
+  }
+
+  if(typeof(clientSecret) !== "string") {
+    log(LogSeverity.LOG, "getAccessToken", "clientSecret must be string.");
+    process.exit(1);
+  }
+
+  const id = parseInt(clientId, 10); // no need to validate since already validated in env module
+  const secret = clientSecret;
 
   try {
     const response = await axios.post(OSU_TOKEN_ENDPOINT, {
