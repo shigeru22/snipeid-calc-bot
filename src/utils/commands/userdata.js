@@ -1,5 +1,5 @@
 const Discord = require("discord.js");
-const { Client } = require("pg");
+const { Pool } = require("pg");
 const { LogSeverity, log } = require("../log");
 const { getUserByOsuId } = require("../api/osu");
 const { getTopCounts } = require("../api/osustats");
@@ -24,8 +24,8 @@ async function updateUserData(token, client, channel, db, osuId, points) {
     process.exit(1);
   }
 
-  if(!(db instanceof Client)) {
-    log(LogSeverity.ERROR, "updateUserData", "db must be a Client object instance.");
+  if(!(db instanceof Pool)) {
+    log(LogSeverity.ERROR, "updateUserData", "db must be a Pool object instance.");
     process.exit(1);
   }
 
@@ -144,8 +144,8 @@ async function fetchUser(channel, db, discordId) {
     process.exit(1);
   }
 
-  if(!(db instanceof Client)) {
-    log(LogSeverity.ERROR, "fetchUser", "db must be a Client object instance.");
+  if(!(db instanceof Pool)) {
+    log(LogSeverity.ERROR, "fetchUser", "db must be a Pool object instance.");
     process.exit(1);
   }
 
@@ -263,8 +263,8 @@ async function insertUserData(channel, db, discordId, osuId, osuUsername) {
     process.exit(1);
   }
 
-  if(!(db instanceof Client)) {
-    log(LogSeverity.ERROR, "insertUserData", "db must be a Client object instance.");
+  if(!(db instanceof Pool)) {
+    log(LogSeverity.ERROR, "insertUserData", "db must be a Pool object instance.");
     process.exit(1);
   }
 

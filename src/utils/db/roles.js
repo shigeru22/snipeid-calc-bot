@@ -1,10 +1,10 @@
-const { Client } = require("pg");
+const { Pool } = require("pg");
 const { LogSeverity, log } = require("../log");
 const { DatabaseErrors } = require("../common");
 
 async function getRolesList(db) {
-  if(!(db instanceof Client)) {
-    log(LogSeverity.ERROR, "getRolesList", "db must be a Client object instance.");
+  if(!(db instanceof Pool)) {
+    log(LogSeverity.ERROR, "getRolesList", "db must be a Pool object instance.");
     return DatabaseErrors.TYPE_ERROR;
   }
 

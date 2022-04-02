@@ -2,7 +2,7 @@
 
 const dotenv = require("dotenv");
 const Discord = require("discord.js");
-const { Client } = require("pg");
+const { Pool } = require("pg");
 const { validateEnvironmentVariables } = require("./utils/env");
 const { LogSeverity, log } = require("./utils/log");
 const { getAccessToken } = require("./utils/api/osu");
@@ -17,7 +17,7 @@ const { updateUserData, fetchUser, fetchOsuUser, fetchOsuStats, insertUserData }
 
 dotenv.config();
 
-const db = new Client({
+const db = new Pool({
   host: process.env.DB_HOST,
   port: parseInt(process.env.DB_PORT, 10),
   user: process.env.DB_USERNAME,
@@ -206,10 +206,7 @@ async function onNewMessage(msg) {
 
 async function onExit() {
   log(LogSeverity.LOG, "onExit", "Exit signal received. Cleaning up process...");
-
   client.destroy();
-  await db.end();
-
   log(LogSeverity.LOG, "onExit", "Cleanup success. Exiting...");
 
   process.exit(0);

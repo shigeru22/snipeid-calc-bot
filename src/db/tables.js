@@ -1,16 +1,18 @@
-const { Client } = require("pg");
+const { Pool } = require("pg");
 const { LogSeverity, log } = require("../utils/log");
 
 async function createTables(db) {
   log(LogSeverity.LOG, "createTables", "Creating tables...");
 
-  if(!(db instanceof Client)) {
-    log(LogSeverity.ERROR, "createTables", "db must be a Client object instance.");
+  if(!(db instanceof Pool)) {
+    log(LogSeverity.ERROR, "createTables", "db must be a Pool object instance.");
     return false;
   }
 
   try {
-    await db.query(`
+    const client = await db.connect();
+
+    await client.query(`
       CREATE TABLE users (
         userId serial PRIMARY KEY,
         discordId varchar(255) NOT NULL,
@@ -19,7 +21,7 @@ async function createTables(db) {
       );
     `);
     
-    await db.query(`
+    await client.query(`
       CREATE TABLE roles (
         roleId serial PRIMARY KEY,
         discordId varchar(255) NOT NULL,
@@ -28,7 +30,7 @@ async function createTables(db) {
       );
     `);
 
-    await db.query(`
+    await client.query(`
       CREATE TABLE assignments (
         assignmentId serial PRIMARY KEY,
         userId integer NOT NULL,
@@ -41,6 +43,8 @@ async function createTables(db) {
           FOREIGN KEY(roleId) REFERENCES roles(roleId)
       );
     `);
+
+    client.release();
 
     log(LogSeverity.LOG, "createTables", "Table creation completed.");
     return true;

@@ -1,10 +1,10 @@
-const { Client } = require("pg");
+const { Pool } = require("pg");
 const { LogSeverity, log } = require("../log");
 const { DatabaseErrors, AssignmentType, AssignmentSort, isSortEnumAvailable } = require("../common");
 
 async function getAllAssignments(db, sort, desc) {
-  if(!(db instanceof Client)) {
-    log(LogSeverity.ERROR, "getAllAssignments", "db must be a Client object instance.");
+  if(!(db instanceof Pool)) {
+    log(LogSeverity.ERROR, "getAllAssignments", "db must be a Pool object instance.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
@@ -56,7 +56,6 @@ async function getAllAssignments(db, sort, desc) {
 
   try {
     const response = await db.query(selectQuery);
-
     return response.rows;
   }
   catch (e) {
@@ -78,8 +77,8 @@ async function getAllAssignments(db, sort, desc) {
 }
 
 async function getAssignmentByOsuId(db, osuId) {
-  if(!(db instanceof Client)) {
-    log(LogSeverity.ERROR, "getAssignmentByOsuId", "db must be a Client object instance.");
+  if(!(db instanceof Pool)) {
+    log(LogSeverity.ERROR, "getAssignmentByOsuId", "db must be a Pool object instance.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
@@ -137,8 +136,8 @@ async function getAssignmentByOsuId(db, osuId) {
 }
 
 async function getLastAssignmentUpdate(db) {
-  if(!(db instanceof Client)) {
-    log(LogSeverity.ERROR, "getLastAssignmentUpdate", "db must be a Client object instance.");
+  if(!(db instanceof Pool)) {
+    log(LogSeverity.ERROR, "getLastAssignmentUpdate", "db must be a Pool object instance.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
@@ -153,11 +152,16 @@ async function getLastAssignmentUpdate(db) {
   `;
 
   try {
-    const result = await db.query(selectQuery);
+    const client = await db.connect();
+
+    const result = await client.query(selectQuery);
 
     if(typeof(result.rows[0]) === "undefined") {
+      client.release();
       return DatabaseErrors.NO_RECORD;
     }
+
+    client.release();
 
     return result.rows[0].lastupdate;
   }
@@ -180,8 +184,8 @@ async function getLastAssignmentUpdate(db) {
 }
 
 async function insertOrUpdateAssignment(db, osuId, points, userName) {
-  if(!(db instanceof Client)) {
-    log(LogSeverity.ERROR, "insertOrUpdateAssignment", "db must be a Client object instance.");
+  if(!(db instanceof Pool)) {
+    log(LogSeverity.ERROR, "insertOrUpdateAssignment", "db must be a Pool object instance.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
@@ -227,8 +231,10 @@ async function insertOrUpdateAssignment(db, osuId, points, userName) {
   let insert = true;
 
   try {
-    const assignmentResult = await db.query(selectAssignmentQuery, selectAssignmentValues);
-    const currentRoleResult = await db.query(selectCurrentRoleQuery, selectCurrentRoleValues);
+    const client = await db.connect();
+
+    const assignmentResult = await client.query(selectAssignmentQuery, selectAssignmentValues);
+    const currentRoleResult = await client.query(selectCurrentRoleQuery, selectCurrentRoleValues);
 
     let query = "";
     const values = [];
@@ -245,6 +251,7 @@ async function insertOrUpdateAssignment(db, osuId, points, userName) {
           // update user
           const ret = await updateUser(db, osuId, userName);
           if(ret !== DatabaseErrors.OK) {
+            client.release();
             return ret;
           }
         }
@@ -252,13 +259,15 @@ async function insertOrUpdateAssignment(db, osuId, points, userName) {
         userId = assignmentResult.rows[0].userid;
         discordId = assignmentResult.rows[0].discordid;
 
-        await db.query("DELETE FROM assignments WHERE assignmentid=$1", [ assignmentResult.rows[0].assignmentid ]);
+        await client.query("DELETE FROM assignments WHERE assignmentid=$1", [ assignmentResult.rows[0].assignmentid ]);
 
         query = "INSERT INTO assignments (assignmentid, userid, roleid, points, lastupdate) VALUES ($1, $2, $3, $4, $5)";
         values.push(assignmentResult.rows[0].assignmentid);
       }
       else {
         // should not fall here, but whatever
+        client.release();
+
         log(LogSeverity.ERROR, "insertOrUpdateAssignment", "Invalid osuId returned from the database.");
         return DatabaseErrors.CLIENT_ERROR;
       }
@@ -268,9 +277,11 @@ async function insertOrUpdateAssignment(db, osuId, points, userName) {
       const selectUserQuery = "SELECT userid, discordid, osuid FROM users WHERE osuid=$1";
       const selectUserValues = [ osuId ];
 
-      const selectUserResult = await db.query(selectUserQuery, selectUserValues);
+      const selectUserResult = await client.query(selectUserQuery, selectUserValues);
 
       if(selectUserResult.rows.length === 0) {
+        client.release();
+
         log(LogSeverity.LOG, "insertOrUpdateAssignment", "User not found. Skipping assignment data update.");
         return DatabaseErrors.USER_NOT_FOUND;
       }
@@ -281,19 +292,23 @@ async function insertOrUpdateAssignment(db, osuId, points, userName) {
       discordId = selectUserResult.rows[0].discordid;
     }
 
-    const rolesResult = await db.query(selectRoleQuery, selectRoleValues);
+    const rolesResult = await client.query(selectRoleQuery, selectRoleValues);
     if(rolesResult.rows.length === 0) {
+      client.release();
+
       log(LogSeverity.ERROR, "insertOrUpdateAssignment", "Role table is empty.");
       return DatabaseErrors.ROLES_EMPTY; // role data empty
     }
     
     if(rolesResult.rows[0].minPoints < points) {
+      client.release();
+
       log(LogSeverity.ERROR, "insertOrUpdateAssignment", "Invalid role returned due to wrong minimum points.");
       return DatabaseErrors.CLIENT_ERROR;
     }
 
     values.push(userId, rolesResult.rows[0].roleid, points, new Date());
-    await db.query(query, values);
+    await client.query(query, values);
 
     if(insert) {
       log(LogSeverity.LOG, "insertOrUpdateAssignment", "assignment: Inserted 1 row.");
@@ -301,6 +316,8 @@ async function insertOrUpdateAssignment(db, osuId, points, userName) {
     else {
       log(LogSeverity.LOG, "insertOrUpdateAssignment", "assignment: Updated 1 row.");
     }
+
+    client.release();
 
     const role = insert ? {
       newRoleId: rolesResult.rows[0].discordid,
