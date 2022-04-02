@@ -1,11 +1,11 @@
-const { Client } = require("pg");
+const { Pool } = require("pg");
 const { LogSeverity, log } = require("../utils/log");
 
 async function importRoles(db, roles) {
   log(LogSeverity.LOG, "importRoles", "Importing roles...");
 
-  if(!(db instanceof Client)) {
-    log(LogSeverity.LOG, "importRoles", "db must be a Client object instance.");
+  if(!(db instanceof Pool)) {
+    log(LogSeverity.LOG, "importRoles", "db must be a Pool object instance.");
     return false;
   }
 

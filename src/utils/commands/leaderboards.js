@@ -1,5 +1,5 @@
 const Discord = require("discord.js");
-const { Client } = require("pg");
+const { Pool } = require("pg");
 const { LogSeverity, log } = require("../log");
 const { getAllAssignments, getLastAssignmentUpdate } = require("../db/assignments");
 const { AssignmentSort } = require("../common");
@@ -11,8 +11,8 @@ async function sendPointLeaderboard(channel, db) {
     process.exit(1);
   }
 
-  if(!(db instanceof Client)) {
-    log(LogSeverity.ERROR, "sendPointLeaderboard", "db must be a Client object instance.");
+  if(!(db instanceof Pool)) {
+    log(LogSeverity.ERROR, "sendPointLeaderboard", "db must be a Pool object instance.");
     process.exit(1);
   }
 
