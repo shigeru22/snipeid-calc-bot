@@ -80,9 +80,6 @@ async function onStartup() {
     expired = response.expire;
   }
 
-  log(LogSeverity.LOG, "onStartup", "Connecting to database...");
-  await db.connect();
-
   client.user.setActivity("Bathbot everyday", { type: "WATCHING" });
   log(LogSeverity.LOG, "onStartup", process.env.BOT_NAME + " is now running.");
 }
