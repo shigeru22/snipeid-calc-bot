@@ -1,8 +1,27 @@
 const { LogSeverity, log } = require("../utils/log");
 
+const TimeOperation = {
+  DECREMENT: 0,
+  INCREMENT: 1
+};
+
+function isTimeOperationEnumAvailable(value) {
+  if(typeof(value) === "undefined") {
+    return undefined;
+  }
+
+  for(const prop in TimeOperation) {
+    if(TimeOperation[prop] === value) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function deltaTimeToString(ms) {
   if(typeof(ms) !== "number") {
-    log(LogSeverity.ERROR, "deltaTimeToString", "deltaTimeToString :: ms is not number.");
+    log(LogSeverity.ERROR, "deltaTimeToString", "ms is not number.");
     return 0;
   }
 
@@ -35,6 +54,46 @@ function deltaTimeToString(ms) {
   return seconds.toString() + (seconds === 1 ? " second" : " seconds");
 }
 
+function getTimeOffsetFromString(value) {
+  if(typeof(value) !== "string") {
+    log(LogSeverity.ERROR, "getTimeOffsetFromString", "value must be string.");
+    return undefined;
+  }
+
+  const temp = value.split(":");
+  if(temp.length !== 2) {
+    log(LogSeverity.ERROR, "getTimeOffsetFromString", "value must be in time format. Check .env-template for details.");
+    return undefined;
+  }
+
+  const inc = temp[0].slice(0, 1);
+  if(inc !== "+" && inc !== "-") {
+    log(LogSeverity.ERROR, "getTimeOffsetFromString", "First value character must be '+' or '-'. Check .env-template for details.");
+    return undefined;
+  }
+
+  const hours = parseInt(temp[0].slice(0 - (temp[0].length - 1)), 10);
+  if(isNaN(hours) || (hours < 0 || hours > 14)) { // well, earliest timezone is 14, but who use that?
+    log(LogSeverity.ERROR, "getTimeOffsetFromString", "Invalid hours value (0 to 14). Check .env-template for format details.");
+    return undefined;
+  }
+
+  const minutes = parseInt(temp[1], 10);
+  if(isNaN(minutes) || (minutes < 0 || minutes > 59)) {
+    log(LogSeverity.ERROR, "getTimeOffsetFromString", "Invalid minutes value (0 to 59). Check .env-template for format details.");
+    return undefined;
+  }
+
+  return {
+    operation: inc === "+" ? TimeOperation.INCREMENT : TimeOperation.DECREMENT,
+    hours,
+    minutes
+  };
+}
+
 module.exports = {
-  deltaTimeToString
+  TimeOperation,
+  isTimeOperationEnumAvailable,
+  deltaTimeToString,
+  getTimeOffsetFromString
 };

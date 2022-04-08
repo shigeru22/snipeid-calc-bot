@@ -1,4 +1,5 @@
-const { LogSeverity, log } = require("../utils/log");
+const { LogSeverity, log } = require("./log");
+const { TimeOperation, isTimeOperationEnumAvailable, getTimeOffsetFromString } = require("./time");
 
 function validateEnvironmentVariables() {
   log(LogSeverity.LOG, "validateEnvironmentVariables", "Checking for environment variables...");
@@ -30,6 +31,16 @@ function validateEnvironmentVariables() {
 
   if(typeof(process.env.COUNTRY_CODE) !== "string" || !process.env.COUNTRY_CODE) {
     log(LogSeverity.ERROR, "validateEnvironmentVariables", "COUNTRY_CODE must be defined in environment variables. Exiting.");
+    return false;
+  }
+
+  if(typeof(process.env.TZ_OFFSET) !== "string" || !process.env.TZ_OFFSET) {
+    log(LogSeverity.ERROR, "validateEnvironmentVariables", "COUNTRY_CODE must be defined in environment variables. Exiting.");
+    return false;
+  }
+
+  if(typeof(getTimeOffsetFromString(process.env.TZ_OFFSET)) === "undefined") {
+    log(LogSeverity.ERROR, "validateEnvironmentVariables", "TZ_OFFSET validation error occurred. See above error.");
     return false;
   }
 
