@@ -1,5 +1,6 @@
 const { Pool } = require("pg");
 const { LogSeverity, log } = require("../log");
+const { updateUser } = require("./users");
 const { DatabaseErrors, AssignmentType, AssignmentSort, isSortEnumAvailable } = require("../common");
 
 async function getAllAssignments(db, sort, desc) {
@@ -82,8 +83,8 @@ async function getAssignmentByOsuId(db, osuId) {
     return DatabaseErrors.TYPE_ERROR;
   }
 
-  if(typeof(userId) !== "number") {
-    log(LogSeverity.ERROR, "getAssignmentByOsuId", "userId must be number.");
+  if(typeof(osuId) !== "number") {
+    log(LogSeverity.ERROR, "getAssignmentByOsuId", "osuId must be number.");
     return DatabaseErrors.TYPE_ERROR;
   }
 
