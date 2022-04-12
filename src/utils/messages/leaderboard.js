@@ -26,7 +26,7 @@ function createLeaderboardEmbed(data, lastUpdated) {
     (
       (timeOperation === TimeOperation.INCREMENT ? 1 : -1) *
       (
-        (hourOffset * 3600000) + (minuteOffset * 60000)
+        (hourOffset * 3600000) + ((minuteOffset + lastUpdated.getTimezoneOffset()) * 60000) // also offset based on timezone offset minutes
       )
     )
   );
@@ -46,11 +46,11 @@ function createLeaderboardEmbed(data, lastUpdated) {
     draft.setDescription(rankingsDesc);
     draft.setFooter({
       text: "Last updated: " +
-        lastUpdated.getDate() + "/" +
-        (lastUpdated.getMonth() + 1) + "/" +
-        lastUpdated.getFullYear() + ", " +
-        lastUpdated.getHours().toString().padStart(2, "0") + ":" +
-        lastUpdated.getMinutes().toString().padStart(2, "0")
+        offsetLastUpdated.getDate() + "/" +
+        (offsetLastUpdated.getMonth() + 1) + "/" +
+        offsetLastUpdated.getFullYear() + ", " +
+        offsetLastUpdated.getHours().toString().padStart(2, "0") + ":" +
+        offsetLastUpdated.getMinutes().toString().padStart(2, "0")
     });
   }
   else {
