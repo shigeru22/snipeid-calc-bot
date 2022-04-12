@@ -178,7 +178,7 @@ async function updateUser(db, osuId, userName) { // only username should be upda
   try {
     await db.query("UPDATE users SET username=$1 WHERE osuid=$2", [ userName, osuId ]);
 
-    log(LogSeverity.ERROR, "updateUser", "users: Updated 1 row.");
+    log(LogSeverity.LOG, "updateUser", "users: Updated 1 row.");
     return DatabaseErrors.OK;
   }
   catch (e) {
