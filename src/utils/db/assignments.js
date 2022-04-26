@@ -227,7 +227,7 @@ async function insertOrUpdateAssignment(db, osuId, points, userName) {
   `;
   const selectCurrentRoleValues = [ osuId ];
 
-  const selectRoleQuery = "SELECT roleid, discordid, rolename, minpoints FROM roles WHERE minpoints<$1 ORDER BY minpoints DESC LIMIT 1";
+  const selectRoleQuery = "SELECT roleid, discordid, rolename, minpoints FROM roles WHERE minpoints<=$1 ORDER BY minpoints DESC LIMIT 1";
   const selectRoleValues = [ points ];
   let insert = true;
 
