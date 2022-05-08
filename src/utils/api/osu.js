@@ -39,13 +39,15 @@ async function getAccessToken(clientId, clientSecret) {
     return ret;
   }
   catch (e) {
-    if(axios.isAxiosError(e) || e instanceof Error) {
+    if(axios.isAxiosError(e)) {
       log(LogSeverity.ERROR, "getAccessToken", e.name + ": " + e.message);
 
       if(response.status === HTTPStatus.UNAUTHORIZED) {
         log(LogSeverity.ERROR, "getAccessToken", "Failed to authenticate client. Check OSU_CLIENT_ID and OSU_CLIENT_SECRET variables, and try again.");
-        process.exit(1);
       }
+    }
+    else if(e instanceof Error) {
+      log(LogSeverity.ERROR, "getAccessToken", e.name + ": " + e.message);
     }
     else {
       log(LogSeverity.ERROR, "getAccessToken", "Unknown error occurred.");
