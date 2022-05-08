@@ -154,7 +154,7 @@ async function onNewMessage(msg) {
       const osuId = parseInt(contents[2], 10);
 
       if(isNaN(osuId)) {
-        await channel.send("**Error:** ID must be in numbers. Open your osu! profile and copy ID from the last part of the example in the URL:\nhttps://osu.ppy.sh/users/2581664, then 2581664 is your ID.");
+        await channel.send("**Error:** ID must be in numbers.");
         return;
       }
 

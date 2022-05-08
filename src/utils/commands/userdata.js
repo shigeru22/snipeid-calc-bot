@@ -49,7 +49,7 @@ async function updateUserData(token, client, channel, db, osuId, points) {
     switch(assignmentResult) {
       case DatabaseErrors.USER_NOT_FOUND: break;
       default:
-        await channel.send("**Error:** An error occurred while updating your points data. Please contact bot administrator.");
+        await channel.send("**Error:** Data update error occurred. Please contact bot administrator.");
     }
   }
   else {
@@ -59,15 +59,18 @@ async function updateUserData(token, client, channel, db, osuId, points) {
       case AssignmentType.INSERT:
         await channel.send(
           "<@" + assignmentResult.discordId + "> achieved " +
-          "**" + assignmentResult.delta + "** points. Go for those leaderboards!"
+          "**" + assignmentResult.delta + "** " +
+          (assignmentResult.delta === 1 ? "point" : "points" ) +
+          ". Go for those leaderboards!"
         );
         break;
       case AssignmentType.UPDATE:
         await channel.send(
-          "<@" + assignmentResult.discordId + "> have " +
+          "<@" + assignmentResult.discordId + "> has " +
           (assignmentResult.delta >= 0 ? "gained" : "lost") +
-          " **" + assignmentResult.delta + "** points " + 
-          "since " + deltaTimeToString(today.getTime() - assignmentResult.lastUpdate.getTime()) +
+          " **" + assignmentResult.delta + "** " +
+          (assignmentResult.delta === 1 ? "point" : "points" ) +
+          " since " + deltaTimeToString(today.getTime() - assignmentResult.lastUpdate.getTime()) +
           " ago."
         );
         break;
@@ -294,15 +297,15 @@ async function insertUserData(channel, db, discordId, osuId, osuUsername) {
       await channel.send("Linked Discord user <@" + discordId + "> to osu! user **" + osuUsername + "**.");
       return true;
     case DatabaseErrors.CONNECTION_ERROR: {
-      await channel.send("**Error:** Unable to link ID: An error occurred with the database connection. Please contact bot administrator.");
+      await channel.send("**Error:** An error occurred with the database connection. Please contact bot administrator.");
       return false;
     }
     case DatabaseErrors.DUPLICATED_DISCORD_ID: {
-      await channel.send("**Error:** Unable to link ID: You already linked your osu! ID. Please contact server moderators to make changes.");
+      await channel.send("**Error:** You already linked your osu! ID. Please contact server moderators to make changes.");
       return false;
     }
     case DatabaseErrors.DUPLICATED_OSU_ID: {
-      await channel.send("**Error:** Unable to link ID: osu! ID already linked to other Discord user.");
+      await channel.send("**Error:** osu! ID already linked to other Discord user.");
       return false;
     }
     case DatabaseErrors.CLIENT_ERROR:
@@ -311,7 +314,7 @@ async function insertUserData(channel, db, discordId, osuId, osuUsername) {
       return false;
     }
     default: {
-      await channel.send("**Error**: Unknown return value. Please contact bot administrator.");
+      await channel.send("**Error**: Unknown error occurred. Please contact bot administrator.");
       return false;
     }
   }
