@@ -27,7 +27,7 @@ async function addRole(client, channel, discordId, roleId) {
     const role = await server.roles.fetch(process.env.VERIFIED_ROLE_ID);
     const member = await server.members.fetch(discordId);
 
-    log(LogSeverity.LOG, "addRole", "Adding role for server member: " + member.user.username + "#" + member.user.discriminator);
+    log(LogSeverity.LOG, "addRole", "Granting role for server member: " + member.user.username + "#" + member.user.discriminator);
 
     await member.roles.add(role);
   }
