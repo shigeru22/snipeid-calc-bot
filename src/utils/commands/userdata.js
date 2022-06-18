@@ -105,6 +105,7 @@ async function updateUserData(token, client, channel, db, osuId, points) {
 
             if(assignmentResult.role.newRoleId === "0") {
               log(LogSeverity.LOG, "updateUserData", "newRoleId is zero. Skipping role granting.");
+              await channel.send("You have been demoted to no role. Fight back at those leaderboards!");
               break; // break if new role is no role 
             }
             updated = true;
