@@ -98,8 +98,11 @@ async function updateUserData(token, client, channel, db, osuId, points) {
         case AssignmentType.UPDATE:
           if(assignmentResult.role.newRoleId !== assignmentResult.role.oldRoleId) {
             const oldRole = await server.roles.fetch(assignmentResult.role.oldRoleId);
-            await member.roles.remove(oldRole);
-            log(LogSeverity.LOG, "updateUserData", "Role " + oldRole.name + " removed from user: " + member.user.username + "#" + member.user.discriminator);
+            if(assignmentResult.role.oldRoleId !== "0") {
+              await member.roles.remove(oldRole);
+              log(LogSeverity.LOG, "updateUserData", "Role " + oldRole.name + " removed from user: " + member.user.username + "#" + member.user.discriminator);
+			}
+
             if(assignmentResult.role.newRoleId === "0") {
               log(LogSeverity.LOG, "updateUserData", "newRoleId is zero. Skipping role granting.");
               break; // break if new role is no role 
