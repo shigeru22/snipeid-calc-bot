@@ -7,9 +7,9 @@ const { validateEnvironmentVariables } = require("./utils/env");
 const { LogSeverity, log } = require("./utils/log");
 const { getAccessToken } = require("./utils/api/osu");
 const { calculatePoints } = require("./utils/messages/counter");
-const { parseTopCountDescription, parseUsername, parseOsuIdFromLink } = require("./utils/parser");
+const { parseTopCountDescription, parseUsername, parseOsuIdFromLink, parseWhatIfCount } = require("./utils/parser");
 const { sendMessage } = require("./utils/commands/conversations");
-const { userLeaderboardsCount } = require("./utils/commands/count");
+const { userLeaderboardsCount, userWhatIfCount } = require("./utils/commands/count");
 const { sendPointLeaderboard } = require("./utils/commands/leaderboards");
 const { countPoints } = require("./utils/commands/points");
 const { addWysiReaction } = require("./utils/commands/reactions");
@@ -143,7 +143,42 @@ async function onNewMessage(msg) {
         }
 
         if(contents[1] === "count") {
-          userLeaderboardsCount(client, channel, db, tempToken, msg.author.id);
+          await userLeaderboardsCount(client, channel, db, tempToken, msg.author.id);
+          processed = true;
+        }
+        else if(contents[1] === "whatif") {
+          const commands = [...contents];
+          commands.splice(0, 2); // remove first two elements
+
+          const whatifs = [];
+          {
+            const len = commands.length;
+            for(let i = 0; i < len; i++) {
+              const temp = parseWhatIfCount(commands[i]);
+              if(typeof(temp) === "number" && temp < 0) { // TODO: handle return codes
+                await channel.send(`**Error:** Invalid what if expression${ len > 1 ? "s" : "" }.`);
+                return;
+              }
+
+              whatifs.push(temp);
+            }
+          }
+
+          const tops = [ 1, 8, 15, 25, 50 ]; // match bathbot <osc top ranks data
+
+          let valid = true;
+          whatifs.forEach(whatif => {
+            if(!tops.includes(whatif[0])) {
+              valid = false;
+            }
+          });
+
+          if(!valid) {
+            await channel.send("**Error:** Rank query must be 1, 8, 15, 25, or 50.");
+            return;
+          }
+
+          await userWhatIfCount(client, channel, db, tempToken, msg.author.id, whatifs);
           processed = true;
         }
       }
