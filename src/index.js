@@ -9,6 +9,7 @@ const { getAccessToken } = require("./utils/api/osu");
 const { calculatePoints } = require("./utils/messages/counter");
 const { parseTopCountDescription, parseUsername, parseOsuIdFromLink } = require("./utils/parser");
 const { sendMessage } = require("./utils/commands/conversations");
+const { userLeaderboardsCount } = require("./utils/commands/count");
 const { sendPointLeaderboard } = require("./utils/commands/leaderboards");
 const { countPoints } = require("./utils/commands/points");
 const { addWysiReaction } = require("./utils/commands/reactions");
@@ -71,7 +72,7 @@ client.on("messageCreate", async (msg) => await onNewMessage(msg));
 async function onStartup() {
   log(LogSeverity.LOG, "onStartup", "Requesting access token...");
   const response = await getAccessToken(process.env.OSU_CLIENT_ID, process.env.OSU_CLIENT_SECRET);
-  
+
   if(Object.keys(response).length === 0) {
     log(LogSeverity.WARN, "onStartup", "Unable to request access token. osu! API might be down?");
   }
@@ -135,8 +136,14 @@ async function onNewMessage(msg) {
     }
     else {
       if(isClientMentioned) {
+        const tempToken = await getToken();
+        if(tempToken === 0) {
+          await channel.send("**Error:** Unable to retrieve osu! client authorizations. Maybe the API is down?");
+          return;
+        }
+
         if(contents[1] === "count") {
-          await channel.send("This command is currently disabled.");
+          userLeaderboardsCount(client, channel, db, tempToken, msg.author.id);
           processed = true;
         }
       }
@@ -162,7 +169,7 @@ async function onNewMessage(msg) {
         await channel.send("**Error:** I see what you did there. That's funny.");
         return;
       }
-      
+
       const tempToken = await getToken();
 
       if(tempToken === 0) {
