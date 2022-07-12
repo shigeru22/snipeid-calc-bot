@@ -251,7 +251,7 @@ async function fetchOsuStats(channel, osuUsername) {
  * @param { number | string } osuId
  * @param { string } osuUsername
  *
- * @returns { boolean }
+ * @returns { Promise<boolean> }
  */
 async function insertUserData(channel, db, discordId, osuId, osuUsername) {
   const result = await insertUser(
