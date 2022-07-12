@@ -5,7 +5,7 @@ const Discord = require("discord.js");
 const { Pool } = require("pg");
 const { validateEnvironmentVariables } = require("./utils/env");
 const { LogSeverity, log } = require("./utils/log");
-const { getAccessToken } = require("./utils/api/osu");
+const { OsuToken } = require("./utils/osu-token");
 const { calculatePoints } = require("./utils/messages/counter");
 const { parseTopCountDescription, parseUsername, parseOsuIdFromLink, parseWhatIfCount } = require("./utils/parser");
 const { sendMessage } = require("./utils/commands/conversations");
@@ -30,27 +30,7 @@ const client = new Discord.Client({ intents: [ "GUILDS", "GUILD_MESSAGES", ]});
 
 const BATHBOT_USER_ID = "297073686916366336";
 
-let token = "";
-let expired = new Date(0);
-
-async function getToken() {
-  const now = new Date();
-  if(now.getTime() >= expired.getTime()) {
-    log(LogSeverity.LOG, "getToken", "Access token expired. Requesting new access token...");
-    const response = await getAccessToken(process.env.OSU_CLIENT_ID, process.env.OSU_CLIENT_SECRET);
-
-    if(Object.keys(response).length === 0) {
-      log(LogSeverity.WARN, "getToken", "Unable to request access token. osu! site might be down?");
-      return 0;
-    }
-    else {
-      token = response.token;
-      expired = response.expire;
-    }
-  }
-
-  return token;
-}
+let token = new OsuToken(process.env.OSU_CLIENT_ID, process.env.OSU_CLIENT_SECRET);
 
 if (process.platform === "win32") {
   var rl = require("readline").createInterface({
@@ -70,16 +50,7 @@ client.on("ready", async () => await onStartup());
 client.on("messageCreate", async (msg) => await onNewMessage(msg));
 
 async function onStartup() {
-  log(LogSeverity.LOG, "onStartup", "Requesting access token...");
-  const response = await getAccessToken(process.env.OSU_CLIENT_ID, process.env.OSU_CLIENT_SECRET);
-
-  if(Object.keys(response).length === 0) {
-    log(LogSeverity.WARN, "onStartup", "Unable to request access token. osu! API might be down?");
-  }
-  else {
-    token = response.token;
-    expired = response.expire;
-  }
+  await token.getToken();
 
   client.user.setActivity("Bathbot everyday", { type: "WATCHING" });
   log(LogSeverity.LOG, "onStartup", process.env.BOT_NAME + " is now running.");
@@ -126,7 +97,7 @@ async function onNewMessage(msg) {
       const message = await countPoints(channel, username, topCounts);
       await addWysiReaction(client, message, topCounts, points);
 
-      const tempToken = await getToken();
+      const tempToken = await token.getToken();
       if(tempToken === 0) {
         await channel.send("**Error:** Unable to retrieve osu! client authorizations. Maybe the API is down?");
         return;
@@ -136,7 +107,7 @@ async function onNewMessage(msg) {
     }
     else {
       if(isClientMentioned) {
-        const tempToken = await getToken();
+        const tempToken = await token.getToken();
         if(tempToken === 0) {
           await channel.send("**Error:** Unable to retrieve osu! client authorizations. Maybe the API is down?");
           return;
@@ -205,7 +176,7 @@ async function onNewMessage(msg) {
         return;
       }
 
-      const tempToken = await getToken();
+      const tempToken = await token.getToken();
 
       if(tempToken === 0) {
         await channel.send("**Error:** Unable to retrieve osu! client authorizations. Maybe the API is down?");
