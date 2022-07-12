@@ -1,3 +1,6 @@
+/**
+ * HTTP status codes enum.
+ */
 const HTTPStatus = {
 	OK: 200,
 	CREATED: 201,
@@ -11,6 +14,9 @@ const HTTPStatus = {
 	INTERNAL_SERVER_ERROR: 500
 };
 
+/**
+ * osu! user status enum.
+ */
 const OsuUserStatus = {
   USER: 1,
   BOT: 2,
@@ -18,12 +24,18 @@ const OsuUserStatus = {
   NOT_FOUND: 4
 };
 
+/**
+ * osu! API response status.
+ */
 const OsuStatsStatus = {
   TYPE_ERROR: 1,
   USER_NOT_FOUND: 2,
   CLIENT_ERROR: 3
 };
 
+/**
+ * Database errors enum.
+ */
 const DatabaseErrors = {
   OK: 0,
   CONNECTION_ERROR: 1,
@@ -36,11 +48,17 @@ const DatabaseErrors = {
   CLIENT_ERROR: 8
 };
 
+/**
+ * Assignment type enum.
+ */
 const AssignmentType = {
   INSERT: 0,
   UPDATE: 1
 };
 
+/**
+ * Assignment sorting enum.
+ */
 const AssignmentSort = {
   ID: 1,
   ROLE_ID: 2,
@@ -48,6 +66,13 @@ const AssignmentSort = {
   LAST_UPDATED: 4
 };
 
+/**
+ * Checks whether assignment type is available in enum.
+ *
+ * @param { number | undefined } value
+ *
+ * @returns { boolean | undefined }
+ */
 function isTypeEnumAvailable(value) {
 	if(typeof(value) === "undefined") {
     return undefined;
@@ -62,6 +87,13 @@ function isTypeEnumAvailable(value) {
   return false;
 }
 
+/**
+ * Checks whether sorting type is available in enum.
+ *
+ * @param { number | undefined } value
+ *
+ * @returns { boolean | undefined }
+ */
 function isSortEnumAvailable(value) {
 	if(typeof(value) === "undefined") {
     return undefined;

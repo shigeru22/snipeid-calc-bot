@@ -1,13 +1,15 @@
 const { Pool } = require("pg");
 const { LogSeverity, log } = require("../utils/log");
 
+/**
+ * Creates tables in the database.
+ *
+ * @param { Pool } db
+ *
+ * @returns { Promise<boolean> }
+ */
 async function createTables(db) {
   log(LogSeverity.LOG, "createTables", "Creating tables...");
-
-  if(!(db instanceof Pool)) {
-    log(LogSeverity.ERROR, "createTables", "db must be a Pool object instance.");
-    return false;
-  }
 
   try {
     const client = await db.connect();

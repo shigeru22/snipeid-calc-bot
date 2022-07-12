@@ -5,17 +5,15 @@ const { HTTPStatus, OsuUserStatus } = require("../common");
 const OSU_API_ENDPOINT = "https://osu.ppy.sh/api/v2";
 const OSU_TOKEN_ENDPOINT = "https://osu.ppy.sh/oauth/token";
 
+/**
+ * Gets access token using osu! client ID and secret.
+ *
+ * @param { string } clientId
+ * @param { string } clientSecret
+ *
+ * @returns { Promise<string> }
+ */
 async function getAccessToken(clientId, clientSecret) {
-  if(typeof(clientId) !== "string") {
-    log(LogSeverity.LOG, "getAccessToken", "clientId must be string.");
-    process.exit(1);
-  }
-
-  if(typeof(clientSecret) !== "string") {
-    log(LogSeverity.LOG, "getAccessToken", "clientSecret must be string.");
-    process.exit(1);
-  }
-
   const id = parseInt(clientId, 10); // no need to validate since already validated in env module
   const secret = clientSecret;
 
@@ -57,17 +55,15 @@ async function getAccessToken(clientId, clientSecret) {
   }
 }
 
+/**
+ * Gets user information for this bot by osu! ID.
+ *
+ * @param { string } token
+ * @param { number } id
+ *
+ * @returns { Promise<{ status: number; username?: string; isCountryCodeAllowed?: boolean; }> }
+ */
 async function getUserByOsuId(token, id) {
-  if(typeof(token) !== "string") {
-    log(LogSeverity.ERROR, "getUserByOsuId", "token must be string.");
-    process.exit(1);
-  }
-
-  if(typeof(id) !== "number") {
-    log(LogSeverity.ERROR, "getUserByOsuId", "id must be number.");
-    process.exit(1);
-  }
-
   try {
     const response = await axios.get(OSU_API_ENDPOINT + "/users/" + id.toString(), {
       params: {

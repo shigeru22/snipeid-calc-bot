@@ -1,3 +1,10 @@
+/**
+ * Parses Bathbot's top count embed into arrays.
+ *
+ * @param { string } desc
+ *
+ * @returns { number[] }
+ */
 function parseTopCountDescription(desc) {
   const tops = desc.replace(/```(\n)*/g, "").split("\n");
 
@@ -17,14 +24,35 @@ function parseTopCountDescription(desc) {
   return topsArray;
 }
 
+/**
+ * Parses username from Bathbot's top count embed.
+ *
+ * @param { string } title
+ *
+ * @returns { string }
+ */
 function parseUsername(title) {
   return title.replace("In how many top X map leaderboards is ", "").replace("?", "");
 }
 
+/**
+ * Parses osu! ID from Bathbot's top count URL.
+ *
+ * @param { string } url
+ *
+ * @returns { string }
+ */
 function parseOsuIdFromLink(url) {
   return url.replace(/http(s)?:\/\/osu.ppy.sh\/u(sers)?\//g, "").split("/")[0];
 }
 
+/**
+ * Parses `whatif` command query.
+ *
+ * @param { string } exp
+ *
+ * @returns { number[] }
+ */
 function parseWhatIfCount(exp) {
   const temp = exp.split("=");
 

@@ -2,6 +2,13 @@ const { Pool } = require("pg");
 const { LogSeverity, log } = require("../log");
 const { DatabaseErrors } = require("../common");
 
+/**
+ * Returns list of roles in the database.
+ *
+ * @param { Pool } db
+ *
+ * @returns { Promise<{ roleid: number; discordid: string; rolename: string; minpoints: number; } | number> }
+ */
 async function getRolesList(db) {
   if(!(db instanceof Pool)) {
     log(LogSeverity.ERROR, "getRolesList", "db must be a Pool object instance.");

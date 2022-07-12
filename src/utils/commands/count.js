@@ -1,3 +1,5 @@
+const { Discord } = require("discord.js");
+const { Pool } = require("pg");
 const { getUserByOsuId } = require("../api/osu");
 const { getTopCounts } = require("../api/osustats");
 const { getDiscordUserByDiscordId } = require("../db/users");
@@ -6,9 +8,20 @@ const { addWysiReaction } = require("./reactions");
 const { updateUserData } = require("./userdata");
 const { calculatePoints } = require("../messages/counter");
 
-// TODO: implement type checks
 // TODO: add user check
 
+/**
+ * Sends top leaderboard count to specified channel.
+ * Basically, this is Bathbot's `<osc` command.
+ *
+ * @param { Discord.Client } client
+ * @param { Discord.AnyChannel } channel
+ * @param { Pool } db
+ * @param { string } osuToken
+ * @param { string } discordId
+ *
+ * @returns { Promise<void> }
+ */
 async function userLeaderboardsCount(client, channel, db, osuToken, discordId) {
   const user = await getDiscordUserByDiscordId(db, discordId);
   const osuUser = await getUserByOsuId(osuToken, user.osuId);
@@ -33,6 +46,16 @@ async function userLeaderboardsCount(client, channel, db, osuToken, discordId) {
   await updateUserData(osuToken, client, channel, db, user.osuId, points); 
 }
 
+/**
+ * Sends leaderboard in the specified what-if situation.
+ *
+ * @param { Discord.Client } client
+ * @param { Discord.AnyChannel } channel
+ * @param { Pool } db
+ * @param { string } osuToken
+ * @param { string } discordId
+ * @param { number[][] } whatIfsArray
+ */
 async function userWhatIfCount(client, channel, db, osuToken, discordId, whatIfsArray) {
   const user = await getDiscordUserByDiscordId(db, discordId);
   const osuUser = await getUserByOsuId(osuToken, user.osuId);

@@ -1,10 +1,20 @@
 const { LogSeverity, log } = require("../utils/log");
 
+/**
+ * Time operation enum.
+ */
 const TimeOperation = {
   DECREMENT: 0,
   INCREMENT: 1
 };
 
+/**
+ * Checks whether time operation type is available in enum.
+ *
+ * @param { number | undefined } value
+ *
+ * @returns { boolean | undefined }
+ */
 function isTimeOperationEnumAvailable(value) {
   if(typeof(value) === "undefined") {
     return undefined;
@@ -19,6 +29,13 @@ function isTimeOperationEnumAvailable(value) {
   return false;
 }
 
+/**
+ * Converts delta time into its string representation.
+ *
+ * @param { number } ms
+ *
+ * @returns { string }
+ */
 function deltaTimeToString(ms) {
   if(typeof(ms) !== "number") {
     log(LogSeverity.ERROR, "deltaTimeToString", "ms is not number.");
@@ -54,12 +71,14 @@ function deltaTimeToString(ms) {
   return seconds.toString() + (seconds === 1 ? " second" : " seconds");
 }
 
+/**
+ * Parses time offset from string.
+ *
+ * @param { string } value
+ *
+ * @returns { { operation: number; hours: number; minutes: number; } | undefined }
+ */
 function getTimeOffsetFromString(value) {
-  if(typeof(value) !== "string") {
-    log(LogSeverity.ERROR, "getTimeOffsetFromString", "value must be string.");
-    return undefined;
-  }
-
   const temp = value.split(":");
   if(temp.length !== 2) {
     log(LogSeverity.ERROR, "getTimeOffsetFromString", "value must be in time format. Check .env-template for details.");

@@ -2,17 +2,15 @@ const { Pool } = require("pg");
 const { LogSeverity, log } = require("../log");
 const { DatabaseErrors } = require("../common");
 
+/**
+ * Gets Discord user by osu! ID from the database.
+ *
+ * @param { Pool } db
+ * @param { number } osuId
+ *
+ * @returns { Promise<{ userId: number; discordId: string; osuId: number; } | number> }
+ */
 async function getDiscordUserByOsuId(db, osuId) {
-  if(!(db instanceof Pool)) {
-    log(LogSeverity.ERROR, "getDiscordUserByOsuId", "db must be a Pool object instance.");
-    return DatabaseErrors.TYPE_ERROR;
-  }
-
-  if(typeof(osuId) !== "number") {
-    log(LogSeverity.ERROR, "getDiscordUserByOsuId", "osuId must be number.");
-    return DatabaseErrors.TYPE_ERROR;
-  }
-
   const selectQuery = "SELECT * FROM users WHERE osuId=$1";
   const selectValues = [ osuId ];
 
@@ -52,17 +50,15 @@ async function getDiscordUserByOsuId(db, osuId) {
   }
 }
 
+/**
+ * Gets Discord user by Discord ID from the database.
+ *
+ * @param { Pool } db
+ * @param { string } discordId
+ *
+ * @returns { Promise<{ userId: number; discordId: string; osuId: number; } | number> }
+ */
 async function getDiscordUserByDiscordId(db, discordId) {
-  if(!(db instanceof Pool)) {
-    log(LogSeverity.ERROR, "getDiscordUserByDiscordId", "db must be a Pool object instance.");
-    return DatabaseErrors.TYPE_ERROR;
-  }
-
-  if(typeof(discordId) !== "string") {
-    log(LogSeverity.ERROR, "getDiscordUserByDiscordId", "discordId must be string.");
-    return DatabaseErrors.TYPE_ERROR;
-  }
-
   const selectQuery = "SELECT * FROM users WHERE discordid=$1";
   const selectValues = [ discordId ];
 
@@ -96,22 +92,17 @@ async function getDiscordUserByDiscordId(db, discordId) {
   }
 }
 
+/**
+ * Inserts user to the database.
+ *
+ * @param { Pool } db
+ * @param { string } discordId
+ * @param { number } osuId
+ * @param { string } userName
+ *
+ * @returns { Promise<number> }
+ */
 async function insertUser(db, discordId, osuId, userName) {
-  if(!(db instanceof Pool)) {
-    log(LogSeverity.ERROR, "insertUser", "db must be a Pool object instance.");
-    return DatabaseErrors.TYPE_ERROR;
-  }
-
-  if(typeof(discordId) !== "string") {
-    log(LogSeverity.ERROR, "insertUser", "discordId must be string.");
-    return DatabaseErrors.TYPE_ERROR;
-  }
-
-  if(typeof(osuId) !== "number") {
-    log(LogSeverity.ERROR, "insertUser", "osuId must be number.");
-    return DatabaseErrors.TYPE_ERROR;
-  }
-
   const selectDiscordIdQuery = "SELECT * FROM users WHERE discordId=$1";
   const selectDiscordIdValues = [ discordId ];
 
@@ -164,17 +155,16 @@ async function insertUser(db, discordId, osuId, userName) {
   }
 }
 
+/**
+ * Updates user in the database (username only).
+ *
+ * @param { Pool } db
+ * @param { number } osuId
+ * @param { string } userName
+ *
+ * @returns { Promise<number> }
+ */
 async function updateUser(db, osuId, userName) { // only username should be updateable, even that changes are from osu! API
-  if(!(db instanceof Pool)) {
-    log(LogSeverity.ERROR, "updateUser", "db must be a Pool object instance.");
-    return DatabaseErrors.TYPE_ERROR;
-  }
-
-  if(typeof(osuId) !== "number") {
-    log(LogSeverity.ERROR, "updateUser", "osuId must be number.");
-    return DatabaseErrors.TYPE_ERROR;
-  }
-
   try {
     await db.query("UPDATE users SET username=$1 WHERE osuid=$2", [ userName, osuId ]);
 

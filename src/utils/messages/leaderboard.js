@@ -2,11 +2,15 @@ const Discord = require("discord.js");
 const { LogSeverity, log } = require("../time");
 const { TimeOperation, getTimeOffsetFromString } = require("../time");
 
+/**
+ * Creates leaderboard embed message.
+ *
+ * @param { { assignmentid: number; username: string; rolename: string; points: number; lastupdate: Date }[] } data
+ * @param { Date } lastUpdated
+ *
+ * @returns { Discord.MessageEmbed }
+ */
 function createLeaderboardEmbed(data, lastUpdated) {
-  if(!(lastUpdated instanceof Date)) {
-    return false;
-  }
-
   let timeOperation = TimeOperation.INCREMENT;
   let hourOffset = 0;
   let minuteOffset = 0;

@@ -3,27 +3,16 @@ const { LogSeverity, log } = require("../log");
 const { updateUser } = require("./users");
 const { DatabaseErrors, AssignmentType, AssignmentSort, isSortEnumAvailable } = require("../common");
 
+/**
+ * Returns all `assignments` table data.
+ *
+ * @param { Pool } db
+ * @param { number } sort
+ * @param { boolean } desc
+ *
+ * @returns { Promise<{ assignmentid: number; username: string; rolename: string; points: number; lastupdate: Date }[] | number> }
+ */
 async function getAllAssignments(db, sort, desc) {
-  if(!(db instanceof Pool)) {
-    log(LogSeverity.ERROR, "getAllAssignments", "db must be a Pool object instance.");
-    return DatabaseErrors.TYPE_ERROR;
-  }
-
-  if(typeof(sort) !== "number") {
-    log(LogSeverity.ERROR, "getAllAssignments", "userId must be number.");
-    return DatabaseErrors.TYPE_ERROR;
-  }
-
-  if(typeof(desc) !== "boolean") {
-    log(LogSeverity.ERROR, "getAllAssignments", "desc must be boolean.");
-    return DatabaseErrors.TYPE_ERROR;
-  }
-
-  if(!isSortEnumAvailable(sort)) {
-    log(LogSeverity.ERROR, "getAllAssignments", "sort value is not available in AssignmentSort enum.");
-    return DatabaseErrors.TYPE_ERROR;
-  }
-
   const selectQuery = `
     SELECT
       a."assignmentid", u."username", r."rolename", a."points", a."lastupdate"
@@ -77,23 +66,21 @@ async function getAllAssignments(db, sort, desc) {
   }
 }
 
+/**
+ * Gets user assignment by osu! ID from the database.
+ *
+ * @param { Pool } db
+ * @param { number } osuId
+ *
+ * @returns { Promise<{ userId: number; discordId: string; osuId: number; } | number> }
+ */
 async function getAssignmentByOsuId(db, osuId) {
-  if(!(db instanceof Pool)) {
-    log(LogSeverity.ERROR, "getAssignmentByOsuId", "db must be a Pool object instance.");
-    return DatabaseErrors.TYPE_ERROR;
-  }
-
-  if(typeof(osuId) !== "number") {
-    log(LogSeverity.ERROR, "getAssignmentByOsuId", "osuId must be number.");
-    return DatabaseErrors.TYPE_ERROR;
-  }
-
   const selectQuery = `SELECT
       a."assignmentid", a."userid", u."discordid", u."osuid", a."roleid", a."points"
     FROM
       assignments AS a
     JOIN
-	    users as u
+	  users as u
     ON
       a."userid"=u."userid"
     WHERE
@@ -136,6 +123,13 @@ async function getAssignmentByOsuId(db, osuId) {
   }
 }
 
+/**
+ * Returns last assignment update time.
+ *
+ * @param { Pool } db
+ *
+ * @returns { Promise<Date | number> }
+ */
 async function getLastAssignmentUpdate(db) {
   if(!(db instanceof Pool)) {
     log(LogSeverity.ERROR, "getLastAssignmentUpdate", "db must be a Pool object instance.");
@@ -184,17 +178,17 @@ async function getLastAssignmentUpdate(db) {
   }
 }
 
+/**
+ * Inserts or updates (if the user has already been inserted) assignment data in the database.
+ *
+ * @param { Pool } db
+ * @param { number } osuId
+ * @param { number } points
+ * @param { string } userName
+ *
+ * @returns { Promise<{ type: number; discordId: string; role: { oldRoleId?: string; oldRoleName?: string; newRoleId: string; newRoleName: string; }; delta: number; lastUpdate: Date | null } | number> }
+ */
 async function insertOrUpdateAssignment(db, osuId, points, userName) {
-  if(!(db instanceof Pool)) {
-    log(LogSeverity.ERROR, "insertOrUpdateAssignment", "db must be a Pool object instance.");
-    return DatabaseErrors.TYPE_ERROR;
-  }
-
-  if(typeof(osuId) !== "number") {
-    log(LogSeverity.ERROR, "insertOrUpdateAssignment", "osuId must be number.");
-    return DatabaseErrors.TYPE_ERROR;
-  }
-
   const selectAssignmentQuery = `
     SELECT
       a."assignmentid", a."userid", u."discordid", u."osuid", u."username", a."roleid", a."points", a."lastupdate"

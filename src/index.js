@@ -14,7 +14,7 @@ const { sendPointLeaderboard } = require("./utils/commands/leaderboards");
 const { countPoints } = require("./utils/commands/points");
 const { addWysiReaction } = require("./utils/commands/reactions");
 const { addRole } = require("./utils/commands/roles");
-const { updateUserData, fetchUser, fetchOsuUser, fetchOsuStats, insertUserData } = require("./utils/commands/userdata");
+const { updateUserData, fetchOsuUser, insertUserData } = require("./utils/commands/userdata");
 
 dotenv.config();
 

@@ -1,5 +1,10 @@
 const { LogSeverity, log } = require("../utils/log");
 
+/**
+ * Validates environment variables.
+ *
+ * @returns { boolean }
+ */
 function validateEnvironmentVariables() {
   log(LogSeverity.LOG, "validateEnvironmentVariables", "Checking for environment variables...");
 

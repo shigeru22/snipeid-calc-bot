@@ -1,6 +1,11 @@
 const { LogSeverity, log } = require("./log");
 const { TimeOperation, isTimeOperationEnumAvailable, getTimeOffsetFromString } = require("./time");
 
+/**
+ * Validates environment variables.
+ *
+ * @returns { boolean }
+ */
 function validateEnvironmentVariables() {
   log(LogSeverity.LOG, "validateEnvironmentVariables", "Checking for environment variables...");
 

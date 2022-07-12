@@ -1,17 +1,17 @@
 const Discord = require("discord.js");
 const { LogSeverity, log } = require("../log");
 
+/**
+ * Adds specified reaction to certain number element inside the calculated points result.
+ *
+ * @param { Discord.Client } client
+ * @param { Discord.Message } message
+ * @param { number[] } topCounts
+ * @param { number } points
+ *
+ * @returns { Promise<void> }
+ */
 async function addWysiReaction(client, message, topCounts, points) {
-  if(!(client instanceof Discord.Client)) {
-    log(LogSeverity.ERROR, "addWysiReaction", "client must be a Discord.Client object instance.");
-    process.exit(1);
-  }
-
-  if(!(message instanceof Discord.Message)) {
-    log(LogSeverity.ERROR, "addWysiReaction", "message must be string.");
-    process.exit(1);
-  }
-
   // TODO: validate topCounts array
 
   if(typeof(points) !== "number") {

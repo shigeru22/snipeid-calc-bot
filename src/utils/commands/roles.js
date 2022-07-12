@@ -1,6 +1,16 @@
 const Discord = require("discord.js");
 const { LogSeverity, log } = require("../log");
 
+/**
+ * Add specified role to user specified.
+ *
+ * @param { Discord.Client } client
+ * @param { Discord.Channel } channel
+ * @param { string } discordId
+ * @param { string } roleId
+ *
+ * @returns { Promise<void> }
+ */
 async function addRole(client, channel, discordId, roleId) {
   if(!(client instanceof Discord.Client)) {
     log(LogSeverity.ERROR, "addRole", "client must be a Discord.Client object instance.");

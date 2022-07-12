@@ -1,5 +1,16 @@
 const Discord = require("discord.js");
 
+/**
+ * Calculates points for each top rank count.
+ *
+ * @param { number } top_1
+ * @param { number } top_8
+ * @param { number } top_15
+ * @param { number } top_25
+ * @param { number } top_50
+ *
+ * @returns { number }
+ */
 function calculatePoints(top_1, top_8, top_15, top_25, top_50) {
   return top_1 * 5 +
     (top_8 - top_1) * 3 +
@@ -8,6 +19,17 @@ function calculatePoints(top_1, top_8, top_15, top_25, top_50) {
     (top_50 - top_25);
 }
 
+/**
+ * Creates counter draft embed message.
+ *
+ * @param { number } top_1
+ * @param { number } top_8
+ * @param { number } top_15
+ * @param { number } top_25
+ * @param { number } top_50
+ *
+ * @returns { Discord.MessageEmbed }
+ */
 function counter(top_1, top_8, top_15, top_25, top_50, username) {
   const draft = new Discord.MessageEmbed();
 

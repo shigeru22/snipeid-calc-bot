@@ -1,13 +1,16 @@
 const { Pool } = require("pg");
 const { LogSeverity, log } = require("../utils/log");
 
+/**
+ * Imports roles from into database.
+ *
+ * @param { Pool } db
+ * @param { { discordId: string; name: string; minPoints: number; }[] }
+ *
+ * @returns { Promise<boolean> }
+ */
 async function importRoles(db, roles) {
   log(LogSeverity.LOG, "importRoles", "Importing roles...");
-
-  if(!(db instanceof Pool)) {
-    log(LogSeverity.LOG, "importRoles", "db must be a Pool object instance.");
-    return false;
-  }
 
   const len = roles.length;
   let query = "INSERT INTO roles (discordId, roleName, minPoints) VALUES ";

@@ -8,37 +8,19 @@ const { getDiscordUserByDiscordId, insertUser } = require("../db/users");
 const { DatabaseErrors, AssignmentType, OsuUserStatus, OsuStatsStatus } = require("../common");
 const { deltaTimeToString } = require("../time");
 
+/**
+ * Updates user data in the database and assigns roles based on points received.
+ *
+ * @param { string } token
+ * @param { Discord.Client } client
+ * @param { Discord.Channel } channel
+ * @param { Pool } db
+ * @param { number | string } osuId
+ * @param { number } points
+ *
+ * @returns { Promise<void> }
+ */
 async function updateUserData(token, client, channel, db, osuId, points) {
-  if(typeof(token) !== "string") {
-    log(LogSeverity.ERROR, "updateUserData", "token must be string.");
-    process.exit(1);
-  }
-
-  if(!(client instanceof Discord.Client)) {
-    log(LogSeverity.ERROR, "updateUserData", "client must be a Discord.Client object instance.");
-    process.exit(1);
-  }
-
-  if(!(channel instanceof Discord.Channel)) {
-    log(LogSeverity.ERROR, "updateUserData", "channel must be a Discord.Channel object instance.");
-    process.exit(1);
-  }
-
-  if(!(db instanceof Pool)) {
-    log(LogSeverity.ERROR, "updateUserData", "db must be a Pool object instance.");
-    process.exit(1);
-  }
-
-  if(typeof(osuId) !== "number" && typeof(osuId) !== "string") {
-    log(LogSeverity.ERROR, "updateUserData", "osuId must be number or string.");
-    process.exit(1);
-  }
-
-  if(typeof(points) !== "number") {
-    log(LogSeverity.ERROR, "updateUserData", "points must be number.");
-    process.exit(1);
-  }
-
   const response = await getUserByOsuId(
     token,
     typeof(osuId) === "number" ? osuId : parseInt(osuId, 10)
@@ -145,22 +127,16 @@ async function updateUserData(token, client, channel, db, osuId, points) {
   }
 }
 
+/**
+ * Fetches user from the database.
+ *
+ * @param { Discord.Channel } channel
+ * @param { Pool } db
+ * @param { string } discordId
+ *
+ * @returns { Promise<{ userId: number; discordId: string; osuId: number; } | boolean> }
+ */
 async function fetchUser(channel, db, discordId) {
-  if(!(channel instanceof Discord.Channel)) {
-    log(LogSeverity.ERROR, "fetchUser", "channel must be a Discord.Channel object instance.");
-    process.exit(1);
-  }
-
-  if(!(db instanceof Pool)) {
-    log(LogSeverity.ERROR, "fetchUser", "db must be a Pool object instance.");
-    process.exit(1);
-  }
-
-  if(typeof(discordId) !== "string") {
-    log(LogSeverity.ERROR, "fetchUser", "discordId must be string in Snowflake ID format.");
-    process.exit(1);
-  }
-
   const user = await getDiscordUserByDiscordId(db, discordId);
 
   switch(user) {
@@ -178,22 +154,16 @@ async function fetchUser(channel, db, discordId) {
   }
 }
 
+/**
+ * Fetches osu! user from osu! ID.
+ *
+ * @param { Discord.Channel } channel
+ * @param { string } token
+ * @param { number | string } osuId
+ *
+ * @returns { Promise<{ status: number; username: string; isCountryCodeAllowed: boolean; } | boolean> } 
+ */
 async function fetchOsuUser(channel, token, osuId) {
-  if(!(channel instanceof Discord.Channel)) {
-    log(LogSeverity.ERROR, "fetchOsuUser", "channel must be a Discord.Channel object instance.");
-    process.exit(1);
-  }
-
-  if(typeof(token) !== "string") {
-    log(LogSeverity.ERROR, "fetchOsuUser", "token must be string.");
-    process.exit(1);
-  }
-
-  if(typeof(osuId) !== "number" && typeof(osuId) !== "string") {
-    log(LogSeverity.ERROR, "fetchOsuUser", "osuId must be number or string.");
-    process.exit(1);
-  }
-
   const osuUser = await getUserByOsuId(
     token,
     typeof(osuId) === "number" ? osuId : parseInt(osuId, 10)
@@ -214,6 +184,14 @@ async function fetchOsuUser(channel, token, osuId) {
   }
 }
 
+/**
+ * Fetches osu!Stats' number of top ranks.
+ *
+ * @param { Discord.Channel } channel
+ * @param { string } osuUsername
+ *
+ * @returns { Promise<number[]> }
+ */
 async function fetchOsuStats(channel, osuUsername) {
   if(!(channel instanceof Discord.Channel)) {
     log(LogSeverity.ERROR, "fetchOsuStats", "channel must be a Discord.Channel object instance.");
@@ -264,38 +242,25 @@ async function fetchOsuStats(channel, osuUsername) {
   return topCounts;
 }
 
+/**
+ * Links and inserts user to database.
+ *
+ * @param { Discord.Channel } channel
+ * @param { Pool } db
+ * @param { string } discordId
+ * @param { number | string } osuId
+ * @param { string } osuUsername
+ *
+ * @returns { boolean }
+ */
 async function insertUserData(channel, db, discordId, osuId, osuUsername) {
-  if(!(channel instanceof Discord.Channel)) {
-    log(LogSeverity.ERROR, "insertUserData", "channel must be a Discord.Channel object instance.");
-    process.exit(1);
-  }
-
-  if(!(db instanceof Pool)) {
-    log(LogSeverity.ERROR, "insertUserData", "db must be a Pool object instance.");
-    process.exit(1);
-  }
-
-  if(typeof(discordId) !== "string") {
-    log(LogSeverity.ERROR, "insertUserData", "discordId must be string.");
-    process.exit(1);
-  }
-
-  if(typeof(osuId) !== "number" && typeof(osuId) !== "string") {
-    log(LogSeverity.ERROR, "insertUserData", "osuId must be number or string.");
-    process.exit(1);
-  }
-
-  if(typeof(osuUsername) !== "string") {
-    log(LogSeverity.ERROR, "insertUserData", "osuUsername must be string.");
-    process.exit(1);
-  }
-
   const result = await insertUser(
     db,
     discordId,
     typeof(osuId) === "number" ? osuId : parseInt(osuId, 10),
     osuUsername
   );
+
   switch(result) {
     case DatabaseErrors.OK: 
       await channel.send("Linked Discord user <@" + discordId + "> to osu! user **" + osuUsername + "**.");

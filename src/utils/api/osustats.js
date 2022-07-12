@@ -4,17 +4,15 @@ const { HTTPStatus, OsuStatsStatus } = require("../common");
 
 const OSUSTATS_API_ENDPOINT = "https://osustats.ppy.sh/api";
 
+/**
+ * Retrieves user top leaderboard count.
+ *
+ * @param { string } userName
+ * @param { number } maxRank
+ *
+ * @returns { { userName: string, maxRank: number, count: number } }
+ */
 async function getTopCounts(userName, maxRank) {
-  if(typeof(userName) !== "string") {
-    log(LogSeverity.ERROR, "getTopCounts", "userName must be string.");
-    return OsuStatsStatus.TYPE_ERROR;
-  }
-
-  if(typeof(maxRank) !== "number") {
-    log(LogSeverity.ERROR, "getTopCounts", "maxRank must be number.");
-    return OsuStatsStatus.TYPE_ERROR;
-  }
-
   try {
     const response = await axios.post(OSUSTATS_API_ENDPOINT + "/getScores", {
       accMin: 0.0,
