@@ -34,14 +34,31 @@ async function main() {
     database: process.env.DB_DATABASE
   });
 
-  log(LogSeverity.LOG, "main", "Connecting to database...");
-  await db.connect();
+  try {
+    log(LogSeverity.LOG, "main", "Connecting to database...");
 
-  if(!(await createTables(db))) {
-    process.exit(1);
+    // test connection before continuing
+    {
+      const dbTemp = await db.connect();
+      dbTemp.release();
+    }
+
+    if(!(await createTables(db))) {
+      process.exit(1);
+    }
+
+    if(!(await importRoles(db, roles))) {
+      process.exit(1);
+    }
   }
+  catch (e) {
+    if(e instanceof Error) {
+      log(LogSeverity.ERROR, "main", `Database operations failed.\n${ e.name }: ${ e.message }\n${ e.stack }`);
+    }
+    else {
+      log(LogSeverity.ERROR, "main", "Unknown error occurred while doing database operations.");
+    }
 
-  if(!(await importRoles(db, roles))) {
     process.exit(1);
   }
 
