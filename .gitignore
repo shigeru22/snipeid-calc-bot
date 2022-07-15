@@ -106,3 +106,6 @@ dist
 # Config template file
 config.json
 
+# Vim generated tags file
+tags
+tags.*
