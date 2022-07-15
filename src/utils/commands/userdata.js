@@ -1,32 +1,49 @@
-const Discord = require("discord.js");
-const { Pool } = require("pg");
 const { LogSeverity, log } = require("../log");
 const { getUserByOsuId } = require("../api/osu");
 const { getTopCounts } = require("../api/osustats");
 const { insertOrUpdateAssignment } = require("../db/assignments");
 const { getDiscordUserByDiscordId, insertUser } = require("../db/users");
-const { DatabaseErrors, AssignmentType, OsuUserStatus, OsuStatsStatus } = require("../common");
+const { DatabaseErrors, AssignmentType, OsuUserStatus, OsuApiStatus, OsuStatsStatus } = require("../common");
 const { deltaTimeToString } = require("../time");
 
 /**
  * Updates user data in the database and assigns roles based on points received.
  *
- * @param { string } token
- * @param { Discord.Client } client
- * @param { Discord.Channel } channel
- * @param { Pool } db
- * @param { number | string } osuId
- * @param { number } points
+ * @param { string } osuToken - osu! API token
+ * @param { import("discord.js").Client } client - Discord bot client.
+ * @param { import("discord.js").TextChannel } channel - Discord channel to send message to.
+ * @param { import("pg").Pool } db - Database connection pool.
+ * @param { number | string } osuId - osu! user ID.
+ * @param { number } points - Calculated points.
  *
- * @returns { Promise<void> }
+ * @returns { Promise<void> } Promise object with no return value.
  */
-async function updateUserData(token, client, channel, db, osuId, points) {
-  const response = await getUserByOsuId(
-    token,
-    typeof(osuId) === "number" ? osuId : parseInt(osuId, 10)
-  ); // TODO: handle deleted user
+async function updateUserData(osuToken, client, channel, db, osuId, points) {
+  const osuUser = await getUserByOsuId(osuToken, typeof(osuId) === "number" ? osuId : parseInt(osuId, 10));
+  if(typeof(osuUser) === "number") {
+    switch(osuUser) {
+      case OsuApiStatus.NON_OK:
+        await channel.send("**Error:** osu! API error. Check osu!status?");
+        break;
+      case OsuApiStatus.CLIENT_ERROR:
+        await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
+        break;
+    }
 
-  const assignmentResult = await insertOrUpdateAssignment(db, typeof(osuId) === "number" ? osuId : parseInt(osuId, 10), points, response.username);
+    return;
+  }
+
+  switch(osuUser.status) {
+    case OsuUserStatus.BOT:
+      await channel.send("**Error:** Suddenly, you turned into a skynet...");
+      return;
+    case OsuUserStatus.DELETED: // falltrough
+    case OsuUserStatus.NOT_FOUND:
+      await channel.send("**Error:** Did you do something to your osu! account?");
+      return;
+  }
+
+  const assignmentResult = await insertOrUpdateAssignment(db, typeof(osuId) === "number" ? osuId : parseInt(osuId, 10), points, osuUser.username);
   if(typeof(assignmentResult) === "number") {
     switch(assignmentResult) {
       case DatabaseErrors.USER_NOT_FOUND: break;
@@ -40,28 +57,19 @@ async function updateUserData(token, client, channel, db, osuId, points) {
     switch(assignmentResult.type) {
       case AssignmentType.INSERT:
         await channel.send(
-          "<@" + assignmentResult.discordId + "> achieved " +
-          "**" + assignmentResult.delta + "** " +
-          (assignmentResult.delta === 1 ? "point" : "points" ) +
-          ". Go for those leaderboards!"
+          "<@" + assignmentResult.discordId + "> achieved " + "**" + assignmentResult.delta + "** " + (assignmentResult.delta === 1 ? "point" : "points" ) + ". Go for those leaderboards!"
         );
         break;
       case AssignmentType.UPDATE:
         await channel.send(
-          "<@" + assignmentResult.discordId + "> has " +
-          (assignmentResult.delta >= 0 ? "gained" : "lost") +
-          " **" + assignmentResult.delta + "** " +
-          (assignmentResult.delta === 1 ? "point" : "points" ) +
-          " since " + deltaTimeToString(today.getTime() - assignmentResult.lastUpdate.getTime()) +
-          " ago."
+          "<@" + assignmentResult.discordId + "> has " + (assignmentResult.delta >= 0 ? "gained" : "lost") + " **" + assignmentResult.delta + "** " + (assignmentResult.delta === 1 ? "point" : "points" ) + " since " + deltaTimeToString(today.getTime() - assignmentResult.lastUpdate.getTime()) + " ago."
         );
         break;
     }
 
     try {
       if(
-        assignmentResult.role.newRoleId === "0" &&
-        (typeof(assignmentResult.role.oldRoleId === "undefined") || (typeof(assignmentResult.role.oldRoleId) === "string" && assignmentResult.role.oldRoleId === "0"))
+        assignmentResult.role.newRoleId === "0" && (typeof(assignmentResult.role.oldRoleId === "undefined") || (typeof(assignmentResult.role.oldRoleId) === "string" && assignmentResult.role.oldRoleId === "0"))
       ) { // no role
         log(LogSeverity.LOG, "updateUserData", "newRoleId is either zero or oldRoleId is not available. Skipping role granting.");
         return;
@@ -83,20 +91,18 @@ async function updateUserData(token, client, channel, db, osuId, points) {
             if(assignmentResult.role.oldRoleId !== "0") {
               await member.roles.remove(oldRole);
               log(LogSeverity.LOG, "updateUserData", "Role " + oldRole.name + " removed from user: " + member.user.username + "#" + member.user.discriminator);
-			}
+            }
 
             if(assignmentResult.role.newRoleId === "0") {
               log(LogSeverity.LOG, "updateUserData", "newRoleId is zero. Skipping role granting.");
               await channel.send("You have been demoted to no role. Fight back at those leaderboards!");
-              break; // break if new role is no role 
+              break; // break if new role is no role
             }
             updated = true;
           } // use fallthrough
         case AssignmentType.INSERT:
           if(
-            assignmentResult.type === AssignmentType.INSERT ||
-            (assignmentResult.type === AssignmentType.UPDATE &&
-              assignmentResult.role.newRoleId !== assignmentResult.role.oldRoleId)
+            assignmentResult.type === AssignmentType.INSERT || (assignmentResult.type === AssignmentType.UPDATE && assignmentResult.role.newRoleId !== assignmentResult.role.oldRoleId)
           ) {
             const newRole = await server.roles.fetch(assignmentResult.role.newRoleId);
             await member.roles.add(newRole);
@@ -108,9 +114,7 @@ async function updateUserData(token, client, channel, db, osuId, points) {
 
       if(updated) {
         await channel.send(
-          "You have been " + (assignmentResult.delta > 0 ? "promoted" : "demoted") +
-          " to **" + assignmentResult.role.newRoleName + "** role. " +
-          (assignmentResult.delta > 0 ? "Awesome!" : "Fight back at those leaderboards!")
+          "You have been " + (assignmentResult.delta > 0 ? "promoted" : "demoted") + " to **" + assignmentResult.role.newRoleName + "** role. " + (assignmentResult.delta > 0 ? "Awesome!" : "Fight back at those leaderboards!")
         );
       }
     }
@@ -130,90 +134,113 @@ async function updateUserData(token, client, channel, db, osuId, points) {
 /**
  * Fetches user from the database.
  *
- * @param { Discord.Channel } channel
- * @param { Pool } db
- * @param { string } discordId
+ * @param { import("discord.js").TextChannel } channel - Channel to send message to.
+ * @param { import("pg").Pool } db - Database connection.
+ * @param { string } discordId - Discord ID of the user.
  *
- * @returns { Promise<{ userId: number; discordId: string; osuId: number; } | boolean> }
+ * @returns { Promise<{ userId: number; discordId: string; osuId: number; } | boolean> } Promise object with `userId`, `discordId`, and `osuId`, or `false` if user was not found.
  */
 async function fetchUser(channel, db, discordId) {
   const user = await getDiscordUserByDiscordId(db, discordId);
 
-  switch(user) {
-    case DatabaseErrors.USER_NOT_FOUND:
-      await channel.send("**Error**: You haven't connected your osu! ID. Use Bathbot's `<osc` command instead or link your osu! ID using `@SnipeID link [osu! ID]`.");
-      return false;
-    case DatabaseErrors.CONNECTION_ERROR:
-      await channel.send("**Error**: Database connection failed. Please contact bot administrator.");
-      return false;
-    case DatabaseErrors.CLIENT_ERROR:
-      await channel.send("**Error**: Client error has occurred. Please contact bot administrator.");
-      return false;
-    default:
-      return user;
+  if(typeof(user) === "number") {
+    switch(user) {
+      case DatabaseErrors.USER_NOT_FOUND:
+        await channel.send("**Error**: You haven't connected your osu! ID. Use Bathbot's `<osc` command instead or link your osu! ID using `@SnipeID link [osu! ID]`.");
+        return false;
+      case DatabaseErrors.CONNECTION_ERROR:
+        await channel.send("**Error**: Database connection failed. Please contact bot administrator.");
+        return false;
+      case DatabaseErrors.CLIENT_ERROR:
+        await channel.send("**Error**: Client error has occurred. Please contact bot administrator.");
+        return false;
+      default:
+        log(LogSeverity.ERROR, "fetchUser", "Unknown user fetch return value.");
+        return false;
+    }
   }
+
+  return user;
 }
 
 /**
  * Fetches osu! user from osu! ID.
  *
- * @param { Discord.Channel } channel
- * @param { string } token
- * @param { number | string } osuId
+ * @param { import("discord.js").TextChannel } channel - Channel to send message to.
+ * @param { string } token - osu! API token.
+ * @param { number | string } osuId - osu! user ID.
  *
- * @returns { Promise<{ status: number; username: string; isCountryCodeAllowed: boolean; } | boolean> } 
+ * @returns { Promise<{ status: number; username?: string; isCountryCodeAllowed?: boolean } | boolean> } Promise object with `status` and `username`, or `false` in case of errors.
  */
 async function fetchOsuUser(channel, token, osuId) {
-  const osuUser = await getUserByOsuId(
-    token,
-    typeof(osuId) === "number" ? osuId : parseInt(osuId, 10)
-  );
+  const osuUser = await getUserByOsuId(token, typeof(osuId) === "number" ? osuId : parseInt(osuId, 10));
 
+  if(typeof(osuUser) === "number") {
+    switch(osuUser) {
+      case OsuApiStatus.NON_OK:
+        await channel.send("**Error:** osu! API error. Check osu!status?");
+        break;
+      case OsuApiStatus.CLIENT_ERROR:
+        await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
+        break;
+    }
+
+    return;
+  }
+
+  let error = false;
   switch(osuUser.status) {
     case OsuUserStatus.BOT:
       await channel.send("**Error:** Unable to retrieve osu! user: User type is Bot.");
-      return false;
+      error = true;
+      break;
     case OsuUserStatus.NOT_FOUND:
       await channel.send("**Error:** Unable to retrieve osu! user: User not found.");
-      return false;
+      error = true;
+      break;
     case OsuUserStatus.DELETED:
       await channel.send("**Error:** Unable to retrieve osu! user: User is deleted.");
-      return false;
-    default:
-      return osuUser;
+      error = true;
+      break;
   }
+
+  if(error) {
+    /* eslint-disable consistent-return */
+    return false; // yeah, it's boolean
+  }
+
+  /* eslint-disable consistent-return */
+  return osuUser; // while this is getUserByOsuId return object
 }
 
 /**
  * Fetches osu!Stats' number of top ranks.
  *
- * @param { Discord.Channel } channel
- * @param { string } osuUsername
+ * @param { import("discord.js").TextChannel } channel - Channel to send message to.
+ * @param { string } osuUsername - osu! username.
  *
- * @returns { Promise<number[]> }
+ * @returns { Promise<number[] | boolean> } Promise object with number of ranks array (top 1, 8, 15, 25, and 50), or `false` in case of errors.
  */
 async function fetchOsuStats(channel, osuUsername) {
-  if(!(channel instanceof Discord.Channel)) {
-    log(LogSeverity.ERROR, "fetchOsuStats", "channel must be a Discord.Channel object instance.");
-    process.exit(1);
-  }
-
-  if(typeof(osuUsername) !== "string") {
-    log(LogSeverity.ERROR, "fetchOsuStats", "osuUsername must be string.");
-    process.exit(1);
-  }
-  
   const topCountsRequests = [];
   [ 1, 8, 15, 25, 50 ].forEach(rank => {
     topCountsRequests.push(getTopCounts(osuUsername, rank));
   });
 
   const topCountsResponses = await Promise.all(topCountsRequests);
-  const len = topCountsResponses.length;
-  for(let i = 0; i < len; i++) {
-    switch(topCountsResponses[i]) {
+  {
+    let error = 0;
+    const len = topCountsResponses.length;
+    for(let i = 0; i < len; i++) {
+      if(typeof(topCountsResponses[i]) === "number") {
+        error = topCountsResponses[i];
+        break;
+      }
+    }
+
+    switch(error) {
       case OsuStatsStatus.USER_NOT_FOUND:
-        await channel.send("**Error**: Username not found. Maybe osu! API haven't updated your username? (Use `<osc` instead)");
+        await channel.send("**Error**: Username not found. Maybe osu!Stats hasn't updated your username?");
         return false;
       case OsuStatsStatus.TYPE_ERROR: // fallthrough
       case OsuStatsStatus.CLIENT_ERROR:
@@ -234,8 +261,6 @@ async function fetchOsuStats(channel, osuUsername) {
       case 50: idx = 4; break;
     }
 
-    // TODO: handle not found (which should not happen)
-
     topCounts[idx] = res.count;
   });
 
@@ -245,13 +270,13 @@ async function fetchOsuStats(channel, osuUsername) {
 /**
  * Links and inserts user to database.
  *
- * @param { Discord.Channel } channel
- * @param { Pool } db
- * @param { string } discordId
- * @param { number | string } osuId
- * @param { string } osuUsername
+ * @param { import("discord.js").TextChannel } channel - Channel to send message to.
+ * @param { import("pg").Pool } db - Database connection pool.
+ * @param { string } discordId - Discord ID of the user.
+ * @param { number | string } osuId - osu! user ID.
+ * @param { string } osuUsername - osu! username.
  *
- * @returns { Promise<boolean> }
+ * @returns { Promise<boolean> } Promise object with `true` if user was linked, or `false` in case of errors.
  */
 async function insertUserData(channel, db, discordId, osuId, osuUsername) {
   const result = await insertUser(
@@ -262,11 +287,11 @@ async function insertUserData(channel, db, discordId, osuId, osuUsername) {
   );
 
   switch(result) {
-    case DatabaseErrors.OK: 
+    case DatabaseErrors.OK:
       await channel.send("Linked Discord user <@" + discordId + "> to osu! user **" + osuUsername + "**.");
       return true;
     case DatabaseErrors.CONNECTION_ERROR: {
-      await channel.send("**Error:** An error occurred with the database connection. Please contact bot administrator.");
+      await channel.send("**Error:** Database connection error occurred. Please contact bot administrator.");
       return false;
     }
     case DatabaseErrors.DUPLICATED_DISCORD_ID: {

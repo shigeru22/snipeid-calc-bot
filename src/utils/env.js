@@ -1,10 +1,10 @@
 const { LogSeverity, log } = require("./log");
-const { TimeOperation, isTimeOperationEnumAvailable, getTimeOffsetFromString } = require("./time");
+const { getTimeOffsetFromString } = require("./time");
 
 /**
  * Validates environment variables.
  *
- * @returns { boolean }
+ * @returns { boolean } `true` if environment variables are valid, `false` otherwise.
  */
 function validateEnvironmentVariables() {
   log(LogSeverity.LOG, "validateEnvironmentVariables", "Checking for environment variables...");
@@ -62,7 +62,7 @@ function validateEnvironmentVariables() {
     return false;
   }
 
-  if(parseInt(process.env.OSU_CLIENT_ID, 10) === NaN) {
+  if(isNaN(parseInt(process.env.OSU_CLIENT_ID, 10))) {
     log(LogSeverity.ERROR, "validateEnvironmentVariables", "OSU_CLIENT_ID must be number. Exiting.");
     return false;
   }

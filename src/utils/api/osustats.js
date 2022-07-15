@@ -7,10 +7,10 @@ const OSUSTATS_API_ENDPOINT = "https://osustats.ppy.sh/api";
 /**
  * Retrieves user top leaderboard count.
  *
- * @param { string } userName
- * @param { number } maxRank
+ * @param { string } userName - osu! username.
+ * @param { number } maxRank - Maximum rank to retrieve.
  *
- * @returns { { userName: string, maxRank: number, count: number } }
+ * @returns { Promise<{ userName: string, maxRank: number, count: number } | number> } Promise object with user name, max rank, and count. Returns `OsuStatsStatus` constant in case of errors.
  */
 async function getTopCounts(userName, maxRank) {
   try {
@@ -43,10 +43,10 @@ async function getTopCounts(userName, maxRank) {
     return {
       userName,
       maxRank,
-      count: response.data[1] 
+      count: response.data[1]
     };
   }
-  catch {
+  catch (e) {
     if(axios.isAxiosError(e)) {
       if(e.response.status === HTTPStatus.BAD_REQUEST) {
         return OsuStatsStatus.USER_NOT_FOUND;

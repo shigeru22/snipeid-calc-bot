@@ -1,9 +1,9 @@
 /**
  * Parses Bathbot's top count embed into arrays.
  *
- * @param { string } desc
+ * @param { string } desc - Embed description.
  *
- * @returns { number[] }
+ * @returns { number[] } Array of top counts.
  */
 function parseTopCountDescription(desc) {
   const tops = desc.replace(/```(\n)*/g, "").split("\n");
@@ -27,9 +27,9 @@ function parseTopCountDescription(desc) {
 /**
  * Parses username from Bathbot's top count embed.
  *
- * @param { string } title
+ * @param { string } title - Embed title.
  *
- * @returns { string }
+ * @returns { string } Parsed username.
  */
 function parseUsername(title) {
   return title.replace("In how many top X map leaderboards is ", "").replace("?", "");
@@ -38,9 +38,9 @@ function parseUsername(title) {
 /**
  * Parses osu! ID from Bathbot's top count URL.
  *
- * @param { string } url
+ * @param { string } url - Embed URL.
  *
- * @returns { string }
+ * @returns { string } - Parsed osu! ID.
  */
 function parseOsuIdFromLink(url) {
   return url.replace(/http(s)?:\/\/osu.ppy.sh\/u(sers)?\//g, "").split("/")[0];
@@ -49,9 +49,9 @@ function parseOsuIdFromLink(url) {
 /**
  * Parses `whatif` command query.
  *
- * @param { string } exp
+ * @param { string } exp - Query expression.
  *
- * @returns { number[] }
+ * @returns { number[] | number } Array of what-if top counts.
  */
 function parseWhatIfCount(exp) {
   const temp = exp.split("=");
@@ -62,22 +62,21 @@ function parseWhatIfCount(exp) {
     return -1; // invalid expression
   }
 
-  temp[0] = parseInt(temp[0], 10);
-  temp[1] = parseInt(temp[1], 10);
+  const testerArray = [ parseInt(temp[0], 10), parseInt(temp[1], 10) ];
 
-  if(typeof(temp[0]) !== "number" || typeof(temp[1]) !== "number") {
+  if(isNaN(testerArray[0]) || isNaN(testerArray[1])) {
     return -2; // invalid type
   }
 
-  if(temp[0] < 1) {
+  if(testerArray[0] < 1) {
     return -3; // top rank should be higher than 0
   }
 
-  if(temp[1] < 0) {
+  if(testerArray[1] < 0) {
     return -4; // number of ranks should be higher or equal to 0
   }
 
-  return temp;
+  return testerArray;
 }
 
 module.exports = {

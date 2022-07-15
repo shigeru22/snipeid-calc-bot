@@ -1,12 +1,11 @@
-const { Pool } = require("pg");
 const { LogSeverity, log } = require("../utils/log");
 
 /**
  * Creates tables in the database.
  *
- * @param { Pool } db
+ * @param { import("pg").Pool } db - Database pool object.
  *
- * @returns { Promise<boolean> }
+ * @returns { Promise<boolean> } Promise object, with `true` if tables were created, `false` otherwise.
  */
 async function createTables(db) {
   log(LogSeverity.LOG, "createTables", "Creating tables...");
@@ -22,7 +21,7 @@ async function createTables(db) {
         userName varchar(255) NOT NULL
       );
     `);
-    
+
     await client.query(`
       CREATE TABLE roles (
         roleId serial PRIMARY KEY,

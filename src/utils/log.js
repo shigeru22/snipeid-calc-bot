@@ -13,9 +13,9 @@ const severities = [ "DEBUG", "LOG", "WARN", "ERROR" ];
 /**
  * Checks whether severity type is available in enum.
  *
- * @param { number } value
- * 
- * @returns { boolean | undefined }
+ * @param { number } value - Severity value to be checked.
+ *
+ * @returns { boolean | undefined } Whether severity value is available in enum. Returns `undefined` if `value` is `undefined`.
  */
 function isSeverityEnumAvailable(value) {
   if(typeof(value) === "undefined") {
@@ -34,11 +34,9 @@ function isSeverityEnumAvailable(value) {
 /**
  * Outputs logs using custom severity and function name format.
  *
- * @param { number } severity
- * @param { string } source
- * @param { string } message
- *
- * @returns { void }
+ * @param { number } severity - Logging severity.
+ * @param { string } source - Function name.
+ * @param { string } message - Log message.
  */
 function log(severity, source, message) {
   if(!isSeverityEnumAvailable(severity)) {

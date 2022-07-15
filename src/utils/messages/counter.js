@@ -1,48 +1,39 @@
-const Discord = require("discord.js");
+const { MessageEmbed } = require("discord.js");
 
 /**
  * Calculates points for each top rank count.
  *
- * @param { number } top_1
- * @param { number } top_8
- * @param { number } top_15
- * @param { number } top_25
- * @param { number } top_50
+ * @param { number } top1 - Top 1 count.
+ * @param { number } top8 - Top 8 count.
+ * @param { number } top15 - Top 15 count.
+ * @param { number } top25 - Top 25 count.
+ * @param { number } top50 - Top 50 count.
  *
- * @returns { number }
+ * @returns { number } Calculated points.
  */
-function calculatePoints(top_1, top_8, top_15, top_25, top_50) {
-  return top_1 * 5 +
-    (top_8 - top_1) * 3 +
-    (top_15 - top_8) * 2 +
-    (top_25 - top_15) +
-    (top_50 - top_25);
+function calculatePoints(top1, top8, top15, top25, top50) {
+  return top1 * 5 + (top8 - top1) * 3 + (top15 - top8) * 2 + (top25 - top15) + (top50 - top25);
 }
 
 /**
  * Creates counter draft embed message.
  *
- * @param { number } top_1
- * @param { number } top_8
- * @param { number } top_15
- * @param { number } top_25
- * @param { number } top_50
+ * @param { number } top1 - Top 1 count.
+ * @param { number } top8 - Top 8 count.
+ * @param { number } top15 - Top 15 count.
+ * @param { number } top25 - Top 25 count.
+ * @param { number } top50 - Top 50 count.
+ * @param { string } username - osu! username.
  *
- * @returns { Discord.MessageEmbed }
+ * @returns { MessageEmbed }
  */
-function counter(top_1, top_8, top_15, top_25, top_50, username) {
-  const draft = new Discord.MessageEmbed();
+function counter(top1, top8, top15, top25, top50, username) {
+  const draft = new MessageEmbed();
 
-  const points = calculatePoints(top_1, top_8, top_15, top_25, top_50);
+  const points = calculatePoints(top1, top8, top15, top25, top50);
 
-  draft.setTitle("Points for "+ username + ":");
-  draft.setDescription("```"
-  + ((top_1 * 5).toString().padEnd(6)) + "= " + (top_1 + " x 5").toString().padStart(19) + "\n"
-  + (((top_8 - top_1) * 3).toString().padEnd(6)) + "= " + ("(" + top_8 + " - " + top_1 + ") x 3").toString().padStart(19) + "\n"
-  + (((top_15 - top_8) * 2).toString().padEnd(6)) + "= " + ("(" + top_15 + " - " + top_8 + ") x 2").toString().padStart(19) + "\n"
-  + ((top_25 - top_15).toString().padEnd(6)) + "= " + ("(" + top_25 + " - " + top_15 + ") x 1").toString().padStart(19) + "\n"
-  + ((top_50 - top_25).toString().padEnd(6)) + "= " + ("(" + top_50 + " - " + top_25 + ") x 1").toString().padStart(19) + "\n```"
-  + "\n= **" + points + "** points.");
+  draft.setTitle("Points for " + username + ":");
+  draft.setDescription("```" + ((top1 * 5).toString().padEnd(6)) + "= " + (top1 + " x 5").toString().padStart(19) + "\n" + (((top8 - top1) * 3).toString().padEnd(6)) + "= " + ("(" + top8 + " - " + top1 + ") x 3").toString().padStart(19) + "\n" + (((top15 - top8) * 2).toString().padEnd(6)) + "= " + ("(" + top15 + " - " + top8 + ") x 2").toString().padStart(19) + "\n" + ((top25 - top15).toString().padEnd(6)) + "= " + ("(" + top25 + " - " + top15 + ") x 1").toString().padStart(19) + "\n" + ((top50 - top25).toString().padEnd(6)) + "= " + ("(" + top50 + " - " + top25 + ") x 1").toString().padStart(19) + "\n```" + "\n= **" + points + "** points.");
   draft.setColor("#ff0000");
 
   return draft;

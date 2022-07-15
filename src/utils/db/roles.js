@@ -1,20 +1,15 @@
-const { Pool } = require("pg");
+const { DatabaseError } = require("pg");
 const { LogSeverity, log } = require("../log");
 const { DatabaseErrors } = require("../common");
 
 /**
  * Returns list of roles in the database.
  *
- * @param { Pool } db
+ * @param { import("pg").Pool } db - Database connection pool.
  *
- * @returns { Promise<{ roleid: number; discordid: string; rolename: string; minpoints: number; } | number> }
+ * @returns { Promise<{ roleid: number; discordid: string; rolename: string; minpoints: number; }[] | number> } Promise object with roles array. Returns non-zero `DatabaseErrors` constant in case of errors.
  */
 async function getRolesList(db) {
-  if(!(db instanceof Pool)) {
-    log(LogSeverity.ERROR, "getRolesList", "db must be a Pool object instance.");
-    return DatabaseErrors.TYPE_ERROR;
-  }
-
   const selectQuery = "SELECT * FROM roles ORDER BY 4 DESC";
 
   try {
@@ -26,14 +21,17 @@ async function getRolesList(db) {
     return rolesResult.rows;
   }
   catch (e) {
-    if(e instanceof Error) {
-      if(e.code === "ECONNREFUSED") {
-        log(LogSeverity.ERROR, "getRolesList", "Database connection failed.");
-        return DatabaseErrors.CONNECTION_ERROR;
+    if(e instanceof DatabaseError) {
+      switch(e.code) {
+        case "ECONNREFUSED":
+          log(LogSeverity.ERROR, "getRolesList", "Database connection failed.");
+          return DatabaseErrors.CONNECTION_ERROR;
+        default:
+          log(LogSeverity.ERROR, "getRolesList", "Database error occurred:\n" + e.code + ": " + e.message + "\n" + e.stack);
       }
-      else {
-        log(LogSeverity.ERROR, "getRolesList", "An error occurred while querying roles: " + e.message);
-      }
+    }
+    else if(e instanceof Error) {
+      log(LogSeverity.ERROR, "getRolesList", "An error occurred while querying assignment: " + e.message);
     }
     else {
       log(LogSeverity.ERROR, "getRolesList", "Unknown error occurred.");

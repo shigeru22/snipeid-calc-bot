@@ -6,24 +6,23 @@ const { LogSeverity, log } = require("../utils/log");
 const { importRoles } = require("./import");
 const { createTables } = require("./tables");
 const { validateEnvironmentVariables, validateRolesConfig } = require("./validate");
-const Config = require("../../config.json");
 
+// configure environment variable file (if any)
 dotenv.config();
 
+// main function
 async function main() {
   if(!validateEnvironmentVariables()) {
     process.exit(1);
   }
 
-  const roles = Config.roles;
-
-  if(!validateRolesConfig(roles)) {
+  if(!validateRolesConfig()) {
     process.exit(1);
   }
 
-  log(LogSeverity.LOG, "main",
-    "Using " + process.env.DB_USERNAME + "@" + process.env.DB_HOST + ":" + process.env.DB_PORT +
-    ", in database named " + process.env.DB_DATABASE + "."
+  log(LogSeverity.LOG,
+    "main",
+    "Using " + process.env.DB_USERNAME + "@" + process.env.DB_HOST + ":" + process.env.DB_PORT + ", in database named " + process.env.DB_DATABASE + "."
   );
 
   const db = new Pool({
@@ -47,7 +46,7 @@ async function main() {
       process.exit(1);
     }
 
-    if(!(await importRoles(db, roles))) {
+    if(!(await importRoles(db))) {
       process.exit(1);
     }
   }
@@ -66,4 +65,5 @@ async function main() {
   process.exit(0);
 }
 
+// run the function
 main();

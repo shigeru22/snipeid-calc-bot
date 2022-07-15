@@ -1,40 +1,21 @@
-const Discord = require("discord.js");
 const { LogSeverity, log } = require("../log");
 
 /**
  * Add specified role to user specified.
  *
- * @param { Discord.Client } client
- * @param { Discord.Channel } channel
- * @param { string } discordId
- * @param { string } roleId
+ * @param { import("discord.js").Client } client - Discord bot client.
+ * @param { import("discord.js").TextChannel } channel - Discord channel to send message to.
+ * @param { string } discordId - Discord ID of user to add role to.
+ * @param { string } serverId - Discord ID of server.
+ * @param { string } roleId - Discord ID of role to add.
  *
- * @returns { Promise<void> }
+ * @returns { Promise<void> } Promise object with no return value.
  */
-async function addRole(client, channel, discordId, roleId) {
-  if(!(client instanceof Discord.Client)) {
-    log(LogSeverity.ERROR, "addRole", "client must be a Discord.Client object instance.");
-    process.exit(1);
-  }
-
-  if(!(channel instanceof Discord.Channel)) {
-    log(LogSeverity.ERROR, "addRole", "channel must be a Discord.Channel object instance.");
-    process.exit(1);
-  }
-
-  if(typeof(discordId) !== "string") {
-    log(LogSeverity.ERROR, "addRole", "discordId must be string in Snowflake ID format.");
-    process.exit(1);
-  }
-
-  if(typeof(roleId) !== "string") {
-    log(LogSeverity.ERROR, "addRole", "roleId must be string in Snowflake ID format.");
-    process.exit(1);
-  }
-
+async function addRole(client, channel, discordId, serverId, roleId) {
   try {
-    const server = await client.guilds.fetch(process.env.SERVER_ID);
-    const role = await server.roles.fetch(process.env.VERIFIED_ROLE_ID);
+    const server = await client.guilds.fetch(serverId);
+
+    const role = await server.roles.fetch(roleId);
     const member = await server.members.fetch(discordId);
 
     log(LogSeverity.LOG, "addRole", "Granting role for server member: " + member.user.username + "#" + member.user.discriminator);

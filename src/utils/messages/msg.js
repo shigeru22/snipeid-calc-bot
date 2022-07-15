@@ -1,7 +1,7 @@
 /**
  * Returns greet message.
  *
- * @returns { string }
+ * @returns { string } The message.
  */
 function greet() {
   const messages = [ "Hi", "Hello", "Yes", "What?" ];
@@ -12,7 +12,7 @@ function greet() {
 /**
  * Returns agree message.
  *
- * @returns { string }
+ * @returns { string } The message.
  */
 function agree() {
   const messages = [ "Yea", "Yeah", "Somehow", "It is", "Well yes" ];
@@ -23,7 +23,7 @@ function agree() {
 /**
  * Returns disagree message.
  *
- * @returns { string }
+ * @returns { string } The message.
  */
 function disagree() {
   const messages = [ "No", "Nah", "Idk bout that", "Nope" ];
@@ -34,7 +34,7 @@ function disagree() {
 /**
  * Returns not understood message.
  *
- * @returns { string }
+ * @returns { string } The message.
  */
 function notUnderstood() {
   const messages = [ "Am I smart enough to understand that?", "What?", "?", "..." ];

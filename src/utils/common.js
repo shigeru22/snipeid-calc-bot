@@ -2,16 +2,16 @@
  * HTTP status codes enum.
  */
 const HTTPStatus = {
-	OK: 200,
-	CREATED: 201,
-	NO_CONTENT: 204,
-	BAD_REQUEST: 400,
-	UNAUTHORIZED: 401,
-	FORBIDDEN: 403,
-	NOT_FOUND: 404,
-	METHOD_NOT_ALLOWED: 405,
-	CONFLICT: 409,
-	INTERNAL_SERVER_ERROR: 500
+  OK: 200,
+  CREATED: 201,
+  NO_CONTENT: 204,
+  BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
+  METHOD_NOT_ALLOWED: 405,
+  CONFLICT: 409,
+  INTERNAL_SERVER_ERROR: 500
 };
 
 /**
@@ -25,7 +25,17 @@ const OsuUserStatus = {
 };
 
 /**
- * osu! API response status.
+ * osu! API function response status.
+ */
+const OsuApiStatus = {
+  TYPE_ERROR: 1,
+  NON_OK: 2,
+  UNAUTHORIZED: 3,
+  CLIENT_ERROR: 4
+};
+
+/**
+ * osu!Stats response status.
  */
 const OsuStatsStatus = {
   TYPE_ERROR: 1,
@@ -69,12 +79,12 @@ const AssignmentSort = {
 /**
  * Checks whether assignment type is available in enum.
  *
- * @param { number | undefined } value
+ * @param { number | undefined } value - Assignment type to be checked.
  *
- * @returns { boolean | undefined }
+ * @returns { boolean | undefined } Whether the assignment type is available. Returns `undefined` if `value` is `undefined`.
  */
 function isTypeEnumAvailable(value) {
-	if(typeof(value) === "undefined") {
+  if(typeof(value) === "undefined") {
     return undefined;
   }
 
@@ -90,12 +100,12 @@ function isTypeEnumAvailable(value) {
 /**
  * Checks whether sorting type is available in enum.
  *
- * @param { number | undefined } value
+ * @param { number | undefined } value - Sorting type to be checked.
  *
- * @returns { boolean | undefined }
+ * @returns { boolean | undefined } Whether the sorting type is available. Returns `undefined` if `value` is `undefined`.
  */
 function isSortEnumAvailable(value) {
-	if(typeof(value) === "undefined") {
+  if(typeof(value) === "undefined") {
     return undefined;
   }
 
@@ -111,10 +121,11 @@ function isSortEnumAvailable(value) {
 module.exports = {
   HTTPStatus,
   OsuUserStatus,
+  OsuApiStatus,
   OsuStatsStatus,
-	DatabaseErrors,
-	AssignmentType,
-	AssignmentSort,
-	isTypeEnumAvailable,
-	isSortEnumAvailable
+  DatabaseErrors,
+  AssignmentType,
+  AssignmentSort,
+  isTypeEnumAvailable,
+  isSortEnumAvailable
 };

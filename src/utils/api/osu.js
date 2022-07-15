@@ -1,6 +1,6 @@
 const axios = require("axios").default;
 const { LogSeverity, log } = require("../log");
-const { HTTPStatus, OsuUserStatus } = require("../common");
+const { HTTPStatus, OsuUserStatus, OsuApiStatus } = require("../common");
 
 const OSU_API_ENDPOINT = "https://osu.ppy.sh/api/v2";
 const OSU_TOKEN_ENDPOINT = "https://osu.ppy.sh/oauth/token";
@@ -8,10 +8,10 @@ const OSU_TOKEN_ENDPOINT = "https://osu.ppy.sh/oauth/token";
 /**
  * Gets access token using osu! client ID and secret.
  *
- * @param { string } clientId
- * @param { string } clientSecret
+ * @param { string } clientId - osu! client ID.
+ * @param { string } clientSecret - osu! client secret.
  *
- * @returns { Promise<string> }
+ * @returns { Promise<{ token: string; expire: Date; } | number> } Promise object with access token and expiration date. Returns `OsuApiStatus` constant in case of errors.
  */
 async function getAccessToken(clientId, clientSecret) {
   const id = parseInt(clientId, 10); // no need to validate since already validated in env module
@@ -25,24 +25,25 @@ async function getAccessToken(clientId, clientSecret) {
       scope: "public"
     });
 
-    let ret = {};
-
-    if(response.status === HTTPStatus.OK) {
-      ret = {
-        token: response.data.access_token,
-        expire: new Date((new Date()).getTime() + (response.data.expires_in * 1000))
-      };
+    if(response.status !== HTTPStatus.OK) {
+      log(LogSeverity.ERROR, "getAccessToken", "osu! API returned status code " + response.status.toString() + ".");
+      return OsuApiStatus.NON_OK;
     }
-    
-    return ret;
+
+    return {
+      token: response.data.access_token,
+      expire: new Date((new Date()).getTime() + (response.data.expires_in * 1000))
+    };
   }
   catch (e) {
     if(axios.isAxiosError(e)) {
-      log(LogSeverity.ERROR, "getAccessToken", e.name + ": " + e.message);
-
-      if(response.status === HTTPStatus.UNAUTHORIZED) {
+      if(e.response.status === HTTPStatus.UNAUTHORIZED) {
         log(LogSeverity.ERROR, "getAccessToken", "Failed to authenticate client. Check OSU_CLIENT_ID and OSU_CLIENT_SECRET variables, and try again.");
+        process.exit(1);
       }
+
+      log(LogSeverity.ERROR, "getAccessToken", "osu! API returned status code " + e.response.status.toString() + ".");
+      return OsuApiStatus.NON_OK;
     }
     else if(e instanceof Error) {
       log(LogSeverity.ERROR, "getAccessToken", e.name + ": " + e.message);
@@ -51,17 +52,17 @@ async function getAccessToken(clientId, clientSecret) {
       log(LogSeverity.ERROR, "getAccessToken", "Unknown error occurred.");
     }
 
-    process.exit(1);
+    return OsuApiStatus.CLIENT_ERROR;
   }
 }
 
 /**
  * Gets user information for this bot by osu! ID.
  *
- * @param { string } token
- * @param { number } id
+ * @param { string } token - osu! access token.
+ * @param { number } id - osu! user ID.
  *
- * @returns { Promise<{ status: number; username?: string; isCountryCodeAllowed?: boolean; }> }
+ * @returns { Promise<{ status: number; username?: string; isCountryCodeAllowed?: boolean; } | number> } Promise object with user information. Returns `OsuApiStatus` constant in case of errors.
  */
 async function getUserByOsuId(token, id) {
   try {
@@ -76,41 +77,52 @@ async function getUserByOsuId(token, id) {
       }
     });
 
-    let res = {};
+    if(response.status !== HTTPStatus.OK) {
+      log(LogSeverity.ERROR, "getUserByOsuId", "osu! API returned status code " + response.status.toString() + ".");
+      return OsuApiStatus.NON_OK;
+    }
 
-    if(response.status === HTTPStatus.OK) {
-      if(response.data.is_bot) {
-        res = {
-          status: OsuUserStatus.BOT
-        };
-      }
-      else if(response.data.is_deleted) {
-        res = {
-          status: OsuUserStatus.DELETED
-        };
-      }
-      else {
-        res = {
-          status: OsuUserStatus.USER,
-          username: response.data.username,
-          isCountryCodeAllowed: response.data.country.code === process.env.COUNTRY_CODE
-        };
-      }
+    let res = {
+      status: OsuUserStatus.NOT_FOUND
+    };
+
+    if(response.data.is_bot) {
+      res = {
+        status: OsuUserStatus.BOT
+      };
+    }
+    else if(response.data.is_deleted) {
+      res = {
+        status: OsuUserStatus.DELETED
+      };
+    }
+    else {
+      res = {
+        status: OsuUserStatus.USER,
+        username: response.data.username,
+        isCountryCodeAllowed: response.data.country.code === process.env.COUNTRY_CODE
+      };
     }
 
     return res;
   }
   catch (e) {
-    let res = {};
-
     if(axios.isAxiosError(e)) {
-      if(e.response.status === HTTPStatus.UNAUTHORIZED) {
-        exitOnUnauthorizedError();
+      let exit = false;
+
+      switch(e.response.status) {
+        case HTTPStatus.UNAUTHORIZED:
+          log(LogSeverity.ERROR, "getAccessToken", "Failed to authenticate client. Check OSU_CLIENT_ID and OSU_CLIENT_SECRET variables, and try again.");
+          exit = true;
+          break;
+        case HTTPStatus.NOT_FOUND:
+          return {
+            status: OsuUserStatus.NOT_FOUND
+          };
       }
-      else if(e.response.status === HTTPStatus.NOT_FOUND) {
-        res = {
-          status: OsuUserStatus.NOT_FOUND
-        }
+
+      if(exit) {
+        process.exit(1);
       }
     }
     else if(e instanceof Error) {
@@ -118,10 +130,9 @@ async function getUserByOsuId(token, id) {
     }
     else {
       log(LogSeverity.ERROR, "getUserByOsuId", "Unknown error occurred.");
-      process.exit(1);
     }
 
-    return res;
+    return OsuApiStatus.CLIENT_ERROR;
   }
 }
 

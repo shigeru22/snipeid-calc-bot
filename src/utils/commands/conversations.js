@@ -1,19 +1,15 @@
-const Discord = require("discord.js");
 const { LogSeverity, log } = require("../log");
 const { greet, agree, disagree, notUnderstood } = require("../messages/msg");
 
 /**
  * Sends message based on what message was received.
  *
- * @param { Discord.Client } client
- * @param { string } channelId
- * @param { string[] } contents
+ * @param { import("discord.js").TextChannel } channel - Discord channel to send message to.
+ * @param { string[] } contents - Array of message contents (splitted by spaces).
  *
- * @returns { Promise<void> }
+ * @returns { Promise<void> } Promise object with no return value.
  */
-async function sendMessage(client, channelId, contents) {
-  const channel = client.channels.cache.get(channelId);
-
+async function sendMessage(channel, contents) {
   let reply = "";
   let isUnderstood = true;
 

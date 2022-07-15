@@ -1,14 +1,14 @@
-const Discord = require("discord.js");
-const { LogSeverity, log } = require("../time");
+const { MessageEmbed } = require("discord.js");
+const { LogSeverity, log } = require("../log");
 const { TimeOperation, getTimeOffsetFromString } = require("../time");
 
 /**
  * Creates leaderboard embed message.
  *
- * @param { { assignmentid: number; username: string; rolename: string; points: number; lastupdate: Date }[] } data
- * @param { Date } lastUpdated
+ * @param { { assignmentid: number; username: string; rolename: string; points: number; lastupdate: Date }[] } data - Leaderboard data.
+ * @param { Date } lastUpdated - Last update time.
  *
- * @returns { Discord.MessageEmbed }
+ * @returns { MessageEmbed } Leaderboard embed message.
  */
 function createLeaderboardEmbed(data, lastUpdated) {
   let timeOperation = TimeOperation.INCREMENT;
@@ -26,16 +26,14 @@ function createLeaderboardEmbed(data, lastUpdated) {
   }
 
   const offsetLastUpdated = new Date(
-    lastUpdated.getTime() +
-    (
-      (timeOperation === TimeOperation.INCREMENT ? 1 : -1) *
-      (
+    lastUpdated.getTime() + (
+      (timeOperation === TimeOperation.INCREMENT ? 1 : -1) * (
         (hourOffset * 3600000) + ((minuteOffset + lastUpdated.getTimezoneOffset()) * 60000) // also offset based on timezone offset minutes
       )
     )
   );
 
-  const draft = new Discord.MessageEmbed();
+  const draft = new MessageEmbed();
   const len = data.length;
   let rankingsDesc = "";
 
@@ -49,12 +47,7 @@ function createLeaderboardEmbed(data, lastUpdated) {
     }
     draft.setDescription(rankingsDesc);
     draft.setFooter({
-      text: "Last updated: " +
-        offsetLastUpdated.getDate() + "/" +
-        (offsetLastUpdated.getMonth() + 1) + "/" +
-        offsetLastUpdated.getFullYear() + ", " +
-        offsetLastUpdated.getHours().toString().padStart(2, "0") + ":" +
-        offsetLastUpdated.getMinutes().toString().padStart(2, "0")
+      text: "Last updated: " + offsetLastUpdated.getDate() + "/" + (offsetLastUpdated.getMonth() + 1) + "/" + offsetLastUpdated.getFullYear() + ", " + offsetLastUpdated.getHours().toString().padStart(2, "0") + ":" + offsetLastUpdated.getMinutes().toString().padStart(2, "0")
     });
   }
   else {

@@ -1,16 +1,16 @@
-const { Pool } = require("pg");
+const { DatabaseError } = require("pg");
 const { LogSeverity, log } = require("../log");
 const { updateUser } = require("./users");
-const { DatabaseErrors, AssignmentType, AssignmentSort, isSortEnumAvailable } = require("../common");
+const { DatabaseErrors, AssignmentType, AssignmentSort } = require("../common");
 
 /**
- * Returns all `assignments` table data.
+ * Gets all `assignments` table data.
  *
- * @param { Pool } db
- * @param { number } sort
- * @param { boolean } desc
+ * @param { import("pg").Pool } db - Database connection pool.
+ * @param { number } sort - Sort order criteria, using `AssignmentSort` constant.
+ * @param { boolean } desc - Whether results should be sorted in descending order.
  *
- * @returns { Promise<{ assignmentid: number; username: string; rolename: string; points: number; lastupdate: Date }[] | number> }
+ * @returns { Promise<{ assignmentid: number; username: string; rolename: string; points: number; lastupdate: Date }[] | number> } - Promise object with array of assignments. Returns non-zero `DatabaseErrors` constant in case of errors.
  */
 async function getAllAssignments(db, sort, desc) {
   const selectQuery = `
@@ -27,20 +27,11 @@ async function getAllAssignments(db, sort, desc) {
     ON
       a."roleid"=r."roleid"
     ORDER BY
-  ` +
-  (
-    sort === AssignmentSort.ID
-      ? `a."assignmentid"`
-      : sort === AssignmentSort.ROLE_ID
-        ? `a."roleid"`
-        : sort === AssignmentSort.POINTS
-          ? `a."points"`
-          : `a."lastupdate"`
-  ) +
-  (
+  ` + (
+    sort === AssignmentSort.ID ? "a.\"assignmentid\"" : sort === AssignmentSort.ROLE_ID ? "a.\"roleid\"" : sort === AssignmentSort.POINTS ? "a.\"points\"" : "a.\"lastupdate\""
+  ) + (
     desc && " DESC"
-  ) +
-  `
+  ) + `
     LIMIT 50;
   `;
 
@@ -49,14 +40,17 @@ async function getAllAssignments(db, sort, desc) {
     return response.rows;
   }
   catch (e) {
-    if(e instanceof Error) {
-      if(e.code === "ECONNREFUSED") {
-        log(LogSeverity.ERROR, "getAllAssignments", "Database connection failed.");
-        return DatabaseErrors.CONNECTION_ERROR;
+    if(e instanceof DatabaseError) {
+      switch(e.code) {
+        case "ECONNREFUSED":
+          log(LogSeverity.ERROR, "getAllAssignments", "Database connection failed.");
+          return DatabaseErrors.CONNECTION_ERROR;
+        default:
+          log(LogSeverity.ERROR, "getAllAssignments", "Database error occurred:\n" + e.code + ": " + e.message + "\n" + e.stack);
       }
-      else {
-        log(LogSeverity.ERROR, "getAllAssignments", "An error occurred while querying assignment: " + e.message);
-      }
+    }
+    else if(e instanceof Error) {
+      log(LogSeverity.ERROR, "getAllAssignments", "An error occurred while querying assignment: " + e.message);
     }
     else {
       log(LogSeverity.ERROR, "getAllAssignments", "Unknown error occurred.");
@@ -69,10 +63,10 @@ async function getAllAssignments(db, sort, desc) {
 /**
  * Gets user assignment by osu! ID from the database.
  *
- * @param { Pool } db
- * @param { number } osuId
+ * @param { import("pg").Pool } db - Database connection pool.
+ * @param { number } osuId - osu! ID of the user.
  *
- * @returns { Promise<{ userId: number; discordId: string; osuId: number; } | number> }
+ * @returns { Promise<{ userId: number; discordId: string; osuId: number; } | number> } - Promise object with user assignment. Returns non-zero `DatabaseErrors` constant in case of errors.
  */
 async function getAssignmentByOsuId(db, osuId) {
   const selectQuery = `SELECT
@@ -80,7 +74,7 @@ async function getAssignmentByOsuId(db, osuId) {
     FROM
       assignments AS a
     JOIN
-	  users as u
+    users as u
     ON
       a."userid"=u."userid"
     WHERE
@@ -91,7 +85,7 @@ async function getAssignmentByOsuId(db, osuId) {
   try {
     const discordUserResult = await db.query(selectQuery, selectValues);
 
-    if(typeof(discordUserResult.rows[0]) === "undefined")  {
+    if(typeof(discordUserResult.rows[0]) === "undefined") {
       return DatabaseErrors.USER_NOT_FOUND;
     }
 
@@ -106,14 +100,17 @@ async function getAssignmentByOsuId(db, osuId) {
     };
   }
   catch (e) {
-    if(e instanceof Error) {
-      if(e.code === "ECONNREFUSED") {
-        log(LogSeverity.ERROR, "getAssignmentByOsuId", "Database connection failed.");
-        return DatabaseErrors.CONNECTION_ERROR;
+    if(e instanceof DatabaseError) {
+      switch(e.code) {
+        case "ECONNREFUSED":
+          log(LogSeverity.ERROR, "getAssignmentByOsuId", "Database connection failed.");
+          return DatabaseErrors.CONNECTION_ERROR;
+        default:
+          log(LogSeverity.ERROR, "getAssignmentByOsuId", "Database error occurred:\n" + e.code + ": " + e.message + "\n" + e.stack);
       }
-      else {
-        log(LogSeverity.ERROR, "getAssignmentByOsuId", "An error occurred while querying assignment: " + e.message);
-      }
+    }
+    else if(e instanceof Error) {
+      log(LogSeverity.ERROR, "getAssignmentByOsuId", "An error occurred while querying assignment: " + e.message);
     }
     else {
       log(LogSeverity.ERROR, "getAssignmentByOsuId", "Unknown error occurred.");
@@ -124,18 +121,13 @@ async function getAssignmentByOsuId(db, osuId) {
 }
 
 /**
- * Returns last assignment update time.
+ * Gets last assignment update time.
  *
- * @param { Pool } db
+ * @param { import("pg").Pool } db - Database connection pool.
  *
- * @returns { Promise<Date | number> }
+ * @returns { Promise<Date | number> } - Promise object with last assignment update time. Returns non-zero `DatabaseErrors` constant in case of errors.
  */
 async function getLastAssignmentUpdate(db) {
-  if(!(db instanceof Pool)) {
-    log(LogSeverity.ERROR, "getLastAssignmentUpdate", "db must be a Pool object instance.");
-    return DatabaseErrors.TYPE_ERROR;
-  }
-
   const selectQuery = `
     SELECT
       a."lastupdate"
@@ -161,14 +153,17 @@ async function getLastAssignmentUpdate(db) {
     return result.rows[0].lastupdate;
   }
   catch (e) {
-    if(e instanceof Error) {
-      if(e.code === "ECONNREFUSED") {
-        log(LogSeverity.ERROR, "getLastAssignmentUpdate", "Database connection failed.");
-        return DatabaseErrors.CONNECTION_ERROR;
+    if(e instanceof DatabaseError) {
+      switch(e.code) {
+        case "ECONNREFUSED":
+          log(LogSeverity.ERROR, "getLastAssignmentUpdate", "Database connection failed.");
+          return DatabaseErrors.CONNECTION_ERROR;
+        default:
+          log(LogSeverity.ERROR, "getLastAssignmentUpdate", "Database error occurred:\n" + e.code + ": " + e.message + "\n" + e.stack);
       }
-      else {
-        log(LogSeverity.ERROR, "getLastAssignmentUpdate", "An error occurred while querying assignment: " + e.message);
-      }
+    }
+    else if(e instanceof Error) {
+      log(LogSeverity.ERROR, "getLastAssignmentUpdate", "An error occurred while querying assignment: " + e.message);
     }
     else {
       log(LogSeverity.ERROR, "getLastAssignmentUpdate", "Unknown error occurred.");
@@ -181,12 +176,12 @@ async function getLastAssignmentUpdate(db) {
 /**
  * Inserts or updates (if the user has already been inserted) assignment data in the database.
  *
- * @param { Pool } db
- * @param { number } osuId
- * @param { number } points
- * @param { string } userName
+ * @param { import("pg").Pool } db - Database connection pool.
+ * @param { number } osuId - osu! user ID.
+ * @param { number } points - Calculated points.
+ * @param { string } userName - osu! username.
  *
- * @returns { Promise<{ type: number; discordId: string; role: { oldRoleId?: string; oldRoleName?: string; newRoleId: string; newRoleName: string; }; delta: number; lastUpdate: Date | null } | number> }
+ * @returns { Promise<{ type: number; discordId: string; role: { oldRoleId?: string; oldRoleName?: string; newRoleId: string; newRoleName: string; }; delta: number; lastUpdate: Date | null } | number> } Promise object with assignment results object. Returns non-zero `DatabaseErrors` constant in case of errors.
  */
 async function insertOrUpdateAssignment(db, osuId, points, userName) {
   const selectAssignmentQuery = `
@@ -294,7 +289,7 @@ async function insertOrUpdateAssignment(db, osuId, points, userName) {
       log(LogSeverity.ERROR, "insertOrUpdateAssignment", "Role table is empty.");
       return DatabaseErrors.ROLES_EMPTY; // role data empty
     }
-    
+
     if(rolesResult.rows[0].minPoints < points) {
       client.release();
 
@@ -333,14 +328,17 @@ async function insertOrUpdateAssignment(db, osuId, points, userName) {
     };
   }
   catch (e) {
-    if(e instanceof Error) {
-      if(e.code === "ECONNREFUSED") {
-        log(LogSeverity.ERROR, "insertOrUpdateAssignment", "Database connection failed.");
-        return DatabaseErrors.CONNECTION_ERROR;
+    if(e instanceof DatabaseError) {
+      switch(e.code) {
+        case "ECONNREFUSED":
+          log(LogSeverity.ERROR, "insertOrUpdateAssignment", "Database connection failed.");
+          return DatabaseErrors.CONNECTION_ERROR;
+        default:
+          log(LogSeverity.ERROR, "insertOrUpdateAssignment", "Database error occurred:\n" + e.code + ": " + e.message + "\n" + e.stack);
       }
-      else {
-        log(LogSeverity.ERROR, "insertOrUpdateAssignment", "An error occurred while " + (insert ? "inserting" : "updating") + " assignment: " + e.message + "\n" + e.stack);
-      }
+    }
+    else if(e instanceof Error) {
+      log(LogSeverity.ERROR, "insertOrUpdateAssignment", "An error occurred while querying assignment: " + e.message);
     }
     else {
       log(LogSeverity.ERROR, "insertOrUpdateAssignment", "Unknown error occurred.");

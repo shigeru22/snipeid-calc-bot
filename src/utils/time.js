@@ -11,9 +11,9 @@ const TimeOperation = {
 /**
  * Checks whether time operation type is available in enum.
  *
- * @param { number | undefined } value
+ * @param { number | undefined } value - Time operation type to be checked.
  *
- * @returns { boolean | undefined }
+ * @returns { boolean | undefined } Whether time operation type is available in enum. Returns `undefined` if `value` is `undefined`.
  */
 function isTimeOperationEnumAvailable(value) {
   if(typeof(value) === "undefined") {
@@ -32,16 +32,11 @@ function isTimeOperationEnumAvailable(value) {
 /**
  * Converts delta time into its string representation.
  *
- * @param { number } ms
+ * @param { number } ms - Delta time in milliseconds.
  *
- * @returns { string }
+ * @returns { string } Delta time in string representation.
  */
 function deltaTimeToString(ms) {
-  if(typeof(ms) !== "number") {
-    log(LogSeverity.ERROR, "deltaTimeToString", "ms is not number.");
-    return 0;
-  }
-
   const years = Math.floor(ms / 31536000000);
   if(years >= 1) {
     return years.toString() + (years === 1 ? " year" : " years");
@@ -74,9 +69,9 @@ function deltaTimeToString(ms) {
 /**
  * Parses time offset from string.
  *
- * @param { string } value
+ * @param { string } value - Time offset string.
  *
- * @returns { { operation: number; hours: number; minutes: number; } | undefined }
+ * @returns { { operation: number; hours: number; minutes: number; } | undefined } Time offset object. Returns `undefined` in case of errors.
  */
 function getTimeOffsetFromString(value) {
   const temp = value.split(":");

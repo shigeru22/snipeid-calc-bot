@@ -1,9 +1,10 @@
 const { LogSeverity, log } = require("../utils/log");
+const Config = require("../../config.json");
 
 /**
  * Validates environment variables.
  *
- * @returns { boolean }
+ * @returns { boolean } `true` if environment variables are valid, `false` otherwise.
  */
 function validateEnvironmentVariables() {
   log(LogSeverity.LOG, "validateEnvironmentVariables", "Checking for environment variables...");
@@ -18,7 +19,7 @@ function validateEnvironmentVariables() {
     return false;
   }
 
-  if(parseInt(process.env.DB_PORT, 10) === NaN) {
+  if(isNaN(parseInt(process.env.DB_PORT, 10))) {
     log(LogSeverity.ERROR, "validateEnvironmentVariables", "DB_PORT must be number.");
     return false;
   }
@@ -42,8 +43,15 @@ function validateEnvironmentVariables() {
   return true;
 }
 
-function validateRolesConfig(roles) {
+/**
+ * Validates roles config.
+ *
+ * @returns { boolean } `true` if roles config is valid, `false` otherwise.
+ */
+function validateRolesConfig() {
   log(LogSeverity.LOG, "validateRolesConfig", "Validating role data from config.json...");
+
+  const roles = Config.roles;
 
   if(!roles) {
     log(LogSeverity.ERROR, "validateRolesConfig", "Roles array is not defined. Define in config.json with the following format:");
@@ -93,6 +101,9 @@ function validateRolesConfig(roles) {
   return true;
 }
 
+/**
+ * Prints `config.json` roles format.
+ */
 function printRolesFormat() {
   console.log("  {");
   console.log("     \"roles\": [");
