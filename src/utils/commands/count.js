@@ -116,8 +116,8 @@ async function userLeaderboardsCount(client, channel, db, osuToken, discordId) {
       const len = temp.length;
       for(let i = 0; i < len; i++) {
         if(typeof(temp[i]) === "number") {
-          // @ts-ignore
-          error = temp[i]; // TODO: check whether this is number at this point
+          // @ts-ignore - should be number
+          error = temp[i];
           break;
         }
       }
@@ -136,8 +136,8 @@ async function userLeaderboardsCount(client, channel, db, osuToken, discordId) {
       }
     }
 
-    // @ts-ignore
-    topCounts = [ temp[0].count, temp[1].count, temp[2].count, temp[3].count, temp[4].count ]; // no longer number
+    // @ts-ignore - no longer number at this point
+    topCounts = [ temp[0].count, temp[1].count, temp[2].count, temp[3].count, temp[4].count ];
   }
 
   const points = calculatePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3], topCounts[4]);
@@ -284,13 +284,25 @@ async function userWhatIfCount(client, channel, db, osuToken, message) {
 
   const originalPoints = calculatePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3], topCounts[4]);
 
-  whatIfsArray.forEach(whatif => {
-    const topIndex = tops.findIndex(top => top === whatif[0]);
+  {
+    let error = false;
 
-    // TODO: handle index not found
+    const len = whatIfsArray.length;
+    for(let i = 0; i < len; i++) {
+      const topIndex = tops.findIndex(top => top === whatIfsArray[i][0]);
+      if(topIndex < 0) { // top count index not found
+        error = true;
+        break;
+      }
 
-    topCounts[topIndex] = whatif[1];
-  });
+      topCounts[topIndex] = whatIfsArray[i][1];
+    }
+
+    if(error) {
+      await channel.send("**Error:** Invalid response from osu!Stats API. Check the site status manually?");
+      return;
+    }
+  }
 
   const newPoints = calculatePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3], topCounts[4]);
 
