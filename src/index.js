@@ -7,15 +7,8 @@ const { createInterface } = require("readline");
 const { validateEnvironmentVariables } = require("./utils/env");
 const { LogSeverity, log } = require("./utils/log");
 const { OsuToken } = require("./utils/osu-token");
-const { calculatePoints } = require("./utils/messages/counter");
-const { parseTopCountDescription, parseUsername, parseOsuIdFromLink, parseWhatIfCount } = require("./utils/parser");
+const { handleVerificationChannelCommands, handlePointsChannelCommands, handleLeaderboardChannelCommands } = require("./utils/commands/main");
 const { sendMessage } = require("./utils/commands/conversations");
-const { userLeaderboardsCount, userWhatIfCount } = require("./utils/commands/count");
-const { sendPointLeaderboard } = require("./utils/commands/leaderboards");
-const { countPoints } = require("./utils/commands/points");
-const { addWysiReaction } = require("./utils/commands/reactions");
-const { addRole } = require("./utils/commands/roles");
-const { updateUserData, fetchOsuUser, insertUserData } = require("./utils/commands/userdata");
 
 // configure environment variable file (if any)
 dotenv.config();
@@ -34,9 +27,6 @@ const client = new Discord.Client({ intents: [ "GUILDS", "GUILD_MESSAGES" ] });
 
 // osu! API token object
 const token = new OsuToken(process.env.OSU_CLIENT_ID, process.env.OSU_CLIENT_SECRET);
-
-// Bathbot ID
-const BATHBOT_USER_ID = "297073686916366336";
 
 // handle Windows interrupt event
 if(process.platform === "win32") {
@@ -84,138 +74,20 @@ async function onNewMessage(msg) {
       return;
     }
 
-    if(msg.channelId === process.env.LEADERBOARD_CHANNEL_ID) {
-      if(isClientMentioned) {
-        if(contents[1] === "lb" || contents[1] === "leaderboard") {
-          await sendPointLeaderboard(channel, db);
-          processed = true;
-        }
-      }
-    }
-    else if(msg.channelId === process.env.CHANNEL_ID) {
-      if(msg.author.id === BATHBOT_USER_ID) {
-        const embeds = msg.embeds;
-        const index = embeds.findIndex(
-          embed => typeof(embed.title) === "string" && embed.title.toLowerCase().startsWith("in how many top x map leaderboards is")
-        ); // <osc command should return at index 0
-
-        if(index === -1) {
-          return;
-        }
-
-        const title = embeds[index].title;
-        const desc = embeds[index].description;
-        const link = embeds[index].author.url;
-
-        const username = parseUsername(title);
-        const osuId = parseOsuIdFromLink(link);
-
-        // [ top_1, top_8, top_15, top_25, top_50 ]
-        const topCounts = parseTopCountDescription(desc);
-        const points = calculatePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3], topCounts[4]);
-        const message = await countPoints(channel, username, topCounts);
-        await addWysiReaction(client, message, topCounts, points);
-
-        await updateUserData(tempToken, client, channel, db, osuId, points);
-      }
-      else {
-        if(isClientMentioned) {
-          if(contents[1] === "count") {
-            await userLeaderboardsCount(client, channel, db, tempToken, msg.author.id);
-            processed = true;
-          }
-          else if(contents[1] === "whatif") {
-            const commands = [ ...contents ];
-            commands.splice(0, 2); // remove first two elements
-
-            const whatifs = [];
-            {
-              let error = false;
-              const len = commands.length;
-              for(let i = 0; i < len; i++) {
-                const temp = parseWhatIfCount(commands[i]);
-                if(typeof(temp) === "number") {
-                  error = true;
-                  break;
-                }
-
-                whatifs.push(temp);
-              }
-
-              if(error) {
-                await channel.send(`**Error:** Invalid what if expression${ len > 1 ? "s" : "" }.`);
-                return;
-              }
-            }
-
-            const tops = [ 1, 8, 15, 25, 50 ]; // match bathbot <osc top ranks data
-
-            let valid = true;
-            whatifs.forEach(whatif => {
-              if(!tops.includes(whatif[0])) {
-                valid = false;
-              }
-            });
-
-            if(!valid) {
-              await channel.send("**Error:** Rank query must be 1, 8, 15, 25, or 50.");
-              return;
-            }
-
-            await userWhatIfCount(client, channel, db, tempToken, msg.author.id, whatifs);
-            processed = true;
-          }
-        }
-      }
-    }
-    else if(msg.channelId === process.env.VERIFICATION_CHANNEL_ID) {
-      if(contents[1] === "link") {
-        if(typeof(contents[2]) !== "string") {
-          await channel.send("You need to specify your osu! user ID: `@" + process.env.BOT_NAME + " link [osu! user ID]`");
-          return;
-        }
-
-        const osuId = parseInt(contents[2], 10);
-
-        if(isNaN(osuId)) {
-          await channel.send("**Error:** ID must be in numbers.");
-          return;
-        }
-
-        if(osuId <= 0) {
-          await channel.send("**Error:** I see what you did there. That's funny.");
-          return;
-        }
-
-        const osuUser = await fetchOsuUser(channel, tempToken, osuId);
-        if(typeof(osuUser) === "boolean") { // infer boolean returns as not found value
-          return;
-        }
-
-        if(!osuUser.isCountryCodeAllowed) {
-          await channel.send("**Error:** Wrong country code from osu! profile. Please contact server moderators.");
-          return;
-        }
-
-        const result = await insertUserData(channel, db, msg.author.id, osuId, osuUser.username);
-        if(!result) {
-          return;
-        }
-
-        if(typeof(process.env.VERIFIED_ROLE_ID) !== "string" || process.env.VERIFIED_ROLE_ID === "") {
-          log(LogSeverity.LOG, "onNewMessage", "VERIFIED_ROLE_ID not set. Role granting skipped.");
-          processed = true;
-          return;
-        }
-
-        await addRole(client, channel, msg.author.id, process.env.SERVER_ID, process.env.VERIFIED_ROLE_ID);
-        processed = true;
-      }
+    switch(msg.channelId) {
+      case process.env.VERIFICATION_CHANNEL_ID:
+        processed = await handleVerificationChannelCommands(client, channel, db, tempToken, isClientMentioned, msg);
+        break;
+      case process.env.CHANNEL_ID:
+        processed = await handlePointsChannelCommands(client, channel, db, tempToken, isClientMentioned, msg);
+        break;
+      case process.env.LEADERBOARD_CHANNEL_ID:
+        processed = await handleLeaderboardChannelCommands(channel, db, isClientMentioned, msg);
+        break;
     }
 
-    if(!processed && isClientMentioned) {
-      await sendMessage(channel, contents);
-    }
+    // if bot is mentioned but nothing processed, send a random message.
+    (!processed && isClientMentioned) && await sendMessage(channel, contents);
   }
 }
 
