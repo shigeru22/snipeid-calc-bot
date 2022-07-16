@@ -5,7 +5,7 @@ const { addWysiReaction } = require("./reactions");
 const { updateUserData } = require("./userdata");
 const { calculatePoints, counter } = require("../messages/counter");
 const { OsuUserStatus, OsuApiStatus, OsuStatsStatus, DatabaseErrors } = require("../common");
-const { parseUsername, parseOsuIdFromLink, parseTopCountDescription, parseWhatIfCount } = require("../parser");
+const { WhatIfParserStatus, parseUsername, parseOsuIdFromLink, parseTopCountDescription, parseWhatIfCount } = require("../parser");
 const { LogSeverity, log } = require("../log");
 
 // <osc, using Bathbot message response
@@ -168,21 +168,37 @@ async function userWhatIfCount(client, channel, db, osuToken, message) {
 
   const whatIfsArray = [];
   {
-    let error = false;
+    let status = WhatIfParserStatus.OK;
+    let errorIndex = -1;
+
     const len = commands.length;
     for(let i = 0; i < len; i++) {
       const temp = parseWhatIfCount(commands[i]);
       if(typeof(temp) === "number") {
-        error = true;
+        status = temp;
+        errorIndex = i;
         break;
       }
 
       whatIfsArray.push(temp);
     }
 
-    if(error) {
-      await channel.send(`**Error:** Invalid what if expression${ len > 1 ? "s" : "" }.`);
-      return;
+    if(status > WhatIfParserStatus.OK) {
+      switch(status) {
+        case WhatIfParserStatus.INVALID_EXPRESSION: // fallthrough
+        case WhatIfParserStatus.TYPE_ERROR:
+          await channel.send(`**Error:** Invalid what if expression${ len > 1 ? "s" : "" } [at command index ${ errorIndex + 2 }].`);
+          return;
+        case WhatIfParserStatus.TOP_RANK_ERROR:
+          await channel.send(`**Error:** Top rank must be higher than or equal to 1 [at command index ${ errorIndex + 2 }].`);
+          return;
+        case WhatIfParserStatus.NUMBER_OF_RANKS_ERROR:
+          await channel.send(`**Error:** Number of ranks must be higher than or equal to 0 [at command index ${ errorIndex + 2 }].`);
+          return;
+        default:
+          await channel.send("**Error:** Unhandled error occurred. Please contact bot administrator.");
+          return;
+      }
     }
   }
 

@@ -1,3 +1,11 @@
+const WhatIfParserStatus = {
+  OK: 0,
+  INVALID_EXPRESSION: 1,
+  TYPE_ERROR: 2,
+  TOP_RANK_ERROR: 3,
+  NUMBER_OF_RANKS_ERROR: 4
+};
+
 /**
  * Parses Bathbot's top count embed into arrays.
  *
@@ -51,35 +59,34 @@ function parseOsuIdFromLink(url) {
  *
  * @param { string } exp - Query expression.
  *
- * @returns { number[] | number } Array of what-if top counts.
+ * @returns { number[] | number } Array of what-if top counts. Returns `WhatIfParserStatus` constant in case of errors.
  */
 function parseWhatIfCount(exp) {
   const temp = exp.split("=");
 
-  // TODO: create enum for each return code
-
   if(temp.length !== 2) {
-    return -1; // invalid expression
+    return WhatIfParserStatus.INVALID_EXPRESSION;
   }
 
   const testerArray = [ parseInt(temp[0], 10), parseInt(temp[1], 10) ];
 
   if(isNaN(testerArray[0]) || isNaN(testerArray[1])) {
-    return -2; // invalid type
+    return WhatIfParserStatus.TYPE_ERROR;
   }
 
   if(testerArray[0] < 1) {
-    return -3; // top rank should be higher than 0
+    return WhatIfParserStatus.TOP_RANK_ERROR;
   }
 
   if(testerArray[1] < 0) {
-    return -4; // number of ranks should be higher or equal to 0
+    return WhatIfParserStatus.NUMBER_OF_RANKS_ERROR;
   }
 
   return testerArray;
 }
 
 module.exports = {
+  WhatIfParserStatus,
   parseTopCountDescription,
   parseUsername,
   parseOsuIdFromLink,
