@@ -39,8 +39,7 @@ async function userLeaderboardsCountFromBathbot(client, channel, db, osuToken, m
   // [ top_1, top_8, top_15, top_25, top_50 ]
   const topCounts = parseTopCountDescription(desc);
   const points = calculatePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3], topCounts[4]);
-  const sentMessage = await countPoints(channel, username, topCounts);
-  await addWysiReaction(client, sentMessage, topCounts, points);
+  await countPoints(client, channel, username, topCounts);
 
   await updateUserData(osuToken, client, channel, db, osuId, points);
 }
@@ -141,8 +140,7 @@ async function userLeaderboardsCount(client, channel, db, osuToken, discordId) {
   }
 
   const points = calculatePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3], topCounts[4]);
-  const message = await countPoints(channel, osuUser.username, topCounts);
-  await addWysiReaction(client, message, topCounts, points);
+  await countPoints(client, channel, osuUser.username, topCounts);
 
   await updateUserData(osuToken, client, channel, db, user.osuId, points);
 }
@@ -305,9 +303,7 @@ async function userWhatIfCount(client, channel, db, osuToken, message) {
   }
 
   const newPoints = calculatePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3], topCounts[4]);
-
-  const sentMessage = await countPoints(channel, osuUser.username, topCounts);
-  await addWysiReaction(client, sentMessage, topCounts, newPoints); // TODO: move to countPoints command
+  await countPoints(client, channel, osuUser.username, topCounts);
 
   const difference = newPoints - originalPoints;
   if(difference === 0) {
@@ -321,14 +317,17 @@ async function userWhatIfCount(client, channel, db, osuToken, message) {
 /**
  * Sends calculated points and embed to specified channel.
  *
+ * @param { import("discord.js").Client } client - Discord bot client.
  * @param { import("discord.js").TextChannel } channel - Discord channel to send message to.
  * @param { string } username - osu! username.
  * @param { number[] } topCounts - Array of top counts.
  *
  * @returns { Promise<import("discord.js").Message> } Promise object with `Discord.Message` sent message object.
  */
-async function countPoints(channel, username, topCounts) {
+async function countPoints(client, channel, username, topCounts) {
   log(LogSeverity.LOG, "countPoints", "Calculating points for username: " + username);
+
+  const newPoints = calculatePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3], topCounts[4]);
   const draft = counter(
     topCounts[0],
     topCounts[1],
@@ -339,6 +338,7 @@ async function countPoints(channel, username, topCounts) {
   );
 
   const ret = await channel.send({ embeds: [ draft ] });
+  await addWysiReaction(client, ret, topCounts, newPoints);
   return ret;
 }
 
