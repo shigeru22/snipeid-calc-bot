@@ -163,6 +163,11 @@ async function userWhatIfCount(client, channel, db, osuToken, message) {
   const commands = message.content.split(/\s+/g); // split by one or more spaces
   commands.splice(0, 2); // remove first two elements, which is the mentioned bot and the command itself
 
+  if(commands.length <= 0) {
+    await channel.send("**Error:** You need to specify what-if expression.");
+    return;
+  }
+
   const whatIfsArray = [];
   {
     let error = false;
