@@ -1,6 +1,7 @@
 "use strict";
 
 const dotenv = require("dotenv");
+const fs = require("fs");
 const Discord = require("discord.js");
 const { Pool } = require("pg");
 const { createInterface } = require("readline");
@@ -14,13 +15,20 @@ const { sendMessage } = require("./utils/commands/conversations");
 dotenv.config();
 
 // database pool
-const db = new Pool({
+
+const dbConfig = {
   host: process.env.DB_HOST,
   port: parseInt(process.env.DB_PORT, 10),
   user: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE
-});
+  database: process.env.DB_DATABASE,
+  ssl: (typeof(process.env.DB_SSL_CA) !== "undefined" ? {
+    rejectUnauthorized: true,
+    ca: fs.readFileSync(process.env.DB_SSL_CA).toString()
+  } : undefined)
+};
+
+const db = new Pool(dbConfig);
 
 // bot client
 const client = new Discord.Client({ intents: [ "GUILDS", "GUILD_MESSAGES" ] });
@@ -51,6 +59,35 @@ client.on("messageCreate", async (msg) => await onNewMessage(msg));
  */
 async function onStartup() {
   await token.getToken();
+
+  if(typeof(dbConfig.ssl) !== "undefined") {
+    log(LogSeverity.LOG, "onStartup", `Using SSL for database connection, CA path: ${ process.env.DB_SSL_CA }`);
+  }
+  else {
+    log(LogSeverity.WARN, "onStartup", "Not using SSL for database connection. Caute procedere.");
+  }
+
+  // test connection before continuing
+  {
+    log(LogSeverity.LOG, "onStartup", "Testing database connection...");
+
+    try {
+      const dbTemp = await db.connect();
+      dbTemp.release();
+    }
+    catch (e) {
+      if(e instanceof Error) {
+        log(LogSeverity.ERROR, "onStartup", `Database connection error.\n${ e.stack }`);
+      }
+      else {
+        log(LogSeverity.ERROR, "onStartup", `Unknown error occurred while connecting to database.\n${ e }`);
+      }
+
+      process.exit(1);
+    }
+
+    log(LogSeverity.LOG, "onStartup", "Successfully connected to database.");
+  }
 
   client.user.setActivity("Bathbot everyday", { type: "WATCHING" });
   log(LogSeverity.LOG, "onStartup", process.env.BOT_NAME + " is now running.");

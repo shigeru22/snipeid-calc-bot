@@ -1,6 +1,7 @@
 "use strict";
 
 const dotenv = require("dotenv");
+const fs = require("fs");
 const { Pool } = require("pg");
 const { LogSeverity, log } = require("../utils/log");
 const { importRoles } = require("./import");
@@ -25,13 +26,26 @@ async function main() {
     "Using " + process.env.DB_USERNAME + "@" + process.env.DB_HOST + ":" + process.env.DB_PORT + ", in database named " + process.env.DB_DATABASE + "."
   );
 
-  const db = new Pool({
+  const dbConfig = {
     host: process.env.DB_HOST,
     port: parseInt(process.env.DB_PORT, 10),
     user: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
-    database: process.env.DB_DATABASE
-  });
+    database: process.env.DB_DATABASE,
+    ssl: (typeof(process.env.DB_SSL_CA) !== "undefined" ? {
+      rejectUnauthorized: true,
+      ca: fs.readFileSync(process.env.DB_SSL_CA).toString()
+    } : undefined)
+  };
+
+  if(typeof(dbConfig.ssl) !== "undefined") {
+    log(LogSeverity.LOG, "main", `Using SSL, CA path: ${ process.env.DB_SSL_CA }`);
+  }
+  else {
+    log(LogSeverity.WARN, "main", "Not using SSL. Caute procedere.");
+  }
+
+  const db = new Pool(dbConfig);
 
   try {
     log(LogSeverity.LOG, "main", "Connecting to database...");
@@ -40,6 +54,7 @@ async function main() {
     {
       const dbTemp = await db.connect();
       dbTemp.release();
+      log(LogSeverity.LOG, "main", "Successfully connected to database.");
     }
 
     if(!(await createTables(db))) {
