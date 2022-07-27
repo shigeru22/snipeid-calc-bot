@@ -1,4 +1,5 @@
-const { getAccessToken } = require("./api/osu");
+const { getAccessToken, revokeAccessToken } = require("./api/osu");
+const { OsuApiStatus } = require("./common");
 const { LogSeverity, log } = require("./log");
 
 /**
@@ -66,6 +67,24 @@ class OsuToken {
     }
 
     return this.#token;
+  }
+
+  async revokeToken() {
+    log(LogSeverity.LOG, "revokeToken", "Revoking osu! access token...");
+
+    if(this.#token === "") {
+      log(LogSeverity.WARN, "revokeToken", "No token was requested. Skipping process.");
+      return;
+    }
+
+    const response = await revokeAccessToken(this.#token);
+
+    if(response !== OsuApiStatus.OK) {
+      log(LogSeverity.ERROR, "revokeToken", "Unable to revoke access token. Check logs above.");
+      return;
+    }
+
+    this.#token = "";
   }
 }
 

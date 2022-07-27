@@ -57,6 +57,46 @@ async function getAccessToken(clientId, clientSecret) {
 }
 
 /**
+ * Revokes access token specified in parameter.
+ *
+ * @param { string } token - osu! access token.
+ *
+ * @returns { Promise<number> } Promise object with `OsuApiStatus` constant.
+ */
+async function revokeAccessToken(token) {
+  try {
+    const response = await axios.delete(OSU_API_ENDPOINT + "/oauth/tokens/current", {
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      }
+    });
+
+    if(response.status !== HTTPStatus.NO_CONTENT) {
+      log(LogSeverity.ERROR, "revokeAccessToken", "osu! API returned status code " + response.status.toString() + ".");
+      return OsuApiStatus.NON_OK;
+    }
+
+    return OsuApiStatus.OK;
+  }
+  catch (e) {
+    if(axios.isAxiosError(e)) {
+      log(LogSeverity.ERROR, "revokeAccessToken", "osu! API returned status code " + e.response.status.toString() + ".");
+      return OsuApiStatus.NON_OK;
+    }
+    else if(e instanceof Error) {
+      log(LogSeverity.ERROR, "revokeAccessToken", e.name + ": " + e.message);
+    }
+    else {
+      log(LogSeverity.ERROR, "revokeAccessToken", "Unknown error occurred.");
+    }
+
+    return OsuApiStatus.CLIENT_ERROR;
+  }
+}
+
+/**
  * Gets user information for this bot by osu! ID.
  *
  * @param { string } token - osu! access token.
@@ -138,5 +178,6 @@ async function getUserByOsuId(token, id) {
 
 module.exports = {
   getAccessToken,
+  revokeAccessToken,
   getUserByOsuId
 };

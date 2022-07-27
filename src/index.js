@@ -131,9 +131,12 @@ async function onNewMessage(msg) {
 /**
  * Exit event function.
  */
-function onExit() {
+async function onExit() {
   log(LogSeverity.LOG, "onExit", "Exit signal received. Cleaning up process...");
+
+  await token.revokeToken();
   client.destroy();
+
   log(LogSeverity.LOG, "onExit", "Cleanup success. Exiting...");
 
   process.exit(0);
