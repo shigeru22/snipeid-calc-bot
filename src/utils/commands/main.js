@@ -22,6 +22,8 @@ async function handleVerificationChannelCommands(client, channel, db, osuToken, 
   let ret = false;
 
   if(isClientMentioned) {
+    await channel.sendTyping();
+
     switch(contents[1]) {
       case "link":
         await verifyUser(client, channel, db, osuToken, message);
@@ -54,6 +56,8 @@ async function handlePointsChannelCommands(client, channel, db, osuToken, isClie
     ret = true;
   }
   else if(isClientMentioned) {
+    await channel.sendTyping();
+
     switch(contents[1]) {
       case "count":
         await userLeaderboardsCount(client, channel, db, osuToken, message.author.id);
@@ -84,6 +88,8 @@ async function handleLeaderboardChannelCommands(channel, db, isClientMentioned, 
   let ret = false;
 
   if(isClientMentioned) {
+    await channel.sendTyping();
+
     switch(contents[1]) {
       case "lb": // fallthrough
       case "leaderboard":

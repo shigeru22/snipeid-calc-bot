@@ -10,6 +10,8 @@ const { greet, agree, disagree, notUnderstood } = require("../messages/msg");
  * @returns { Promise<void> } Promise object with no return value.
  */
 async function sendMessage(channel, contents) {
+  await channel.sendTyping();
+
   let reply = "";
   let isUnderstood = true;
 
