@@ -99,7 +99,13 @@ async function getTopCountsFromRespektive(osuId) {
      * Response format might change in the future.
      */ 
 
-    return [ response.data.top1s, response.data.top8s, response.data.top25s, response.data.top50s ];
+    const ret = [];
+    ret.push(response.data.top1s !== null ? response.data.top1s : 0);
+    ret.push(response.data.top8s !== null ? response.data.top8s : 0);
+    ret.push(response.data.top25s !== null ? response.data.top25s : 0);
+    ret.push(response.data.top50s !== null ? response.data.top50s : 0);
+
+    return ret;
   }
   catch (e) {
     if(axios.isAxiosError(e)) {
