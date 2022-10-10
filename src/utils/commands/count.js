@@ -1,12 +1,14 @@
 const { getUserByOsuId } = require("../api/osu");
-const { getTopCounts } = require("../api/osustats");
+const { getTopCounts, getTopCountsFromRespektive } = require("../api/osustats");
 const { getDiscordUserByDiscordId } = require("../db/users");
 const { addWysiReaction } = require("./reactions");
 const { updateUserData } = require("./userdata");
-const { calculatePoints, counter } = require("../messages/counter");
+const { calculatePoints, calculateRespektivePoints, counter, counterRespektive } = require("../messages/counter");
 const { OsuUserStatus, OsuApiStatus, OsuStatsStatus, DatabaseErrors } = require("../common");
 const { WhatIfParserStatus, parseUsername, parseOsuIdFromLink, parseTopCountDescription, parseWhatIfCount } = require("../parser");
 const { LogSeverity, log } = require("../log");
+
+const isWhatIfDisabled = true;
 
 // <osc, using Bathbot message response
 /**
@@ -99,47 +101,22 @@ async function userLeaderboardsCount(client, channel, db, osuToken, discordId) {
       return;
   }
 
-  let topCounts = [];
-  {
-    const topCountsRequest = [
-      getTopCounts(osuUser.username, 1),
-      getTopCounts(osuUser.username, 8),
-      getTopCounts(osuUser.username, 15),
-      getTopCounts(osuUser.username, 25),
-      getTopCounts(osuUser.username, 50)
-    ];
+  let topCounts = await getTopCountsFromRespektive(user.osuId);
 
-    const temp = await Promise.all(topCountsRequest);
-    {
-      let error = 0;
-      const len = temp.length;
-      for(let i = 0; i < len; i++) {
-        if(typeof(temp[i]) === "number") {
-          // @ts-ignore - should be number
-          error = temp[i];
-          break;
-        }
-      }
-
-      if(error !== 0) {
-        switch(error) {
-          case OsuStatsStatus.USER_NOT_FOUND:
-            await channel.send("**Error:** osu!stats API said you're not found. Check osu!Stats manually?");
-            break;
-          case OsuStatsStatus.CLIENT_ERROR:
-            await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
-            break;
-        }
-
-        return;
-      }
+  if(typeof(topCounts) === "number") {
+    switch(topCounts) {
+      case OsuStatsStatus.USER_NOT_FOUND:
+        await channel.send("**Error:** osu!stats API said you're not found. Check osu!Stats manually?");
+        break;
+      case OsuStatsStatus.CLIENT_ERROR:
+        await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
+        break;
     }
 
-    // @ts-ignore - no longer number at this point
-    topCounts = [ temp[0].count, temp[1].count, temp[2].count, temp[3].count, temp[4].count ];
+    return;
   }
 
-  const points = calculatePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3], topCounts[4]);
+  const points = calculateRespektivePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3]);
   await countPoints(client, channel, osuUser.username, topCounts);
 
   await updateUserData(osuToken, client, channel, db, user.osuId, points);
@@ -158,6 +135,11 @@ async function userLeaderboardsCount(client, channel, db, osuToken, discordId) {
  * @returns { Promise<void> } Promise object with no return value.
  */
 async function userWhatIfCount(client, channel, db, osuToken, message) {
+  if(isWhatIfDisabled) {
+    await channel.send("Due to API changes, this API is currently disabled.");
+    return;
+  }
+
   const commands = message.content.split(/\s+/g); // split by one or more spaces
   commands.splice(0, 2); // remove first two elements, which is the mentioned bot and the command itself
 
@@ -350,6 +332,33 @@ async function countPoints(client, channel, username, topCounts) {
     topCounts[2],
     topCounts[3],
     topCounts[4],
+    username
+  );
+
+  const ret = await channel.send({ embeds: [ draft ] });
+  await addWysiReaction(client, ret, topCounts, newPoints);
+  return ret;
+}
+
+/**
+ * Sends respektive API's calculated points and embed to specified channel.
+ *
+ * @param { import("discord.js").Client } client - Discord bot client.
+ * @param { import("discord.js").TextChannel } channel - Discord channel to send message to.
+ * @param { string } username - osu! username.
+ * @param { number[] } topCounts - Array of top counts.
+ *
+ * @returns { Promise<import("discord.js").Message> } Promise object with `Discord.Message` sent message object.
+ */
+async function countPoints(client, channel, username, topCounts) {
+  log(LogSeverity.LOG, "countPoints", "Calculating points for username: " + username);
+
+  const newPoints = calculateRespektivePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3]);
+  const draft = counterRespektive(
+    topCounts[0],
+    topCounts[1],
+    topCounts[2],
+    topCounts[3],
     username
   );
 

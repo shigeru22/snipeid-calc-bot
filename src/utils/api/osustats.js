@@ -3,6 +3,7 @@ const { LogSeverity, log } = require("../log");
 const { HTTPStatus, OsuStatsStatus } = require("../common");
 
 const OSUSTATS_API_ENDPOINT = "https://osustats.ppy.sh/api";
+const OSUSTATS_API_RESPEKTIVE_ENDPOINT = "https://osustats.respektive.pw";
 
 /**
  * Retrieves user top leaderboard count.
@@ -63,6 +64,65 @@ async function getTopCounts(userName, maxRank) {
   }
 }
 
+/**
+ * Retrieves user top leaderboard count from respektive's API.
+ *
+ * @param { number } osuId - osu! user ID.
+ *
+ * @returns { Promise<number[] | number> } Promise object with user top leaderboard count array. Assume `[ top 1, top 8, top 25, top 50 ]` for now. Returns `OsuStatsStatus` constant in case of errors.
+ */
+async function getTopCountsFromRespektive(osuId) {
+  try {
+    const response = await axios.get(OSUSTATS_API_RESPEKTIVE_ENDPOINT + "/counts/" + osuId);
+
+    if(response.status !== HTTPStatus.OK) {
+      log(LogSeverity.ERROR, "getTopCounts", "osu!Stats returned status code " + response.status + ":\n" + response.data);
+      return OsuStatsStatus.CLIENT_ERROR;
+    }
+
+    if(response.data.username === null) {
+      return OsuStatsStatus.USER_NOT_FOUND;
+    }
+
+    /*
+     * osu!Stats (respektive) API response format (200) is the following:
+     * {
+     *   "user_id": number,
+     *   "username": string,
+     *   "country": string,
+     *   "top50s": number,
+     *   "top25s": number,
+     *   "top8s": number,
+     *   "top1s": number
+     * }
+     * 
+     * Response format might change in the future.
+     */ 
+
+    return [ response.data.top1s, response.data.top8s, response.data.top25s, response.data.top50s ];
+  }
+  catch (e) {
+    if(axios.isAxiosError(e)) {
+      if(e.response.status === HTTPStatus.NOT_FOUND) {
+        return OsuStatsStatus.USER_NOT_FOUND;
+      }
+      else {
+        log(LogSeverity.ERROR, "getTopCounts", e.name + ": " + e.message);
+      }
+    }
+    else if(e instanceof Error) {
+      log(LogSeverity.ERROR, "getTopCounts", e.name + ": " + e.message);
+    }
+    else {
+      log(LogSeverity.ERROR, "getTopCounts", "Unknown error occurred.");
+    }
+
+    return OsuStatsStatus.CLIENT_ERROR;
+  }
+
+}
+
 module.exports = {
-  getTopCounts
+  getTopCounts,
+  getTopCountsFromRespektive
 };
