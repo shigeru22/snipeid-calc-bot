@@ -26,7 +26,7 @@ function calculatePoints(top1, top8, top15, top25, top50) {
  * @returns { number } Calculated points.
  */
 function calculateRespektivePoints(top1, top8, top25, top50) {
-  return top1 * 5 + (top8 - top1) * 3 + (top25 - top8) * 2 + (top50 - top25);
+  return top1 * 5 + (top8 - top1) * 3 + (top25 - top8) + (top50 - top25);
 }
 
 /**
