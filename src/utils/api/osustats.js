@@ -95,9 +95,9 @@ async function getTopCountsFromRespektive(osuId) {
      *   "top8s": number,
      *   "top1s": number
      * }
-     * 
+     *
      * Response format might change in the future.
-     */ 
+     */
 
     const ret = [];
     ret.push(response.data.top1s !== null ? response.data.top1s : 0);
@@ -125,7 +125,6 @@ async function getTopCountsFromRespektive(osuId) {
 
     return OsuStatsStatus.CLIENT_ERROR;
   }
-
 }
 
 module.exports = {

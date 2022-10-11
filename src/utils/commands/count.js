@@ -101,7 +101,7 @@ async function userLeaderboardsCount(client, channel, db, osuToken, discordId) {
       return;
   }
 
-  let topCounts = await getTopCountsFromRespektive(user.osuId);
+  const topCounts = await getTopCountsFromRespektive(user.osuId);
 
   if(typeof(topCounts) === "number") {
     switch(topCounts) {
@@ -117,7 +117,7 @@ async function userLeaderboardsCount(client, channel, db, osuToken, discordId) {
   }
 
   const points = calculateRespektivePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3]);
-  await countPoints(client, channel, osuUser.username, topCounts);
+  await countRespektivePoints(client, channel, osuUser.username, topCounts);
 
   await updateUserData(osuToken, client, channel, db, user.osuId, points);
 }
@@ -350,7 +350,7 @@ async function countPoints(client, channel, username, topCounts) {
  *
  * @returns { Promise<import("discord.js").Message> } Promise object with `Discord.Message` sent message object.
  */
-async function countPoints(client, channel, username, topCounts) {
+async function countRespektivePoints(client, channel, username, topCounts) {
   log(LogSeverity.LOG, "countPoints", "Calculating points for username: " + username);
 
   const newPoints = calculateRespektivePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3]);
@@ -371,6 +371,7 @@ module.exports = {
   userLeaderboardsCountFromBathbot,
   userLeaderboardsCount,
   userWhatIfCount,
-  countPoints
+  countPoints,
+  countRespektivePoints
 };
 
