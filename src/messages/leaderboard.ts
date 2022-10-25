@@ -1,6 +1,6 @@
 import { MessageEmbed } from "discord.js";
-import { LogSeverity, log } from "../log";
-import { TimeOperation, getTimeOffsetFromString } from "../time";
+import { LogSeverity, log } from "../utils/log";
+import { TimeOperation, getTimeOffsetFromString } from "../utils/time";
 
 /**
  * Creates leaderboard embed message.

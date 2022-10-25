@@ -3,7 +3,7 @@
  *
  * @returns { string } The message.
  */
-function greet() {
+function greet(): string {
   const messages = [ "Hi", "Hello", "Yes", "What?" ];
   const index = Math.floor(Math.random() * (messages.length - 0.1));
   return messages[index];
@@ -14,7 +14,7 @@ function greet() {
  *
  * @returns { string } The message.
  */
-function agree() {
+function agree(): string {
   const messages = [ "Yea", "Yeah", "Somehow", "It is", "Well yes" ];
   const index = Math.floor(Math.random() * (messages.length - 0.1));
   return messages[index];
@@ -25,7 +25,7 @@ function agree() {
  *
  * @returns { string } The message.
  */
-function disagree() {
+function disagree(): string {
   const messages = [ "No", "Nah", "Idk bout that", "Nope" ];
   const index = Math.floor(Math.random() * (messages.length - 0.1));
   return messages[index];
@@ -36,7 +36,7 @@ function disagree() {
  *
  * @returns { string } The message.
  */
-function notUnderstood() {
+function notUnderstood(): string {
   const messages = [ "Am I smart enough to understand that?", "What?", "?", "..." ];
   const index = Math.floor(Math.random() * (messages.length - 0.1));
   return messages[index];

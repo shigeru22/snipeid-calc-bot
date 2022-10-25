@@ -1,5 +1,5 @@
 import { Client, TextChannel } from "discord.js";
-import { LogSeverity, log } from "../log";
+import { LogSeverity, log } from "../utils/log";
 
 /**
  * Add specified role to user specified.

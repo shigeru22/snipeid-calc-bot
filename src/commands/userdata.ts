@@ -1,12 +1,12 @@
 import { Client, TextChannel } from "discord.js";
 import { Pool } from "pg";
-import { LogSeverity, log } from "../log";
+import { LogSeverity, log } from "../utils/log";
 import { getUserByOsuId } from "../api/osu";
 import { getTopCounts } from "../api/osustats";
 import { insertOrUpdateAssignment } from "../db/assignments";
 import { getDiscordUserByDiscordId, insertUser } from "../db/users";
-import { DatabaseErrors, AssignmentType, OsuUserStatus, OsuStatsStatus } from "../common";
-import { deltaTimeToString } from "../time";
+import { DatabaseErrors, AssignmentType, OsuUserStatus, OsuStatsStatus } from "../utils/common";
+import { deltaTimeToString } from "../utils/time";
 
 /**
  * Updates user data in the database and assigns roles based on points received.

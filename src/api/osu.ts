@@ -1,6 +1,6 @@
 import axios from "axios";
-import { LogSeverity, log } from "../log";
-import { HTTPStatus, OsuUserStatus, OsuApiStatus } from "../common";
+import { LogSeverity, log } from "../utils/log";
+import { HTTPStatus, OsuUserStatus, OsuApiStatus } from "../utils/common";
 
 const OSU_API_ENDPOINT = "https://osu.ppy.sh/api/v2";
 const OSU_TOKEN_ENDPOINT = "https://osu.ppy.sh/oauth/token";

@@ -1,6 +1,6 @@
 import axios from "axios";
-import { LogSeverity, log } from "../log";
-import { HTTPStatus, OsuStatsStatus } from "../common";
+import { LogSeverity, log } from "../utils/log";
+import { HTTPStatus, OsuStatsStatus } from "../utils/common";
 
 const OSUSTATS_API_ENDPOINT = "https://osustats.ppy.sh/api";
 const OSUSTATS_API_RESPEKTIVE_ENDPOINT = "https://osustats.respektive.pw";

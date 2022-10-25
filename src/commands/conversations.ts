@@ -1,5 +1,5 @@
 import { TextChannel } from "discord.js";
-import { LogSeverity, log } from "../log";
+import { LogSeverity, log } from "../utils/log";
 import { greet, agree, disagree, notUnderstood } from "../messages/msg";
 
 /**

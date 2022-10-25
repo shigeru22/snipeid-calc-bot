@@ -1,5 +1,5 @@
 import { Client, Message } from "discord.js";
-import { LogSeverity, log } from "../log";
+import { LogSeverity, log } from "../utils/log";
 
 /**
  * Adds specified reaction to certain number element inside the calculated points result.

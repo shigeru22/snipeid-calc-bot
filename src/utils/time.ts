@@ -1,4 +1,4 @@
-import { LogSeverity, log } from "../utils/log";
+import { LogSeverity, log } from "./log";
 
 /**
  * Time operation enum.

@@ -1,6 +1,6 @@
-import { getAccessToken, revokeAccessToken } from "./api/osu";
-import { OsuApiStatus } from "./common";
-import { LogSeverity, log } from "./log";
+import { getAccessToken, revokeAccessToken } from "./osu";
+import { OsuApiStatus } from "../utils/common";
+import { LogSeverity, log } from "../utils/log";
 
 /**
  * osu! API token class.

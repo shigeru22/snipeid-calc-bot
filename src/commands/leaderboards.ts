@@ -1,8 +1,8 @@
 import { TextChannel } from "discord.js";
 import { Pool } from "pg";
-import { LogSeverity, log } from "../log";
+import { LogSeverity, log } from "../utils/log";
 import { getAllAssignments, getLastAssignmentUpdate } from "../db/assignments";
-import { AssignmentSort, DatabaseErrors } from "../common";
+import { AssignmentSort, DatabaseErrors } from "../utils/common";
 import { createLeaderboardEmbed } from "../messages/leaderboard";
 
 /**

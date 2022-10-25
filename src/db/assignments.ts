@@ -1,7 +1,7 @@
 import { Pool, DatabaseError } from "pg";
-import { LogSeverity, log } from "../log";
+import { LogSeverity, log } from "../utils/log";
 import { updateUser } from "./users";
-import { DatabaseErrors, AssignmentType, AssignmentSort } from "../common";
+import { DatabaseErrors, AssignmentType, AssignmentSort } from "../utils/common";
 
 // TODO: convert compound object return types into interfaces
 

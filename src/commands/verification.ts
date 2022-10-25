@@ -2,7 +2,7 @@ import { Client, TextChannel, Message } from "discord.js";
 import { Pool } from "pg";
 import { insertUserData, fetchOsuUser } from "./userdata";
 import { addRole } from "./roles";
-import { LogSeverity, log } from "../log";
+import { LogSeverity, log } from "../utils/log";
 
 /**
  * Verifies the user and inserts their data into the database.

@@ -6,9 +6,9 @@ import { getDiscordUserByDiscordId } from "../db/users";
 import { addWysiReaction } from "./reactions";
 import { updateUserData } from "./userdata";
 import { calculatePoints, calculateRespektivePoints, counter, counterRespektive } from "../messages/counter";
-import { OsuUserStatus, OsuStatsStatus, DatabaseErrors } from "../common";
-import { WhatIfParserStatus, parseUsername, parseOsuIdFromLink, parseTopCountDescription, parseWhatIfCount } from "../parser";
-import { LogSeverity, log } from "../log";
+import { OsuUserStatus, OsuStatsStatus, DatabaseErrors } from "../utils/common";
+import { WhatIfParserStatus, parseUsername, parseOsuIdFromLink, parseTopCountDescription, parseWhatIfCount } from "../utils/parser";
+import { LogSeverity, log } from "../utils/log";
 
 // <osc, using Bathbot message response
 /**

@@ -5,9 +5,9 @@ import { Pool } from "pg";
 import { createInterface } from "readline";
 import { validateEnvironmentVariables } from "./utils/env";
 import { LogSeverity, log } from "./utils/log";
-import { OsuToken } from "./utils/osu-token";
-import { handleVerificationChannelCommands, handlePointsChannelCommands, handleLeaderboardChannelCommands } from "./utils/commands/main";
-import { sendMessage } from "./utils/commands/conversations";
+import { OsuToken } from "./api/osu-token";
+import { handleVerificationChannelCommands, handlePointsChannelCommands, handleLeaderboardChannelCommands } from "./commands";
+import { sendMessage } from "./commands/conversations";
 
 // configure environment variable file (if any)
 dotenv.config();
