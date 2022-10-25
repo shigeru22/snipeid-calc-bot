@@ -1,13 +1,13 @@
 module.exports = {
   "env": {
     "es2021": true,
-    "browser": true,
-    "commonjs": true,
     "node": true
   },
   "extends": [
-    "eslint:recommended"
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended"
   ],
+  "ignorePatterns": [ "build/**/*" ],
   "overrides": [
     {
       "files": [ "**/*.test.js" ],
@@ -16,9 +16,14 @@ module.exports = {
       }
     }
   ],
+  "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": "latest"
   },
+  "plugins": [
+    "import",
+    "@typescript-eslint"
+  ],
   "rules": {
     /* possible problems */
     "array-callback-return": "error",
