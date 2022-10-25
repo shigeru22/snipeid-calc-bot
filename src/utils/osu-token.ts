@@ -1,6 +1,6 @@
-const { getAccessToken, revokeAccessToken } = require("./api/osu");
-const { OsuApiStatus } = require("./common");
-const { LogSeverity, log } = require("./log");
+import { getAccessToken, revokeAccessToken } from "./api/osu";
+import { OsuApiStatus } from "./common";
+import { LogSeverity, log } from "./log";
 
 /**
  * osu! API token class.
@@ -18,7 +18,7 @@ class OsuToken {
    * @param { string } clientSecret - osu! API client secret.
    * @param { boolean } retrieve - whether to retrieve token immediately after instantiating the object.
    */
-  constructor(clientId, clientSecret, retrieve = false) {
+  constructor(clientId: string, clientSecret: string, retrieve = false) {
     this.#clientId = clientId;
     this.#clientSecret = clientSecret;
 
@@ -32,7 +32,7 @@ class OsuToken {
    *
    * @returns { Promise<string> } Promise object with token response.
    */
-  async getToken() {
+  async getToken(): Promise<string> {
     const now = new Date();
 
     if(now.getTime() >= this.#expirationTime.getTime()) {
@@ -50,9 +50,9 @@ class OsuToken {
         return "";
       }
 
-      if(typeof(response) === "number") {
-        switch(response) {
-          case -1:
+      if(response.status !== OsuApiStatus.OK) {
+        switch(response.status) {
+          case OsuApiStatus.CLIENT_ERROR:
             log(LogSeverity.ERROR, "getToken", "Client error occurred. See above log for details.");
             break;
           default:
@@ -62,14 +62,19 @@ class OsuToken {
         return "";
       }
 
-      this.#token = response.token;
-      this.#expirationTime = response.expire;
+      this.#token = response.token as string;
+      this.#expirationTime = response.expire as Date;
     }
 
     return this.#token;
   }
 
-  async revokeToken() {
+  /**
+   * Revokes current token.
+   *
+   * @returns { Promise<void> } Promise object with no return value.
+   */
+  async revokeToken(): Promise<void> {
     log(LogSeverity.LOG, "revokeToken", "Revoking osu! access token...");
 
     if(this.#token === "") {
@@ -79,7 +84,7 @@ class OsuToken {
 
     const response = await revokeAccessToken(this.#token);
 
-    if(response !== OsuApiStatus.OK) {
+    if(response.status !== OsuApiStatus.OK) {
       log(LogSeverity.ERROR, "revokeToken", "Unable to revoke access token. Check logs above.");
       return;
     }
@@ -88,7 +93,4 @@ class OsuToken {
   }
 }
 
-module.exports = {
-  OsuToken
-};
-
+export { OsuToken };

@@ -1,4 +1,4 @@
-const { WhatIfParserStatus, parseTopCountDescription, parseUsername, parseOsuIdFromLink, parseWhatIfCount } = require("./parser");
+import { WhatIfParserStatus, parseTopCountDescription, parseUsername, parseOsuIdFromLink, parseWhatIfCount } from "./parser";
 
 test("parseTopCountDescription", () => {
   const description = "```\nTop 1 :    52\nTop 8 : 1,892\nTop 15: 3,733\nTop 25: 5,404\nTop 50: 7,496\n```";

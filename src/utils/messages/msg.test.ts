@@ -1,4 +1,4 @@
-const { greet, agree, disagree, notUnderstood } = require("./msg");
+import { greet, agree, disagree, notUnderstood } from "./msg";
 
 test("greet", () => {
   const messages = [ "Hi", "Hello", "Yes", "What?" ];

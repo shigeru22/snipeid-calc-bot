@@ -1,23 +1,24 @@
-const { LogSeverity, log } = require("../log");
-const { getAllAssignments, getLastAssignmentUpdate } = require("../db/assignments");
-const { AssignmentSort, DatabaseErrors } = require("../common");
-const { createLeaderboardEmbed } = require("../messages/leaderboard");
+import { TextChannel } from "discord.js";
+import { Pool } from "pg";
+import { LogSeverity, log } from "../log";
+import { getAllAssignments, getLastAssignmentUpdate } from "../db/assignments";
+import { AssignmentSort, DatabaseErrors } from "../common";
+import { createLeaderboardEmbed } from "../messages/leaderboard";
 
 /**
  * Sends top 50 leaderboard from the database to specified channel.
  *
- * @param { import("discord.js").TextChannel } channel - Discord channel to send message to.
- * @param { import("pg").Pool } db - Database connection pool.
+ * @param { TextChannel } channel - Discord channel to send message to.
+ * @param { Pool } db - Database connection pool.
  *
  * @returns { Promise<void> } Promise object with no return value.
  */
-async function sendPointLeaderboard(channel, db) {
+async function sendPointLeaderboard(channel: TextChannel, db: Pool): Promise<void> {
   log(LogSeverity.LOG, "sendPointLeaderboard", "Retrieving leaderboard data.");
 
   const rankings = await getAllAssignments(db, AssignmentSort.POINTS, true);
-  if(typeof(rankings) === "number") {
-    // @ts-ignore
-    switch(rankings) { // rankings is number, or DatabaseErrors constant
+  if(rankings.status !== DatabaseErrors.OK || rankings.assignments === undefined) {
+    switch(rankings.status) { // rankings is number, or DatabaseErrors constant
       case DatabaseErrors.CONNECTION_ERROR:
         await channel.send("**Error:** Database connection failed. Please contact bot administrator.");
         break;
@@ -33,8 +34,8 @@ async function sendPointLeaderboard(channel, db) {
   {
     const lastUpdateQuery = await getLastAssignmentUpdate(db);
 
-    if(typeof(lastUpdateQuery) === "number") {
-      switch(lastUpdateQuery) {
+    if(lastUpdateQuery.status !== DatabaseErrors.OK || lastUpdateQuery.date === undefined) {
+      switch(lastUpdateQuery.status) {
         case DatabaseErrors.NO_RECORD:
           await channel.send("**Error:** No records found. Be the first!");
           break;
@@ -49,14 +50,12 @@ async function sendPointLeaderboard(channel, db) {
       return;
     }
 
-    lastUpdated = new Date(lastUpdateQuery);
+    lastUpdated = new Date(lastUpdateQuery.date);
   }
 
-  const draft = createLeaderboardEmbed(rankings, lastUpdated);
+  const draft = createLeaderboardEmbed(rankings.assignments, lastUpdated);
 
   await channel.send({ embeds: [ draft ] });
 }
 
-module.exports = {
-  sendPointLeaderboard
-};
+export { sendPointLeaderboard };

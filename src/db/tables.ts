@@ -1,13 +1,14 @@
-const { LogSeverity, log } = require("../utils/log");
+import { Pool } from "pg";
+import { LogSeverity, log } from "../utils/log";
 
 /**
  * Creates tables in the database.
  *
- * @param { import("pg").Pool } db - Database pool object.
+ * @param { Pool } db - Database pool object.
  *
  * @returns { Promise<boolean> } Promise object, with `true` if tables were created, `false` otherwise.
  */
-async function createTables(db) {
+async function createTables(db: Pool): Promise<boolean> {
   log(LogSeverity.LOG, "createTables", "Creating tables...");
 
   try {
@@ -62,6 +63,4 @@ async function createTables(db) {
   }
 }
 
-module.exports = {
-  createTables
-};
+export { createTables };

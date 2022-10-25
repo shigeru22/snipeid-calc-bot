@@ -1,12 +1,10 @@
-"use strict";
-
-const dotenv = require("dotenv");
-const fs = require("fs");
-const { Pool } = require("pg");
-const { LogSeverity, log } = require("../utils/log");
-const { importRoles } = require("./import");
-const { createTables } = require("./tables");
-const { validateEnvironmentVariables, validateRolesConfig } = require("./validate");
+import dotenv from "dotenv";
+import fs from "fs";
+import { Pool } from "pg";
+import { LogSeverity, log } from "../utils/log";
+import { importRoles } from "./import";
+import { createTables } from "./tables";
+import { validateEnvironmentVariables, validateRolesConfig } from "./validate";
 
 // configure environment variable file (if any)
 dotenv.config();
@@ -28,7 +26,7 @@ async function main() {
 
   const dbConfig = {
     host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT, 10),
+    port: parseInt(process.env.DB_PORT as string, 10),
     user: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,

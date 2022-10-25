@@ -1,6 +1,8 @@
-const { sendPointLeaderboard } = require("./leaderboards");
-const { userLeaderboardsCountFromBathbot, userLeaderboardsCount, userWhatIfCount } = require("./count");
-const { verifyUser } = require("./verification");
+import { Client, TextChannel, Message } from "discord.js";
+import { Pool } from "pg";
+import { sendPointLeaderboard } from "./leaderboards";
+import { userLeaderboardsCountFromBathbot, userLeaderboardsCount, userWhatIfCount } from "./count";
+import { verifyUser } from "./verification";
 
 // Bathbot ID
 const BATHBOT_USER_ID = "297073686916366336";
@@ -8,16 +10,16 @@ const BATHBOT_USER_ID = "297073686916366336";
 /**
  * Handles all commands in the verification channel.
  *
- * @param { import("discord.js").Client } client - Discord bot client.
- * @param { import("discord.js").TextChannel } channel - Discord channel to handle commands in.
- * @param { import("pg").Pool } db - Database connection pool.
+ * @param { Client } client - Discord bot client.
+ * @param { TextChannel } channel - Discord channel to handle commands in.
+ * @param { Pool } db - Database connection pool.
  * @param { string } osuToken - osu! API token.
  * @param { boolean } isClientMentioned - Whether the bot was mentioned in the message.
- * @param { import("discord.js").Message } message - Discord message object.
+ * @param { Message } message - Discord message object.
  *
  * @returns { Promise<boolean> } Whether the command was handled.
  */
-async function handleVerificationChannelCommands(client, channel, db, osuToken, isClientMentioned, message) {
+async function handleVerificationChannelCommands(client: Client, channel: TextChannel, db: Pool, osuToken: string, isClientMentioned: boolean, message: Message): Promise<boolean> {
   const contents = message.content.split(/\s+/g); // split by one or more spaces
   let ret = false;
 
@@ -38,16 +40,16 @@ async function handleVerificationChannelCommands(client, channel, db, osuToken, 
 /**
  * Handles all commands in the the points channel.
  *
- * @param { import("discord.js").Client } client - Discord bot client.
- * @param { import("discord.js").TextChannel } channel - Discord channel to handle commands in.
- * @param { import("pg").Pool } db - Database connection pool.
+ * @param { Client } client - Discord bot client.
+ * @param { TextChannel } channel - Discord channel to handle commands in.
+ * @param { Pool } db - Database connection pool.
  * @param { string } osuToken - osu! API token.
  * @param { boolean } isClientMentioned - Whether the bot was mentioned in the message.
- * @param { import("discord.js").Message } message - Discord message object.
+ * @param { Message } message - Discord message object.
  *
  * @returns { Promise<boolean> } Whether the command was handled.
  */
-async function handlePointsChannelCommands(client, channel, db, osuToken, isClientMentioned, message) {
+async function handlePointsChannelCommands(client: Client, channel: TextChannel, db: Pool, osuToken: string, isClientMentioned: boolean, message: Message): Promise<boolean> {
   const contents = message.content.split(/\s+/g); // split by one or more spaces
   let ret = false;
 
@@ -76,14 +78,14 @@ async function handlePointsChannelCommands(client, channel, db, osuToken, isClie
 /**
  * Handles all commands in the leaderboards channel.
  *
- * @param { import("discord.js").TextChannel } channel - Discord channel to handle commands in.
- * @param { import("pg").Pool } db - Database connection pool.
+ * @param { TextChannel } channel - Discord channel to handle commands in.
+ * @param { Pool } db - Database connection pool.
  * @param { boolean } isClientMentioned - Whether the bot was mentioned in the message.
- * @param { import("discord.js").Message } message - Discord message object.
+ * @param { Message } message - Discord message object.
  *
  * @returns { Promise<boolean> } Whether the command was handled.
  */
-async function handleLeaderboardChannelCommands(channel, db, isClientMentioned, message) {
+async function handleLeaderboardChannelCommands(channel: TextChannel, db: Pool, isClientMentioned: boolean, message: Message): Promise<boolean> {
   const contents = message.content.split(/\s+/g); // split by one or more spaces
   let ret = false;
 
@@ -102,8 +104,4 @@ async function handleLeaderboardChannelCommands(channel, db, isClientMentioned, 
   return ret;
 }
 
-module.exports = {
-  handleVerificationChannelCommands,
-  handlePointsChannelCommands,
-  handleLeaderboardChannelCommands
-};
+export { handleVerificationChannelCommands, handlePointsChannelCommands, handleLeaderboardChannelCommands };

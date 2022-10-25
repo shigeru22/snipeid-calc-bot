@@ -1,10 +1,10 @@
-const WhatIfParserStatus = {
-  OK: 0,
-  INVALID_EXPRESSION: 1,
-  TYPE_ERROR: 2,
-  TOP_RANK_ERROR: 3,
-  NUMBER_OF_RANKS_ERROR: 4
-};
+enum WhatIfParserStatus {
+  OK,
+  INVALID_EXPRESSION,
+  TYPE_ERROR,
+  TOP_RANK_ERROR,
+  NUMBER_OF_RANKS_ERROR
+}
 
 /**
  * Parses Bathbot's top count embed into arrays.
@@ -13,7 +13,7 @@ const WhatIfParserStatus = {
  *
  * @returns { number[] } Array of top counts.
  */
-function parseTopCountDescription(desc) {
+function parseTopCountDescription(desc: string): number[] {
   const tops = desc.replace(/```(\n)*/g, "").split("\n");
 
   const len = tops.length;
@@ -21,7 +21,7 @@ function parseTopCountDescription(desc) {
     tops[i] = tops[i].replace(/Top /g, "").replace(/ /g, "").replace(/,/g, "");
   }
 
-  const topsArray = [];
+  const topsArray: number[] = [];
   tops.forEach(item => {
     if(item !== "") {
       const temp = item.split(":");
@@ -39,7 +39,7 @@ function parseTopCountDescription(desc) {
  *
  * @returns { string } Parsed username.
  */
-function parseUsername(title) {
+function parseUsername(title: string): string {
   return title.replace("In how many top X map leaderboards is ", "").replace("?", "");
 }
 
@@ -50,7 +50,7 @@ function parseUsername(title) {
  *
  * @returns { string } - Parsed osu! ID.
  */
-function parseOsuIdFromLink(url) {
+function parseOsuIdFromLink(url: string): string {
   return url.replace(/http(s)?:\/\/osu.ppy.sh\/u(sers)?\//g, "").split("/")[0];
 }
 
@@ -61,7 +61,7 @@ function parseOsuIdFromLink(url) {
  *
  * @returns { number[] | number } Array of what-if top counts. Returns `WhatIfParserStatus` constant in case of errors.
  */
-function parseWhatIfCount(exp) {
+function parseWhatIfCount(exp: string): number[] | number {
   const temp = exp.split("=");
 
   if(temp.length !== 2) {
@@ -85,10 +85,4 @@ function parseWhatIfCount(exp) {
   return testerArray;
 }
 
-module.exports = {
-  WhatIfParserStatus,
-  parseTopCountDescription,
-  parseUsername,
-  parseOsuIdFromLink,
-  parseWhatIfCount
-};
+export { WhatIfParserStatus, parseTopCountDescription, parseUsername, parseOsuIdFromLink, parseWhatIfCount };

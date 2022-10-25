@@ -1,19 +1,21 @@
-const { insertUserData, fetchOsuUser } = require("./userdata");
-const { addRole } = require("./roles");
-const { LogSeverity, log } = require("../log");
+import { Client, TextChannel, Message } from "discord.js";
+import { Pool } from "pg";
+import { insertUserData, fetchOsuUser } from "./userdata";
+import { addRole } from "./roles";
+import { LogSeverity, log } from "../log";
 
 /**
  * Verifies the user and inserts their data into the database.
  *
- * @param { import("discord.js").Client } client - Discord bot client.
- * @param { import("discord.js").TextChannel } channel - Discord channel to send message to.
- * @param { import("pg").Pool } db - Database connection pool.
+ * @param { Client } client - Discord bot client.
+ * @param { TextChannel } channel - Discord channel to send message to.
+ * @param { Pool } db - Database connection pool.
  * @param { string } osuToken - osu! API token.
- * @param { import("discord.js").Message } message - Message that triggered the command.
+ * @param { Message } message - Message that triggered the command.
  *
  * @returns { Promise<void> } Promise object with no return value.
  */
-async function verifyUser(client, channel, db, osuToken, message) {
+async function verifyUser(client: Client, channel: TextChannel, db: Pool, osuToken: string, message: Message): Promise<void> {
   const contents = message.content.split(/\s+/g); // split by one or more spaces
 
   if(typeof(contents[2]) !== "string") {
@@ -53,10 +55,8 @@ async function verifyUser(client, channel, db, osuToken, message) {
     return;
   }
 
-  await addRole(client, channel, message.author.id, process.env.SERVER_ID, process.env.VERIFIED_ROLE_ID);
+  await addRole(client, channel, message.author.id, process.env.SERVER_ID as string, process.env.VERIFIED_ROLE_ID);
   return;
 }
 
-module.exports = {
-  verifyUser
-};
+export { verifyUser };

@@ -1,16 +1,17 @@
-const { LogSeverity, log } = require("../log");
+import { Client, Message } from "discord.js";
+import { LogSeverity, log } from "../log";
 
 /**
  * Adds specified reaction to certain number element inside the calculated points result.
  *
- * @param { import("discord.js").Client } client - Discord bot client.
- * @param { import("discord.js").Message } message - Discord message to add reaction to.
+ * @param { Client } client - Discord bot client.
+ * @param { Message } message - Discord message to add reaction to.
  * @param { number[] } topCounts - Array of top counts.
  * @param { number } points - Calculated points.
  *
  * @returns { Promise<void> } Promise object with no return value.
  */
-async function addWysiReaction(client, message, topCounts, points) {
+async function addWysiReaction(client: Client, message: Message, topCounts: number[], points: number): Promise<void> {
   let wysi = false;
   topCounts.forEach(count => {
     if(count.toString().includes("727")) {
@@ -26,11 +27,13 @@ async function addWysiReaction(client, message, topCounts, points) {
   if(wysi) {
     log(LogSeverity.LOG, "addWysiReaction", "727 element detected. Adding reaction to message.");
 
-    const emoji = client.emojis.cache.get(process.env.OSUHOW_EMOJI_ID);
+    const emoji = client.emojis.cache.get(process.env.OSUHOW_EMOJI_ID as string);
+    if(emoji === undefined) {
+      return;
+    }
+
     await message.react(emoji);
   }
 }
 
-module.exports = {
-  addWysiReaction
-};
+export { addWysiReaction };

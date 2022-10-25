@@ -1,12 +1,12 @@
-const { LogSeverity, log } = require("../utils/log");
-const Config = require("../../config.json");
+import { LogSeverity, log } from "../utils/log";
+import Config from "../../config.json";
 
 /**
  * Validates environment variables.
  *
  * @returns { boolean } `true` if environment variables are valid, `false` otherwise.
  */
-function validateEnvironmentVariables() {
+function validateEnvironmentVariables(): boolean {
   log(LogSeverity.LOG, "validateEnvironmentVariables", "Checking for environment variables...");
 
   if(typeof(process.env.DB_HOST) !== "string" || !process.env.DB_HOST) {
@@ -48,7 +48,7 @@ function validateEnvironmentVariables() {
  *
  * @returns { boolean } `true` if roles config is valid, `false` otherwise.
  */
-function validateRolesConfig() {
+function validateRolesConfig(): boolean {
   log(LogSeverity.LOG, "validateRolesConfig", "Validating role data from config.json...");
 
   const roles = Config.roles;
@@ -115,7 +115,4 @@ function printRolesFormat() {
   console.log("  }");
 }
 
-module.exports = {
-  validateEnvironmentVariables,
-  validateRolesConfig
-};
+export { validateEnvironmentVariables, validateRolesConfig };

@@ -42,9 +42,4 @@ function notUnderstood() {
   return messages[index];
 }
 
-module.exports = {
-  greet,
-  agree,
-  disagree,
-  notUnderstood
-};
+export { greet, agree, disagree, notUnderstood };

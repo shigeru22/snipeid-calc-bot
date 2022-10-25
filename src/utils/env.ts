@@ -1,5 +1,5 @@
-const { LogSeverity, log } = require("./log");
-const { getTimeOffsetFromString } = require("./time");
+import { LogSeverity, log } from "./log";
+import { getTimeOffsetFromString } from "./time";
 
 /**
  * Validates environment variables.
@@ -76,6 +76,4 @@ function validateEnvironmentVariables() {
   return true;
 }
 
-module.exports = {
-  validateEnvironmentVariables
-};
+export { validateEnvironmentVariables };

@@ -1,32 +1,11 @@
-const { LogSeverity, log } = require("../utils/log");
+import { LogSeverity, log } from "../utils/log";
 
 /**
  * Time operation enum.
  */
-const TimeOperation = {
-  DECREMENT: 0,
-  INCREMENT: 1
-};
-
-/**
- * Checks whether time operation type is available in enum.
- *
- * @param { number | undefined } value - Time operation type to be checked.
- *
- * @returns { boolean | undefined } Whether time operation type is available in enum. Returns `undefined` if `value` is `undefined`.
- */
-function isTimeOperationEnumAvailable(value) {
-  if(typeof(value) === "undefined") {
-    return undefined;
-  }
-
-  for(const prop in TimeOperation) {
-    if(TimeOperation[prop] === value) {
-      return true;
-    }
-  }
-
-  return false;
+enum TimeOperation {
+  DECREMENT,
+  INCREMENT
 }
 
 /**
@@ -36,7 +15,7 @@ function isTimeOperationEnumAvailable(value) {
  *
  * @returns { string } Delta time in string representation.
  */
-function deltaTimeToString(ms) {
+function deltaTimeToString(ms: number): string {
   const years = Math.floor(ms / 31536000000);
   if(years >= 1) {
     return years.toString() + (years === 1 ? " year" : " years");
@@ -71,9 +50,9 @@ function deltaTimeToString(ms) {
  *
  * @param { string } value - Time offset string.
  *
- * @returns { { operation: number; hours: number; minutes: number; } | undefined } Time offset object. Returns `undefined` in case of errors.
+ * @returns { { operation: TimeOperation; hours: number; minutes: number; } | undefined } Time offset object. Returns `undefined` in case of errors.
  */
-function getTimeOffsetFromString(value) {
+function getTimeOffsetFromString(value: string): { operation: TimeOperation; hours: number; minutes: number; } | undefined {
   const temp = value.split(":");
   if(temp.length !== 2) {
     log(LogSeverity.ERROR, "getTimeOffsetFromString", "value must be in time format. Check .env-template for details.");
@@ -105,9 +84,4 @@ function getTimeOffsetFromString(value) {
   };
 }
 
-module.exports = {
-  TimeOperation,
-  isTimeOperationEnumAvailable,
-  deltaTimeToString,
-  getTimeOffsetFromString
-};
+export { TimeOperation, deltaTimeToString, getTimeOffsetFromString };

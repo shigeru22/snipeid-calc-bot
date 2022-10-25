@@ -1,24 +1,26 @@
-"use strict";
-
-const dotenv = require("dotenv");
-const fs = require("fs");
-const Discord = require("discord.js");
-const { Pool } = require("pg");
-const { createInterface } = require("readline");
-const { validateEnvironmentVariables } = require("./utils/env");
-const { LogSeverity, log } = require("./utils/log");
-const { OsuToken } = require("./utils/osu-token");
-const { handleVerificationChannelCommands, handlePointsChannelCommands, handleLeaderboardChannelCommands } = require("./utils/commands/main");
-const { sendMessage } = require("./utils/commands/conversations");
+import dotenv from "dotenv";
+import fs from "fs";
+import { Client, Message } from "discord.js";
+import { Pool } from "pg";
+import { createInterface } from "readline";
+import { validateEnvironmentVariables } from "./utils/env";
+import { LogSeverity, log } from "./utils/log";
+import { OsuToken } from "./utils/osu-token";
+import { handleVerificationChannelCommands, handlePointsChannelCommands, handleLeaderboardChannelCommands } from "./utils/commands/main";
+import { sendMessage } from "./utils/commands/conversations";
 
 // configure environment variable file (if any)
 dotenv.config();
+
+if(!validateEnvironmentVariables()) {
+  process.exit(1);
+}
 
 // database pool
 
 const dbConfig = {
   host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT, 10),
+  port: parseInt(process.env.DB_PORT as string, 10),
   user: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
@@ -31,10 +33,10 @@ const dbConfig = {
 const db = new Pool(dbConfig);
 
 // bot client
-const client = new Discord.Client({ intents: [ "GUILDS", "GUILD_MESSAGES" ] });
+const client = new Client({ intents: [ "GUILDS", "GUILD_MESSAGES" ] });
 
 // osu! API token object
-const token = new OsuToken(process.env.OSU_CLIENT_ID, process.env.OSU_CLIENT_SECRET);
+const token = new OsuToken(process.env.OSU_CLIENT_ID as string, process.env.OSU_CLIENT_SECRET as string);
 
 // handle Windows interrupt event
 if(process.platform === "win32") {
@@ -52,7 +54,7 @@ process.on("SIGTERM", () => onExit());
 
 // bot client event handling
 client.on("ready", async () => await onStartup());
-client.on("messageCreate", async (msg) => await onNewMessage(msg));
+client.on("messageCreate", async (msg: Message) => await onNewMessage(msg));
 
 /**
  * Startup event function.
@@ -89,6 +91,13 @@ async function onStartup() {
     log(LogSeverity.LOG, "onStartup", "Successfully connected to database.");
   }
 
+  if(client.user === null) {
+    // this should not happen, but whatever
+    log(LogSeverity.ERROR, "onStartup", "client.user is null.");
+    client.destroy();
+    process.exit(1);
+  }
+
   client.user.setActivity("Bathbot everyday", { type: "WATCHING" });
   log(LogSeverity.LOG, "onStartup", process.env.BOT_NAME + " is now running.");
 }
@@ -96,9 +105,16 @@ async function onStartup() {
 /**
  * New message event function.
  *
- * @param { Discord.Message } msg
+ * @param { Message } msg
  */
-async function onNewMessage(msg) {
+async function onNewMessage(msg: Message) {
+  if(client.user === null) {
+    // this should not happen, but whatever
+    log(LogSeverity.ERROR, "onNewMessage", "client.user is null.");
+    client.destroy();
+    process.exit(1);
+  }
+
   const contents = msg.content.split(/\s+/g); // split by one or more spaces
   const isClientMentioned = msg.mentions.users.has(client.user.id) && contents[0].includes(client.user.id);
   let processed = false;
@@ -143,9 +159,4 @@ async function onExit() {
 }
 
 // main execution procedure
-
-if(!validateEnvironmentVariables()) {
-  process.exit(0);
-}
-
 client.login(process.env.BOT_TOKEN);

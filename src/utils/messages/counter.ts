@@ -1,4 +1,4 @@
-const { MessageEmbed } = require("discord.js");
+import { MessageEmbed } from "discord.js";
 
 /**
  * Calculates points for each top rank count.
@@ -11,7 +11,7 @@ const { MessageEmbed } = require("discord.js");
  *
  * @returns { number } Calculated points.
  */
-function calculatePoints(top1, top8, top15, top25, top50) {
+function calculatePoints(top1: number, top8: number, top15: number, top25: number, top50: number): number {
   return top1 * 5 + (top8 - top1) * 3 + (top15 - top8) * 2 + (top25 - top15) + (top50 - top25);
 }
 
@@ -25,7 +25,7 @@ function calculatePoints(top1, top8, top15, top25, top50) {
  *
  * @returns { number } Calculated points.
  */
-function calculateRespektivePoints(top1, top8, top25, top50) {
+function calculateRespektivePoints(top1: number, top8: number, top25: number, top50: number): number {
   return top1 * 5 + (top8 - top1) * 3 + (top25 - top8) + (top50 - top25);
 }
 
@@ -41,7 +41,7 @@ function calculateRespektivePoints(top1, top8, top25, top50) {
  *
  * @returns { MessageEmbed }
  */
-function counter(top1, top8, top15, top25, top50, username) {
+function counter(top1: number, top8: number, top15: number, top25: number, top50: number, username: string): MessageEmbed {
   const draft = new MessageEmbed();
 
   const points = calculatePoints(top1, top8, top15, top25, top50);
@@ -64,7 +64,7 @@ function counter(top1, top8, top15, top25, top50, username) {
  *
  * @returns { MessageEmbed }
  */
-function counterRespektive(top1, top8, top25, top50, username) {
+function counterRespektive(top1: number, top8: number, top25: number, top50: number, username: string): MessageEmbed {
   const draft = new MessageEmbed();
 
   const points = calculateRespektivePoints(top1, top8, top25, top50);
@@ -77,9 +77,4 @@ function counterRespektive(top1, top8, top25, top50, username) {
   return draft;
 }
 
-module.exports = {
-  calculatePoints,
-  calculateRespektivePoints,
-  counter,
-  counterRespektive
-};
+export { calculatePoints, calculateRespektivePoints, counter, counterRespektive };

@@ -1,4 +1,4 @@
-const { calculatePoints } = require("./counter");
+import { calculatePoints } from "./counter";
 
 test("calculatePoints", () => {
   const pointsArray = [ 52, 1892, 3733, 5404, 7496 ];

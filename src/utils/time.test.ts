@@ -1,4 +1,4 @@
-const { deltaTimeToString } = require("./time");
+import { deltaTimeToString } from "./time";
 
 test("deltaTimeToString (seconds)", () => {
   expect(deltaTimeToString(1000)).toBe("1 second");

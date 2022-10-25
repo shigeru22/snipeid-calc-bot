@@ -1,5 +1,6 @@
-const { LogSeverity, log } = require("../log");
-const { greet, agree, disagree, notUnderstood } = require("../messages/msg");
+import { TextChannel } from "discord.js";
+import { LogSeverity, log } from "../log";
+import { greet, agree, disagree, notUnderstood } from "../messages/msg";
 
 /**
  * Sends message based on what message was received.
@@ -9,7 +10,7 @@ const { greet, agree, disagree, notUnderstood } = require("../messages/msg");
  *
  * @returns { Promise<void> } Promise object with no return value.
  */
-async function sendMessage(channel, contents) {
+async function sendMessage(channel: TextChannel, contents: string[]): Promise<void> {
   await channel.sendTyping();
 
   let reply = "";
@@ -42,6 +43,4 @@ async function sendMessage(channel, contents) {
   await channel.send(reply);
 }
 
-module.exports = {
-  sendMessage
-};
+export { sendMessage };

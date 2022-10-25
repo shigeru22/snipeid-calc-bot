@@ -1,6 +1,6 @@
-const { MessageEmbed } = require("discord.js");
-const { LogSeverity, log } = require("../log");
-const { TimeOperation, getTimeOffsetFromString } = require("../time");
+import { MessageEmbed } from "discord.js";
+import { LogSeverity, log } from "../log";
+import { TimeOperation, getTimeOffsetFromString } from "../time";
 
 /**
  * Creates leaderboard embed message.
@@ -10,12 +10,12 @@ const { TimeOperation, getTimeOffsetFromString } = require("../time");
  *
  * @returns { MessageEmbed } Leaderboard embed message.
  */
-function createLeaderboardEmbed(data, lastUpdated) {
+function createLeaderboardEmbed(data: { assignmentid: number; username: string; rolename: string; points: number; lastupdate: Date; }[], lastUpdated: Date): MessageEmbed {
   let timeOperation = TimeOperation.INCREMENT;
   let hourOffset = 0;
   let minuteOffset = 0;
 
-  const offset = getTimeOffsetFromString(process.env.TZ_OFFSET);
+  const offset = getTimeOffsetFromString(process.env.TZ_OFFSET as string);
   if(typeof(offset) === "undefined") {
     log(LogSeverity.WARN, "createLeaderboardEmbed", "Unable to get time offset from string. Using no offset.");
   }
@@ -58,6 +58,4 @@ function createLeaderboardEmbed(data, lastUpdated) {
   return draft;
 }
 
-module.exports = {
-  createLeaderboardEmbed
-};
+export { createLeaderboardEmbed };
