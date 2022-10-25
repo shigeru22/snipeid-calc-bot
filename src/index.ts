@@ -51,6 +51,7 @@ if(process.platform === "win32") {
 // interrupt and termination signal handling
 process.on("SIGINT", () => onExit());
 process.on("SIGTERM", () => onExit());
+process.on("uncaughtException", (e: unknown) => onException(e));
 
 // bot client event handling
 client.on("ready", async () => await onStartup());
@@ -141,6 +142,25 @@ async function onNewMessage(msg: Message) {
 
     // if bot is mentioned but nothing processed, send a random message.
     (!processed && isClientMentioned) && await sendMessage(channel, contents);
+  }
+}
+
+/**
+ * Unhandled exception event function.
+ *
+ * @param { unknown } e - Thrown error variable.
+ */
+function onException(e: unknown) {
+  if(e instanceof Error) {
+    if(e.name === "Error [TOKEN_INVALID]") {
+      log(LogSeverity.ERROR, "onException", "Invalid token provided. Check token in .env file and restart the client.");
+    }
+    else {
+      log(LogSeverity.ERROR, "onException", `Unhandled error occurred. Exception details below.\n${ e.stack }`);
+    }
+  }
+  else {
+    log(LogSeverity.ERROR, "onException", "Unknown error occurred.");
   }
 }
 
