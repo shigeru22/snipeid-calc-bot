@@ -1,9 +1,8 @@
 import dotenv from "dotenv";
 import fs from "fs";
 import { Pool } from "pg";
-import { LogSeverity, log } from "../utils/log";
-import { importRoles } from "./import";
-import { createTables } from "./tables";
+import { LogSeverity, log } from "../src/utils/log";
+import { Tables } from "./tables";
 import { validateEnvironmentVariables, validateRolesConfig } from "./validate";
 
 // configure environment variable file (if any)
@@ -55,11 +54,7 @@ async function main() {
       log(LogSeverity.LOG, "main", "Successfully connected to database.");
     }
 
-    if(!(await createTables(db))) {
-      process.exit(1);
-    }
-
-    if(!(await importRoles(db))) {
+    if(!(await Tables.createAllTables(db))) {
       process.exit(1);
     }
   }

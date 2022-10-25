@@ -1,6 +1,6 @@
 import { Pool } from "pg";
-import { LogSeverity, log } from "../utils/log";
-import Config from "../../config.json";
+import { LogSeverity, log } from "../src/utils/log";
+import Config from "../config.json";
 
 /**
  * Imports roles from into database.
@@ -14,9 +14,9 @@ async function importRoles(db: Pool): Promise<boolean> {
 
   const roles = Config.roles;
   const len = roles.length;
-  let query = "INSERT INTO roles (discordId, roleName, minPoints) VALUES ";
+  let query = "INSERT INTO roles (discordId, serverId, roleName, minPoints) VALUES ";
   roles.forEach((role, index) => {
-    query += "('" + role.discordId + "', '" + role.name + "', " + role.minPoints.toString() + ")";
+    query += "('" + role.discordId + "', '1', '" + role.name + "', " + role.minPoints.toString() + ")";
     if(index < len - 1) {
       query += ", ";
     }

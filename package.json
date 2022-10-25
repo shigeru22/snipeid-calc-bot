@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node .",
     "dev": "nodemon --signal SIGINT --delay 3 ./src/index.ts",
-    "init-db": "ts-node src/db/main.ts",
+    "init-db": "ts-node db/index.ts",
     "lint": "eslint .",
     "test": "jest"
   },

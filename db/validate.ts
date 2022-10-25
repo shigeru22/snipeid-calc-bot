@@ -1,5 +1,5 @@
-import { LogSeverity, log } from "../utils/log";
-import Config from "../../config.json";
+import { LogSeverity, log } from "../src/utils/log";
+import Config from "../config.json";
 
 /**
  * Validates environment variables.
@@ -51,7 +51,14 @@ function validateEnvironmentVariables(): boolean {
 function validateRolesConfig(): boolean {
   log(LogSeverity.LOG, "validateRolesConfig", "Validating role data from config.json...");
 
+  const serverId = Config.serverId;
   const roles = Config.roles;
+
+  if(typeof(serverId) !== "string" || serverId.length <= 0) {
+    log(LogSeverity.ERROR, "validateRolesConfig", "Server ID must be defined to import.");
+    printRolesFormat();
+    return false;
+  }
 
   if(!roles) {
     log(LogSeverity.ERROR, "validateRolesConfig", "Roles array is not defined. Define in config.json with the following format:");
@@ -106,6 +113,7 @@ function validateRolesConfig(): boolean {
  */
 function printRolesFormat() {
   console.log("  {");
+  console.log("     \"serverId\": string,");
   console.log("     \"roles\": [");
   console.log("       {");
   console.log("         \"discordId\": number,");
