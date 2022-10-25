@@ -2,10 +2,11 @@
   "name": "snipeid-calc-bot",
   "version": "1.0.0",
   "description": "Country snipe point calculation",
-  "main": "build/index.js",
+  "main": "build/src/index.js",
   "scripts": {
     "start": "node .",
     "dev": "nodemon --signal SIGINT --delay 3 ./src/index.ts",
+    "build": "tsc",
     "init-db": "ts-node db/index.ts",
     "lint": "eslint .",
     "test": "jest"

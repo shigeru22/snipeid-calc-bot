@@ -112,3 +112,6 @@ tags.*
 
 # SSL certificates
 .cert/
+
+# built files
+build
