@@ -281,11 +281,14 @@ class Tables {
       CREATE TABLE assignments (
         assignmentId SERIAL PRIMARY KEY,
         userId INTEGER NOT NULL,
+        serverId INTEGER NOT NULL,
         roleId INTEGER NOT NULL,
         points INTEGER DEFAULT 0 NOT NULL,
         lastUpdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT fk_user
           FOREIGN KEY(userId) REFERENCES users(userId),
+        CONSTRAINT fk_server
+          FOREIGN KEY(serverId) REFERENCES servers(serverId),
         CONSTRAINT fk_role
           FOREIGN KEY(roleId) REFERENCES roles(roleId)
       )

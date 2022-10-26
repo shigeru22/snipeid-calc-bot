@@ -54,6 +54,7 @@ enum DatabaseErrors {
   CONNECTION_ERROR,
   DUPLICATED_DISCORD_ID,
   DUPLICATED_OSU_ID,
+  DUPLICATED_RECORD,
   USER_NOT_FOUND,
   NO_RECORD,
   ROLES_EMPTY,
@@ -78,4 +79,26 @@ enum AssignmentSort {
   LAST_UPDATED
 }
 
-export { HTTPStatus, OsuUserStatus, OsuApiStatus, OsuStatsStatus, DatabaseErrors, AssignmentType, AssignmentSort };
+/**
+ * Returns SQL string representation of assignment sorting enum.
+ *
+ * @param { AssignmentSort } sort - Sorting enum value.
+ *
+ * @returns { string } SQL string representation of assignment sorting value.
+ */
+function assignmentSortToString(sort: AssignmentSort): string {
+  switch(sort) {
+    case AssignmentSort.ID:
+      return "assignments.\"assignmentid\"";
+    case AssignmentSort.ROLE_ID:
+      return "assignments.\"roleid\"";
+    case AssignmentSort.POINTS:
+      return "assignments.\"points\"";
+    case AssignmentSort.LAST_UPDATED:
+      return "assignments.\"lastupdate\"";
+    default:
+      return "";
+  }
+}
+
+export { HTTPStatus, OsuUserStatus, OsuApiStatus, OsuStatsStatus, DatabaseErrors, AssignmentType, AssignmentSort, assignmentSortToString };
