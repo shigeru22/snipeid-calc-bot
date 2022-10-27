@@ -12,7 +12,7 @@ class Tables {
   static async createAllTables(db: Pool): Promise<boolean> {
     /*
      * Order of execution:
-     * users -> servers -> members -> roles -> assignments
+     * users -> servers -> roles -> assignments
      */
 
     if(!(await this.createUsersTable(db))) {
@@ -20,10 +20,6 @@ class Tables {
     }
 
     if(!(await this.createServersTable(db))) {
-      return false;
-    }
-
-    if(!(await this.createMembersTable(db))) {
       return false;
     }
 
@@ -113,48 +109,6 @@ class Tables {
       }
       else {
         log(LogSeverity.LOG, "createServersTable", "An unknown error occurred.");
-      }
-
-      return false;
-    }
-  }
-
-  /**
-   * Creates members table in the database (v2).
-   *
-   * @param { Pool } db - Database pool object.
-   *
-   * @returns { Promise<boolean> } Promise object, with `true` if the table were created, `false` otherwise.
-   */
-  static async createMembersTable(db: Pool): Promise<boolean> {
-    log(LogSeverity.LOG, "createMembersTable", "Creating tables...");
-
-    const query = `
-      CREATE TABLE members (
-        memberId SERIAL PRIMARY KEY,
-        userId INTEGER NOT NULL,
-        serverId INTEGER NOT NULL,
-        CONSTRAINT fk_user
-          FOREIGN KEY(userId) REFERENCES users(userId),
-        CONSTRAINT fk_server
-          FOREIGN KEY(serverId) REFERENCES servers(serverId)
-      )
-    `;
-
-    try {
-      const client = await db.connect();
-
-      await client.query(query);
-
-      log(LogSeverity.LOG, "createMembersTable", "Table creation completed.");
-      return true;
-    }
-    catch (e) {
-      if(e instanceof Error) {
-        log(LogSeverity.LOG, "createMembersTable", "An error occurred while querying database: " + e.message);
-      }
-      else {
-        log(LogSeverity.LOG, "createMembersTable", "An unknown error occurred.");
       }
 
       return false;
