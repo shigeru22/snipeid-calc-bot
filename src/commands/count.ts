@@ -6,7 +6,7 @@ import { getDiscordUserByDiscordId } from "../db/users";
 import { addWysiReaction } from "./reactions";
 import { updateUserData } from "./userdata";
 import { calculatePoints, calculateRespektivePoints, counter, counterRespektive } from "../messages/counter";
-import { OsuUserStatus, OsuStatsStatus, DatabaseErrors } from "../utils/common";
+import { OsuUserStatus, OsuStatsSuccessStatus, OsuStatsErrorStatus, DatabaseErrors, DatabaseSuccess, OsuApiSuccessStatus, OsuApiErrorStatus } from "../utils/common";
 import { WhatIfParserStatus, parseUsername, parseOsuIdFromLink, parseTopCountDescription, parseWhatIfCount } from "../utils/parser";
 import { LogSeverity, log } from "../utils/log";
 
@@ -16,7 +16,7 @@ import { LogSeverity, log } from "../utils/log";
  *
  * @param { Client } client - Discord bot client.
  * @param { TextChannel } channel - Channel to send points result to.
- * @param { import("pg").Pool } db - Database connection pool.
+ * @param { Pool } db - Database connection pool.
  * @param { string } osuToken - osu! API token.
  * @param { Message } message - Message that triggered the command.
  *
@@ -79,7 +79,7 @@ async function userLeaderboardsCountFromBathbot(client: Client, channel: TextCha
  */
 async function userLeaderboardsCount(client: Client, channel: TextChannel, db: Pool, osuToken: string, discordId: string): Promise<void> {
   const user = await getDiscordUserByDiscordId(db, discordId);
-  if(user.status !== DatabaseErrors.OK || user.user === undefined) {
+  if(user.status !== DatabaseSuccess.OK) {
     switch(user.status) {
       case DatabaseErrors.USER_NOT_FOUND:
         await channel.send("**Error:** How you've been here? You haven't linked your account.");
@@ -95,10 +95,23 @@ async function userLeaderboardsCount(client: Client, channel: TextChannel, db: P
     return;
   }
 
-  const osuUser = await getUserByOsuId(osuToken, user.user.osuId);
+  const osuUser = await getUserByOsuId(osuToken, user.data.osuId);
   {
-    if(osuUser.user === undefined) {
+    if(osuUser.status !== OsuApiSuccessStatus.OK) {
       switch(osuUser.status) {
+        case OsuApiErrorStatus.NON_OK:
+          await channel.send("**Error:** osu! user not found.");
+          break;
+        case OsuApiErrorStatus.CLIENT_ERROR:
+          await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
+          break;
+      }
+
+      return;
+    }
+
+    if(osuUser.data.status !== OsuUserStatus.USER || osuUser.data.user === undefined) { // TODO: use conditional type for user
+      switch(osuUser.data.status) {
         case OsuUserStatus.BOT:
           await channel.send("**Error:** Suddenly, you turned into a skynet...");
           break;
@@ -106,22 +119,16 @@ async function userLeaderboardsCount(client: Client, channel: TextChannel, db: P
         case OsuUserStatus.NOT_FOUND:
           await channel.send("**Error:** Did you do something to your osu! account?");
           break;
-        case OsuUserStatus.API_ERROR:
-          await channel.send("**Error:** osu! API error. Check osu!status?");
-          break;
-        case OsuUserStatus.CLIENT_ERROR:
-          await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
-          break;
       }
 
       return;
     }
   }
 
-  const osuUsername = osuUser.user.username as string;
+  const osuUsername = osuUser.data.user.userName;
   const useRespektive = typeof(process.env.USE_RESPEKTIVE) === "string" && process.env.USE_RESPEKTIVE === "1";
 
-  let topCounts: number[] = [];
+  const topCounts: number[] = [];
   if(!useRespektive) { // TODO: refactor for userWhatIfCount function usage
     {
       const topCountsRequest = [
@@ -134,27 +141,28 @@ async function userLeaderboardsCount(client: Client, channel: TextChannel, db: P
 
       const temp = await Promise.all(topCountsRequest);
       {
-        let error = OsuStatsStatus.OK;
+        let error = OsuStatsErrorStatus.OK;
         const len = temp.length;
         for(let i = 0; i < len; i++) {
-          if(temp[i].status !== OsuStatsStatus.OK) {
-            error = temp[i].status;
+          const tempCountResponse = temp[i];
+
+          if(tempCountResponse.status !== OsuStatsSuccessStatus.OK) {
+            error = tempCountResponse.status;
+            break;
           }
 
-          if(temp[i].count === undefined) {
-            error = OsuStatsStatus.CLIENT_ERROR;
-          }
+          topCounts.push(tempCountResponse.data.count);
         }
 
-        if(error !== OsuStatsStatus.OK) {
+        if(error !== OsuStatsErrorStatus.OK) {
           switch(error) {
-            case OsuStatsStatus.USER_NOT_FOUND:
+            case OsuStatsErrorStatus.USER_NOT_FOUND:
               await channel.send("**Error:** osu!Stats API said you're not found. Check osu!Stats manually?");
               break;
-            case OsuStatsStatus.API_ERROR:
+            case OsuStatsErrorStatus.API_ERROR:
               await channel.send("**Error:** osu!Stats API error occurred. Please contact bot administrator.");
               break;
-            case OsuStatsStatus.CLIENT_ERROR:
+            case OsuStatsErrorStatus.CLIENT_ERROR:
               await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
               break;
           }
@@ -162,27 +170,19 @@ async function userLeaderboardsCount(client: Client, channel: TextChannel, db: P
           return;
         }
       }
-
-      topCounts = [
-        temp[0].count as number,
-        temp[1].count as number,
-        temp[2].count as number,
-        temp[3].count as number,
-        temp[4].count as number
-      ];
     }
   }
   else {
-    const temp = await getTopCountsFromRespektive(user.user.osuId);
-    if(temp.status !== OsuStatsStatus.OK) {
+    const temp = await getTopCountsFromRespektive(user.data.osuId);
+    if(temp.status !== OsuStatsSuccessStatus.OK) {
       switch(temp.status) {
-        case OsuStatsStatus.USER_NOT_FOUND:
+        case OsuStatsErrorStatus.USER_NOT_FOUND:
           await channel.send("**Error:** osu!Stats API said you're not found. Check osu!Stats manually?");
           break;
-        case OsuStatsStatus.API_ERROR:
+        case OsuStatsErrorStatus.API_ERROR:
           await channel.send("**Error:** osu!Stats API error occurred. Please contact bot administrator.");
           break;
-        case OsuStatsStatus.CLIENT_ERROR:
+        case OsuStatsErrorStatus.CLIENT_ERROR:
           await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
           break;
       }
@@ -201,7 +201,7 @@ async function userLeaderboardsCount(client: Client, channel: TextChannel, db: P
     await countRespektivePoints(client, channel, osuUsername, topCounts);
   }
 
-  await updateUserData(osuToken, client, channel, db, user.user.osuId, points);
+  await updateUserData(osuToken, client, channel, db, user.data.osuId, points);
 }
 
 // @[BOT_NAME] whatif [what-if expression]
@@ -276,7 +276,7 @@ async function userWhatIfCount(client: Client, channel: TextChannel, db: Pool, o
   }
 
   const user = await getDiscordUserByDiscordId(db, message.author.id);
-  if(user.status !== DatabaseErrors.OK || user.user === undefined) {
+  if(user.status !== DatabaseSuccess.OK) {
     switch(user.status) {
       case DatabaseErrors.USER_NOT_FOUND:
         await channel.send("**Error:** How you've been here? You haven't linked your account.");
@@ -292,10 +292,23 @@ async function userWhatIfCount(client: Client, channel: TextChannel, db: Pool, o
     return;
   }
 
-  const osuUser = await getUserByOsuId(osuToken, user.user.osuId);
-  if(osuUser.user === undefined) {
-    if(osuUser.user === undefined) {
+  const osuUser = await getUserByOsuId(osuToken, user.data.osuId);
+  {
+    if(osuUser.status !== OsuApiSuccessStatus.OK) {
       switch(osuUser.status) {
+        case OsuApiErrorStatus.NON_OK:
+          await channel.send("**Error:** osu! user not found.");
+          break;
+        case OsuApiErrorStatus.CLIENT_ERROR:
+          await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
+          break;
+      }
+
+      return;
+    }
+
+    if(osuUser.data.status !== OsuUserStatus.USER || osuUser.data.user === undefined) { // TODO: use conditional type for user
+      switch(osuUser.data.status) {
         case OsuUserStatus.BOT:
           await channel.send("**Error:** Suddenly, you turned into a skynet...");
           break;
@@ -303,22 +316,16 @@ async function userWhatIfCount(client: Client, channel: TextChannel, db: Pool, o
         case OsuUserStatus.NOT_FOUND:
           await channel.send("**Error:** Did you do something to your osu! account?");
           break;
-        case OsuUserStatus.API_ERROR:
-          await channel.send("**Error:** osu! API error. Check osu!status?");
-          break;
-        case OsuUserStatus.CLIENT_ERROR:
-          await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
-          break;
       }
 
       return;
     }
   }
 
-  const osuUsername = osuUser.user.username as string;
+  const osuUsername = osuUser.data.user.userName as string;
   const useRespektive = typeof(process.env.USE_RESPEKTIVE) === "string" || process.env.USE_RESPEKTIVE === "1";
 
-  let topCounts: number[] = [];
+  const topCounts: number[] = [];
   if(!useRespektive) {
     {
       const topCountsRequest = [
@@ -331,27 +338,28 @@ async function userWhatIfCount(client: Client, channel: TextChannel, db: Pool, o
 
       const temp = await Promise.all(topCountsRequest);
       {
-        let error = OsuStatsStatus.OK;
+        let error = OsuStatsErrorStatus.OK;
         const len = temp.length;
         for(let i = 0; i < len; i++) {
-          if(temp[i].status !== OsuStatsStatus.OK) {
-            error = temp[i].status;
+          const tempCountResponse = temp[i];
+
+          if(tempCountResponse.status !== OsuStatsSuccessStatus.OK) {
+            error = tempCountResponse.status;
+            break;
           }
 
-          if(temp[i].count === undefined) {
-            error = OsuStatsStatus.CLIENT_ERROR;
-          }
+          topCounts.push(tempCountResponse.data.count);
         }
 
-        if(error !== OsuStatsStatus.OK) {
+        if(error !== OsuStatsErrorStatus.OK) {
           switch(error) {
-            case OsuStatsStatus.USER_NOT_FOUND:
+            case OsuStatsErrorStatus.USER_NOT_FOUND:
               await channel.send("**Error:** osu!Stats API said you're not found. Check osu!Stats manually?");
               break;
-            case OsuStatsStatus.API_ERROR:
+            case OsuStatsErrorStatus.API_ERROR:
               await channel.send("**Error:** osu!Stats API error occurred. Please contact bot administrator.");
               break;
-            case OsuStatsStatus.CLIENT_ERROR:
+            case OsuStatsErrorStatus.CLIENT_ERROR:
               await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
               break;
           }
@@ -359,27 +367,19 @@ async function userWhatIfCount(client: Client, channel: TextChannel, db: Pool, o
           return;
         }
       }
-
-      topCounts = [
-        temp[0].count as number,
-        temp[1].count as number,
-        temp[2].count as number,
-        temp[3].count as number,
-        temp[4].count as number
-      ];
     }
   }
   else {
-    const temp = await getTopCountsFromRespektive(user.user.osuId);
-    if(temp.status !== OsuStatsStatus.OK) {
+    const temp = await getTopCountsFromRespektive(user.data.osuId);
+    if(temp.status !== OsuStatsSuccessStatus.OK) {
       switch(temp.status) {
-        case OsuStatsStatus.USER_NOT_FOUND:
+        case OsuStatsErrorStatus.USER_NOT_FOUND:
           await channel.send("**Error:** osu!Stats API said you're not found. Check osu!Stats manually?");
           break;
-        case OsuStatsStatus.API_ERROR:
+        case OsuStatsErrorStatus.API_ERROR:
           await channel.send("**Error:** osu!Stats API error occurred. Please contact bot administrator.");
           break;
-        case OsuStatsStatus.CLIENT_ERROR:
+        case OsuStatsErrorStatus.CLIENT_ERROR:
           await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
           break;
       }

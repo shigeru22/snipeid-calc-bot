@@ -1,11 +1,10 @@
 import axios from "axios";
 import { LogSeverity, log } from "../utils/log";
-import { HTTPStatus, OsuUserStatus, OsuApiStatus } from "../utils/common";
+import { HTTPStatus, OsuUserStatus, OsuApiErrorStatus, OsuApiSuccessStatus } from "../utils/common";
+import { IOsuApiTokenData, IOsuApiUserData, IOsuApiTokenResponseData, IOsuApiUserResponseData, OsuApiResponseData } from "../types/api/osu";
 
 const OSU_API_ENDPOINT = "https://osu.ppy.sh/api/v2";
 const OSU_TOKEN_ENDPOINT = "https://osu.ppy.sh/oauth/token";
-
-// TODO: convert compound object return types into interfaces
 
 /**
  * Gets access token using osu! client ID and secret.
@@ -13,14 +12,14 @@ const OSU_TOKEN_ENDPOINT = "https://osu.ppy.sh/oauth/token";
  * @param { string } clientId - osu! client ID.
  * @param { string } clientSecret - osu! client secret.
  *
- * @returns { Promise<{ status: OsuApiStatus.OK | OsuApiStatus.NON_OK | OsuApiStatus.CLIENT_ERROR; token?: string; expire?: Date; }> } Promise object with access token and expiration date.
+ * @returns { Promise<OsuApiResponseData<IOsuApiTokenData> | OsuApiResponseData<OsuApiErrorStatus.NON_OK | OsuApiErrorStatus.CLIENT_ERROR>> } Promise object with access token and expiration date.
  */
-async function getAccessToken(clientId: string, clientSecret: string): Promise<{ status: OsuApiStatus.OK | OsuApiStatus.NON_OK | OsuApiStatus.CLIENT_ERROR; token?: string; expire?: Date; }> {
+async function getAccessToken(clientId: string, clientSecret: string): Promise<OsuApiResponseData<IOsuApiTokenData> | OsuApiResponseData<OsuApiErrorStatus.NON_OK | OsuApiErrorStatus.CLIENT_ERROR>> {
   const id = parseInt(clientId, 10); // no need to validate since already validated in env module
   const secret = clientSecret;
 
   try {
-    const response = await axios.post(OSU_TOKEN_ENDPOINT, {
+    const response = await axios.post<IOsuApiTokenResponseData>(OSU_TOKEN_ENDPOINT, {
       client_id: id,
       client_secret: secret,
       grant_type: "client_credentials",
@@ -28,16 +27,18 @@ async function getAccessToken(clientId: string, clientSecret: string): Promise<{
     });
 
     if(response.status !== HTTPStatus.OK) {
-      log(LogSeverity.ERROR, "getAccessToken", "osu! API returned status code " + response.status.toString() + ".");
+      log(LogSeverity.ERROR, "getAccessToken", `osu! API returned status code ${ response.status.toString() }.`);
       return {
-        status: OsuApiStatus.NON_OK
+        status: OsuApiErrorStatus.NON_OK
       };
     }
 
     return {
-      status: OsuApiStatus.OK,
-      token: response.data.access_token,
-      expire: new Date((new Date()).getTime() + (response.data.expires_in * 1000))
+      status: OsuApiSuccessStatus.OK,
+      data: {
+        token: response.data.access_token,
+        expire: new Date((new Date()).getTime() + (response.data.expires_in * 1000))
+      }
     };
   }
   catch (e) {
@@ -48,9 +49,9 @@ async function getAccessToken(clientId: string, clientSecret: string): Promise<{
           process.exit(1);
         }
 
-        log(LogSeverity.ERROR, "getAccessToken", "osu! API returned status code " + e.response.status.toString() + ".");
+        log(LogSeverity.ERROR, "getAccessToken", `osu! API returned status code ${ e.response.status.toString() }.`);
         return {
-          status: OsuApiStatus.NON_OK
+          status: OsuApiErrorStatus.NON_OK
         };
       }
       else {
@@ -65,7 +66,7 @@ async function getAccessToken(clientId: string, clientSecret: string): Promise<{
     }
 
     return {
-      status: OsuApiStatus.CLIENT_ERROR
+      status: OsuApiErrorStatus.CLIENT_ERROR
     };
   }
 }
@@ -75,9 +76,9 @@ async function getAccessToken(clientId: string, clientSecret: string): Promise<{
  *
  * @param { string } token - osu! access token.
  *
- * @returns { Promise<{ status: OsuApiStatus.OK | OsuApiStatus.NON_OK | OsuApiStatus.CLIENT_ERROR }> } Promise object with `OsuApiStatus` constant.
+ * @returns { Promise<OsuApiResponseData<true> | OsuApiResponseData<OsuApiErrorStatus.NON_OK | OsuApiErrorStatus.CLIENT_ERROR>> } Promise object with `OsuApiStatus` constant.
  */
-async function revokeAccessToken(token: string): Promise<{ status: OsuApiStatus.OK | OsuApiStatus.NON_OK | OsuApiStatus.CLIENT_ERROR }> {
+async function revokeAccessToken(token: string): Promise<OsuApiResponseData<true> | OsuApiResponseData<OsuApiErrorStatus.NON_OK | OsuApiErrorStatus.CLIENT_ERROR>> {
   try {
     const response = await axios.delete(OSU_API_ENDPOINT + "/oauth/tokens/current", {
       headers: {
@@ -90,12 +91,13 @@ async function revokeAccessToken(token: string): Promise<{ status: OsuApiStatus.
     if(response.status !== HTTPStatus.NO_CONTENT) {
       log(LogSeverity.ERROR, "revokeAccessToken", "osu! API returned status code " + response.status.toString() + ".");
       return {
-        status: OsuApiStatus.NON_OK
+        status: OsuApiErrorStatus.NON_OK
       };
     }
 
     return {
-      status: OsuApiStatus.OK
+      status: OsuApiSuccessStatus.OK,
+      data: true
     };
   }
   catch (e) {
@@ -103,7 +105,7 @@ async function revokeAccessToken(token: string): Promise<{ status: OsuApiStatus.
       if(e.response !== undefined) {
         log(LogSeverity.ERROR, "getAccessToken", "osu! API returned status code " + e.response.status.toString() + ".");
         return {
-          status: OsuApiStatus.NON_OK
+          status: OsuApiErrorStatus.NON_OK
         };
       }
       else {
@@ -118,7 +120,7 @@ async function revokeAccessToken(token: string): Promise<{ status: OsuApiStatus.
     }
 
     return {
-      status: OsuApiStatus.CLIENT_ERROR
+      status: OsuApiErrorStatus.CLIENT_ERROR
     };
   }
 }
@@ -129,11 +131,11 @@ async function revokeAccessToken(token: string): Promise<{ status: OsuApiStatus.
  * @param { string } token - osu! access token.
  * @param { number } id - osu! user ID.
  *
- * @returns { Promise<{ status: OsuUserStatus; user?: { username: string; isCountryCodeAllowed: boolean; } }> } Promise object with user information.
+ * @returns { Promise<OsuApiResponseData<IOsuApiUserData> | OsuApiResponseData<OsuApiErrorStatus.NON_OK | OsuApiErrorStatus.CLIENT_ERROR>> } Promise object with user information.
  */
-async function getUserByOsuId(token: string, id: number): Promise<{ status: OsuUserStatus.USER | OsuUserStatus.BOT | OsuUserStatus.DELETED | OsuUserStatus.NOT_FOUND | OsuUserStatus.API_ERROR | OsuUserStatus.CLIENT_ERROR; user?: { username: string; isCountryCodeAllowed: boolean; }; }> {
+async function getUserByOsuId(token: string, id: number): Promise<OsuApiResponseData<IOsuApiUserData> | OsuApiResponseData<OsuApiErrorStatus.NON_OK | OsuApiErrorStatus.CLIENT_ERROR>> {
   try {
-    const response = await axios.get(OSU_API_ENDPOINT + "/users/" + id.toString(), {
+    const response = await axios.get<IOsuApiUserResponseData>(OSU_API_ENDPOINT + "/users/" + id.toString(), {
       params: {
         key: "id"
       },
@@ -145,28 +147,37 @@ async function getUserByOsuId(token: string, id: number): Promise<{ status: OsuU
     });
 
     if(response.status !== HTTPStatus.OK) {
-      log(LogSeverity.ERROR, "getUserByOsuId", "osu! API returned status code " + response.status.toString() + ".");
+      log(LogSeverity.ERROR, "getUserByOsuId", `osu! API returned status code ${ response.status.toString() }.`);
       return {
-        status: OsuUserStatus.API_ERROR
+        status: OsuApiErrorStatus.CLIENT_ERROR
       };
     }
 
     if(response.data.is_bot) {
       return {
-        status: OsuUserStatus.BOT
+        status: OsuApiSuccessStatus.OK,
+        data: {
+          status: OsuUserStatus.BOT
+        }
       };
     }
     else if(response.data.is_deleted) {
       return {
-        status: OsuUserStatus.DELETED
+        status: OsuApiSuccessStatus.OK,
+        data: {
+          status: OsuUserStatus.DELETED
+        }
       };
     }
 
     return {
-      status: OsuUserStatus.USER,
-      user: {
-        username: response.data.username,
-        isCountryCodeAllowed: response.data.country.code === process.env.COUNTRY_CODE
+      status: OsuApiSuccessStatus.OK,
+      data: {
+        status: OsuUserStatus.USER,
+        user: {
+          userName: response.data.username,
+          isCountryCodeAllowed: response.data.country_code === process.env.COUNTRY_CODE
+        }
       }
     };
   }
@@ -182,7 +193,7 @@ async function getUserByOsuId(token: string, id: number): Promise<{ status: OsuU
             break;
           case HTTPStatus.NOT_FOUND:
             return {
-              status: OsuUserStatus.NOT_FOUND
+              status: OsuApiErrorStatus.NON_OK
             };
         }
 
@@ -202,7 +213,7 @@ async function getUserByOsuId(token: string, id: number): Promise<{ status: OsuU
     }
 
     return {
-      status: OsuUserStatus.CLIENT_ERROR
+      status: OsuApiErrorStatus.CLIENT_ERROR
     };
   }
 }

@@ -1,23 +1,36 @@
 import { Pool, DatabaseError } from "pg";
 import { LogSeverity, log } from "../utils/log";
-import { DatabaseErrors } from "../utils/common";
-
-// TODO: convert compound object return types into interfaces
-
-// TODO: create conditional types
+import { DatabaseErrors, DatabaseSuccess } from "../utils/common";
+import { DBResponseBase } from "../types/db/main";
+import { IDBServerRoleData, IDBServerRoleQueryData } from "../types/db/roles";
 
 /**
  * Returns list of roles in the database.
  *
  * @param { Pool } db - Database connection pool.
  *
- * @returns { Promise<{ status: DatabaseErrors.OK | DatabaseErrors.ROLES_EMPTY | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR, roles?: { roleid: number; discordid: string; rolename: string; minpoints: number; }[]; }> } Promise object with roles array.
+ * @returns { Promise<DBResponseBase<IDBServerRoleData> | DBResponseBase<DatabaseErrors.ROLES_EMPTY | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with roles array.
  */
-async function getRolesList(db: Pool): Promise<{ status: DatabaseErrors.OK | DatabaseErrors.ROLES_EMPTY | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR; roles?: { roleid: number; discordid: string; rolename: string; minpoints: number; }[]; }> {
-  const selectQuery = "SELECT * FROM roles ORDER BY 4 DESC";
+async function getRolesList(db: Pool, serverDiscordId: string): Promise<DBResponseBase<IDBServerRoleData[]> | DBResponseBase<DatabaseErrors.ROLES_EMPTY | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  const selectQuery = `
+    SELECT
+      roles."roleid",
+      roles."discordid",
+      roles."rolename",
+      roles."minpoints"
+    FROM
+      roles
+    JOIN
+      servers ON roles."serverid" = servers."serverid"
+    WHERE
+      servers."discordid" = $1
+    ORDER BY
+      minPoints DESC
+  `;
+  const selectValues = [ serverDiscordId ];
 
   try {
-    const rolesResult = await db.query(selectQuery); // TODO: add type annotation to queries
+    const rolesResult = await db.query<IDBServerRoleQueryData>(selectQuery, selectValues);
     if(typeof(rolesResult.rows) === "undefined" || rolesResult.rows.length === 0) {
       return {
         status: DatabaseErrors.ROLES_EMPTY
@@ -25,8 +38,13 @@ async function getRolesList(db: Pool): Promise<{ status: DatabaseErrors.OK | Dat
     }
 
     return {
-      status: DatabaseErrors.OK,
-      roles: rolesResult.rows
+      status: DatabaseSuccess.OK,
+      data: rolesResult.rows.map(row => ({
+        roleId: row.roleid,
+        discordId: row.discordid,
+        roleName: row.rolename,
+        minPoints: row.minpoints
+      }))
     };
   }
   catch (e) {

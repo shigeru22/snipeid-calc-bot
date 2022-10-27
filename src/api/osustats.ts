@@ -1,11 +1,10 @@
 import axios from "axios";
 import { LogSeverity, log } from "../utils/log";
-import { HTTPStatus, OsuStatsStatus } from "../utils/common";
+import { HTTPStatus, OsuStatsErrorStatus, OsuStatsSuccessStatus } from "../utils/common";
+import { IOsuStatsUserData, OsuStatsApiResponseData, OsuStatsRespektiveApiResponseData, OsuStatsResponseData } from "../types/api/osustats";
 
 const OSUSTATS_API_ENDPOINT = "https://osustats.ppy.sh/api";
 const OSUSTATS_API_RESPEKTIVE_ENDPOINT = "https://osustats.respektive.pw";
-
-// TODO: convert compound object return types into interfaces
 
 /**
  * Retrieves user top leaderboard count.
@@ -13,11 +12,11 @@ const OSUSTATS_API_RESPEKTIVE_ENDPOINT = "https://osustats.respektive.pw";
  * @param { string } userName - osu! username.
  * @param { number } maxRank - Maximum rank to retrieve.
  *
- * @returns { Promise<{ status: OsuStatsStatus, userName?: string, maxRank?: number, count?: number }> } Promise object with status, user name, max rank, and count.
+ * @returns { Promise<OsuStatsResponseData<IOsuStatsUserData> | OsuStatsResponseData<OsuStatsErrorStatus.USER_NOT_FOUND | OsuStatsErrorStatus.API_ERROR | OsuStatsErrorStatus.CLIENT_ERROR>> } Promise object with status, user name, max rank, and count.
  */
-async function getTopCounts(userName: string, maxRank: number): Promise<{ status: OsuStatsStatus, userName?: string; maxRank?: number; count?: number; }> {
+async function getTopCounts(userName: string, maxRank: number): Promise<OsuStatsResponseData<IOsuStatsUserData> | OsuStatsResponseData<OsuStatsErrorStatus.USER_NOT_FOUND | OsuStatsErrorStatus.API_ERROR | OsuStatsErrorStatus.CLIENT_ERROR>> {
   try {
-    const response = await axios.post(OSUSTATS_API_ENDPOINT + "/getScores", {
+    const response = await axios.post<OsuStatsApiResponseData>(OSUSTATS_API_ENDPOINT + "/getScores", {
       accMin: 0.0,
       accMax: 100.0,
       rankMin: 1,
@@ -32,7 +31,7 @@ async function getTopCounts(userName: string, maxRank: number): Promise<{ status
       log(LogSeverity.ERROR, "getTopCounts", "osu!Stats returned status code " + response.status + ":\n" + response.data);
 
       return {
-        status: OsuStatsStatus.CLIENT_ERROR
+        status: OsuStatsErrorStatus.CLIENT_ERROR
       };
     }
 
@@ -47,10 +46,12 @@ async function getTopCounts(userName: string, maxRank: number): Promise<{ status
      */
 
     return {
-      status: OsuStatsStatus.OK,
-      userName,
-      maxRank,
-      count: response.data[1]
+      status: OsuStatsSuccessStatus.OK,
+      data: {
+        userName,
+        maxRank,
+        count: response.data[1]
+      }
     };
   }
   catch (e) {
@@ -58,13 +59,13 @@ async function getTopCounts(userName: string, maxRank: number): Promise<{ status
       if(e.response !== undefined) {
         if(e.response.status === HTTPStatus.BAD_REQUEST) {
           return {
-            status: OsuStatsStatus.USER_NOT_FOUND
+            status: OsuStatsErrorStatus.USER_NOT_FOUND
           };
         }
         else {
           log(LogSeverity.ERROR, "getTopCounts", "osu!Stats API returned status code " + e.response.status.toString() + ".");
           return {
-            status: OsuStatsStatus.API_ERROR
+            status: OsuStatsErrorStatus.API_ERROR
           };
         }
       }
@@ -80,7 +81,7 @@ async function getTopCounts(userName: string, maxRank: number): Promise<{ status
     }
 
     return {
-      status: OsuStatsStatus.CLIENT_ERROR
+      status: OsuStatsErrorStatus.CLIENT_ERROR
     };
   }
 }
@@ -92,20 +93,20 @@ async function getTopCounts(userName: string, maxRank: number): Promise<{ status
  *
  * @returns { Promise<number[] | number> } Promise object with status and user top leaderboard count array. Assume `[ top 1, top 8, top 25, top 50 ]` for now.
  */
-async function getTopCountsFromRespektive(osuId: number): Promise<{ status: OsuStatsStatus, count?: number[]}> {
+async function getTopCountsFromRespektive(osuId: number): Promise<OsuStatsResponseData<number[]> | OsuStatsResponseData<OsuStatsErrorStatus.USER_NOT_FOUND | OsuStatsErrorStatus.API_ERROR | OsuStatsErrorStatus.CLIENT_ERROR>> {
   try {
-    const response = await axios.get(OSUSTATS_API_RESPEKTIVE_ENDPOINT + "/counts/" + osuId);
+    const response = await axios.get<OsuStatsRespektiveApiResponseData>(OSUSTATS_API_RESPEKTIVE_ENDPOINT + "/counts/" + osuId);
 
     if(response.status !== HTTPStatus.OK) {
       log(LogSeverity.ERROR, "getTopCountsFromRespektive", "osu!Stats returned status code " + response.status + ":\n" + response.data);
       return {
-        status: OsuStatsStatus.CLIENT_ERROR
+        status: OsuStatsErrorStatus.CLIENT_ERROR
       };
     }
 
     if(response.data.username === null) {
       return {
-        status: OsuStatsStatus.USER_NOT_FOUND
+        status: OsuStatsErrorStatus.USER_NOT_FOUND
       };
     }
 
@@ -124,15 +125,15 @@ async function getTopCountsFromRespektive(osuId: number): Promise<{ status: OsuS
      * Response format might change in the future.
      */
 
-    const ret = [];
+    const ret: number[] = [];
     ret.push(response.data.top1s !== null ? response.data.top1s : 0);
     ret.push(response.data.top8s !== null ? response.data.top8s : 0);
     ret.push(response.data.top25s !== null ? response.data.top25s : 0);
     ret.push(response.data.top50s !== null ? response.data.top50s : 0);
 
     return {
-      status: OsuStatsStatus.OK,
-      count: ret
+      status: OsuStatsSuccessStatus.OK,
+      data: ret
     };
   }
   catch (e) {
@@ -140,7 +141,7 @@ async function getTopCountsFromRespektive(osuId: number): Promise<{ status: OsuS
       if(e.response !== undefined) {
         if(e.response.status === HTTPStatus.NOT_FOUND) {
           return {
-            status: OsuStatsStatus.USER_NOT_FOUND
+            status: OsuStatsErrorStatus.USER_NOT_FOUND
           };
         }
         else {
@@ -159,7 +160,7 @@ async function getTopCountsFromRespektive(osuId: number): Promise<{ status: OsuS
     }
 
     return {
-      status: OsuStatsStatus.CLIENT_ERROR
+      status: OsuStatsErrorStatus.CLIENT_ERROR
     };
   }
 }

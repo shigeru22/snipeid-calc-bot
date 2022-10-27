@@ -21,26 +21,38 @@ enum OsuUserStatus {
   USER,
   BOT,
   DELETED,
-  NOT_FOUND,
-  API_ERROR,
-  CLIENT_ERROR
+  NOT_FOUND
 }
 
 /**
- * osu! API function response status.
+ * osu! API function success response status.
  */
-enum OsuApiStatus {
-  OK,
+enum OsuApiSuccessStatus {
+  OK
+}
+
+/**
+ * osu! API function error response status.
+ */
+enum OsuApiErrorStatus {
+  OK, // should not be used
   NON_OK,
   UNAUTHORIZED,
   CLIENT_ERROR
 }
 
 /**
+ * osu!Stats success response status.
+ */
+enum OsuStatsSuccessStatus {
+  OK
+}
+
+/**
  * osu!Stats response status.
  */
-enum OsuStatsStatus {
-  OK,
+enum OsuStatsErrorStatus {
+  OK, // should not be used
   USER_NOT_FOUND,
   API_ERROR,
   CLIENT_ERROR
@@ -50,7 +62,7 @@ enum OsuStatsStatus {
  * Database errors enum.
  */
 enum DatabaseErrors {
-  OK,
+  OK, // should not be used
   CONNECTION_ERROR,
   DUPLICATED_DISCORD_ID,
   DUPLICATED_OSU_ID,
@@ -59,6 +71,13 @@ enum DatabaseErrors {
   NO_RECORD,
   ROLES_EMPTY,
   CLIENT_ERROR
+}
+
+/**
+ * Database non-error status enum.
+ */
+enum DatabaseSuccess { // this is created to differentiate type checking
+  OK
 }
 
 /**
@@ -101,4 +120,4 @@ function assignmentSortToString(sort: AssignmentSort): string {
   }
 }
 
-export { HTTPStatus, OsuUserStatus, OsuApiStatus, OsuStatsStatus, DatabaseErrors, AssignmentType, AssignmentSort, assignmentSortToString };
+export { HTTPStatus, OsuUserStatus, OsuApiSuccessStatus, OsuApiErrorStatus, OsuStatsSuccessStatus, OsuStatsErrorStatus, DatabaseErrors, DatabaseSuccess, AssignmentType, AssignmentSort, assignmentSortToString };

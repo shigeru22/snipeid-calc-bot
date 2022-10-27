@@ -1,5 +1,5 @@
 import { getAccessToken, revokeAccessToken } from "./osu";
-import { OsuApiStatus } from "../utils/common";
+import { OsuApiSuccessStatus, OsuApiErrorStatus } from "../utils/common";
 import { LogSeverity, log } from "../utils/log";
 
 /**
@@ -50,20 +50,20 @@ class OsuToken {
         return "";
       }
 
-      if(response.status !== OsuApiStatus.OK) {
+      if(response.status !== OsuApiSuccessStatus.OK) {
         switch(response.status) {
-          case OsuApiStatus.CLIENT_ERROR:
+          case OsuApiErrorStatus.CLIENT_ERROR:
             log(LogSeverity.ERROR, "getToken", "Client error occurred. See above log for details.");
             break;
           default:
-            log(LogSeverity.ERROR, "getToken", "osu! API returned status code " + response.toString() + ".");
+            log(LogSeverity.ERROR, "getToken", `osu! API returned status code ${ response.toString() }.`);
         }
 
         return "";
       }
 
-      this.#token = response.token as string;
-      this.#expirationTime = response.expire as Date;
+      this.#token = response.data.token as string;
+      this.#expirationTime = response.data.expire as Date;
     }
 
     return this.#token;
@@ -84,7 +84,7 @@ class OsuToken {
 
     const response = await revokeAccessToken(this.#token);
 
-    if(response.status !== OsuApiStatus.OK) {
+    if(response.status !== OsuApiSuccessStatus.OK) {
       log(LogSeverity.ERROR, "revokeToken", "Unable to revoke access token. Check logs above.");
       return;
     }

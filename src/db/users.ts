@@ -1,10 +1,8 @@
 import { Pool, DatabaseError } from "pg";
 import { LogSeverity, log } from "../utils/log";
-import { DatabaseErrors } from "../utils/common";
-
-// TODO: convert compound object return types into interfaces
-
-// TODO: create conditional types
+import { DatabaseErrors, DatabaseSuccess } from "../utils/common";
+import { DBResponseBase } from "../types/db/main";
+import { IDBServerUserData, IDBServerUserQueryData } from "../types/db/users";
 
 /**
  * Gets Discord user by osu! ID from the database.
@@ -12,14 +10,23 @@ import { DatabaseErrors } from "../utils/common";
  * @param { Pool } db
  * @param { number } osuId
  *
- * @returns { Promise<{ status: DatabaseErrors.OK | DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR; user?: { userId: number; discordId: string; osuId: number; }; }> } Promise object with user data.
+ * @returns { Promise<DBResponseBase<IDBServerUserData> | DBResponseBase<DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with user data.
  */
-async function getDiscordUserByOsuId(db: Pool, osuId: number): Promise<{ status: DatabaseErrors.OK | DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR; user?: { userId: number; discordId: string; osuId: number; }; }> {
-  const selectQuery = "SELECT * FROM users WHERE osuId=$1";
+async function getDiscordUserByOsuId(db: Pool, osuId: number): Promise<DBResponseBase<IDBServerUserData> | DBResponseBase<DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  const selectQuery = `
+    SELECT
+      users."userid",
+      users."discordid",
+      users."osuid"
+    FROM
+      users
+    WHERE
+      users."osuid" = $1
+  `;
   const selectValues = [ osuId ];
 
   try {
-    const discordUserResult = await db.query(selectQuery, selectValues); // TODO: add type annotation to queries
+    const discordUserResult = await db.query<IDBServerUserQueryData>(selectQuery, selectValues);
 
     if(typeof(discordUserResult.rows[0]) === "undefined") {
       return {
@@ -35,8 +42,8 @@ async function getDiscordUserByOsuId(db: Pool, osuId: number): Promise<{ status:
     }
 
     return {
-      status: DatabaseErrors.OK,
-      user: {
+      status: DatabaseSuccess.OK,
+      data: {
         userId: discordUserResult.rows[0].userid,
         discordId: discordUserResult.rows[0].discordid,
         osuId: discordUserResult.rows[0].osuid
@@ -74,14 +81,23 @@ async function getDiscordUserByOsuId(db: Pool, osuId: number): Promise<{ status:
  * @param { Pool } db - Database connection pool.
  * @param { string } discordId - Discord ID of the user.
  *
- * @returns { Promise<{ status: DatabaseErrors.OK | DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR; user?: { userId: number; discordId: string; osuId: number; }; }> } Promise object with user data.
+ * @returns { Promise<DBResponseBase<IDBServerUserData> | DBResponseBase<DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with user data.
  */
-async function getDiscordUserByDiscordId(db: Pool, discordId: string): Promise<{ status: DatabaseErrors.OK | DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR; user?: { userId: number; discordId: string; osuId: number; }; }> {
-  const selectQuery = "SELECT * FROM users WHERE discordid=$1";
+async function getDiscordUserByDiscordId(db: Pool, discordId: string): Promise<DBResponseBase<IDBServerUserData> | DBResponseBase<DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  const selectQuery = `
+    SELECT
+      users."userid",
+      users."discordid",
+      users."osuid"
+    FROM
+      users
+    WHERE
+      users."discordid" = $1
+  `;
   const selectValues = [ discordId ];
 
   try {
-    const result = await db.query(selectQuery, selectValues);
+    const result = await db.query<IDBServerUserQueryData>(selectQuery, selectValues);
     if(typeof(result.rows[0]) === "undefined") {
       return {
         status: DatabaseErrors.USER_NOT_FOUND
@@ -89,8 +105,8 @@ async function getDiscordUserByDiscordId(db: Pool, discordId: string): Promise<{
     }
 
     return {
-      status: DatabaseErrors.OK,
-      user: {
+      status: DatabaseSuccess.OK,
+      data: {
         userId: result.rows[0].userid,
         discordId: result.rows[0].discordid,
         osuId: result.rows[0].osuid
@@ -130,34 +146,63 @@ async function getDiscordUserByDiscordId(db: Pool, discordId: string): Promise<{
  * @param { number } osuId - osu! user ID.
  * @param { string } userName - osu! username.
  *
- * @returns { Promise<DatabaseErrors.OK | DatabaseErrors.DUPLICATED_DISCORD_ID | DatabaseErrors.DUPLICATED_OSU_ID | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR> } Promise object with `DatabaseErrors` enum as insertion status.
+ * @returns { Promise<DBResponseBase<true> | DBResponseBase<DatabaseErrors.DUPLICATED_DISCORD_ID | DatabaseErrors.DUPLICATED_OSU_ID | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with `true` if inserted successfully. Returns `DatabaseErrors` enum otherwise.
  */
-async function insertUser(db: Pool, discordId: string, osuId: number, userName: string): Promise<DatabaseErrors.OK | DatabaseErrors.DUPLICATED_DISCORD_ID | DatabaseErrors.DUPLICATED_OSU_ID | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR> {
-  const selectDiscordIdQuery = "SELECT * FROM users WHERE discordId=$1";
+async function insertUser(db: Pool, discordId: string, osuId: number, userName: string): Promise<DBResponseBase<true> | DBResponseBase<DatabaseErrors.DUPLICATED_DISCORD_ID | DatabaseErrors.DUPLICATED_OSU_ID | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  const selectDiscordIdQuery = `
+    SELECT
+      users."userid",
+      users."discordid",
+      users."osuid"
+    FROM
+      users
+    WHERE
+      users."discordid" = $1
+  `;
   const selectDiscordIdValues = [ discordId ];
 
-  const selectOsuIdQuery = "SELECT * FROM users WHERE osuId=$1;";
+  const selectOsuIdQuery = `
+    SELECT
+      users."userid",
+      users."discordid",
+      users."osuid"
+    FROM
+      users
+    WHERE
+      users."osuid" = $1
+  `;
   const selectOsuIdValues = [ osuId ];
 
-  const insertQuery = "INSERT INTO users (discordId, osuId, userName) VALUES ($1, $2, $3)";
+  const insertQuery = `
+    INSERT INTO users (discordId, osuId, userName)
+      VALUES ($1, $2, $3)
+  `;
   const insertValues = [ discordId, osuId, userName ];
 
   try {
     const client = await db.connect();
 
-    const discordIdResult = await client.query(selectDiscordIdQuery, selectDiscordIdValues);
-    if(typeof(discordIdResult.rows[0]) !== "undefined") {
-      if(discordIdResult.rows[0].discordid === discordId) {
-        client.release();
-        return DatabaseErrors.DUPLICATED_DISCORD_ID;
+    {
+      const discordIdResult = await client.query<IDBServerUserQueryData>(selectDiscordIdQuery, selectDiscordIdValues);
+      if(discordIdResult.rows.length > 0) {
+        if(discordIdResult.rows[0].discordid === discordId) {
+          client.release();
+          return {
+            status: DatabaseErrors.DUPLICATED_DISCORD_ID
+          };
+        }
       }
     }
 
-    const osuIdResult = await client.query(selectOsuIdQuery, selectOsuIdValues);
-    if(typeof(osuIdResult.rows[0]) !== "undefined") {
-      if(osuIdResult.rows[0].osuid === osuId) {
-        client.release();
-        return DatabaseErrors.DUPLICATED_OSU_ID;
+    {
+      const osuIdResult = await client.query<IDBServerUserQueryData>(selectOsuIdQuery, selectOsuIdValues);
+      if(osuIdResult.rows.length > 0) {
+        if(osuIdResult.rows[0].osuid === osuId) {
+          client.release();
+          return {
+            status: DatabaseErrors.DUPLICATED_OSU_ID
+          };
+        }
       }
     }
 
@@ -165,14 +210,19 @@ async function insertUser(db: Pool, discordId: string, osuId: number, userName: 
     client.release();
 
     log(LogSeverity.LOG, "insertUser", "users: Inserted 1 row.");
-    return DatabaseErrors.OK;
+    return {
+      status: DatabaseSuccess.OK,
+      data: true
+    };
   }
   catch (e) {
     if(e instanceof DatabaseError) {
       switch(e.code) {
         case "ECONNREFUSED":
           log(LogSeverity.ERROR, "insertUser", "Database connection failed.");
-          return DatabaseErrors.CONNECTION_ERROR;
+          return {
+            status: DatabaseErrors.CONNECTION_ERROR
+          };
         default:
           log(LogSeverity.ERROR, "insertUser", "Database error occurred:\n" + e.code + ": " + e.message + "\n" + e.stack);
       }
@@ -184,7 +234,9 @@ async function insertUser(db: Pool, discordId: string, osuId: number, userName: 
       log(LogSeverity.ERROR, "insertUser", "Unknown error occurred.");
     }
 
-    return DatabaseErrors.CLIENT_ERROR;
+    return {
+      status: DatabaseErrors.CLIENT_ERROR
+    };
   }
 }
 
@@ -195,23 +247,37 @@ async function insertUser(db: Pool, discordId: string, osuId: number, userName: 
  * @param { number } osuId - osu! user ID.
  * @param { string } userName - osu! username.
  *
- * @returns { Promise<DatabaseErrors.OK | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR> } Promise object with `DatabaseErrors` enum as update status.
+ * @returns { Promise<DatabaseErrors.OK | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR> } Promise object with `true` if updated successfully. Returns `DatabaseErrors` enum otherwise.
  */
-async function updateUser(db: Pool, osuId: number, userName: string): Promise<DatabaseErrors.OK | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR> {
+async function updateUser(db: Pool, osuId: number, userName: string): Promise<DBResponseBase<true> | DBResponseBase<DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
   /* only username should be updateable, since that changes are from osu! API */
 
+  const updateQuery = `
+    UPDATE
+      users
+    SET
+      users."username" = $1,
+      users."osuid" = $2
+  `;
+  const updateValues = [ userName, osuId ];
+
   try {
-    await db.query("UPDATE users SET username=$1 WHERE osuid=$2", [ userName, osuId ]);
+    await db.query(updateQuery, updateValues);
 
     log(LogSeverity.LOG, "updateUser", "users: Updated 1 row.");
-    return DatabaseErrors.OK;
+    return {
+      status: DatabaseSuccess.OK,
+      data: true
+    };
   }
   catch (e) {
     if(e instanceof DatabaseError) {
       switch(e.code) {
         case "ECONNREFUSED":
           log(LogSeverity.ERROR, "updateUser", "Database connection failed.");
-          return DatabaseErrors.CONNECTION_ERROR;
+          return {
+            status: DatabaseErrors.CONNECTION_ERROR
+          };
         default:
           log(LogSeverity.ERROR, "updateUser", "Database error occurred:\n" + e.code + ": " + e.message + "\n" + e.stack);
       }
@@ -223,7 +289,9 @@ async function updateUser(db: Pool, osuId: number, userName: string): Promise<Da
       log(LogSeverity.ERROR, "updateUser", "Unknown error occurred.");
     }
 
-    return DatabaseErrors.CLIENT_ERROR;
+    return {
+      status: DatabaseErrors.CLIENT_ERROR
+    };
   }
 }
 

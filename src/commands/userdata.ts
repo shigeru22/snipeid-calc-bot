@@ -5,8 +5,10 @@ import { getUserByOsuId } from "../api/osu";
 import { getTopCounts } from "../api/osustats";
 import { insertOrUpdateAssignment } from "../db/assignments";
 import { getDiscordUserByDiscordId, insertUser } from "../db/users";
-import { DatabaseErrors, AssignmentType, OsuUserStatus, OsuStatsStatus } from "../utils/common";
+import { DatabaseErrors, AssignmentType, OsuUserStatus, OsuApiSuccessStatus, OsuApiErrorStatus, DatabaseSuccess, OsuStatsErrorStatus, OsuStatsSuccessStatus } from "../utils/common";
 import { deltaTimeToString } from "../utils/time";
+import { IDBServerUserData } from "../types/db/users";
+import { IOsuUserData } from "../types/commands/userdata";
 
 /**
  * Updates user data in the database and assigns roles based on points received.
@@ -22,28 +24,37 @@ import { deltaTimeToString } from "../utils/time";
  */
 async function updateUserData(osuToken: string, client: Client, channel: TextChannel, db: Pool, osuId: number | string, points: number): Promise<void> {
   const osuUser = await getUserByOsuId(osuToken, typeof(osuId) === "number" ? osuId : parseInt(osuId, 10));
-  if(osuUser.user === undefined) {
-    switch(osuUser.status) {
-      case OsuUserStatus.BOT:
-        await channel.send("**Error:** Suddenly, you turned into a skynet...");
-        break;
-      case OsuUserStatus.DELETED: // falltrough
-      case OsuUserStatus.NOT_FOUND:
-        await channel.send("**Error:** Did you do something to your osu! account?");
-        break;
-      case OsuUserStatus.API_ERROR:
-        await channel.send("**Error:** osu! API error. Check osu!status?");
-        break;
-      case OsuUserStatus.CLIENT_ERROR:
-        await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
-        break;
+  {
+    if(osuUser.status !== OsuApiSuccessStatus.OK) {
+      switch(osuUser.status) {
+        case OsuApiErrorStatus.NON_OK:
+          await channel.send("**Error:** osu! user not found.");
+          break;
+        case OsuApiErrorStatus.CLIENT_ERROR:
+          await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
+          break;
+      }
+
+      return;
     }
 
-    return;
+    if(osuUser.data.status !== OsuUserStatus.USER || osuUser.data.user === undefined) { // TODO: use conditional type for user
+      switch(osuUser.data.status) {
+        case OsuUserStatus.BOT:
+          await channel.send("**Error:** Suddenly, you turned into a skynet...");
+          break;
+        case OsuUserStatus.DELETED: // fallthrough
+        case OsuUserStatus.NOT_FOUND:
+          await channel.send("**Error:** Did you do something to your osu! account?");
+          break;
+      }
+
+      return;
+    }
   }
 
-  const assignmentResult = await insertOrUpdateAssignment(db, typeof(osuId) === "number" ? osuId : parseInt(osuId, 10), points, osuUser.user.username);
-  if(assignmentResult.status !== DatabaseErrors.OK || assignmentResult.data === undefined) {
+  const assignmentResult = await insertOrUpdateAssignment(db, channel.guildId, typeof(osuId) === "number" ? osuId : parseInt(osuId, 10), osuUser.data.user.userName, points);
+  if(assignmentResult.status !== DatabaseSuccess.OK) {
     switch(assignmentResult.status) {
       case DatabaseErrors.USER_NOT_FOUND: break;
       case DatabaseErrors.ROLES_EMPTY:
@@ -164,12 +175,12 @@ async function updateUserData(osuToken: string, client: Client, channel: TextCha
  * @param { Pool } db - Database connection.
  * @param { string } discordId - Discord ID of the user.
  *
- * @returns { Promise<{ userId: number; discordId: string; osuId: number; } | false> } Promise object with `userId`, `discordId`, and `osuId`, or `false` if user was not found.
+ * @returns { Promise<IDBServerUserData | false> } Promise object with `userId`, `discordId`, and `osuId`, or `false` if user was not found.
  */
-async function fetchUser(channel: TextChannel, db: Pool, discordId: string): Promise<{ userId: number; discordId: string; osuId: number; } | false> {
+async function fetchUser(channel: TextChannel, db: Pool, discordId: string): Promise<IDBServerUserData | false> {
   const user = await getDiscordUserByDiscordId(db, discordId);
 
-  if(user.status !== DatabaseErrors.OK || user.user === undefined) {
+  if(user.status !== DatabaseSuccess.OK) {
     switch(user.status) {
       case DatabaseErrors.USER_NOT_FOUND:
         await channel.send("**Error**: You haven't connected your osu! ID. Use Bathbot's `<osc` command instead or link your osu! ID using `@SnipeID link [osu! ID]`.");
@@ -188,7 +199,7 @@ async function fetchUser(channel: TextChannel, db: Pool, discordId: string): Pro
     return false;
   }
 
-  return user.user;
+  return user.data;
 }
 
 /**
@@ -198,37 +209,43 @@ async function fetchUser(channel: TextChannel, db: Pool, discordId: string): Pro
  * @param { string } token - osu! API token.
  * @param { number | string } osuId - osu! user ID.
  *
- * @returns { Promise<{ status: number; username?: string; isCountryCodeAllowed?: boolean } | false> } Promise object with `status` and `username`, or `false` in case of errors.
+ * @returns { Promise<IOsuUserData | false> } Promise object with `status` and `username`, or `false` in case of errors.
  */
-async function fetchOsuUser(channel: TextChannel, token: string, osuId: number | string): Promise<{ status: number; username: string; isCountryCodeAllowed: boolean; } | false> {
+async function fetchOsuUser(channel: TextChannel, token: string, osuId: number | string): Promise<IOsuUserData | false> {
   const osuUser = await getUserByOsuId(token, typeof(osuId) === "number" ? osuId : parseInt(osuId, 10));
+  {
+    if(osuUser.status !== OsuApiSuccessStatus.OK) {
+      switch(osuUser.status) {
+        case OsuApiErrorStatus.NON_OK:
+          await channel.send("**Error:** osu! user not found.");
+          break;
+        case OsuApiErrorStatus.CLIENT_ERROR:
+          await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
+          break;
+      }
 
-  if(osuUser.status !== OsuUserStatus.USER || osuUser.user === undefined) {
-    switch(osuUser.status) {
-      case OsuUserStatus.BOT:
-        await channel.send("**Error:** Unable to retrieve osu! user: User type is Bot.");
-        break;
-      case OsuUserStatus.NOT_FOUND:
-        await channel.send("**Error:** Unable to retrieve osu! user: User not found.");
-        break;
-      case OsuUserStatus.DELETED:
-        await channel.send("**Error:** Unable to retrieve osu! user: User is deleted.");
-        break;
-      case OsuUserStatus.API_ERROR:
-        await channel.send("**Error:** osu! API error. Check osu!status?");
-        break;
-      case OsuUserStatus.CLIENT_ERROR:
-        await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
-        break;
+      return false;
     }
 
-    return false;
+    if(osuUser.data.status !== OsuUserStatus.USER || osuUser.data.user === undefined) { // TODO: use conditional type for user
+      switch(osuUser.data.status) {
+        case OsuUserStatus.BOT:
+          await channel.send("**Error:** Suddenly, you turned into a skynet...");
+          break;
+        case OsuUserStatus.DELETED: // fallthrough
+        case OsuUserStatus.NOT_FOUND:
+          await channel.send("**Error:** Did you do something to your osu! account?");
+          break;
+      }
+
+      return false;
+    }
   }
 
   return {
-    status: osuUser.status,
-    username: osuUser.user.username,
-    isCountryCodeAllowed: osuUser.user.isCountryCodeAllowed
+    status: osuUser.data.status,
+    userName: osuUser.data.user.userName,
+    isCountryCodeAllowed: osuUser.data.user.isCountryCodeAllowed !== undefined ? osuUser.data.user.isCountryCodeAllowed : true // TODO: check for global usages
   };
 }
 
@@ -249,42 +266,40 @@ async function fetchOsuStats(channel: TextChannel, osuUsername: string): Promise
     getTopCounts(osuUsername, 50)
   ];
 
+  const topCounts = [ 0, 0, 0, 0, 0 ];
   const topCountsResponses = await Promise.all(topCountsRequests);
   {
-    let error = OsuStatsStatus.OK;
+    let error = OsuStatsErrorStatus.OK;
     const len = topCountsResponses.length;
     for(let i = 0; i < len; i++) {
-      if(topCountsResponses[i].status !== OsuStatsStatus.OK) {
-        error = topCountsResponses[i].status;
+      const tempCountResponse = topCountsResponses[i];
+      if(tempCountResponse.status !== OsuStatsSuccessStatus.OK) {
+        error = tempCountResponse.status;
         break;
       }
+
+      let idx = -1;
+      switch(tempCountResponse.data.maxRank) {
+        case 1: idx = 0; break;
+        case 8: idx = 1; break;
+        case 15: idx = 2; break;
+        case 25: idx = 3; break;
+        case 50: idx = 4; break;
+      }
+
+      topCounts[idx] = tempCountResponse.data.count as number;
     }
 
     switch(error) {
-      case OsuStatsStatus.USER_NOT_FOUND:
+      case OsuStatsErrorStatus.USER_NOT_FOUND:
         await channel.send("**Error**: Username not found. Maybe osu!Stats hasn't updated your username?");
         return false;
-      case OsuStatsStatus.API_ERROR: // fallthrough
-      case OsuStatsStatus.CLIENT_ERROR:
+      case OsuStatsErrorStatus.API_ERROR: // fallthrough
+      case OsuStatsErrorStatus.CLIENT_ERROR:
         await channel.send("**Error**: Client error has occurred. Please contact bot administrator.");
         return false;
     }
   }
-
-  const topCounts = [ 0, 0, 0, 0, 0 ];
-  topCountsResponses.forEach(res => {
-    let idx = -1;
-
-    switch(res.maxRank) {
-      case 1: idx = 0; break;
-      case 8: idx = 1; break;
-      case 15: idx = 2; break;
-      case 25: idx = 3; break;
-      case 50: idx = 4; break;
-    }
-
-    topCounts[idx] = res.count as number;
-  });
 
   return topCounts;
 }
@@ -308,8 +323,8 @@ async function insertUserData(channel: TextChannel, db: Pool, discordId: string,
     osuUsername
   );
 
-  if(result !== DatabaseErrors.OK) {
-    switch(result) {
+  if(result.status !== DatabaseSuccess.OK) {
+    switch(result.status) {
       case DatabaseErrors.CONNECTION_ERROR: {
         await channel.send("**Error:** Database connection error occurred. Please contact bot administrator.");
         break;

@@ -1,16 +1,17 @@
 import { MessageEmbed } from "discord.js";
 import { LogSeverity, log } from "../utils/log";
 import { TimeOperation, getTimeOffsetFromString } from "../utils/time";
+import { IDBServerAssignmentData } from "../types/db/assignments";
 
 /**
  * Creates leaderboard embed message.
  *
- * @param { { assignmentid: number; username: string; rolename: string; points: number; lastupdate: Date }[] } data - Leaderboard data.
+ * @param { IDBServerAssignmentData } data - Leaderboard data.
  * @param { Date } lastUpdated - Last update time.
  *
  * @returns { MessageEmbed } Leaderboard embed message.
  */
-function createLeaderboardEmbed(data: { assignmentid: number; username: string; rolename: string; points: number; lastupdate: Date; }[], lastUpdated: Date): MessageEmbed {
+function createLeaderboardEmbed(data: IDBServerAssignmentData[], lastUpdated: Date): MessageEmbed {
   let timeOperation = TimeOperation.INCREMENT;
   let hourOffset = 0;
   let minuteOffset = 0;
@@ -40,7 +41,7 @@ function createLeaderboardEmbed(data: { assignmentid: number; username: string; 
   if(len > 0) {
     draft.setTitle("Top 50 players based on points count");
     for(let i = 0; i < len; i++) {
-      rankingsDesc += (i + 1).toString() + ". " + data[i].username + ": " + data[i].points;
+      rankingsDesc += (i + 1).toString() + ". " + data[i].userName + ": " + data[i].points;
       if(i < len - 1) {
         rankingsDesc += "\n";
       }

@@ -45,7 +45,7 @@ async function verifyUser(client: Client, channel: TextChannel, db: Pool, osuTok
     return;
   }
 
-  const result = await insertUserData(channel, db, message.author.id, osuId, osuUser.username);
+  const result = await insertUserData(channel, db, message.author.id, osuId, osuUser.userName);
   if(!result) {
     return;
   }

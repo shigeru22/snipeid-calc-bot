@@ -2,7 +2,7 @@ import { TextChannel } from "discord.js";
 import { Pool } from "pg";
 import { LogSeverity, log } from "../utils/log";
 import { getAllAssignments, getLastAssignmentUpdate } from "../db/assignments";
-import { AssignmentSort, DatabaseErrors } from "../utils/common";
+import { AssignmentSort, DatabaseErrors, DatabaseSuccess } from "../utils/common";
 import { createLeaderboardEmbed } from "../messages/leaderboard";
 
 /**
@@ -16,8 +16,8 @@ import { createLeaderboardEmbed } from "../messages/leaderboard";
 async function sendPointLeaderboard(channel: TextChannel, db: Pool): Promise<void> {
   log(LogSeverity.LOG, "sendPointLeaderboard", "Retrieving leaderboard data.");
 
-  const rankings = await getAllAssignments(db, AssignmentSort.POINTS, true);
-  if(rankings.status !== DatabaseErrors.OK || rankings.assignments === undefined) {
+  const rankings = await getAllAssignments(db, channel.guildId, AssignmentSort.POINTS, true);
+  if(rankings.status !== DatabaseSuccess.OK) {
     switch(rankings.status) { // rankings is number, or DatabaseErrors constant
       case DatabaseErrors.CONNECTION_ERROR:
         await channel.send("**Error:** Database connection failed. Please contact bot administrator.");
@@ -32,9 +32,9 @@ async function sendPointLeaderboard(channel: TextChannel, db: Pool): Promise<voi
 
   let lastUpdated = new Date();
   {
-    const lastUpdateQuery = await getLastAssignmentUpdate(db);
+    const lastUpdateQuery = await getLastAssignmentUpdate(db, channel.guildId);
 
-    if(lastUpdateQuery.status !== DatabaseErrors.OK || lastUpdateQuery.date === undefined) {
+    if(lastUpdateQuery.status !== DatabaseSuccess.OK) {
       switch(lastUpdateQuery.status) {
         case DatabaseErrors.NO_RECORD:
           await channel.send("**Error:** No records found. Be the first!");
@@ -50,10 +50,10 @@ async function sendPointLeaderboard(channel: TextChannel, db: Pool): Promise<voi
       return;
     }
 
-    lastUpdated = new Date(lastUpdateQuery.date);
+    lastUpdated = new Date(lastUpdateQuery.data);
   }
 
-  const draft = createLeaderboardEmbed(rankings.assignments, lastUpdated);
+  const draft = createLeaderboardEmbed(rankings.data, lastUpdated);
 
   await channel.send({ embeds: [ draft ] });
 }
