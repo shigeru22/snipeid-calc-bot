@@ -1,13 +1,15 @@
 import dotenv from "dotenv";
 import fs from "fs";
-import { Client, Message } from "discord.js";
+import { Client, Guild, Message } from "discord.js";
 import { Pool } from "pg";
 import { createInterface } from "readline";
-import { validateEnvironmentVariables } from "./utils/env";
-import { LogSeverity, log } from "./utils/log";
 import { OsuToken } from "./api/osu-token";
+import { insertServer } from "./db/servers";
 import { handleVerificationChannelCommands, handlePointsChannelCommands, handleLeaderboardChannelCommands } from "./commands";
 import { sendMessage } from "./commands/conversations";
+import { DatabaseErrors } from "./utils/common";
+import { validateEnvironmentVariables } from "./utils/env";
+import { LogSeverity, log } from "./utils/log";
 
 // configure environment variable file (if any)
 dotenv.config();
@@ -56,6 +58,8 @@ process.on("uncaughtException", (e: unknown) => onException(e));
 // bot client event handling
 client.on("ready", async () => await onStartup());
 client.on("messageCreate", async (msg: Message) => await onNewMessage(msg));
+client.on("guildCreate", async (guild: Guild) => await onJoinGuild(guild));
+client.on("guildDelete", (guild: Guild) => onLeaveGuild(guild));
 
 /**
  * Startup event function.
@@ -106,7 +110,7 @@ async function onStartup() {
 /**
  * New message event function.
  *
- * @param { Message } msg
+ * @param { Message } msg - Message received by the client.
  */
 async function onNewMessage(msg: Message) {
   if(client.user === null) {
@@ -143,6 +147,40 @@ async function onNewMessage(msg: Message) {
     // if bot is mentioned but nothing processed, send a random message.
     (!processed && isClientMentioned) && await sendMessage(channel, contents);
   }
+}
+
+/**
+ * Event function upon joining guild.
+ *
+ * @param { Message } guild - Entered guild object.
+ */
+async function onJoinGuild(guild: Guild) {
+  const result = await insertServer(db, guild.id);
+  switch(result.status) {
+    case DatabaseErrors.DUPLICATED_RECORD:
+      log(LogSeverity.ERROR, "onJoinGuild", `Duplicated server data found with server ID ${ guild.id } (${ guild.name }).`);
+      return;
+    case DatabaseErrors.CONNECTION_ERROR: // fallthrough
+    case DatabaseErrors.CLIENT_ERROR: // TODO: handle insertion by queuing
+      log(LogSeverity.ERROR, "onJoinGuild", `Failed to query database after joining server ID ${ guild.id } (${ guild.name }).`);
+      return;
+  }
+
+  if(result.status === DatabaseErrors.DUPLICATED_DISCORD_ID) {
+    log(LogSeverity.LOG, "onJoinGuild", `Rejoined server with ID ${ guild.id } (${ guild.name }).`);
+    return;
+  }
+
+  log(LogSeverity.LOG, "onJoinGuild", `Joined server with ID ${ guild.id } (${ guild.name }).`);
+}
+
+/**
+ * Event function upon leaving guild.
+ *
+ * @param { Message } guild - Entered guild object.
+ */
+function onLeaveGuild(guild: Guild) {
+  log(LogSeverity.LOG, "onJoinGuild", `Left server with ID ${ guild.id } (${ guild.name }).`);
 }
 
 /**
