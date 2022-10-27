@@ -3,11 +3,11 @@ import { MessageEmbed } from "discord.js";
 /**
  * Calculates points for each top rank count.
  *
- * @param { number } top1 - Top 1 count.
- * @param { number } top8 - Top 8 count.
- * @param { number } top15 - Top 15 count.
- * @param { number } top25 - Top 25 count.
- * @param { number } top50 - Top 50 count.
+ * @param { number } top1 Top 1 count.
+ * @param { number } top8 Top 8 count.
+ * @param { number } top15 Top 15 count.
+ * @param { number } top25 Top 25 count.
+ * @param { number } top50 Top 50 count.
  *
  * @returns { number } Calculated points.
  */
@@ -18,10 +18,10 @@ function calculatePoints(top1: number, top8: number, top15: number, top25: numbe
 /**
  * Calculates points for each top rank count from respektive's API.
  *
- * @param { number } top1 - Top 1 count.
- * @param { number } top8 - Top 8 count.
- * @param { number } top25 - Top 25 count.
- * @param { number } top50 - Top 50 count.
+ * @param { number } top1 Top 1 count.
+ * @param { number } top8 Top 8 count.
+ * @param { number } top25 Top 25 count.
+ * @param { number } top50 Top 50 count.
  *
  * @returns { number } Calculated points.
  */
@@ -32,12 +32,12 @@ function calculateRespektivePoints(top1: number, top8: number, top25: number, to
 /**
  * Creates counter draft embed message.
  *
- * @param { number } top1 - Top 1 count.
- * @param { number } top8 - Top 8 count.
- * @param { number } top15 - Top 15 count.
- * @param { number } top25 - Top 25 count.
- * @param { number } top50 - Top 50 count.
- * @param { string } username - osu! username.
+ * @param { number } top1 Top 1 count.
+ * @param { number } top8 Top 8 count.
+ * @param { number } top15 Top 15 count.
+ * @param { number } top25 Top 25 count.
+ * @param { number } top50 Top 50 count.
+ * @param { string } username osu! username.
  *
  * @returns { MessageEmbed }
  */
@@ -56,11 +56,11 @@ function counter(top1: number, top8: number, top15: number, top25: number, top50
 /**
  * Creates counter draft embed message.
  *
- * @param { number } top1 - Top 1 count.
- * @param { number } top8 - Top 8 count.
- * @param { number } top25 - Top 25 count.
- * @param { number } top50 - Top 50 count.
- * @param { string } username - osu! username.
+ * @param { number } top1 Top 1 count.
+ * @param { number } top8 Top 8 count.
+ * @param { number } top25 Top 25 count.
+ * @param { number } top50 Top 50 count.
+ * @param { string } username osu! username.
  *
  * @returns { MessageEmbed }
  */

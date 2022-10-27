@@ -14,11 +14,11 @@ import { LogSeverity, log } from "../utils/log";
 /**
  * Sends calculated points from Bathbot `<osc` command.
  *
- * @param { Client } client - Discord bot client.
- * @param { TextChannel } channel - Channel to send points result to.
- * @param { Pool } db - Database connection pool.
- * @param { string } osuToken - osu! API token.
- * @param { Message } message - Message that triggered the command.
+ * @param { Client } client Discord bot client.
+ * @param { TextChannel } channel Channel to send points result to.
+ * @param { Pool } db Database connection pool.
+ * @param { string } osuToken osu! API token.
+ * @param { Message } message Message that triggered the command.
  *
  * @returns { Promise<void> } Promise object with no return value.
  */
@@ -69,11 +69,11 @@ async function userLeaderboardsCountFromBathbot(client: Client, channel: TextCha
  * Sends top leaderboard count to specified channel.
  * Basically, this is Bathbot's `<osc` command.
  *
- * @param { Client } client - Discord bot client.
- * @param { TextChannel } channel - Channel to send points result to.
- * @param { Pool } db - Database connection pool.
- * @param { string } osuToken - osu! API token.
- * @param { string } discordId - Discord ID of the user who sent the command.
+ * @param { Client } client Discord bot client.
+ * @param { TextChannel } channel Channel to send points result to.
+ * @param { Pool } db Database connection pool.
+ * @param { string } osuToken osu! API token.
+ * @param { string } discordId Discord ID of the user who sent the command.
  *
  * @returns { Promise<void> } Promise object with no return value.
  */
@@ -208,11 +208,11 @@ async function userLeaderboardsCount(client: Client, channel: TextChannel, db: P
 /**
  * Sends user's points in the specified what-if situation.
  *
- * @param { Client } client - Discord bot client.
- * @param { TextChannel } channel - Channel to send points result to.
- * @param { Pool } db - Database connection pool.
- * @param { string } osuToken - osu! API token.
- * @param { Message } message - Message that triggered the command.
+ * @param { Client } client Discord bot client.
+ * @param { TextChannel } channel Channel to send points result to.
+ * @param { Pool } db Database connection pool.
+ * @param { string } osuToken osu! API token.
+ * @param { Message } message Message that triggered the command.
  *
  * @returns { Promise<void> } Promise object with no return value.
  */
@@ -440,10 +440,10 @@ async function userWhatIfCount(client: Client, channel: TextChannel, db: Pool, o
 /**
  * Sends calculated points and embed to specified channel.
  *
- * @param { Client } client - Discord bot client.
- * @param { TextChannel } channel - Discord channel to send message to.
- * @param { string } username - osu! username.
- * @param { number[] } topCounts - Array of top counts.
+ * @param { Client } client Discord bot client.
+ * @param { TextChannel } channel Discord channel to send message to.
+ * @param { string } username osu! username.
+ * @param { number[] } topCounts Array of top counts.
  *
  * @returns { Promise<Message> } Promise object with `Discord.Message` sent message object.
  */
@@ -468,10 +468,10 @@ async function countPoints(client: Client, channel: TextChannel, username: strin
 /**
  * Sends respektive API's calculated points and embed to specified channel.
  *
- * @param { Client } client - Discord bot client.
- * @param { TextChannel } channel - Discord channel to send message to.
- * @param { string } username - osu! username.
- * @param { number[] } topCounts - Array of top counts.
+ * @param { Client } client Discord bot client.
+ * @param { TextChannel } channel Discord channel to send message to.
+ * @param { string } username osu! username.
+ * @param { number[] } topCounts Array of top counts.
  *
  * @returns { Promise<Message> } Promise object with `Discord.Message` sent message object.
  */

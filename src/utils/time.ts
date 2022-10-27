@@ -11,7 +11,7 @@ enum TimeOperation {
 /**
  * Converts delta time into its string representation.
  *
- * @param { number } ms - Delta time in milliseconds.
+ * @param { number } ms Delta time in milliseconds.
  *
  * @returns { string } Delta time in string representation.
  */
@@ -48,7 +48,7 @@ function deltaTimeToString(ms: number): string {
 /**
  * Parses time offset from string.
  *
- * @param { string } value - Time offset string.
+ * @param { string } value Time offset string.
  *
  * @returns { { operation: TimeOperation; hours: number; minutes: number; } | undefined } Time offset object. Returns `undefined` in case of errors.
  */

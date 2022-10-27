@@ -23,7 +23,7 @@ type DBResponseBase<T> = T extends DatabaseErrors ? IDBErrorResponseData<T> : ID
 /**
  * Checks whether response's type is `IDBErrorResponseData`.
  *
- * @param { unknown } response - Response to be checked.
+ * @param { unknown } response Response to be checked.
  *
  * @returns { response is IDBErrorResponseData<DatabaseErrors> } Returns `true` if response is an error, `false` otherwise.
  */

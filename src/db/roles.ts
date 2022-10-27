@@ -7,7 +7,7 @@ import { IDBServerRoleData, IDBServerRoleQueryData } from "../types/db/roles";
 /**
  * Returns list of roles in the database.
  *
- * @param { Pool } db - Database connection pool.
+ * @param { Pool } db Database connection pool.
  *
  * @returns { Promise<DBResponseBase<IDBServerRoleData> | DBResponseBase<DatabaseErrors.ROLES_EMPTY | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with roles array.
  */

@@ -9,8 +9,8 @@ const OSU_TOKEN_ENDPOINT = "https://osu.ppy.sh/oauth/token";
 /**
  * Gets access token using osu! client ID and secret.
  *
- * @param { string } clientId - osu! client ID.
- * @param { string } clientSecret - osu! client secret.
+ * @param { string } clientId osu! client ID.
+ * @param { string } clientSecret osu! client secret.
  *
  * @returns { Promise<OsuApiResponseData<IOsuApiTokenData> | OsuApiResponseData<OsuApiErrorStatus.NON_OK | OsuApiErrorStatus.CLIENT_ERROR>> } Promise object with access token and expiration date.
  */
@@ -74,7 +74,7 @@ async function getAccessToken(clientId: string, clientSecret: string): Promise<O
 /**
  * Revokes access token specified in parameter.
  *
- * @param { string } token - osu! access token.
+ * @param { string } token osu! access token.
  *
  * @returns { Promise<OsuApiResponseData<true> | OsuApiResponseData<OsuApiErrorStatus.NON_OK | OsuApiErrorStatus.CLIENT_ERROR>> } Promise object with `OsuApiStatus` constant.
  */
@@ -128,8 +128,8 @@ async function revokeAccessToken(token: string): Promise<OsuApiResponseData<true
 /**
  * Gets user information for this bot by osu! ID.
  *
- * @param { string } token - osu! access token.
- * @param { number } id - osu! user ID.
+ * @param { string } token osu! access token.
+ * @param { number } id osu! user ID.
  *
  * @returns { Promise<OsuApiResponseData<IOsuApiUserData> | OsuApiResponseData<OsuApiErrorStatus.NON_OK | OsuApiErrorStatus.CLIENT_ERROR>> } Promise object with user information.
  */

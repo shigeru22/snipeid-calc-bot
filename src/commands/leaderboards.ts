@@ -8,8 +8,8 @@ import { createLeaderboardEmbed } from "../messages/leaderboard";
 /**
  * Sends top 50 leaderboard from the database to specified channel.
  *
- * @param { TextChannel } channel - Discord channel to send message to.
- * @param { Pool } db - Database connection pool.
+ * @param { TextChannel } channel Discord channel to send message to.
+ * @param { Pool } db Database connection pool.
  *
  * @returns { Promise<void> } Promise object with no return value.
  */

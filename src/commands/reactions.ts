@@ -4,10 +4,10 @@ import { LogSeverity, log } from "../utils/log";
 /**
  * Adds specified reaction to certain number element inside the calculated points result.
  *
- * @param { Client } client - Discord bot client.
- * @param { Message } message - Discord message to add reaction to.
- * @param { number[] } topCounts - Array of top counts.
- * @param { number } points - Calculated points.
+ * @param { Client } client Discord bot client.
+ * @param { Message } message Discord message to add reaction to.
+ * @param { number[] } topCounts Array of top counts.
+ * @param { number } points Calculated points.
  *
  * @returns { Promise<void> } Promise object with no return value.
  */

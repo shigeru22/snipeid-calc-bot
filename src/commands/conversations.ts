@@ -5,8 +5,8 @@ import { greet, agree, disagree, notUnderstood } from "../messages/msg";
 /**
  * Sends message based on what message was received.
  *
- * @param { import("discord.js").TextChannel } channel - Discord channel to send message to.
- * @param { string[] } contents - Array of message contents (splitted by spaces).
+ * @param { TextChannel } channel Discord channel to send message to.
+ * @param { string[] } contents Array of message contents (splitted by spaces).
  *
  * @returns { Promise<void> } Promise object with no return value.
  */

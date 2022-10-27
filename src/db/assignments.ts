@@ -10,12 +10,12 @@ import { IDBServerUserData } from "../types/db/users";
 /**
  * Gets all `assignments` table data by Discord server ID.
  *
- * @param { Pool } db - Database connection pool.
- * @param { string } serverDiscordId - Server snowflake ID.
- * @param { AssignmentSort } sort - Sort order criteria.
- * @param { boolean } desc - Whether results should be sorted in descending order.
+ * @param { Pool } db Database connection pool.
+ * @param { string } serverDiscordId Server snowflake ID.
+ * @param { AssignmentSort } sort Sort order criteria.
+ * @param { boolean } desc Whether results should be sorted in descending order.
  *
- * @returns { Promise<DBResponseBase<IDBServerAssignmentData[]> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } - Promise object with array of assignments.
+ * @returns { Promise<DBResponseBase<IDBServerAssignmentData[]> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with array of assignments.
  */
 async function getAllAssignments(db: Pool, serverDiscordId: string, sort = AssignmentSort.POINTS, desc = true): Promise<DBResponseBase<IDBServerAssignmentData[]> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
   const selectQuery = `
@@ -88,11 +88,11 @@ async function getAllAssignments(db: Pool, serverDiscordId: string, sort = Assig
 /**
  * Gets user assignment by osu! ID from the database.
  *
- * @param { Pool } db - Database connection pool.
- * @param { string } serverDiscordId - Server snowflake ID.
- * @param { number } osuId - osu! ID of the user.
+ * @param { Pool } db Database connection pool.
+ * @param { string } serverDiscordId Server snowflake ID.
+ * @param { number } osuId osu! ID of the user.
  *
- * @returns { Promise<{ status: DatabaseErrors.OK | DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR; assignment?: { userId: number; discordId: string; osuId: number; }; }> } - Promise object with user assignment.
+ * @returns { Promise<{ status: DatabaseErrors.OK | DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR; assignment?: { userId: number; discordId: string; osuId: number; }; }> } Promise object with user assignment.
  */
 async function getAssignmentByOsuId(db: Pool, serverDiscordId: string, osuId: number): Promise<DBResponseBase<IDBServerUserData> | DBResponseBase<DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
   const selectQuery = `
@@ -174,10 +174,10 @@ async function getAssignmentByOsuId(db: Pool, serverDiscordId: string, osuId: nu
 /**
  * Gets last assignment update time.
  *
- * @param { Pool } db - Database connection pool.
- * @param { string } serverDiscordId - Server snowflake ID.
+ * @param { Pool } db Database connection pool.
+ * @param { string } serverDiscordId Server snowflake ID.
  *
- * @returns { Promise<DBResponseBase<Date> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } - Promise object with last assignment update time.
+ * @returns { Promise<DBResponseBase<Date> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with last assignment update time.
  */
 async function getLastAssignmentUpdate(db: Pool, serverDiscordId: string): Promise<DBResponseBase<Date> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
   const selectQuery = `
@@ -242,11 +242,11 @@ async function getLastAssignmentUpdate(db: Pool, serverDiscordId: string): Promi
 /**
  * Inserts or updates (if the user has already been inserted) assignment data in the database.
  *
- * @param { Pool } db - Database connection pool.
- * @param { string } serverDiscordId - Server snowflake ID.
- * @param { number } osuId - osu! user ID.
- * @param { string } userName - osu! username.
- * @param { number } points - Calculated points.
+ * @param { Pool } db Database connection pool.
+ * @param { string } serverDiscordId Server snowflake ID.
+ * @param { number } osuId osu! user ID.
+ * @param { string } userName osu! username.
+ * @param { number } points Calculated points.
  *
  * @returns { Promise<DBResponseBase<IDBAssignmentResultData> | DBResponseBase<DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.ROLES_EMPTY | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with assignment results object.
  */
@@ -431,6 +431,9 @@ async function insertOrUpdateAssignment(db: Pool, serverDiscordId: string, osuId
 
 /* locally used query interfaces and functions */
 
+/**
+ * Database server member's assignment query interface.
+ */
 interface IDBServerUserAssignmentQueryData {
   assignmentid: number;
   userid: number;
@@ -442,6 +445,9 @@ interface IDBServerUserAssignmentQueryData {
   lastupdate: Date;
 }
 
+/**
+ * Database server member's assignment interface.
+ */
 interface IDBServerUserAssignmentData {
     assignmentId: number;
     userId: number;
@@ -456,11 +462,11 @@ interface IDBServerUserAssignmentData {
 /**
  * Queries specific server's user assignment data.
  *
- * @param { PoolClient } client - Database connection pool client.
- * @param { string } serverDiscordId - Server snowflake ID.
- * @param { number } osuId - osu! user ID.
+ * @param { PoolClient } client Database connection pool client.
+ * @param { string } serverDiscordId Server snowflake ID.
+ * @param { number } osuId osu! user ID.
  *
- * @returns { Promise<DBResponseBase<IDBServerUserAssignmentQueryData> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } - Promise object with queried user data.
+ * @returns { Promise<DBResponseBase<IDBServerUserAssignmentQueryData> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with queried user data.
  */
 async function getServerUserAssignmentDataByOsuId(client: PoolClient, serverDiscordId: string, osuId: number): Promise<DBResponseBase<IDBServerUserAssignmentData> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
   const selectQuery = `
@@ -540,11 +546,11 @@ async function getServerUserAssignmentDataByOsuId(client: PoolClient, serverDisc
 /**
  * Queries specific server's user assignment data.
  *
- * @param { PoolClient } client - Database connection pool client.
- * @param { string } serverDiscordId - Server snowflake ID.
- * @param { number } osuId - osu! user ID.
+ * @param { PoolClient } client Database connection pool client.
+ * @param { string } serverDiscordId Server snowflake ID.
+ * @param { number } osuId osu! user ID.
  *
- * @returns { Promise<DBResponseBase<IDBServerRoleData> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> }> } - Promise object with queried user data.
+ * @returns { Promise<DBResponseBase<IDBServerRoleData> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> }> } Promise object with queried user data.
  */
 async function getServerUserRoleDataByOsuId(client: PoolClient, serverDiscordId: string, osuId: number): Promise<DBResponseBase<IDBServerRoleData> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
   const selectQuery = `
@@ -618,11 +624,11 @@ async function getServerUserRoleDataByOsuId(client: PoolClient, serverDiscordId:
 /**
  * Queries specific server's user assignment data.
  *
- * @param { PoolClient } client - Database connection pool client.
- * @param { string } serverDiscordId - Server snowflake ID.
- * @param { number } points - Calculated points.
+ * @param { PoolClient } client Database connection pool client.
+ * @param { string } serverDiscordId Server snowflake ID.
+ * @param { number } points Calculated points.
  *
- * @returns { Promise<DBResponseBase<IDBServerRoleData> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } - Promise object with queried user data.
+ * @returns { Promise<DBResponseBase<IDBServerRoleData> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with queried user data.
  */
 async function getTargetServerRoleDataByPoints(client: PoolClient, serverDiscordId: string, points: number): Promise<DBResponseBase<IDBServerRoleData> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
   const selectQuery = `
@@ -690,11 +696,11 @@ async function getTargetServerRoleDataByPoints(client: PoolClient, serverDiscord
 /**
  * Inserts assignment data to the database.
  *
- * @param { PoolClient } client - Database pool client.
- * @param { number } userId - User ID in the database.
- * @param { number } roleId - Role ID in the database.
- * @param { number } points - Calculated points.
- * @param { number? } assignmentId - Assignment ID. Leave `null` to insert sequentially.
+ * @param { PoolClient } client Database pool client.
+ * @param { number } userId User ID in the database.
+ * @param { number } roleId Role ID in the database.
+ * @param { number } points Calculated points.
+ * @param { number? } assignmentId Assignment ID. Leave `null` to insert sequentially.
  *
  * @returns { Promise<boolean> } Promise object with `true` if inserted successfully, `false` otherwise.
  */
@@ -737,8 +743,8 @@ async function insertAssignment(client: PoolClient, userId: number, roleId: numb
 /**
  * Deletes assignment in the database by ID.
  *
- * @param { PoolClient } client - Database pool client.
- * @param { number } assignmentId - Assignment ID in the database.
+ * @param { PoolClient } client Database pool client.
+ * @param { number } assignmentId Assignment ID in the database.
  *
  * @returns { Promise<boolean> } Promise object with `true` if deleted successfully, `false` otherwise.
  */

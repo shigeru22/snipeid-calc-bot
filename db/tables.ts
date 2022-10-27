@@ -5,7 +5,7 @@ class Tables {
   /**
    * Creates all tables in the database (v2).
    *
-   * @param { Pool } db - Database pool object.
+   * @param { Pool } db Database pool object.
    *
    * @returns { Promise<boolean> } Promise object, with `true` if all tables were created, `false` otherwise.
    */
@@ -37,7 +37,7 @@ class Tables {
   /**
    * Creates user table in the database (v2).
    *
-   * @param { Pool } db - Database pool object.
+   * @param { Pool } db Database pool object.
    *
    * @returns { Promise<boolean> } Promise object, with `true` if the table were created, `false` otherwise.
    */
@@ -76,7 +76,7 @@ class Tables {
   /**
    * Creates servers table in the database (v2).
    *
-   * @param { Pool } db - Database pool object.
+   * @param { Pool } db Database pool object.
    *
    * @returns { Promise<boolean> } Promise object, with `true` if the table were created, `false` otherwise.
    */
@@ -118,7 +118,7 @@ class Tables {
   /**
    * Creates roles table in the database (v2).
    *
-   * @param { Pool } db - Database pool object.
+   * @param { Pool } db Database pool object.
    *
    * @returns { Promise<boolean> } Promise object, with `true` if the table were created, `false` otherwise.
    */
@@ -160,7 +160,7 @@ class Tables {
   /**
    * Creates assignments table in the database (v2).
    *
-   * @param { Pool } db - Database pool object.
+   * @param { Pool } db Database pool object.
    *
    * @returns { Promise<boolean> } Promise object, with `true` if the table were created, `false` otherwise.
    */

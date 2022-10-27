@@ -91,7 +91,7 @@ type OsuApiResponseData<T> = T extends OsuApiErrorStatus ? IOsuApiErrorResponseD
 /**
  * Checks whether response's type is `IOsuApiErrorResponseData`.
  *
- * @param { unknown } response - Response to be checked.
+ * @param { unknown } response Response to be checked.
  *
  * @returns { response is IOsuApiErrorResponseData<OsuApiErrorStatus> } Returns `true` if response is an error, `false` otherwise.
  */

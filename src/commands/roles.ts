@@ -4,11 +4,11 @@ import { LogSeverity, log } from "../utils/log";
 /**
  * Add specified role to user specified.
  *
- * @param { Client } client - Discord bot client.
- * @param { TextChannel } channel - Discord channel to send message to.
- * @param { string } discordId - Discord ID of user to add role to.
- * @param { string } serverId - Discord ID of server.
- * @param { string } roleId - Discord ID of role to add.
+ * @param { Client } clien Discord bot client.
+ * @param { TextChannel } channel Discord channel to send message to.
+ * @param { string } discordId Discord ID of user to add role to.
+ * @param { string } serverId Discord ID of server.
+ * @param { string } roleId Discord ID of role to add.
  *
  * @returns { Promise<void> } Promise object with no return value.
  */

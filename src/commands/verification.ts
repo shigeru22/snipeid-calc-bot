@@ -7,11 +7,11 @@ import { LogSeverity, log } from "../utils/log";
 /**
  * Verifies the user and inserts their data into the database.
  *
- * @param { Client } client - Discord bot client.
- * @param { TextChannel } channel - Discord channel to send message to.
- * @param { Pool } db - Database connection pool.
- * @param { string } osuToken - osu! API token.
- * @param { Message } message - Message that triggered the command.
+ * @param { Client } client Discord bot client.
+ * @param { TextChannel } channel Discord channel to send message to.
+ * @param { Pool } db Database connection pool.
+ * @param { string } osuToken osu! API token.
+ * @param { Message } message Message that triggered the command.
  *
  * @returns { Promise<void> } Promise object with no return value.
  */

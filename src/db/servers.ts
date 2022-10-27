@@ -7,7 +7,7 @@ import { IDBServerQueryData, IDBServerData } from "../types/db/servers";
 /**
  * Gets all server data from the database.
  *
- * @param { Pool } db - Database connection pool.
+ * @param { Pool } db Database connection pool.
  *
  * @returns { Promise<DBResponseBase<IDBServerData[]> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with user data.
  */
@@ -75,8 +75,8 @@ async function getAllServers(db: Pool): Promise<DBResponseBase<IDBServerData[]> 
 /**
  * Gets server data from the database by Discord ID.
  *
- * @param { Pool } db - Database connection pool.
- * @param { string } serverDiscordId - Server snowflake ID.
+ * @param { Pool } db Database connection pool.
+ * @param { string } serverDiscordId Server snowflake ID.
  *
  * @returns { Promise<DBResponseBase<IDBServerData[]> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with user data.
  */
@@ -149,6 +149,14 @@ async function getServerByDiscordId(db: Pool, serverDiscordId: string): Promise<
   }
 }
 
+/**
+ * Inserts server data into the database.
+ *
+ * @param { Pool } db Database connection pool.
+ * @param { string } serverDiscordId Server snowflake ID.
+ *
+ * @returns { Promise<DBResponseBase<IDBServerData[]> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with user data.
+ */
 async function insertServer(db: Pool, serverDiscordId: string): Promise<DBResponseBase<true> | DBResponseBase<DatabaseErrors.DUPLICATED_DISCORD_ID | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
   const insertQuery = `
     INSERT INTO servers (discordId)

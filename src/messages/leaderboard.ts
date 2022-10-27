@@ -6,8 +6,8 @@ import { IDBServerAssignmentData } from "../types/db/assignments";
 /**
  * Creates leaderboard embed message.
  *
- * @param { IDBServerAssignmentData } data - Leaderboard data.
- * @param { Date } lastUpdated - Last update time.
+ * @param { IDBServerAssignmentData } data Leaderboard data.
+ * @param { Date } lastUpdated Last update time.
  *
  * @returns { MessageEmbed } Leaderboard embed message.
  */

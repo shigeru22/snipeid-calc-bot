@@ -9,7 +9,7 @@ enum WhatIfParserStatus {
 /**
  * Parses Bathbot's top count embed into arrays.
  *
- * @param { string } desc - Embed description.
+ * @param { string } desc Embed description.
  *
  * @returns { number[] } Array of top counts.
  */
@@ -35,7 +35,7 @@ function parseTopCountDescription(desc: string): number[] {
 /**
  * Parses username from Bathbot's top count embed.
  *
- * @param { string } title - Embed title.
+ * @param { string } title Embed title.
  *
  * @returns { string } Parsed username.
  */
@@ -46,9 +46,9 @@ function parseUsername(title: string): string {
 /**
  * Parses osu! ID from Bathbot's top count URL.
  *
- * @param { string } url - Embed URL.
+ * @param { string } url Embed URL.
  *
- * @returns { string } - Parsed osu! ID.
+ * @returns { string } Parsed osu! ID.
  */
 function parseOsuIdFromLink(url: string): string {
   return url.replace(/http(s)?:\/\/osu.ppy.sh\/u(sers)?\//g, "").split("/")[0];
@@ -57,7 +57,7 @@ function parseOsuIdFromLink(url: string): string {
 /**
  * Parses `whatif` command query.
  *
- * @param { string } exp - Query expression.
+ * @param { string } exp Query expression.
  *
  * @returns { number[] | number } Array of what-if top counts. Returns `WhatIfParserStatus` constant in case of errors.
  */

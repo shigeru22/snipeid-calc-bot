@@ -7,8 +7,8 @@ import { IDBServerUserData, IDBServerUserQueryData } from "../types/db/users";
 /**
  * Gets Discord user by osu! ID from the database.
  *
- * @param { Pool } db
- * @param { number } osuId
+ * @param { Pool } d Database connection pool.
+ * @param { number } osuId osu! user ID.
  *
  * @returns { Promise<DBResponseBase<IDBServerUserData> | DBResponseBase<DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with user data.
  */
@@ -78,8 +78,8 @@ async function getDiscordUserByOsuId(db: Pool, osuId: number): Promise<DBRespons
 /**
  * Gets Discord user by Discord ID from the database.
  *
- * @param { Pool } db - Database connection pool.
- * @param { string } discordId - Discord ID of the user.
+ * @param { Pool } db Database connection pool.
+ * @param { string } discordId Discord ID of the user.
  *
  * @returns { Promise<DBResponseBase<IDBServerUserData> | DBResponseBase<DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with user data.
  */
@@ -141,10 +141,10 @@ async function getDiscordUserByDiscordId(db: Pool, discordId: string): Promise<D
 /**
  * Inserts user to the database.
  *
- * @param { Pool } db - Database connection pool.
- * @param { string } discordId - Discord ID of the user.
- * @param { number } osuId - osu! user ID.
- * @param { string } userName - osu! username.
+ * @param { Pool } db Database connection pool.
+ * @param { string } discordId Discord ID of the user.
+ * @param { number } osuId osu! user ID.
+ * @param { string } userName osu! username.
  *
  * @returns { Promise<DBResponseBase<true> | DBResponseBase<DatabaseErrors.DUPLICATED_DISCORD_ID | DatabaseErrors.DUPLICATED_OSU_ID | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with `true` if inserted successfully. Returns `DatabaseErrors` enum otherwise.
  */
@@ -243,9 +243,9 @@ async function insertUser(db: Pool, discordId: string, osuId: number, userName: 
 /**
  * Updates user in the database (username only).
  *
- * @param { Pool } db - Database connection pool.
- * @param { number } osuId - osu! user ID.
- * @param { string } userName - osu! username.
+ * @param { Pool } db Database connection pool.
+ * @param { number } osuId osu! user ID.
+ * @param { string } userName osu! username.
  *
  * @returns { Promise<DatabaseErrors.OK | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR> } Promise object with `true` if updated successfully. Returns `DatabaseErrors` enum otherwise.
  */

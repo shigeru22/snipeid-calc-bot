@@ -13,12 +13,12 @@ import { IOsuUserData } from "../types/commands/userdata";
 /**
  * Updates user data in the database and assigns roles based on points received.
  *
- * @param { string } osuToken - osu! API token
- * @param { Client } client - Discord bot client.
- * @param { TextChannel } channel - Discord channel to send message to.
- * @param { Pool } db - Database connection pool.
- * @param { number | string } osuId - osu! user ID.
- * @param { number } points - Calculated points.
+ * @param { string } osuToken osu! API token
+ * @param { Client } client Discord bot client.
+ * @param { TextChannel } channel Discord channel to send message to.
+ * @param { Pool } db Database connection pool.
+ * @param { number | string } osuId osu! user ID.
+ * @param { number } points Calculated points.
  *
  * @returns { Promise<void> } Promise object with no return value.
  */
@@ -171,9 +171,9 @@ async function updateUserData(osuToken: string, client: Client, channel: TextCha
 /**
  * Fetches user from the database.
  *
- * @param { TextChannel } channel - Channel to send message to.
- * @param { Pool } db - Database connection.
- * @param { string } discordId - Discord ID of the user.
+ * @param { TextChannel } channel Channel to send message to.
+ * @param { Pool } db Database connection.
+ * @param { string } discordId Discord ID of the user.
  *
  * @returns { Promise<IDBServerUserData | false> } Promise object with `userId`, `discordId`, and `osuId`, or `false` if user was not found.
  */
@@ -205,9 +205,9 @@ async function fetchUser(channel: TextChannel, db: Pool, discordId: string): Pro
 /**
  * Fetches osu! user from osu! ID.
  *
- * @param { TextChannel } channel - Channel to send message to.
- * @param { string } token - osu! API token.
- * @param { number | string } osuId - osu! user ID.
+ * @param { TextChannel } channel Channel to send message to.
+ * @param { string } token osu! API token.
+ * @param { number | string } osuId osu! user ID.
  *
  * @returns { Promise<IOsuUserData | false> } Promise object with `status` and `username`, or `false` in case of errors.
  */
@@ -252,8 +252,8 @@ async function fetchOsuUser(channel: TextChannel, token: string, osuId: number |
 /**
  * Fetches osu!Stats' number of top ranks.
  *
- * @param { TextChannel } channel - Channel to send message to.
- * @param { string } osuUsername - osu! username.
+ * @param { TextChannel } channel Channel to send message to.
+ * @param { string } osuUsername osu! username.
  *
  * @returns { Promise<number[] | boolean> } Promise object with number of ranks array (top 1, 8, 15, 25, and 50), or `false` in case of errors.
  */
@@ -307,11 +307,11 @@ async function fetchOsuStats(channel: TextChannel, osuUsername: string): Promise
 /**
  * Links and inserts user to database.
  *
- * @param { TextChannel } channel - Channel to send message to.
- * @param { Pool } db - Database connection pool.
- * @param { string } discordId - Discord ID of the user.
- * @param { number | string } osuId - osu! user ID.
- * @param { string } osuUsername - osu! username.
+ * @param { TextChannel } channel Channel to send message to.
+ * @param { Pool } db Database connection pool.
+ * @param { string } discordId Discord ID of the user.
+ * @param { number | string } osuId osu! user ID.
+ * @param { string } osuUsername osu! username.
  *
  * @returns { Promise<boolean> } Promise object with `true` if user was linked, or `false` in case of errors.
  */

@@ -14,9 +14,9 @@ class OsuToken {
   /**
    * Instantiates `OsuToken` object. Also retrieves token if specified.
    *
-   * @param { string } clientId - osu! API client ID.
-   * @param { string } clientSecret - osu! API client secret.
-   * @param { boolean } retrieve - whether to retrieve token immediately after instantiating the object.
+   * @param { string } clientId osu! API client ID.
+   * @param { string } clientSecret osu! API client secret.
+   * @param { boolean } retrieve whether to retrieve token immediately after instantiating the object.
    */
   constructor(clientId: string, clientSecret: string, retrieve = false) {
     this.#clientId = clientId;

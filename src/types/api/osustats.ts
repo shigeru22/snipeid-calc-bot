@@ -48,7 +48,7 @@ type OsuStatsResponseData<T> = T extends OsuStatsErrorStatus ? IOsuStatsErrorRes
 /**
  * Checks whether response's type is `IOsuStatsErrorResponseData`.
  *
- * @param { unknown } response - Response to be checked.
+ * @param { unknown } response Response to be checked.
  *
  * @returns { response is IOsuStatsErrorResponseData<OsuStatsErrorStatus> } Returns `true` if response is an error, `false` otherwise.
  */

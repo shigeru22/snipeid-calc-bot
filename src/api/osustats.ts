@@ -9,8 +9,8 @@ const OSUSTATS_API_RESPEKTIVE_ENDPOINT = "https://osustats.respektive.pw";
 /**
  * Retrieves user top leaderboard count.
  *
- * @param { string } userName - osu! username.
- * @param { number } maxRank - Maximum rank to retrieve.
+ * @param { string } userName osu! username.
+ * @param { number } maxRank Maximum rank to retrieve.
  *
  * @returns { Promise<OsuStatsResponseData<IOsuStatsUserData> | OsuStatsResponseData<OsuStatsErrorStatus.USER_NOT_FOUND | OsuStatsErrorStatus.API_ERROR | OsuStatsErrorStatus.CLIENT_ERROR>> } Promise object with status, user name, max rank, and count.
  */
@@ -89,7 +89,7 @@ async function getTopCounts(userName: string, maxRank: number): Promise<OsuStats
 /**
  * Retrieves user top leaderboard count from respektive's API.
  *
- * @param { number } osuId - osu! user ID.
+ * @param { number } osuId osu! user ID.
  *
  * @returns { Promise<number[] | number> } Promise object with status and user top leaderboard count array. Assume `[ top 1, top 8, top 25, top 50 ]` for now.
  */

@@ -110,7 +110,7 @@ async function onStartup() {
 /**
  * New message event function.
  *
- * @param { Message } msg - Message received by the client.
+ * @param { Message } msg Message received by the client.
  */
 async function onNewMessage(msg: Message) {
   if(client.user === null) {
@@ -152,7 +152,7 @@ async function onNewMessage(msg: Message) {
 /**
  * Event function upon joining guild.
  *
- * @param { Message } guild - Entered guild object.
+ * @param { Message } guild Entered guild object.
  */
 async function onJoinGuild(guild: Guild) {
   const result = await insertServer(db, guild.id);
@@ -177,7 +177,7 @@ async function onJoinGuild(guild: Guild) {
 /**
  * Event function upon leaving guild.
  *
- * @param { Message } guild - Entered guild object.
+ * @param { Message } guild Entered guild object.
  */
 function onLeaveGuild(guild: Guild) {
   log(LogSeverity.LOG, "onJoinGuild", `Left server with ID ${ guild.id } (${ guild.name }).`);
@@ -186,7 +186,7 @@ function onLeaveGuild(guild: Guild) {
 /**
  * Unhandled exception event function.
  *
- * @param { unknown } e - Thrown error variable.
+ * @param { unknown } e Thrown error variable.
  */
 function onException(e: unknown) {
   if(e instanceof Error) {

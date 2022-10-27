@@ -101,7 +101,7 @@ enum AssignmentSort {
 /**
  * Returns SQL string representation of assignment sorting enum.
  *
- * @param { AssignmentSort } sort - Sorting enum value.
+ * @param { AssignmentSort } sort Sorting enum value.
  *
  * @returns { string } SQL string representation of assignment sorting value.
  */

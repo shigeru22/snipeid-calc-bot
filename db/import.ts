@@ -5,7 +5,7 @@ import Config from "../config.json";
 /**
  * Imports roles from into database.
  *
- * @param { Pool } db - Database pool object.
+ * @param { Pool } db Database pool object.
  *
  * @returns { Promise<boolean> } Promise object, with `true` if roles were imported, `false` otherwise.
  */
