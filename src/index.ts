@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import fs from "fs";
 import { Client, Guild, Message } from "discord.js";
-import { Pool } from "pg";
+import { Pool, PoolConfig } from "pg";
 import { createInterface } from "readline";
 import { OsuToken } from "./api/osu-token";
 import { insertServer } from "./db/servers";
@@ -20,7 +20,7 @@ if(!validateEnvironmentVariables()) {
 
 // database pool
 
-const dbConfig = {
+const dbConfig: PoolConfig = {
   host: process.env.DB_HOST,
   port: parseInt(process.env.DB_PORT as string, 10),
   user: process.env.DB_USERNAME,
