@@ -19,7 +19,7 @@ async function verifyUser(client: Client, channel: TextChannel, db: Pool, osuTok
   const contents = message.content.split(/\s+/g); // split by one or more spaces
 
   if(typeof(contents[2]) !== "string") {
-    await channel.send("You need to specify your osu! user ID: `@" + process.env.BOT_NAME + " link [osu! user ID]`");
+    await channel.send(`You need to specify your osu! user ID: \`@${ client.user?.username } link [osu! user ID]\``);
     return;
   }
 

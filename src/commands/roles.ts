@@ -24,13 +24,13 @@ async function addRole(client: Client, channel: TextChannel, discordId: string, 
       return;
     }
 
-    log(LogSeverity.LOG, "addRole", "Granting role for server member: " + member.user.username + "#" + member.user.discriminator);
+    log(LogSeverity.LOG, "addRole", `Granting role for server member: ${ member.user.username }#${ member.user.discriminator }.`);
 
     await member.roles.add(role);
   }
   catch (e) {
     if(e instanceof Error) {
-      log(LogSeverity.ERROR, "addRole", e.name + ": " + e.message + "\n" + e.stack);
+      log(LogSeverity.ERROR, "addRole", `${ e.name }: ${ e.message }` + "\n" + e.stack);
     }
     else {
       log(LogSeverity.ERROR, "addRole", "Unknown error occurred.");

@@ -59,11 +59,11 @@ async function getDiscordUserByOsuId(db: Pool, osuId: number): Promise<DBRespons
             status: DatabaseErrors.CONNECTION_ERROR
           };
         default:
-          log(LogSeverity.ERROR, "getDiscordUserByOsuId", "Database error occurred:\n" + e.code + ": " + e.message + "\n" + e.stack);
+          log(LogSeverity.ERROR, "getDiscordUserByOsuId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
       }
     }
     else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "getDiscordUserByOsuId", "An error occurred while querying assignment: " + e.message);
+      log(LogSeverity.ERROR, "getDiscordUserByOsuId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
     }
     else {
       log(LogSeverity.ERROR, "getDiscordUserByOsuId", "Unknown error occurred.");
@@ -122,11 +122,11 @@ async function getDiscordUserByDiscordId(db: Pool, discordId: string): Promise<D
             status: DatabaseErrors.CONNECTION_ERROR
           };
         default:
-          log(LogSeverity.ERROR, "getDiscordUserByDiscordId", "Database error occurred:\n" + e.code + ": " + e.message + "\n" + e.stack);
+          log(LogSeverity.ERROR, "getDiscordUserByDiscordId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
       }
     }
     else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "getDiscordUserByDiscordId", "An error occurred while querying assignment: " + e.message);
+      log(LogSeverity.ERROR, "getDiscordUserByDiscordId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
     }
     else {
       log(LogSeverity.ERROR, "getDiscordUserByDiscordId", "Unknown error occurred.");
@@ -224,11 +224,11 @@ async function insertUser(db: Pool, discordId: string, osuId: number, userName: 
             status: DatabaseErrors.CONNECTION_ERROR
           };
         default:
-          log(LogSeverity.ERROR, "insertUser", "Database error occurred:\n" + e.code + ": " + e.message + "\n" + e.stack);
+          log(LogSeverity.ERROR, "insertUser", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
       }
     }
     else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "insertUser", "An error occurred while querying assignment: " + e.message);
+      log(LogSeverity.ERROR, "insertUser", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
     }
     else {
       log(LogSeverity.ERROR, "insertUser", "Unknown error occurred.");
@@ -279,11 +279,11 @@ async function updateUser(db: Pool, osuId: number, userName: string): Promise<DB
             status: DatabaseErrors.CONNECTION_ERROR
           };
         default:
-          log(LogSeverity.ERROR, "updateUser", "Database error occurred:\n" + e.code + ": " + e.message + "\n" + e.stack);
+          log(LogSeverity.ERROR, "updateUser", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
       }
     }
     else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "updateUser", "An error occurred while querying assignment: " + e.message);
+      log(LogSeverity.ERROR, "updateUser", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
     }
     else {
       log(LogSeverity.ERROR, "updateUser", "Unknown error occurred.");

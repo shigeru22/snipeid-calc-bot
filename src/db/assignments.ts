@@ -69,11 +69,11 @@ async function getAllAssignments(db: Pool, serverDiscordId: string, sort = Assig
             status: DatabaseErrors.CONNECTION_ERROR
           };
         default:
-          log(LogSeverity.ERROR, "getAllAssignments", "Database error occurred:\n" + e.code + ": " + e.message + "\n" + e.stack);
+          log(LogSeverity.ERROR, "getAllAssignments", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
       }
     }
     else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "getAllAssignments", "An error occurred while querying assignment: " + e.message);
+      log(LogSeverity.ERROR, "getAllAssignments", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
     }
     else {
       log(LogSeverity.ERROR, "getAllAssignments", "Unknown error occurred.");
@@ -155,11 +155,11 @@ async function getAssignmentByOsuId(db: Pool, serverDiscordId: string, osuId: nu
             status: DatabaseErrors.CONNECTION_ERROR
           };
         default:
-          log(LogSeverity.ERROR, "getAssignmentByOsuId", "Database error occurred:\n" + e.code + ": " + e.message + "\n" + e.stack);
+          log(LogSeverity.ERROR, "getAssignmentByOsuId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
       }
     }
     else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "getAssignmentByOsuId", "An error occurred while querying assignment: " + e.message);
+      log(LogSeverity.ERROR, "getAssignmentByOsuId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
     }
     else {
       log(LogSeverity.ERROR, "getAssignmentByOsuId", "Unknown error occurred.");
@@ -223,11 +223,11 @@ async function getLastAssignmentUpdate(db: Pool, serverDiscordId: string): Promi
             status: DatabaseErrors.CONNECTION_ERROR
           };
         default:
-          log(LogSeverity.ERROR, "getLastAssignmentUpdate", "Database error occurred:\n" + e.code + ": " + e.message + "\n" + e.stack);
+          log(LogSeverity.ERROR, "getLastAssignmentUpdate", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
       }
     }
     else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "getLastAssignmentUpdate", "An error occurred while querying assignment: " + e.message);
+      log(LogSeverity.ERROR, "getLastAssignmentUpdate", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
     }
     else {
       log(LogSeverity.ERROR, "getLastAssignmentUpdate", "Unknown error occurred.");
@@ -413,11 +413,11 @@ async function insertOrUpdateAssignment(db: Pool, serverDiscordId: string, osuId
             status: DatabaseErrors.CONNECTION_ERROR
           };
         default:
-          log(LogSeverity.ERROR, "insertOrUpdateAssignment", "Database error occurred:\n" + e.code + ": " + e.message + "\n" + e.stack);
+          log(LogSeverity.ERROR, "insertOrUpdateAssignment", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
       }
     }
     else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "insertOrUpdateAssignment", "An error occurred while querying assignment: " + e.message);
+      log(LogSeverity.ERROR, "insertOrUpdateAssignment", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
     }
     else {
       log(LogSeverity.ERROR, "insertOrUpdateAssignment", "Unknown error occurred.");
@@ -527,11 +527,11 @@ async function getServerUserAssignmentDataByOsuId(client: PoolClient, serverDisc
             status: DatabaseErrors.CONNECTION_ERROR
           };
         default:
-          log(LogSeverity.ERROR, "getServerUserAssignmentDataByOsuId", "Database error occurred:\n" + e.code + ": " + e.message + "\n" + e.stack);
+          log(LogSeverity.ERROR, "getServerUserAssignmentDataByOsuId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
       }
     }
     else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "getServerUserAssignmentDataByOsuId", "An error occurred while querying assignment: " + e.message);
+      log(LogSeverity.ERROR, "getServerUserAssignmentDataByOsuId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
     }
     else {
       log(LogSeverity.ERROR, "getServerUserAssignmentDataByOsuId", "Unknown error occurred.");
@@ -605,11 +605,11 @@ async function getServerUserRoleDataByOsuId(client: PoolClient, serverDiscordId:
             status: DatabaseErrors.CONNECTION_ERROR
           };
         default:
-          log(LogSeverity.ERROR, "getServerUserRoleDataByOsuId", "Database error occurred:\n" + e.code + ": " + e.message + "\n" + e.stack);
+          log(LogSeverity.ERROR, "getServerUserRoleDataByOsuId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
       }
     }
     else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "getServerUserRoleDataByOsuId", "An error occurred while querying assignment: " + e.message);
+      log(LogSeverity.ERROR, "getServerUserRoleDataByOsuId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
     }
     else {
       log(LogSeverity.ERROR, "getServerUserRoleDataByOsuId", "Unknown error occurred.");
@@ -677,11 +677,11 @@ async function getTargetServerRoleDataByPoints(client: PoolClient, serverDiscord
             status: DatabaseErrors.CONNECTION_ERROR
           };
         default:
-          log(LogSeverity.ERROR, "getTargetServerRoleDataByPoints", "Database error occurred:\n" + e.code + ": " + e.message + "\n" + e.stack);
+          log(LogSeverity.ERROR, "getTargetServerRoleDataByPoints", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
       }
     }
     else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "getTargetServerRoleDataByPoints", "An error occurred while querying assignment: " + e.message);
+      log(LogSeverity.ERROR, "getTargetServerRoleDataByPoints", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
     }
     else {
       log(LogSeverity.ERROR, "getTargetServerRoleDataByPoints", "Unknown error occurred.");
@@ -726,11 +726,11 @@ async function insertAssignment(client: PoolClient, userId: number, roleId: numb
           log(LogSeverity.ERROR, "getTargetServerRoleDataByPoints", "Database connection failed.");
           break;
         default:
-          log(LogSeverity.ERROR, "getTargetServerRoleDataByPoints", "Database error occurred:\n" + e.code + ": " + e.message + "\n" + e.stack);
+          log(LogSeverity.ERROR, "getTargetServerRoleDataByPoints", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
       }
     }
     else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "getTargetServerRoleDataByPoints", "An error occurred while querying assignment: " + e.message);
+      log(LogSeverity.ERROR, "getTargetServerRoleDataByPoints", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
     }
     else {
       log(LogSeverity.ERROR, "getTargetServerRoleDataByPoints", "Unknown error occurred.");
@@ -768,11 +768,11 @@ async function deleteAssignmentById(client: PoolClient, assignmentId: number): P
           log(LogSeverity.ERROR, "deleteAssignmentById", "Database connection failed.");
           break;
         default:
-          log(LogSeverity.ERROR, "deleteAssignmentById", "Database error occurred:\n" + e.code + ": " + e.message + "\n" + e.stack);
+          log(LogSeverity.ERROR, "deleteAssignmentById", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
       }
     }
     else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "deleteAssignmentById", "An error occurred while querying assignment: " + e.message);
+      log(LogSeverity.ERROR, "deleteAssignmentById", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
     }
     else {
       log(LogSeverity.ERROR, "deleteAssignmentById", "Unknown error occurred.");

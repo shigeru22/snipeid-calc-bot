@@ -56,11 +56,11 @@ async function getAllServers(db: Pool): Promise<DBResponseBase<IDBServerData[]> 
             status: DatabaseErrors.CONNECTION_ERROR
           };
         default:
-          log(LogSeverity.ERROR, "getAllServers", "Database error occurred:\n" + e.code + ": " + e.message + "\n" + e.stack);
+          log(LogSeverity.ERROR, "getAllServers", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
       }
     }
     else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "getAllServers", "An error occurred while querying assignment: " + e.message);
+      log(LogSeverity.ERROR, "getAllServers", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
     }
     else {
       log(LogSeverity.ERROR, "getAllServers", "Unknown error occurred.");
@@ -133,11 +133,11 @@ async function getServerByDiscordId(db: Pool, serverDiscordId: string): Promise<
             status: DatabaseErrors.CONNECTION_ERROR
           };
         default:
-          log(LogSeverity.ERROR, "getServerByDiscordId", "Database error occurred:\n" + e.code + ": " + e.message + "\n" + e.stack);
+          log(LogSeverity.ERROR, "getServerByDiscordId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
       }
     }
     else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "getServerByDiscordId", "An error occurred while querying assignment: " + e.message);
+      log(LogSeverity.ERROR, "getServerByDiscordId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
     }
     else {
       log(LogSeverity.ERROR, "getServerByDiscordId", "Unknown error occurred.");
@@ -197,11 +197,11 @@ async function insertServer(db: Pool, serverDiscordId: string): Promise<DBRespon
             status: DatabaseErrors.CONNECTION_ERROR
           };
         default:
-          log(LogSeverity.ERROR, "insertServer", "Database error occurred:\n" + e.code + ": " + e.message + "\n" + e.stack);
+          log(LogSeverity.ERROR, "insertServer", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
       }
     }
     else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "insertServer", "An error occurred while querying assignment: " + e.message);
+      log(LogSeverity.ERROR, "insertServer", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
     }
     else {
       log(LogSeverity.ERROR, "insertServer", "Unknown error occurred.");

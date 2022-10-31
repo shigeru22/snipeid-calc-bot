@@ -39,16 +39,12 @@ function createLeaderboardEmbed(data: IDBServerAssignmentData[], lastUpdated: Da
   let rankingsDesc = "";
 
   if(len > 0) {
+    data.forEach((data, index) => rankingsDesc += `${ index + 1 }. ${ data.userName }: ${ data.points }${ index < (len - 1) ? "\n" : "" }`);
+
     draft.setTitle("Top 50 players based on points count");
-    for(let i = 0; i < len; i++) {
-      rankingsDesc += (i + 1).toString() + ". " + data[i].userName + ": " + data[i].points;
-      if(i < len - 1) {
-        rankingsDesc += "\n";
-      }
-    }
     draft.setDescription(rankingsDesc);
     draft.setFooter({
-      text: "Last updated: " + offsetLastUpdated.getDate() + "/" + (offsetLastUpdated.getMonth() + 1) + "/" + offsetLastUpdated.getFullYear() + ", " + offsetLastUpdated.getHours().toString().padStart(2, "0") + ":" + offsetLastUpdated.getMinutes().toString().padStart(2, "0")
+      text: `Last updated: ${ offsetLastUpdated.getDate() }/${ offsetLastUpdated.getMonth() + 1 }/${ offsetLastUpdated.getFullYear() }, ${ offsetLastUpdated.getHours().toString().padStart(2, "0") }: ${ offsetLastUpdated.getMinutes.toString().padStart(2, "0") }`
     });
   }
   else {

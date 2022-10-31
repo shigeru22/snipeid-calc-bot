@@ -46,8 +46,17 @@ function counter(top1: number, top8: number, top15: number, top25: number, top50
 
   const points = calculatePoints(top1, top8, top15, top25, top50);
 
-  draft.setTitle("Points for " + username + ":");
-  draft.setDescription("```" + ((top1 * 5).toString().padEnd(6)) + "= " + (top1 + " x 5").toString().padStart(19) + "\n" + (((top8 - top1) * 3).toString().padEnd(6)) + "= " + ("(" + top8 + " - " + top1 + ") x 3").toString().padStart(19) + "\n" + (((top15 - top8) * 2).toString().padEnd(6)) + "= " + ("(" + top15 + " - " + top8 + ") x 2").toString().padStart(19) + "\n" + ((top25 - top15).toString().padEnd(6)) + "= " + ("(" + top25 + " - " + top15 + ") x 1").toString().padStart(19) + "\n" + ((top50 - top25).toString().padEnd(6)) + "= " + ("(" + top50 + " - " + top25 + ") x 1").toString().padStart(19) + "\n```" + "\n= **" + points + "** points.");
+  draft.setTitle(`Points for ${ username }:`);
+  draft.setDescription(`
+    \`\`\`\n
+    ${ (top1 * 5).toString().padEnd(6) } = ${ (`${ top1 } x 5`).padStart(19) }\n
+    ${ ((top8 - top1) * 3).toString().padEnd(6) } = ${ (`(${ top8 } - ${ top1 }) x 3`).padStart(19) }\n
+    ${ ((top15 - top8) * 2).toString().padEnd(6) } = ${ (`(${ top15 } - ${ top8 }) x 2`).padStart(19) }\n
+    ${ ((top25 - top15) * 1).toString().padEnd(6) } = ${ (`(${ top25 } - ${ top15 }) x 1`).padStart(19) }\n
+    ${ ((top50 - top25) * 1).toString().padEnd(6) } = ${ (`(${ top50 } - ${ top25 }) x 1`).padStart(19) }\n
+    \`\`\`\n
+    = **${ points }** points.
+  `);
   draft.setColor("#ff0000");
 
   return draft;
@@ -68,10 +77,16 @@ function counterRespektive(top1: number, top8: number, top25: number, top50: num
   const draft = new MessageEmbed();
 
   const points = calculateRespektivePoints(top1, top8, top25, top50);
-
-  draft.setTitle("Points for " + username + ":");
-  draft.setDescription("```" + "Top 1 : " + ((top1 * 5).toString().padEnd(6)) + "= " + (top1 + " x 5").toString().padStart(19) + "\n" + "Top 8 : " + (((top8 - top1) * 3).toString().padEnd(6)) + "= " + ("(" + top8 + " - " + top1 + ") x 3").toString().padStart(19) + "\n" + "Top 25: " + ((top25 - top8).toString().padEnd(6)) + "= " + ("(" + top25 + " - " + top8 + ") x 1").toString().padStart(19) + "\n" + "Top 50: " + ((top50 - top25).toString().padEnd(6)) + "= " + ("(" + top50 + " - " + top25 + ") x 1").toString().padStart(19) + "\n```" + "\n= **" + points + "** points.");
-  draft.setColor("#ff0000");
+  draft.setTitle(`Points for ${ username }:`);
+  draft.setDescription(`
+    \`\`\`\n
+    ${ (top1 * 5).toString().padEnd(6) } = ${ (`${ top1 } x 5`).padStart(19) }\n
+    ${ ((top8 - top1) * 3).toString().padEnd(6) } = ${ (`(${ top8 } - ${ top1 }) x 3`).padStart(19) }\n
+    ${ ((top25 - top8) * 1).toString().padEnd(6) } = ${ (`(${ top25 } - ${ top8 }) x 1`).padStart(19) }\n
+    ${ ((top50 - top25) * 1).toString().padEnd(6) } = ${ (`(${ top50 } - ${ top25 }) x 1`).padStart(19) }\n
+    \`\`\`\n
+    = **${ points }** points.
+  `);
   draft.setFooter({ text: "Note: you might lost points due to respektive's API not returning top 15 count." });
 
   return draft;

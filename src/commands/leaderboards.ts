@@ -54,8 +54,9 @@ async function sendPointLeaderboard(channel: TextChannel, db: Pool): Promise<voi
   }
 
   const draft = createLeaderboardEmbed(rankings.data, lastUpdated);
-
   await channel.send({ embeds: [ draft ] });
+
+  log(LogSeverity.LOG, "sendPointLeaderboard", `Leaderboard sent for server ID ${ channel.guildId } (${ channel.name }).`);
 }
 
 export { sendPointLeaderboard };

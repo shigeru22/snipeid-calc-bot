@@ -56,11 +56,11 @@ async function getRolesList(db: Pool, serverDiscordId: string): Promise<DBRespon
             status: DatabaseErrors.CONNECTION_ERROR
           };
         default:
-          log(LogSeverity.ERROR, "getRolesList", "Database error occurred:\n" + e.code + ": " + e.message + "\n" + e.stack);
+          log(LogSeverity.ERROR, "getRolesList", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
       }
     }
     else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "getRolesList", "An error occurred while querying assignment: " + e.message);
+      log(LogSeverity.ERROR, "getRolesList", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
     }
     else {
       log(LogSeverity.ERROR, "getRolesList", "Unknown error occurred.");

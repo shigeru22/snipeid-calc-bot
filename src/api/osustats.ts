@@ -28,7 +28,7 @@ async function getTopCounts(userName: string, maxRank: number): Promise<OsuStats
     });
 
     if(response.status !== HTTPStatus.OK) {
-      log(LogSeverity.ERROR, "getTopCounts", "osu!Stats returned status code " + response.status + ":\n" + response.data);
+      log(LogSeverity.ERROR, "getTopCounts", `osu!Stats API returned status code ${ response.status }:\n ${ response.data }`);
 
       return {
         status: OsuStatsErrorStatus.CLIENT_ERROR
@@ -63,18 +63,18 @@ async function getTopCounts(userName: string, maxRank: number): Promise<OsuStats
           };
         }
         else {
-          log(LogSeverity.ERROR, "getTopCounts", "osu!Stats API returned status code " + e.response.status.toString() + ".");
+          log(LogSeverity.ERROR, "getTopCounts", `osu!Stats API returned status code ${ e.response.status }.`);
           return {
             status: OsuStatsErrorStatus.API_ERROR
           };
         }
       }
       else {
-        log(LogSeverity.ERROR, "getTopCounts", e.name + ": " + e.message);
+        log(LogSeverity.ERROR, "getTopCounts", `${ e.name }: ${ e.message }`);
       }
     }
     else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "getTopCounts", e.name + ": " + e.message);
+      log(LogSeverity.ERROR, "getTopCounts", `${ e.name }: ${ e.message }`);
     }
     else {
       log(LogSeverity.ERROR, "getTopCounts", "Unknown error occurred.");
@@ -98,7 +98,7 @@ async function getTopCountsFromRespektive(osuId: number): Promise<OsuStatsRespon
     const response = await axios.get<OsuStatsRespektiveApiResponseData>(OSUSTATS_API_RESPEKTIVE_ENDPOINT + "/counts/" + osuId);
 
     if(response.status !== HTTPStatus.OK) {
-      log(LogSeverity.ERROR, "getTopCountsFromRespektive", "osu!Stats returned status code " + response.status + ":\n" + response.data);
+      log(LogSeverity.ERROR, "getTopCountsFromRespektive", `osu!Stats API returned status code ${ response.status }:\n ${ response.data }`);
       return {
         status: OsuStatsErrorStatus.CLIENT_ERROR
       };
@@ -145,15 +145,15 @@ async function getTopCountsFromRespektive(osuId: number): Promise<OsuStatsRespon
           };
         }
         else {
-          log(LogSeverity.ERROR, "getTopCountsFromRespektive", e.name + ": " + e.message);
+          log(LogSeverity.ERROR, "getTopCountsFromRespektive", `osu!Stats API returned status code ${ e.response.status }.`);
         }
       }
       else {
-        log(LogSeverity.ERROR, "getTopCountsFromRespektive", e.name + ": " + e.message);
+        log(LogSeverity.ERROR, "getTopCountsFromRespektive", `${ e.name }: ${ e.message }`);
       }
     }
     else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "getTopCountsFromRespektive", e.name + ": " + e.message);
+      log(LogSeverity.ERROR, "getTopCountsFromRespektive", `${ e.name }: ${ e.message }`);
     }
     else {
       log(LogSeverity.ERROR, "getTopCountsFromRespektive", "Unknown error occurred.");

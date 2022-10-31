@@ -55,11 +55,11 @@ async function getAccessToken(clientId: string, clientSecret: string): Promise<O
         };
       }
       else {
-        log(LogSeverity.ERROR, "getAccessToken", e.name + ": " + e.message);
+        log(LogSeverity.ERROR, "getAccessToken", `${ e.name }: ${ e.message }`);
       }
     }
     else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "getAccessToken", e.name + ": " + e.message);
+      log(LogSeverity.ERROR, "getAccessToken", `${ e.name }: ${ e.message }`);
     }
     else {
       log(LogSeverity.ERROR, "getAccessToken", "Unknown error occurred.");
@@ -109,11 +109,11 @@ async function revokeAccessToken(token: string): Promise<OsuApiResponseData<true
         };
       }
       else {
-        log(LogSeverity.ERROR, "revokeAccessToken", e.name + ": " + e.message);
+        log(LogSeverity.ERROR, "revokeAccessToken", `${ e.name }: ${ e.message }`);
       }
     }
     else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "revokeAccessToken", e.name + ": " + e.message);
+      log(LogSeverity.ERROR, "revokeAccessToken", `${ e.name }: ${ e.message }`);
     }
     else {
       log(LogSeverity.ERROR, "revokeAccessToken", "Unknown error occurred.");
@@ -202,11 +202,11 @@ async function getUserByOsuId(token: string, id: number): Promise<OsuApiResponse
         }
       }
       else {
-        log(LogSeverity.ERROR, "getUserByOsuId", e.name + ": " + e.message);
+        log(LogSeverity.ERROR, "getUserByOsuId", `${ e.name }: ${ e.message }`);
       }
     }
     else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "getUserByOsuId", e.name + ": " + e.message);
+      log(LogSeverity.ERROR, "getUserByOsuId", `${ e.name }: ${ e.message }`);
     }
     else {
       log(LogSeverity.ERROR, "getUserByOsuId", "Unknown error occurred.");

@@ -82,7 +82,8 @@ async function userLeaderboardsCount(client: Client, channel: TextChannel, db: P
   if(user.status !== DatabaseSuccess.OK) {
     switch(user.status) {
       case DatabaseErrors.USER_NOT_FOUND:
-        await channel.send("**Error:** How you've been here? You haven't linked your account.");
+        // TODO: send message based on server configurations
+        await channel.send(`**Error:** You haven't linked your account. Link using \`${ client.user?.username } [osu! user ID]\`.`);
         break;
       case DatabaseErrors.CONNECTION_ERROR:
         await channel.send("**Error:** Database connection error occurred. Please contact bot administrator.");
@@ -225,6 +226,8 @@ async function userWhatIfCount(client: Client, channel: TextChannel, db: Pool, o
     return;
   }
 
+  // TODO: add other users specification
+
   const whatIfsArray: number[][] = [];
   {
     let status = WhatIfParserStatus.OK;
@@ -324,6 +327,8 @@ async function userWhatIfCount(client: Client, channel: TextChannel, db: Pool, o
 
   const osuUsername = osuUser.data.user.userName as string;
   const useRespektive = typeof(process.env.USE_RESPEKTIVE) === "string" || process.env.USE_RESPEKTIVE === "1";
+
+  log(LogSeverity.LOG, "userWhatIfCount", `Calculating what-ifs for user: ${ osuUsername }`);
 
   const topCounts: number[] = [];
   if(!useRespektive) {
@@ -448,7 +453,7 @@ async function userWhatIfCount(client: Client, channel: TextChannel, db: Pool, o
  * @returns { Promise<Message> } Promise object with `Discord.Message` sent message object.
  */
 async function countPoints(client: Client, channel: TextChannel, username: string, topCounts: number[]): Promise<Message> {
-  log(LogSeverity.LOG, "countPoints", "Calculating points for username: " + username);
+  log(LogSeverity.LOG, "countPoints", `Calculating points for username: ${ username }`);
 
   const newPoints = calculatePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3], topCounts[4]);
   const draft = counter(
@@ -476,7 +481,7 @@ async function countPoints(client: Client, channel: TextChannel, username: strin
  * @returns { Promise<Message> } Promise object with `Discord.Message` sent message object.
  */
 async function countRespektivePoints(client: Client, channel: TextChannel, username: string, topCounts: number[]): Promise<Message> {
-  log(LogSeverity.LOG, "countRespektivePoints", "Calculating points for username: " + username);
+  log(LogSeverity.LOG, "countRespektivePoints", `Calculating points for username: ${ username }`);
 
   const newPoints = calculateRespektivePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3]);
   const draft = counterRespektive(

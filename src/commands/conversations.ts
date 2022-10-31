@@ -34,10 +34,10 @@ async function sendMessage(channel: TextChannel, contents: string[]): Promise<vo
   }
 
   if(isUnderstood) {
-    log(LogSeverity.LOG, "sendMessage", "Chat response sent to channel: #" + channel.name);
+    log(LogSeverity.LOG, "sendMessage", `Chat response sent to channel: #${ channel.name }`);
   }
   else {
-    log(LogSeverity.LOG, "sendMessage", "Unknown command \"" + contents[1] + "\" response sent to channel: #" + channel.name);
+    log(LogSeverity.LOG, "sendMessage", `Unknown command "${ contents[1] }" response sent to channel: #${ channel.name }`);
   }
 
   await channel.send(reply);

@@ -23,6 +23,8 @@ import { IOsuUserData } from "../types/commands/userdata";
  * @returns { Promise<void> } Promise object with no return value.
  */
 async function updateUserData(osuToken: string, client: Client, channel: TextChannel, db: Pool, osuId: number | string, points: number): Promise<void> {
+  log(LogSeverity.DEBUG, "updateUserData", `Updating user data for osu! ID ${ osuId }.`);
+
   const osuUser = await getUserByOsuId(osuToken, typeof(osuId) === "number" ? osuId : parseInt(osuId, 10));
   {
     if(osuUser.status !== OsuApiSuccessStatus.OK) {
@@ -72,20 +74,18 @@ async function updateUserData(osuToken: string, client: Client, channel: TextCha
   switch(assignmentResult.data.type) {
     case AssignmentType.INSERT:
       await channel.send(
-        "<@" + assignmentResult.data.discordId + "> achieved " + "**" + assignmentResult.data.delta + "** " + (assignmentResult.data.delta === 1 ? "point" : "points" ) + ". Go for those leaderboards!"
+        `<@${ assignmentResult.data.discordId }> achieved **${ assignmentResult.data.delta }** point${ assignmentResult.data.delta !== 1 ? "s" : "" }. Go for those leaderboards!`
       );
       break;
     case AssignmentType.UPDATE:
       await channel.send(
-        "<@" + assignmentResult.data.discordId + "> has " + (assignmentResult.data.delta >= 0 ? "gained" : "lost") + " **" + assignmentResult.data.delta + "** " + (assignmentResult.data.delta === 1 ? "point" : "points" ) + " since " + deltaTimeToString(today.getTime() - (assignmentResult.data.lastUpdate as Date).getTime()) + " ago." // TODO: check lastUpdate type correctness
+        `<@${ assignmentResult.data.discordId }> has ${ assignmentResult.data.delta >= 0 ? "gained" : "lost" } **${ assignmentResult.data.delta }** point${ assignmentResult.data.delta !== 1 ? "s" : "" } since ${ deltaTimeToString(today.getTime() - (assignmentResult.data.lastUpdate as Date).getTime()) } ago.` // TODO: check lastUpdate type correctness
       );
       break;
   }
 
   try {
-    if(
-      assignmentResult.data.role.newRoleId === "0" && (typeof(assignmentResult.data.role.oldRoleId === "undefined") || (typeof(assignmentResult.data.role.oldRoleId) === "string" && assignmentResult.data.role.oldRoleId === "0"))
-    ) { // no role
+    if(assignmentResult.data.role.newRoleId === "0" && (typeof(assignmentResult.data.role.oldRoleId === "undefined") || (typeof(assignmentResult.data.role.oldRoleId) === "string" && assignmentResult.data.role.oldRoleId === "0"))) { // no role
       log(LogSeverity.LOG, "updateUserData", "newRoleId is either zero or oldRoleId is not available. Skipping role granting.");
       return;
     }
@@ -110,13 +110,13 @@ async function updateUserData(osuToken: string, client: Client, channel: TextCha
               // TODO: handle role re-addition after failed on next query
 
               log(LogSeverity.WARN, "updateUserData", `Role with ID ${ assignmentResult.data.role.oldRoleId } from server with ID ${ process.env.SERVER_ID } (${ server.name }) can't be found. Informing server channel.`);
-              await channel.send("**Note:** Roles might have been changed!");
+              await channel.send("**Note:** Roles might have been changed. Check configurations for this server.");
 
               warned = true;
             }
             else {
               await member.roles.remove(oldRole);
-              log(LogSeverity.LOG, "updateUserData", "Role " + oldRole.name + " removed from user: " + member.user.username + "#" + member.user.discriminator);
+              log(LogSeverity.LOG, "updateUserData", `Role ${ oldRole.name } removed from user ${ member.user.username }#${ member.user.discriminator }.`);
             }
           }
 
@@ -138,12 +138,12 @@ async function updateUserData(osuToken: string, client: Client, channel: TextCha
             log(LogSeverity.WARN, "updateUserData", `Role with ID ${ assignmentResult.data.role.oldRoleId } from server with ID ${ process.env.SERVER_ID } (${ server.name }) can't be found. Informing server channel.`);
 
             if(!warned) {
-              await channel.send("**Note:** Roles might have been changed!");
+              await channel.send("**Note:** Roles might have been changed. Check configurations for this server.");
             }
           }
           else {
             await member.roles.add(newRole);
-            log(LogSeverity.LOG, "updateUserData", "Role " + newRole.name + " added to user: " + member.user.username + "#" + member.user.discriminator);
+            log(LogSeverity.LOG, "updateUserData", `Role ${ newRole.name } added to user ${ member.user.username }#${ member.user.discriminator }.`);
             updated = true;
           }
         }
@@ -152,13 +152,13 @@ async function updateUserData(osuToken: string, client: Client, channel: TextCha
 
     if(updated) {
       await channel.send(
-        "You have been " + (assignmentResult.data.delta > 0 ? "promoted" : "demoted") + " to **" + assignmentResult.data.role.newRoleName + "** role. " + (assignmentResult.data.delta > 0 ? "Awesome!" : "Fight back at those leaderboards!")
+        `You have been ${ assignmentResult.data.delta > 0 ? "promoted" : "demoted" } to **${ assignmentResult.data.role.newRoleName }** role. ${ assignmentResult.data.delta > 0 ? "Awesome!" : "Fight back at those leaderboards!" }`
       );
     }
   }
   catch (e) {
     if(e instanceof Error) {
-      log(LogSeverity.ERROR, "updateUserData", e.name + ": " + e.message + "\n" + e.stack);
+      log(LogSeverity.ERROR, "updateUserData", `${ e.name }: ${ e.message }` + "\n" + e.stack);
     }
     else {
       log(LogSeverity.ERROR, "updateUserData", "Unknown error occurred.");
@@ -178,8 +178,9 @@ async function updateUserData(osuToken: string, client: Client, channel: TextCha
  * @returns { Promise<IDBServerUserData | false> } Promise object with `userId`, `discordId`, and `osuId`, or `false` if user was not found.
  */
 async function fetchUser(channel: TextChannel, db: Pool, discordId: string): Promise<IDBServerUserData | false> {
-  const user = await getDiscordUserByDiscordId(db, discordId);
+  log(LogSeverity.DEBUG, "fetchUser", `Fetching user with ID ${ discordId }.`);
 
+  const user = await getDiscordUserByDiscordId(db, discordId);
   if(user.status !== DatabaseSuccess.OK) {
     switch(user.status) {
       case DatabaseErrors.USER_NOT_FOUND:
@@ -212,6 +213,8 @@ async function fetchUser(channel: TextChannel, db: Pool, discordId: string): Pro
  * @returns { Promise<IOsuUserData | false> } Promise object with `status` and `username`, or `false` in case of errors.
  */
 async function fetchOsuUser(channel: TextChannel, token: string, osuId: number | string): Promise<IOsuUserData | false> {
+  log(LogSeverity.DEBUG, "fetchOsuUser", `Fetching osu! user with ID ${ osuId }.`);
+
   const osuUser = await getUserByOsuId(token, typeof(osuId) === "number" ? osuId : parseInt(osuId, 10));
   {
     if(osuUser.status !== OsuApiSuccessStatus.OK) {
@@ -258,6 +261,8 @@ async function fetchOsuUser(channel: TextChannel, token: string, osuId: number |
  * @returns { Promise<number[] | boolean> } Promise object with number of ranks array (top 1, 8, 15, 25, and 50), or `false` in case of errors.
  */
 async function fetchOsuStats(channel: TextChannel, osuUsername: string): Promise<number[] | boolean> {
+  log(LogSeverity.DEBUG, "fetchOsuStats", `Fetching osu!Stats data for username ${ osuUsername }.`);
+
   const topCountsRequests = [
     getTopCounts(osuUsername, 1),
     getTopCounts(osuUsername, 8),
@@ -316,6 +321,8 @@ async function fetchOsuStats(channel: TextChannel, osuUsername: string): Promise
  * @returns { Promise<boolean> } Promise object with `true` if user was linked, or `false` in case of errors.
  */
 async function insertUserData(channel: TextChannel, db: Pool, discordId: string, osuId: number | string, osuUsername: string): Promise<boolean> {
+  log(LogSeverity.DEBUG, "insertUserData", `Inserting user data for osu! ID ${ osuId } to Discord user ID ${ discordId }.`);
+
   const result = await insertUser(
     db,
     discordId,
