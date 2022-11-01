@@ -8,6 +8,7 @@
     "dev": "nodemon --signal SIGINT --delay 3 ./src/index.ts",
     "build": "tsc",
     "init-db": "ts-node db/index.ts",
+    "migrate-db": "ts-node db/migration/index.ts",
     "lint": "eslint .",
     "test": "jest"
   },
