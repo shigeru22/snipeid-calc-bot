@@ -1,5 +1,4 @@
 import { LogSeverity, log } from "./log";
-import { getTimeOffsetFromString } from "./time";
 
 /**
  * Validates environment variables.
@@ -16,36 +15,6 @@ function validateEnvironmentVariables() {
 
   if(typeof(process.env.BOT_TOKEN) !== "string" || !process.env.BOT_TOKEN) {
     log(LogSeverity.ERROR, "validateEnvironmentVariables", "BOT_TOKEN must be defined in environment variables. Exiting.");
-    return false;
-  }
-
-  if(typeof(process.env.CHANNEL_ID) !== "string" || !process.env.CHANNEL_ID) {
-    log(LogSeverity.ERROR, "validateEnvironmentVariables", "CHANNEL_ID must be defined in environment variables. Exiting.");
-    return false;
-  }
-
-  if(typeof(process.env.LEADERBOARD_CHANNEL_ID) !== "string" || !process.env.LEADERBOARD_CHANNEL_ID) {
-    log(LogSeverity.ERROR, "validateEnvironmentVariables", "LEADERBOARD_CHANNEL_ID must be defined in environment variables. Exiting.");
-    return false;
-  }
-
-  if(typeof(process.env.VERIFICATION_CHANNEL_ID) !== "string" || !process.env.VERIFICATION_CHANNEL_ID) {
-    log(LogSeverity.ERROR, "validateEnvironmentVariables", "VERIFICATION_CHANNEL_ID must be defined in environment variables. Exiting.");
-    return false;
-  }
-
-  if(typeof(process.env.COUNTRY_CODE) !== "string" || !process.env.COUNTRY_CODE) {
-    log(LogSeverity.ERROR, "validateEnvironmentVariables", "COUNTRY_CODE must be defined in environment variables. Exiting.");
-    return false;
-  }
-
-  if(typeof(process.env.TZ_OFFSET) !== "string" || !process.env.TZ_OFFSET) {
-    log(LogSeverity.ERROR, "validateEnvironmentVariables", "COUNTRY_CODE must be defined in environment variables. Exiting.");
-    return false;
-  }
-
-  if(typeof(getTimeOffsetFromString(process.env.TZ_OFFSET)) === "undefined") {
-    log(LogSeverity.ERROR, "validateEnvironmentVariables", "TZ_OFFSET validation error occurred. See above error.");
     return false;
   }
 

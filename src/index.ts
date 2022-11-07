@@ -5,7 +5,7 @@ import { Pool, PoolConfig } from "pg";
 import { createInterface } from "readline";
 import { OsuToken } from "./api/osu-token";
 import { insertServer } from "./db/servers";
-import { handleVerificationChannelCommands, handlePointsChannelCommands, handleLeaderboardChannelCommands } from "./commands";
+import { handleCommands } from "./commands";
 import { sendMessage } from "./commands/conversations";
 import { DatabaseErrors } from "./utils/common";
 import { validateEnvironmentVariables } from "./utils/env";
@@ -132,17 +132,7 @@ async function onNewMessage(msg: Message) {
       return;
     }
 
-    switch(msg.channelId) {
-      case process.env.VERIFICATION_CHANNEL_ID:
-        processed = await handleVerificationChannelCommands(client, channel, db, tempToken, isClientMentioned, msg);
-        break;
-      case process.env.CHANNEL_ID:
-        processed = await handlePointsChannelCommands(client, channel, db, tempToken, isClientMentioned, msg);
-        break;
-      case process.env.LEADERBOARD_CHANNEL_ID:
-        processed = await handleLeaderboardChannelCommands(channel, db, isClientMentioned, msg);
-        break;
-    }
+    processed = await handleCommands(client, channel, db, tempToken, isClientMentioned, msg);
 
     // if bot is mentioned but nothing processed, send a random message.
     (!processed && isClientMentioned) && await sendMessage(channel, contents);
