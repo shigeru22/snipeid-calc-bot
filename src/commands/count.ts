@@ -82,10 +82,10 @@ async function userLeaderboardsCount(client: Client, channel: TextChannel, db: P
   const user = await getDiscordUserByDiscordId(db, discordId);
 
   if(user.status !== DatabaseSuccess.OK) {
-    const serverData = await getServerByDiscordId(db, channel.id);
+    const serverData = await getServerByDiscordId(db, channel.guild.id);
 
     if(serverData.status !== DatabaseSuccess.OK) {
-      log(LogSeverity.WARN, "userLeaderboardsCount", "Someone asked for leaderboard count, but not in server.");
+      log(LogSeverity.WARN, "userLeaderboardsCount", "Someone asked for leaderboard count, but server not in database.");
       return;
     }
 
@@ -226,10 +226,10 @@ async function userLeaderboardsCount(client: Client, channel: TextChannel, db: P
  * @returns { Promise<void> } Promise object with no return value.
  */
 async function userWhatIfCount(client: Client, channel: TextChannel, db: Pool, osuToken: string, message: Message): Promise<void> {
-  const serverData = await getServerByDiscordId(db, channel.id);
+  const serverData = await getServerByDiscordId(db, channel.guild.id);
 
   if(serverData.status !== DatabaseSuccess.OK) {
-    log(LogSeverity.WARN, "userLeaderboardsCount", "Someone asked for leaderboard count, but not in server.");
+    log(LogSeverity.WARN, "userLeaderboardsCount", "Someone asked for leaderboard count, but server not in database.");
     return;
   }
 
