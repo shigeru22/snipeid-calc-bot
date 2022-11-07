@@ -2,6 +2,7 @@ import { Client, TextChannel, Message } from "discord.js";
 import { Pool } from "pg";
 import { getUserByOsuId } from "../api/osu";
 import { getTopCounts, getTopCountsFromRespektive } from "../api/osustats";
+import { getServerByDiscordId } from "../db/servers";
 import { getDiscordUserByDiscordId } from "../db/users";
 import { addWysiReaction } from "./reactions";
 import { updateUserData } from "./userdata";
@@ -79,11 +80,18 @@ async function userLeaderboardsCountFromBathbot(client: Client, channel: TextCha
  */
 async function userLeaderboardsCount(client: Client, channel: TextChannel, db: Pool, osuToken: string, discordId: string): Promise<void> {
   const user = await getDiscordUserByDiscordId(db, discordId);
+
   if(user.status !== DatabaseSuccess.OK) {
+    const serverData = await getServerByDiscordId(db, channel.id);
+
+    if(serverData.status !== DatabaseSuccess.OK) {
+      log(LogSeverity.WARN, "userLeaderboardsCount", "Someone asked for leaderboard count, but not in server.");
+      return;
+    }
+
     switch(user.status) {
       case DatabaseErrors.USER_NOT_FOUND:
-        // TODO: send message based on server configurations
-        await channel.send(`**Error:** You haven't linked your account. Link using \`${ client.user?.username } [osu! user ID]\`.`);
+        await channel.send(`**Error:** You haven't linked your account. Link using \`${ client.user?.username } [osu! user ID]\`${ serverData.data.verifyChannelId !== null ? ` in <#${ serverData.data.verifyChannelId }> channel` : "" }.`);
         break;
       case DatabaseErrors.CONNECTION_ERROR:
         await channel.send("**Error:** Database connection error occurred. Please contact bot administrator.");
@@ -218,6 +226,13 @@ async function userLeaderboardsCount(client: Client, channel: TextChannel, db: P
  * @returns { Promise<void> } Promise object with no return value.
  */
 async function userWhatIfCount(client: Client, channel: TextChannel, db: Pool, osuToken: string, message: Message): Promise<void> {
+  const serverData = await getServerByDiscordId(db, channel.id);
+
+  if(serverData.status !== DatabaseSuccess.OK) {
+    log(LogSeverity.WARN, "userLeaderboardsCount", "Someone asked for leaderboard count, but not in server.");
+    return;
+  }
+
   const commands = message.content.split(/\s+/g); // split by one or more spaces
   commands.splice(0, 2); // remove first two elements, which is the mentioned bot and the command itself
 
@@ -282,7 +297,7 @@ async function userWhatIfCount(client: Client, channel: TextChannel, db: Pool, o
   if(user.status !== DatabaseSuccess.OK) {
     switch(user.status) {
       case DatabaseErrors.USER_NOT_FOUND:
-        await channel.send("**Error:** How you've been here? You haven't linked your account.");
+        await channel.send(`**Error:** You haven't linked your account. Link using \`${ client.user?.username } [osu! user ID]\`${ serverData.data.verifyChannelId !== null ? ` in <#${ serverData.data.verifyChannelId }> channel` : "" }.`);
         break;
       case DatabaseErrors.CONNECTION_ERROR:
         await channel.send("**Error:** Database connection error occurred. Please contact bot administrator.");
