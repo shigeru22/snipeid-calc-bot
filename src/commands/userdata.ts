@@ -60,7 +60,7 @@ async function updateUserData(osuToken: string, client: Client, channel: TextCha
     switch(assignmentResult.status) {
       case DatabaseErrors.USER_NOT_FOUND: break;
       case DatabaseErrors.ROLES_EMPTY:
-        await channel.send("**Error:** No roles defined for this server.");
+        // await channel.send("**Error:** No roles defined for this server.");
         break;
       default:
         await channel.send("**Error:** Data update error occurred. Please contact bot administrator.");

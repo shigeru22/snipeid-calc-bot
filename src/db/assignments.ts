@@ -276,7 +276,7 @@ async function insertOrUpdateAssignment(db: Pool, serverDiscordId: string, osuId
 
       switch(currentRoleResult.status) {
         case DatabaseErrors.NO_RECORD:
-          log(LogSeverity.ERROR, "insertOrUpdateAssignment", "Role table is empty.");
+          log(LogSeverity.WARN, "insertOrUpdateAssignment", "Role table is empty.");
           return {
             status: DatabaseErrors.ROLES_EMPTY
           };
