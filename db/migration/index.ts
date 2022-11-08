@@ -34,6 +34,7 @@ async function main() {
   let serversTableExists = false;
   let assignmentsServerIdExists = false;
   let rolesServerIdExists = false;
+  let usersCountryExists = false;
 
   // database column check
   {
@@ -42,6 +43,7 @@ async function main() {
     const serverTableData = await getColumnNames(db, "servers");
     const assignmentTableData = await getColumnNames(db, "assignments");
     const rolesTableData = await getColumnNames(db, "roles");
+    const usersTableData = await getColumnNames(db, "users");
 
     if(serverTableData.status !== DatabaseSuccess.OK) {
       let exit = true;
@@ -99,6 +101,22 @@ async function main() {
       process.exit(1);
     }
 
+    if(usersTableData.status !== DatabaseSuccess.OK) {
+      switch(usersTableData.status) {
+        case DatabaseErrors.NO_RECORD:
+          log(LogSeverity.ERROR, "main", "Users table doesn't exist. Initialize the database with this command:\n  npm run init-db\n");
+          break;
+        case DatabaseErrors.CONNECTION_ERROR:
+          log(LogSeverity.ERROR, "main", "Database connection error. Check database connectivity and try again.");
+          break;
+        case DatabaseErrors.CLIENT_ERROR:
+          log(LogSeverity.ERROR, "main", "Client error detected. See previous logs for details.");
+          break;
+      }
+
+      process.exit(1);
+    }
+
     if(assignmentTableData.data.findIndex(column => column.columnName === "serverid") >= 0) {
       log(LogSeverity.LOG, "main", "Assignments table columns are up-to-date.");
       assignmentsServerIdExists = true;
@@ -108,9 +126,14 @@ async function main() {
       log(LogSeverity.LOG, "main", "Roles table columns are up-to-date.");
       rolesServerIdExists = true;
     }
+
+    if(usersTableData.data.findIndex(column => column.columnName === "country") >= 0) {
+      log(LogSeverity.LOG, "main", "Roles table columns are up-to-date.");
+      usersCountryExists = true;
+    }
   }
 
-  if(serversTableExists && assignmentsServerIdExists && rolesServerIdExists) {
+  if(serversTableExists && assignmentsServerIdExists && rolesServerIdExists && usersCountryExists) {
     log(LogSeverity.LOG, "main", "There is nothing to do. Exiting.");
     process.exit(0);
   }
@@ -146,8 +169,17 @@ async function main() {
     }
   }
 
+  if(!usersCountryExists) {
+    log(LogSeverity.LOG, "main", "Updating users table...");
+
+    const result = await addColumnToTable(db, "users", "country", `VARCHAR(2) NOT NULL DEFAULT '${ process.env.COUNTRY_CODE }'`);
+    if(result.status !== DatabaseSuccess.OK) {
+      process.exit(1);
+    }
+  }
+
   {
-    log(LogSeverity.LOG, "main", "Resetting server ID column defaults...");
+    log(LogSeverity.LOG, "main", "Resetting column defaults...");
 
     if(!assignmentsServerIdExists) {
       const result = await alterTableColumn(db, "assignments", "serverId", "DROP DEFAULT");
@@ -158,6 +190,13 @@ async function main() {
 
     if(!rolesServerIdExists) {
       const result = await alterTableColumn(db, "roles", "serverId", "DROP DEFAULT");
+      if(result.status !== DatabaseSuccess.OK) {
+        process.exit(1);
+      }
+    }
+
+    if(!usersCountryExists) {
+      const result = await alterTableColumn(db, "users", "country", "DROP DEFAULT");
       if(result.status !== DatabaseSuccess.OK) {
         process.exit(1);
       }

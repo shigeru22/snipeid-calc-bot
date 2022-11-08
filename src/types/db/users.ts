@@ -5,6 +5,7 @@ interface IDBServerUserQueryData {
   userid: number;
   discordid: string;
   osuid: number;
+  country: string;
 }
 
 /**
@@ -14,6 +15,7 @@ interface IDBServerUserData {
   userId: number;
   discordId: string;
   osuId: number;
+  country: string;
 }
 
 export { IDBServerUserQueryData, IDBServerUserData };

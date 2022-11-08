@@ -15,7 +15,7 @@ interface IOsuApiUserData {
   status: OsuUserStatus;
   user?: {
     userName: string;
-    isCountryCodeAllowed?: boolean;
+    country: string;
   };
 }
 

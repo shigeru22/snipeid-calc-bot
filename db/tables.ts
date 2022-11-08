@@ -49,7 +49,8 @@ class Tables {
         userId SERIAL PRIMARY KEY,
         discordId VARCHAR(255) NOT NULL,
         osuId INTEGER NOT NULL,
-        userName VARCHAR(255) NOT NULL
+        userName VARCHAR(255) NOT NULL,
+        country VARCHAR(2) NOT NULL
       )
     `;
 

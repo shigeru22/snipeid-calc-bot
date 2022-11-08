@@ -176,7 +176,7 @@ async function getUserByOsuId(token: string, id: number): Promise<OsuApiResponse
         status: OsuUserStatus.USER,
         user: {
           userName: response.data.username,
-          isCountryCodeAllowed: response.data.country_code === process.env.COUNTRY_CODE
+          country: response.data.country_code
         }
       }
     };

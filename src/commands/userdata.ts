@@ -55,7 +55,7 @@ async function updateUserData(osuToken: string, client: Client, channel: TextCha
     }
   }
 
-  const assignmentResult = await insertOrUpdateAssignment(db, channel.guildId, typeof(osuId) === "number" ? osuId : parseInt(osuId, 10), osuUser.data.user.userName, points);
+  const assignmentResult = await insertOrUpdateAssignment(db, channel.guildId, typeof(osuId) === "number" ? osuId : parseInt(osuId, 10), osuUser.data.user.userName, osuUser.data.user.country, points);
   if(assignmentResult.status !== DatabaseSuccess.OK) {
     switch(assignmentResult.status) {
       case DatabaseErrors.USER_NOT_FOUND: break;
@@ -248,7 +248,7 @@ async function fetchOsuUser(channel: TextChannel, token: string, osuId: number |
   return {
     status: osuUser.data.status,
     userName: osuUser.data.user.userName,
-    isCountryCodeAllowed: osuUser.data.user.isCountryCodeAllowed !== undefined ? osuUser.data.user.isCountryCodeAllowed : true // TODO: check for global usages
+    country: osuUser.data.user.country
   };
 }
 
@@ -317,17 +317,19 @@ async function fetchOsuStats(channel: TextChannel, osuUsername: string): Promise
  * @param { string } discordId Discord ID of the user.
  * @param { number | string } osuId osu! user ID.
  * @param { string } osuUsername osu! username.
+ * @param { string } countryCode Country code.
  *
  * @returns { Promise<boolean> } Promise object with `true` if user was linked, or `false` in case of errors.
  */
-async function insertUserData(channel: TextChannel, db: Pool, discordId: string, osuId: number | string, osuUsername: string): Promise<boolean> {
+async function insertUserData(channel: TextChannel, db: Pool, discordId: string, osuId: number | string, osuUsername: string, countryCode: string): Promise<boolean> {
   log(LogSeverity.DEBUG, "insertUserData", `Inserting user data for osu! ID ${ osuId } to Discord user ID ${ discordId }.`);
 
   const result = await insertUser(
     db,
     discordId,
     typeof(osuId) === "number" ? osuId : parseInt(osuId, 10),
-    osuUsername
+    osuUsername,
+    countryCode
   );
 
   if(result.status !== DatabaseSuccess.OK) {

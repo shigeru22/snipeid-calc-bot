@@ -1,7 +1,7 @@
 import { TextChannel } from "discord.js";
 import { Pool } from "pg";
 import { LogSeverity, log } from "../utils/log";
-import { getAllAssignments, getLastAssignmentUpdate } from "../db/assignments";
+import { getAllAssignments, getAllAssignmentsByCountry, getLastAssignmentUpdate } from "../db/assignments";
 import { getServerByDiscordId, isLeaderboardChannel } from "../db/servers";
 import { AssignmentSort, DatabaseErrors, DatabaseSuccess } from "../utils/common";
 import { createLeaderboardEmbed } from "../messages/leaderboard";
@@ -35,7 +35,8 @@ async function sendPointLeaderboard(channel: TextChannel, db: Pool): Promise<voi
 
   log(LogSeverity.LOG, "sendPointLeaderboard", "Retrieving leaderboard data.");
 
-  const rankings = await getAllAssignments(db, channel.guildId, AssignmentSort.POINTS, true);
+  const rankings = serverData.data.country === null ? await getAllAssignments(db, channel.guild.id, AssignmentSort.POINTS, true) : await getAllAssignmentsByCountry(db, channel.guild.id, serverData.data.country, AssignmentSort.POINTS, true);
+
   if(rankings.status !== DatabaseSuccess.OK) {
     switch(rankings.status) { // rankings is number, or DatabaseErrors constant
       case DatabaseErrors.CONNECTION_ERROR:

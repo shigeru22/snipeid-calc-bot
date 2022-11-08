@@ -1,8 +1,10 @@
 import { Client, TextChannel, Message } from "discord.js";
 import { Pool } from "pg";
+import { getServerByDiscordId } from "../db/servers";
 import { insertUserData, fetchOsuUser } from "./userdata";
 import { addRole } from "./roles";
 import { LogSeverity, log } from "../utils/log";
+import { DatabaseSuccess } from "../utils/common";
 
 /**
  * Verifies the user and inserts their data into the database.
@@ -16,6 +18,12 @@ import { LogSeverity, log } from "../utils/log";
  * @returns { Promise<void> } Promise object with no return value.
  */
 async function verifyUser(client: Client, channel: TextChannel, db: Pool, osuToken: string, message: Message): Promise<void> {
+  const serverData = await getServerByDiscordId(db, channel.guild.id);
+
+  if(serverData.status !== DatabaseSuccess.OK) {
+    log(LogSeverity.WARN, "userLeaderboardsCount", "Someone asked for leaderboard count, but server not in database.");
+    return;
+  }
   const contents = message.content.split(/\s+/g); // split by one or more spaces
 
   if(typeof(contents[2]) !== "string") {
@@ -40,12 +48,12 @@ async function verifyUser(client: Client, channel: TextChannel, db: Pool, osuTok
     return;
   }
 
-  if(!osuUser.isCountryCodeAllowed) {
+  if(osuUser.country !== serverData.data.country) {
     await channel.send("**Error:** Wrong country code from osu! profile. Please contact server moderators.");
     return;
   }
 
-  const result = await insertUserData(channel, db, message.author.id, osuId, osuUser.userName);
+  const result = await insertUserData(channel, db, message.author.id, osuId, osuUser.userName, osuUser.country);
   if(!result) {
     return;
   }

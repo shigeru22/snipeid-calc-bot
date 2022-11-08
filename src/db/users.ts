@@ -7,7 +7,7 @@ import { IDBServerUserData, IDBServerUserQueryData } from "../types/db/users";
 /**
  * Gets Discord user by osu! ID from the database.
  *
- * @param { Pool } d Database connection pool.
+ * @param { Pool } db Database connection pool.
  * @param { number } osuId osu! user ID.
  *
  * @returns { Promise<DBResponseBase<IDBServerUserData> | DBResponseBase<DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with user data.
@@ -46,7 +46,8 @@ async function getDiscordUserByOsuId(db: Pool, osuId: number): Promise<DBRespons
       data: {
         userId: discordUserResult.rows[0].userid,
         discordId: discordUserResult.rows[0].discordid,
-        osuId: discordUserResult.rows[0].osuid
+        osuId: discordUserResult.rows[0].osuid,
+        country: discordUserResult.rows[0].country
       }
     };
   }
@@ -109,7 +110,8 @@ async function getDiscordUserByDiscordId(db: Pool, discordId: string): Promise<D
       data: {
         userId: result.rows[0].userid,
         discordId: result.rows[0].discordid,
-        osuId: result.rows[0].osuid
+        osuId: result.rows[0].osuid,
+        country: result.rows[0].country
       }
     };
   }
@@ -145,15 +147,17 @@ async function getDiscordUserByDiscordId(db: Pool, discordId: string): Promise<D
  * @param { string } discordId Discord ID of the user.
  * @param { number } osuId osu! user ID.
  * @param { string } userName osu! username.
+ * @param { string } country Country code.
  *
  * @returns { Promise<DBResponseBase<true> | DBResponseBase<DatabaseErrors.DUPLICATED_DISCORD_ID | DatabaseErrors.DUPLICATED_OSU_ID | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with `true` if inserted successfully. Returns `DatabaseErrors` enum otherwise.
  */
-async function insertUser(db: Pool, discordId: string, osuId: number, userName: string): Promise<DBResponseBase<true> | DBResponseBase<DatabaseErrors.DUPLICATED_DISCORD_ID | DatabaseErrors.DUPLICATED_OSU_ID | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+async function insertUser(db: Pool, discordId: string, osuId: number, userName: string, country: string): Promise<DBResponseBase<true> | DBResponseBase<DatabaseErrors.DUPLICATED_DISCORD_ID | DatabaseErrors.DUPLICATED_OSU_ID | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
   const selectDiscordIdQuery = `
     SELECT
       users."userid",
       users."discordid",
-      users."osuid"
+      users."osuid",
+      users."country"
     FROM
       users
     WHERE
@@ -165,7 +169,8 @@ async function insertUser(db: Pool, discordId: string, osuId: number, userName: 
     SELECT
       users."userid",
       users."discordid",
-      users."osuid"
+      users."osuid",
+      users."country"
     FROM
       users
     WHERE
@@ -174,10 +179,10 @@ async function insertUser(db: Pool, discordId: string, osuId: number, userName: 
   const selectOsuIdValues = [ osuId ];
 
   const insertQuery = `
-    INSERT INTO users (discordId, osuId, userName)
-      VALUES ($1, $2, $3)
+    INSERT INTO users (discordId, osuId, userName, country)
+      VALUES ($1, $2, $3, $4)
   `;
-  const insertValues = [ discordId, osuId, userName ];
+  const insertValues = [ discordId, osuId, userName, country ];
 
   try {
     const client = await db.connect();
@@ -241,25 +246,36 @@ async function insertUser(db: Pool, discordId: string, osuId: number, userName: 
 }
 
 /**
- * Updates user in the database (username only).
+ * Updates user in the database.
  *
  * @param { Pool } db Database connection pool.
  * @param { number } osuId osu! user ID.
- * @param { string } userName osu! username.
+ * @param { string | null } userName osu! username.
+ * @param { string | null } country Country code.
  *
  * @returns { Promise<DatabaseErrors.OK | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR> } Promise object with `true` if updated successfully. Returns `DatabaseErrors` enum otherwise.
  */
-async function updateUser(db: Pool, osuId: number, userName: string): Promise<DBResponseBase<true> | DBResponseBase<DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+async function updateUser(db: Pool, osuId: number, userName: string | null, country: string | null): Promise<DBResponseBase<true> | DBResponseBase<DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
   /* only username should be updateable, since that changes are from osu! API */
 
   const updateQuery = `
     UPDATE
       users
     SET
-      users."username" = $1,
-      users."osuid" = $2
+      ${ userName !== null ? "users.\"username\" = $1" : "" }${ userName !== null && country !== null ? "," : "" }
+      ${ country !== null ? `users."country" = ${ userName !== null ? "$2" : "$1" }` : "" }
+    WHERE
+      users."osuid" = ${ userName !== null && country !== null ? "$3" : "$2" }
   `;
-  const updateValues = [ userName, osuId ];
+  const updateValues: (string | number)[] = [ osuId ];
+
+  if(country !== null) {
+    updateValues.unshift(country);
+  }
+
+  if(userName !== null) {
+    updateValues.unshift(userName);
+  }
 
   try {
     await db.query(updateQuery, updateValues);

@@ -6,7 +6,7 @@ import { OsuUserStatus } from "../../utils/common";
 interface IOsuUserData {
   status: OsuUserStatus.USER;
   userName: string;
-  isCountryCodeAllowed: boolean;
+  country: string;
 }
 
 export { IOsuUserData };
