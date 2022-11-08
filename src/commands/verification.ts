@@ -21,9 +21,10 @@ async function verifyUser(client: Client, channel: TextChannel, db: Pool, osuTok
   const serverData = await getServerByDiscordId(db, channel.guild.id);
 
   if(serverData.status !== DatabaseSuccess.OK) {
-    log(LogSeverity.WARN, "userLeaderboardsCount", "Someone asked for leaderboard count, but server not in database.");
+    log(LogSeverity.WARN, "verifyUser", "Someone asked for user verification, but server not in database.");
     return;
   }
+
   const contents = message.content.split(/\s+/g); // split by one or more spaces
 
   if(typeof(contents[2]) !== "string") {
@@ -58,12 +59,14 @@ async function verifyUser(client: Client, channel: TextChannel, db: Pool, osuTok
     return;
   }
 
-  if(typeof(process.env.VERIFIED_ROLE_ID) !== "string" || process.env.VERIFIED_ROLE_ID === "") {
-    log(LogSeverity.LOG, "onNewMessage", "VERIFIED_ROLE_ID not set. Role granting skipped.");
+  if(serverData.data.verifiedRoleId === null) {
+    log(LogSeverity.LOG, "verifyUser", `${ serverData.data.discordId }: Server's verifiedRoleId not set. Role granting skipped.`);
     return;
   }
 
-  await addRole(client, channel, message.author.id, process.env.SERVER_ID as string, process.env.VERIFIED_ROLE_ID);
+  await channel.send(`Linked Discord user <@${ message.author.id }> to osu! user **${ osuUser.userName }**`);
+
+  await addRole(client, channel, message.author.id, channel.guild.id, serverData.data.verifiedRoleId);
   return;
 }
 

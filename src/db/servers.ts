@@ -116,7 +116,7 @@ async function getServerByDiscordId(db: Pool, serverDiscordId: string): Promise<
       data: {
         serverId: result.rows[0].serverid,
         discordId: result.rows[0].discordid,
-        country: result.rows[0].country,
+        country: result.rows[0].country !== null ? result.rows[0].country.toUpperCase() : null,
         verifyChannelId: result.rows[0].verifychannelid,
         verifiedRoleId: result.rows[0].verifiedroleid,
         commandsChannelId: result.rows[0].commandschannelid,
