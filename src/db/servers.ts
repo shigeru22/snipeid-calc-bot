@@ -183,6 +183,8 @@ async function insertServer(db: Pool, serverDiscordId: string): Promise<DBRespon
     }
 
     await db.query(insertQuery, insertValues);
+
+    log(LogSeverity.LOG, "insertServer", "servers: Inserted 1 row.");
     return {
       status: DatabaseSuccess.OK,
       data: true
@@ -213,4 +215,172 @@ async function insertServer(db: Pool, serverDiscordId: string): Promise<DBRespon
   }
 }
 
-export { getAllServers, getServerByDiscordId, insertServer };
+async function setServerCountry(db: Pool, serverDiscordId: string, countryCode: string | null): Promise<DBResponseBase<true> | DBResponseBase<DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  const updateQuery = `
+    UPDATE servers
+    SET country = ${ countryCode !== null ? "$1" : "NULL" }
+    WHERE discordId = ${ countryCode !== null ? "$2" : "$1" }
+  `;
+  const updateValues = countryCode !== null ? [ countryCode, serverDiscordId ] : [ serverDiscordId ];
+
+  try {
+    await db.query(updateQuery, updateValues);
+
+    log(LogSeverity.LOG, "setServerCountry", "servers: Updated 1 row.");
+    return {
+      status: DatabaseSuccess.OK,
+      data: true
+    };
+  }
+  catch (e) {
+    if(e instanceof DatabaseError) {
+      switch(e.code) {
+        case "ECONNREFUSED":
+          log(LogSeverity.ERROR, "setServerCountry", "Database connection failed.");
+          return {
+            status: DatabaseErrors.CONNECTION_ERROR
+          };
+        default:
+          log(LogSeverity.ERROR, "setServerCountry", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+      }
+    }
+    else if(e instanceof Error) {
+      log(LogSeverity.ERROR, "setServerCountry", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+    }
+    else {
+      log(LogSeverity.ERROR, "setServerCountry", "Unknown error occurred.");
+    }
+
+    return {
+      status: DatabaseErrors.CLIENT_ERROR
+    };
+  }
+}
+
+async function setVerifiedRoleId(db: Pool, serverDiscordId: string, verifiedRoleId: string | null) {
+  const updateQuery = `
+    UPDATE servers
+    SET verifiedRoleId = ${ verifiedRoleId !== null ? "$1" : "NULL" }
+    WHERE discordId = ${ verifiedRoleId !== null ? "$2" : "$1" }
+  `;
+  const updateValues = verifiedRoleId !== null ? [ verifiedRoleId, serverDiscordId ] : [ serverDiscordId ];
+
+  try {
+    await db.query(updateQuery, updateValues);
+
+    log(LogSeverity.LOG, "setVerifiedRoleId", "servers: Updated 1 row.");
+    return {
+      status: DatabaseSuccess.OK,
+      data: true
+    };
+  }
+  catch (e) {
+    if(e instanceof DatabaseError) {
+      switch(e.code) {
+        case "ECONNREFUSED":
+          log(LogSeverity.ERROR, "setVerifiedRoleId", "Database connection failed.");
+          return {
+            status: DatabaseErrors.CONNECTION_ERROR
+          };
+        default:
+          log(LogSeverity.ERROR, "setVerifiedRoleId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+      }
+    }
+    else if(e instanceof Error) {
+      log(LogSeverity.ERROR, "setVerifiedRoleId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+    }
+    else {
+      log(LogSeverity.ERROR, "setVerifiedRoleId", "Unknown error occurred.");
+    }
+
+    return {
+      status: DatabaseErrors.CLIENT_ERROR
+    };
+  }
+}
+
+async function setCommandsChannelId(db: Pool, serverDiscordId: string, commandsChannelId: string | null): Promise<DBResponseBase<true> | DBResponseBase<DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  const updateQuery = `
+    UPDATE servers
+    SET commandsChannelId = ${ commandsChannelId !== null ? "$1" : "NULL" }
+    WHERE discordId = ${ commandsChannelId !== null ? "$2" : "$1" }
+  `;
+  const updateValues = commandsChannelId !== null ? [ commandsChannelId, serverDiscordId ] : [ serverDiscordId ];
+
+  try {
+    await db.query(updateQuery, updateValues);
+
+    log(LogSeverity.LOG, "setServerCountry", "servers: Updated 1 row.");
+    return {
+      status: DatabaseSuccess.OK,
+      data: true
+    };
+  }
+  catch (e) {
+    if(e instanceof DatabaseError) {
+      switch(e.code) {
+        case "ECONNREFUSED":
+          log(LogSeverity.ERROR, "setCommandsChannelId", "Database connection failed.");
+          return {
+            status: DatabaseErrors.CONNECTION_ERROR
+          };
+        default:
+          log(LogSeverity.ERROR, "setCommandsChannelId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+      }
+    }
+    else if(e instanceof Error) {
+      log(LogSeverity.ERROR, "setCommandsChannelId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+    }
+    else {
+      log(LogSeverity.ERROR, "setCommandsChannelId", "Unknown error occurred.");
+    }
+
+    return {
+      status: DatabaseErrors.CLIENT_ERROR
+    };
+  }
+}
+
+async function setLeaderboardsChannelId(db: Pool, serverDiscordId: string, leaderboardsChannelId: string | null): Promise<DBResponseBase<true> | DBResponseBase<DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  const updateQuery = `
+    UPDATE servers
+    SET leaderboardsChannelId = ${ leaderboardsChannelId !== null ? "$1" : "NULL" }
+    WHERE discordId = ${ leaderboardsChannelId !== null ? "$2" : "$1" }
+  `;
+  const updateValues = leaderboardsChannelId !== null ? [ leaderboardsChannelId, serverDiscordId ] : [ serverDiscordId ];
+
+  try {
+    await db.query(updateQuery, updateValues);
+
+    log(LogSeverity.LOG, "setLeaderboardsChannelId", "servers: Updated 1 row.");
+    return {
+      status: DatabaseSuccess.OK,
+      data: true
+    };
+  }
+  catch (e) {
+    if(e instanceof DatabaseError) {
+      switch(e.code) {
+        case "ECONNREFUSED":
+          log(LogSeverity.ERROR, "setLeaderboardsChannelId", "Database connection failed.");
+          return {
+            status: DatabaseErrors.CONNECTION_ERROR
+          };
+        default:
+          log(LogSeverity.ERROR, "setLeaderboardsChannelId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+      }
+    }
+    else if(e instanceof Error) {
+      log(LogSeverity.ERROR, "setLeaderboardsChannelId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+    }
+    else {
+      log(LogSeverity.ERROR, "setLeaderboardsChannelId", "Unknown error occurred.");
+    }
+
+    return {
+      status: DatabaseErrors.CLIENT_ERROR
+    };
+  }
+}
+
+export { getAllServers, getServerByDiscordId, insertServer, setServerCountry, setVerifiedRoleId, setCommandsChannelId, setLeaderboardsChannelId };

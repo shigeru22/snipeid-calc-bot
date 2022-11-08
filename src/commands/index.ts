@@ -3,6 +3,7 @@ import { Pool } from "pg";
 import { sendPointLeaderboard } from "./leaderboards";
 import { userLeaderboardsCountFromBathbot, userLeaderboardsCount, userWhatIfCount } from "./count";
 import { verifyUser } from "./verification";
+import { handleConfigCommands } from "./config";
 
 // Bathbot ID
 const BATHBOT_USER_ID = "297073686916366336";
@@ -46,6 +47,10 @@ async function handleCommands(client: Client, channel: TextChannel, db: Pool, os
       case "lb": // fallthrough
       case "leaderboard":
         await sendPointLeaderboard(channel, db);
+        ret = true;
+        break;
+      case "config":
+        await handleConfigCommands(client, channel, db, message);
         ret = true;
         break;
     }
