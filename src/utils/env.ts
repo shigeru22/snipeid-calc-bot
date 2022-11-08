@@ -18,14 +18,6 @@ function validateEnvironmentVariables() {
     return false;
   }
 
-  if(typeof(process.env.SERVER_ID) === "string" && process.env.SERVER_ID !== "") {
-    // verify role ID if server ID is defined
-    if(typeof(process.env.VERIFIED_ROLE_ID) !== "string" || !process.env.VERIFIED_ROLE_ID) {
-      log(LogSeverity.ERROR, "validateEnvironmentVariables", "If SERVER_ID is defined, VERIFIED_ROLE_ID must be defined in environment variables. Exiting.");
-      return false;
-    }
-  }
-
   if(typeof(process.env.OSU_CLIENT_ID) !== "string" || !process.env.OSU_CLIENT_ID) {
     log(LogSeverity.ERROR, "validateEnvironmentVariables", "OSU_CLIENT_ID must be defined in environment variables. Exiting.");
     return false;

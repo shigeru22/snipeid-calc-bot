@@ -9,6 +9,7 @@ import { DatabaseErrors, AssignmentType, OsuUserStatus, OsuApiSuccessStatus, Osu
 import { deltaTimeToString } from "../utils/time";
 import { IDBServerUserData } from "../types/db/users";
 import { IOsuUserData } from "../types/commands/userdata";
+import { getServerByDiscordId } from "../db/servers";
 
 /**
  * Updates user data in the database and assigns roles based on points received.
@@ -23,6 +24,13 @@ import { IOsuUserData } from "../types/commands/userdata";
  * @returns { Promise<void> } Promise object with no return value.
  */
 async function updateUserData(osuToken: string, client: Client, channel: TextChannel, db: Pool, osuId: number | string, points: number): Promise<void> {
+  const serverData = await getServerByDiscordId(db, channel.guild.id);
+
+  if(serverData.status !== DatabaseSuccess.OK) {
+    log(LogSeverity.WARN, "updateUserData", "Someone asked for user data update, but server not in database.");
+    return;
+  }
+
   log(LogSeverity.DEBUG, "updateUserData", `Updating user data for osu! ID ${ osuId }.`);
 
   const osuUser = await getUserByOsuId(osuToken, typeof(osuId) === "number" ? osuId : parseInt(osuId, 10));
@@ -101,7 +109,7 @@ async function updateUserData(osuToken: string, client: Client, channel: TextCha
       return;
     }
 
-    const server = await client.guilds.fetch(process.env.SERVER_ID as string);
+    const server = await client.guilds.fetch(serverData.data.discordId as string);
     const member = await server.members.fetch(assignmentResult.data.discordId);
     let updated = false;
     let warned = false;
@@ -115,7 +123,7 @@ async function updateUserData(osuToken: string, client: Client, channel: TextCha
             if(oldRole === null) {
               // TODO: handle role re-addition after failed on next query
 
-              log(LogSeverity.WARN, "updateUserData", `Role with ID ${ assignmentResult.data.role.oldRoleId } from server with ID ${ process.env.SERVER_ID } (${ server.name }) can't be found. Informing server channel.`);
+              log(LogSeverity.WARN, "updateUserData", `Role with ID ${ assignmentResult.data.role.oldRoleId } from server with ID ${ serverData.data.discordId } (${ server.name }) can't be found. Informing server channel.`);
               await channel.send("**Note:** Roles might have been changed. Check configurations for this server.");
 
               warned = true;
@@ -141,7 +149,7 @@ async function updateUserData(osuToken: string, client: Client, channel: TextCha
           const newRole = await server.roles.fetch(assignmentResult.data.role.newRoleId);
 
           if(newRole === null) {
-            log(LogSeverity.WARN, "updateUserData", `Role with ID ${ assignmentResult.data.role.oldRoleId } from server with ID ${ process.env.SERVER_ID } (${ server.name }) can't be found. Informing server channel.`);
+            log(LogSeverity.WARN, "updateUserData", `Role with ID ${ assignmentResult.data.role.oldRoleId } from server with ID ${ serverData.data.serverId } (${ server.name }) can't be found. Informing server channel.`);
 
             if(!warned) {
               await channel.send("**Note:** Roles might have been changed. Check configurations for this server.");
