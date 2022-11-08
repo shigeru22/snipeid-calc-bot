@@ -1,12 +1,13 @@
 import dotenv from "dotenv";
 import fs from "fs";
-import { Client, Guild, Message } from "discord.js";
+import { Client, Guild, GuildMember, Message } from "discord.js";
 import { Pool, PoolConfig } from "pg";
 import { createInterface } from "readline";
 import { OsuToken } from "./api/osu-token";
 import { insertServer } from "./db/servers";
 import { handleCommands } from "./commands";
 import { sendMessage } from "./commands/conversations";
+import { reassignRole } from "./commands/roles";
 import { DatabaseErrors } from "./utils/common";
 import { validateEnvironmentVariables } from "./utils/env";
 import { LogSeverity, log } from "./utils/log";
@@ -60,6 +61,7 @@ client.on("ready", async () => await onStartup());
 client.on("messageCreate", async (msg: Message) => await onNewMessage(msg));
 client.on("guildCreate", async (guild: Guild) => await onJoinGuild(guild));
 client.on("guildDelete", (guild: Guild) => onLeaveGuild(guild));
+client.on("guildMemberAdd", async (member: GuildMember) => await onMemberJoinGuild(member));
 
 /**
  * Startup event function.
@@ -171,6 +173,11 @@ async function onJoinGuild(guild: Guild) {
  */
 function onLeaveGuild(guild: Guild) {
   log(LogSeverity.LOG, "onJoinGuild", `Left server with ID ${ guild.id } (${ guild.name }).`);
+}
+
+async function onMemberJoinGuild(member: GuildMember) {
+  log(LogSeverity.LOG, "onMemberJoin", `${ member.user.username }#${ member.user.discriminator } joined server ID ${ member.guild.id } (${ member.guild.name })`);
+  await reassignRole(db, member); // TODO: test usage
 }
 
 /**

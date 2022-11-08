@@ -86,6 +86,84 @@ async function getAssignmentByOsuId(db: Pool, serverDiscordId: string, osuId: nu
 }
 
 /**
+ * Queries specific server's user assignment data.
+ *
+ * @param { Pool } db Database connection pool client.
+ * @param { string } serverDiscordId Server snowflake ID.
+ * @param { string } discordId Discord user ID.
+ *
+ * @returns { Promise<DBResponseBase<IDBServerRoleData> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> }> } Promise object with queried user data.
+ */
+async function getAssignmentRoleDataByDiscordId(db: Pool, serverDiscordId: string, discordId: string): Promise<DBResponseBase<IDBServerRoleData> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  const selectQuery = `
+    SELECT
+      roles."roleid",
+      roles."discordid",
+      roles."rolename",
+      roles."minpoints"
+    FROM
+      roles
+    JOIN
+      assignments ON assignments."roleid" = roles."roleid"
+    JOIN
+      users ON assignments."userid" = users."userid"
+    JOIN
+      servers ON assignments."serverid" = servers."serverid"
+    WHERE
+      users."discordid" = $1 AND servers."discordid" = $2
+  `;
+  const selectValues = [ discordId, serverDiscordId ];
+
+  try {
+    const result = await db.query<IDBServerRoleQueryData>(selectQuery, selectValues);
+
+    if(result.rows.length <= 0) {
+      return {
+        status: DatabaseErrors.NO_RECORD
+      };
+    }
+    else if(result.rows.length > 1) {
+      return {
+        status: DatabaseErrors.DUPLICATED_RECORD
+      };
+    }
+
+    return {
+      status: DatabaseSuccess.OK,
+      data: {
+        roleId: result.rows[0].roleid,
+        discordId: result.rows[0].discordid,
+        roleName: result.rows[0].rolename,
+        minPoints: result.rows[0].minpoints
+      }
+    };
+  }
+  catch (e) {
+    if(e instanceof DatabaseError) {
+      switch(e.code) {
+        case "ECONNREFUSED":
+          log(LogSeverity.ERROR, "getAssignmentRoleDataByDiscordId", "Database connection failed.");
+          return {
+            status: DatabaseErrors.CONNECTION_ERROR
+          };
+        default:
+          log(LogSeverity.ERROR, "getAssignmentRoleDataByDiscordId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+      }
+    }
+    else if(e instanceof Error) {
+      log(LogSeverity.ERROR, "getAssignmentRoleDataByDiscordId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+    }
+    else {
+      log(LogSeverity.ERROR, "getAssignmentRoleDataByDiscordId", "Unknown error occurred.");
+    }
+
+    return {
+      status: DatabaseErrors.CLIENT_ERROR
+    };
+  }
+}
+
+/**
  * Inserts or updates (if the user has already been inserted) assignment data in the database.
  *
  * @param { Pool } db Database connection pool.
@@ -648,4 +726,4 @@ async function deleteAssignmentById(client: PoolClient, assignmentId: number): P
   }
 }
 
-export { getAssignmentByOsuId, insertOrUpdateAssignment };
+export { getAssignmentByOsuId, getAssignmentRoleDataByDiscordId, insertOrUpdateAssignment };
