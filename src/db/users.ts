@@ -18,7 +18,8 @@ async function getAllUsers(db: Pool): Promise<DBResponseBase<IDBServerUserData[]
       users."discordid",
       users."osuid",
       users."points",
-      users."country"
+      users."country",
+      users."lastupdate"
     FROM
       users
   `;
@@ -38,7 +39,8 @@ async function getAllUsers(db: Pool): Promise<DBResponseBase<IDBServerUserData[]
         discordId: row.discordid,
         osuId: row.osuid,
         points: row.points,
-        country: row.country
+        country: row.country,
+        lastUpdate: row.lastupdate
       }))
     };
   }
@@ -82,7 +84,8 @@ async function getDiscordUserByOsuId(db: Pool, osuId: number): Promise<DBRespons
       users."discordid",
       users."osuid",
       users."points",
-      users."country"
+      users."country",
+      users."lastupdate"
     FROM
       users
     WHERE
@@ -113,7 +116,8 @@ async function getDiscordUserByOsuId(db: Pool, osuId: number): Promise<DBRespons
         discordId: discordUserResult.rows[0].discordid,
         osuId: discordUserResult.rows[0].osuid,
         points: discordUserResult.rows[0].points,
-        country: discordUserResult.rows[0].country
+        country: discordUserResult.rows[0].country,
+        lastUpdate: discordUserResult.rows[0].lastupdate
       }
     };
   }
@@ -157,7 +161,8 @@ async function getDiscordUserByDiscordId(db: Pool, discordId: string): Promise<D
       users."discordid",
       users."osuid",
       users."points",
-      users."country"
+      users."country",
+      users."lastupdate"
     FROM
       users
     WHERE
@@ -180,7 +185,8 @@ async function getDiscordUserByDiscordId(db: Pool, discordId: string): Promise<D
         discordId: result.rows[0].discordid,
         osuId: result.rows[0].osuid,
         points: result.rows[0].points,
-        country: result.rows[0].country
+        country: result.rows[0].country,
+        lastUpdate: result.rows[0].lastupdate
       }
     };
   }
@@ -349,6 +355,76 @@ async function getPointsLeaderboardByCountry(db: Pool, serverDiscordId: string, 
 }
 
 /**
+ * Gets last points update time.
+ *
+ * @param { Pool } db Database connection pool.
+ * @param { string } serverDiscordId Server snowflake ID.
+ *
+ * @returns { Promise<DBResponseBase<Date> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with last assignment update time.
+ */
+async function getLastPointUpdate(db: Pool, serverDiscordId: string): Promise<DBResponseBase<Date> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  const selectQuery = `
+    SELECT
+      users."lastupdate"
+    FROM
+      users
+    JOIN
+      assignments ON assignments."userid" = users."userid"
+    JOIN
+      servers ON assignments."serverid" = servers."serverid"
+    WHERE
+      servers."discordid" = $1
+    ORDER BY
+      users."lastupdate" DESC
+    LIMIT 1
+  `;
+  const selectValues = [ serverDiscordId ];
+
+  try {
+    const client = await db.connect();
+
+    const result = await client.query(selectQuery, selectValues);
+
+    if(typeof(result.rows[0]) === "undefined") {
+      client.release();
+      return {
+        status: DatabaseErrors.NO_RECORD
+      };
+    }
+
+    client.release();
+
+    return {
+      status: DatabaseSuccess.OK,
+      data: result.rows[0].lastupdate
+    };
+  }
+  catch (e) {
+    if(e instanceof DatabaseError) {
+      switch(e.code) {
+        case "ECONNREFUSED":
+          log(LogSeverity.ERROR, "getLastPointUpdate", "Database connection failed.");
+          return {
+            status: DatabaseErrors.CONNECTION_ERROR
+          };
+        default:
+          log(LogSeverity.ERROR, "getLastPointUpdate", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+      }
+    }
+    else if(e instanceof Error) {
+      log(LogSeverity.ERROR, "getLastPointUpdate", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+    }
+    else {
+      log(LogSeverity.ERROR, "getLastPointUpdate", "Unknown error occurred.");
+    }
+
+    return {
+      status: DatabaseErrors.CLIENT_ERROR
+    };
+  }
+}
+
+/**
  * Inserts user to the database.
  *
  * @param { Pool } db Database connection pool.
@@ -469,13 +545,14 @@ async function updateUser(db: Pool, osuId: number, points: number, userName: str
     UPDATE
       users
     SET
-      points = $1${ userName !== null || country !== null ? "," : "" }
-      ${ userName !== null ? "username = $2" : "" }${ userName !== null && country !== null ? "," : "" }
-      ${ country !== null ? `country = ${ userName !== null ? "$3" : "$2" }` : "" }
+      points = $1,
+      lastUpdate = $2${ userName !== null || country !== null ? "," : "" }
+      ${ userName !== null ? "username = $3" : "" }${ userName !== null && country !== null ? "," : "" }
+      ${ country !== null ? `country = ${ userName !== null ? "$4" : "$3" }` : "" }
     WHERE
-      osuid = ${ userName !== null && country !== null ? "$4" : (userName !== null || country !== null) ? "$3" : "$2" }
+      osuid = ${ userName !== null && country !== null ? "$5" : (userName !== null || country !== null) ? "$4" : "$3" }
   `;
-  const updateValues: (string | number)[] = [ osuId ];
+  const updateValues: (string | number | Date)[] = [ osuId ];
 
   if(country !== null) {
     updateValues.unshift(country);
@@ -485,7 +562,7 @@ async function updateUser(db: Pool, osuId: number, points: number, userName: str
     updateValues.unshift(userName);
   }
 
-  updateValues.unshift(points);
+  updateValues.unshift(points, new Date());
 
   try {
     await db.query(updateQuery, updateValues);
@@ -521,4 +598,4 @@ async function updateUser(db: Pool, osuId: number, points: number, userName: str
   }
 }
 
-export { getAllUsers, getDiscordUserByOsuId, getDiscordUserByDiscordId, getPointsLeaderboard, getPointsLeaderboardByCountry, insertUser, updateUser };
+export { getAllUsers, getDiscordUserByOsuId, getDiscordUserByDiscordId, getPointsLeaderboard, getPointsLeaderboardByCountry, getLastPointUpdate, insertUser, updateUser };

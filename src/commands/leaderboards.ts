@@ -1,11 +1,10 @@
 import { TextChannel } from "discord.js";
 import { Pool } from "pg";
 import { LogSeverity, log } from "../utils/log";
-import { getLastAssignmentUpdate } from "../db/assignments";
 import { getServerByDiscordId, isLeaderboardChannel } from "../db/servers";
 import { DatabaseErrors, DatabaseSuccess } from "../utils/common";
 import { createLeaderboardEmbed } from "../messages/leaderboard";
-import { getPointsLeaderboard, getPointsLeaderboardByCountry } from "../db/users";
+import { getLastPointUpdate, getPointsLeaderboard, getPointsLeaderboardByCountry } from "../db/users";
 
 /**
  * Sends top 50 leaderboard from the database to specified channel.
@@ -58,7 +57,7 @@ async function sendPointLeaderboard(channel: TextChannel, db: Pool): Promise<voi
 
   let lastUpdated = new Date();
   {
-    const lastUpdateQuery = await getLastAssignmentUpdate(db, channel.guildId);
+    const lastUpdateQuery = await getLastPointUpdate(db, channel.guildId);
 
     if(lastUpdateQuery.status !== DatabaseSuccess.OK) {
       switch(lastUpdateQuery.status) {

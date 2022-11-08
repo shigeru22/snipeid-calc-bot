@@ -56,8 +56,7 @@ async function getAssignmentByOsuId(db: Pool, serverDiscordId: string, osuId: nu
       data: {
         assignmentId: discordUserResult.rows[0].assignmentid,
         userName: discordUserResult.rows[0].username,
-        roleName: discordUserResult.rows[0].rolename,
-        lastUpdate: discordUserResult.rows[0].lastupdate
+        roleName: discordUserResult.rows[0].rolename
       }
     };
   }
@@ -78,74 +77,6 @@ async function getAssignmentByOsuId(db: Pool, serverDiscordId: string, osuId: nu
     }
     else {
       log(LogSeverity.ERROR, "getAssignmentByOsuId", "Unknown error occurred.");
-    }
-
-    return {
-      status: DatabaseErrors.CLIENT_ERROR
-    };
-  }
-}
-
-/**
- * Gets last assignment update time.
- *
- * @param { Pool } db Database connection pool.
- * @param { string } serverDiscordId Server snowflake ID.
- *
- * @returns { Promise<DBResponseBase<Date> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with last assignment update time.
- */
-async function getLastAssignmentUpdate(db: Pool, serverDiscordId: string): Promise<DBResponseBase<Date> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
-  const selectQuery = `
-    SELECT
-      assignments."lastupdate"
-    FROM
-      assignments
-    JOIN
-      servers ON assignments."serverid" = servers."serverid"
-    WHERE
-      servers."discordid" = $1
-    ORDER BY
-      assignments."lastupdate" DESC
-    LIMIT 1
-  `;
-  const selectValues = [ serverDiscordId ];
-
-  try {
-    const client = await db.connect();
-
-    const result = await client.query(selectQuery, selectValues);
-
-    if(typeof(result.rows[0]) === "undefined") {
-      client.release();
-      return {
-        status: DatabaseErrors.NO_RECORD
-      };
-    }
-
-    client.release();
-
-    return {
-      status: DatabaseSuccess.OK,
-      data: result.rows[0].lastupdate
-    };
-  }
-  catch (e) {
-    if(e instanceof DatabaseError) {
-      switch(e.code) {
-        case "ECONNREFUSED":
-          log(LogSeverity.ERROR, "getLastAssignmentUpdate", "Database connection failed.");
-          return {
-            status: DatabaseErrors.CONNECTION_ERROR
-          };
-        default:
-          log(LogSeverity.ERROR, "getLastAssignmentUpdate", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
-      }
-    }
-    else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "getLastAssignmentUpdate", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
-    }
-    else {
-      log(LogSeverity.ERROR, "getLastAssignmentUpdate", "Unknown error occurred.");
     }
 
     return {
@@ -411,8 +342,8 @@ async function getServerUserAssignmentDataByOsuId(client: PoolClient, serverDisc
       users."username",
       users."country",
       users."points",
-      assignments."roleid",
-      assignments."lastupdate"
+      users."lastupdate",
+      assignments."roleid"
     FROM
       assignments
     JOIN
@@ -641,11 +572,11 @@ async function getTargetServerRoleDataByPoints(client: PoolClient, serverDiscord
  */
 async function insertAssignment(client: PoolClient, userId: number, roleId: number, serverId: number, assignmentId: number | null = null): Promise<boolean> {
   const insertQuery = `
-    INSERT INTO assignments (${ assignmentId !== null ? "assignmentid, " : "" }userid, roleid, lastupdate, serverid)
-      VALUES ($1, $2, $3, $4${ assignmentId !== null ? ", $5" : "" })
+    INSERT INTO assignments (${ assignmentId !== null ? "assignmentid, " : "" }userid, roleid, serverid)
+      VALUES ($1, $2, $3${ assignmentId !== null ? ", $4" : "" })
   `;
 
-  const insertValues = [ userId, roleId, new Date(), serverId ];
+  const insertValues = [ userId, roleId, serverId ];
   if(assignmentId !== null) {
     insertValues.unshift(assignmentId);
   }
@@ -717,4 +648,4 @@ async function deleteAssignmentById(client: PoolClient, assignmentId: number): P
   }
 }
 
-export { getAssignmentByOsuId, getLastAssignmentUpdate, insertOrUpdateAssignment };
+export { getAssignmentByOsuId, insertOrUpdateAssignment };

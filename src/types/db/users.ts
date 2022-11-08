@@ -7,6 +7,7 @@ interface IDBServerUserQueryData {
   osuid: number;
   country: string;
   points: number;
+  lastupdate: Date;
 }
 
 /**
@@ -27,6 +28,7 @@ interface IDBServerUserData {
   osuId: number;
   country: string;
   points: number;
+  lastUpdate: Date;
 }
 
 /**
