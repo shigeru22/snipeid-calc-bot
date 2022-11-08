@@ -2,7 +2,7 @@ import { Client, TextChannel, Message } from "discord.js";
 import { Pool } from "pg";
 import { getUserByOsuId } from "../api/osu";
 import { getTopCounts, getTopCountsFromRespektive } from "../api/osustats";
-import { getServerByDiscordId } from "../db/servers";
+import { getServerByDiscordId, isCommandChannel } from "../db/servers";
 import { getDiscordUserByDiscordId } from "../db/users";
 import { addWysiReaction } from "./reactions";
 import { updateUserData } from "./userdata";
@@ -24,6 +24,16 @@ import { LogSeverity, log } from "../utils/log";
  * @returns { Promise<void> } Promise object with no return value.
  */
 async function userLeaderboardsCountFromBathbot(client: Client, channel: TextChannel, db: import("pg").Pool, osuToken: string, message: Message): Promise<void> {
+  {
+    const isCommand = await isCommandChannel(db, channel.guild.id, channel.id);
+    switch(isCommand) {
+      case false:
+        log(LogSeverity.WARN, "userLeaderboardsCountFromBathbot", `${ channel.guild.id }: Not in commands channel.`); // fallthrough
+      case null:
+        return;
+    }
+  }
+
   const index = message.embeds.findIndex(
     embed => typeof(embed.title) === "string" && embed.title.toLowerCase().startsWith("in how many top x map leaderboards is")
   ); // <osc command should return at index 0, else it's not the specified command
@@ -79,16 +89,27 @@ async function userLeaderboardsCountFromBathbot(client: Client, channel: TextCha
  * @returns { Promise<void> } Promise object with no return value.
  */
 async function userLeaderboardsCount(client: Client, channel: TextChannel, db: Pool, osuToken: string, discordId: string): Promise<void> {
+  const serverData = await getServerByDiscordId(db, channel.guild.id);
+
+  if(serverData.status !== DatabaseSuccess.OK) {
+    log(LogSeverity.WARN, "userLeaderboardsCount", "Someone asked for leaderboard count, but server not in database.");
+    return;
+  }
+
+  {
+    const isCommand = await isCommandChannel(db, channel.guild.id, channel.id);
+    switch(isCommand) {
+      case false:
+        log(LogSeverity.WARN, "userLeaderboardsCount", `${ channel.guild.id }: Not in commands channel.`);
+        await channel.send(`**Error:** Enter this command at <#${ serverData.data.commandsChannelId }> channel.`); // fallthrough
+      case null:
+        return;
+    }
+  }
+
   const user = await getDiscordUserByDiscordId(db, discordId);
 
   if(user.status !== DatabaseSuccess.OK) {
-    const serverData = await getServerByDiscordId(db, channel.guild.id);
-
-    if(serverData.status !== DatabaseSuccess.OK) {
-      log(LogSeverity.WARN, "userLeaderboardsCount", "Someone asked for leaderboard count, but server not in database.");
-      return;
-    }
-
     switch(user.status) {
       case DatabaseErrors.USER_NOT_FOUND:
         await channel.send(`**Error:** You haven't linked your account. Link using \`${ client.user?.username } [osu! user ID]\`${ serverData.data.verifyChannelId !== null ? ` in <#${ serverData.data.verifyChannelId }> channel` : "" }.`);
@@ -229,8 +250,19 @@ async function userWhatIfCount(client: Client, channel: TextChannel, db: Pool, o
   const serverData = await getServerByDiscordId(db, channel.guild.id);
 
   if(serverData.status !== DatabaseSuccess.OK) {
-    log(LogSeverity.WARN, "userLeaderboardsCount", "Someone asked for leaderboard count, but server not in database.");
+    log(LogSeverity.WARN, "userWhatIfCount", "Someone asked for leaderboard count, but server not in database.");
     return;
+  }
+
+  {
+    const isCommand = await isCommandChannel(db, channel.guild.id, channel.id);
+    switch(isCommand) {
+      case false:
+        log(LogSeverity.WARN, "userWhatIfCount", `${ channel.guild.id }: Not in commands channel.`);
+        await channel.send(`**Error:** Enter this command at <#${ serverData.data.commandsChannelId }> channel.`); // fallthrough
+      case null:
+        return;
+    }
   }
 
   const commands = message.content.split(/\s+/g); // split by one or more spaces

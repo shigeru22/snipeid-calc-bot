@@ -2,6 +2,7 @@ import { TextChannel } from "discord.js";
 import { Pool } from "pg";
 import { LogSeverity, log } from "../utils/log";
 import { getAllAssignments, getLastAssignmentUpdate } from "../db/assignments";
+import { getServerByDiscordId, isLeaderboardChannel } from "../db/servers";
 import { AssignmentSort, DatabaseErrors, DatabaseSuccess } from "../utils/common";
 import { createLeaderboardEmbed } from "../messages/leaderboard";
 
@@ -14,6 +15,24 @@ import { createLeaderboardEmbed } from "../messages/leaderboard";
  * @returns { Promise<void> } Promise object with no return value.
  */
 async function sendPointLeaderboard(channel: TextChannel, db: Pool): Promise<void> {
+  const serverData = await getServerByDiscordId(db, channel.guild.id);
+
+  if(serverData.status !== DatabaseSuccess.OK) {
+    log(LogSeverity.WARN, "sendPointLeaderboard", "Someone asked for leaderboard count, but server not in database.");
+    return;
+  }
+
+  {
+    const isCommand = await isLeaderboardChannel(db, channel.guild.id, channel.id);
+    switch(isCommand) {
+      case false:
+        log(LogSeverity.WARN, "sendPointLeaderboard", `${ channel.guild.id }: Not in commands channel.`);
+        await channel.send(`**Error:** Enter this command at <#${ serverData.data.leaderboardsChannelId }> channel.`); // fallthrough
+      case null:
+        return;
+    }
+  }
+
   log(LogSeverity.LOG, "sendPointLeaderboard", "Retrieving leaderboard data.");
 
   const rankings = await getAllAssignments(db, channel.guildId, AssignmentSort.POINTS, true);

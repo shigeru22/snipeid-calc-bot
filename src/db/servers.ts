@@ -383,4 +383,34 @@ async function setLeaderboardsChannelId(db: Pool, serverDiscordId: string, leade
   }
 }
 
-export { getAllServers, getServerByDiscordId, insertServer, setServerCountry, setVerifiedRoleId, setCommandsChannelId, setLeaderboardsChannelId };
+async function isCommandChannel(db: Pool, serverDiscordId: string, channelId: string): Promise<boolean | null> {
+  const serverData = await getServerByDiscordId(db, serverDiscordId);
+
+  if(serverData.status !== DatabaseSuccess.OK) {
+    log(LogSeverity.ERROR, "isCommandChannel", "An error occurred while querying server in database.");
+    return null;
+  }
+
+  if(serverData.data.commandsChannelId !== null && channelId !== serverData.data.commandsChannelId) {
+    return false;
+  }
+
+  return true;
+}
+
+async function isLeaderboardChannel(db: Pool, serverDiscordId: string, channelId: string): Promise<boolean | null> {
+  const serverData = await getServerByDiscordId(db, serverDiscordId);
+
+  if(serverData.status !== DatabaseSuccess.OK) {
+    log(LogSeverity.ERROR, "isLeaderboardChannel", "An error occurred while querying server in database.");
+    return null;
+  }
+
+  if(serverData.data.leaderboardsChannelId !== null && channelId !== serverData.data.leaderboardsChannelId) {
+    return false;
+  }
+
+  return true;
+}
+
+export { getAllServers, getServerByDiscordId, insertServer, setServerCountry, setVerifiedRoleId, setCommandsChannelId, setLeaderboardsChannelId, isCommandChannel, isLeaderboardChannel };
