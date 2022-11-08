@@ -59,12 +59,12 @@ async function verifyUser(client: Client, channel: TextChannel, db: Pool, osuTok
     return;
   }
 
+  await channel.send(`Linked Discord user <@${ message.author.id }> to osu! user **${ osuUser.userName }**.`);
+
   if(serverData.data.verifiedRoleId === null) {
     log(LogSeverity.LOG, "verifyUser", `${ serverData.data.discordId }: Server's verifiedRoleId not set. Role granting skipped.`);
     return;
   }
-
-  await channel.send(`Linked Discord user <@${ message.author.id }> to osu! user **${ osuUser.userName }**`);
 
   await addRole(client, channel, message.author.id, channel.guild.id, serverData.data.verifiedRoleId);
   return;
