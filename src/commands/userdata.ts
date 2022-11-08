@@ -4,7 +4,7 @@ import { LogSeverity, log } from "../utils/log";
 import { getUserByOsuId } from "../api/osu";
 import { getTopCounts } from "../api/osustats";
 import { insertOrUpdateAssignment } from "../db/assignments";
-import { getDiscordUserByDiscordId, insertUser } from "../db/users";
+import { getDiscordUserByDiscordId, insertUser, updateUser } from "../db/users";
 import { DatabaseErrors, AssignmentType, OsuUserStatus, OsuApiSuccessStatus, OsuApiErrorStatus, DatabaseSuccess, OsuStatsErrorStatus, OsuStatsSuccessStatus } from "../utils/common";
 import { deltaTimeToString } from "../utils/time";
 import { IDBServerUserData } from "../types/db/users";
@@ -66,6 +66,12 @@ async function updateUserData(osuToken: string, client: Client, channel: TextCha
         await channel.send("**Error:** Data update error occurred. Please contact bot administrator.");
     }
 
+    return;
+  }
+
+  const userUpdateResult = await updateUser(db, typeof(osuId) === "number" ? osuId : parseInt(osuId, 10), points);
+  if(userUpdateResult.status !== DatabaseSuccess.OK) {
+    await channel.send("**Error:** Data update error occurred. Please contact bot administrator.");
     return;
   }
 

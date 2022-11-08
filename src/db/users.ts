@@ -464,15 +464,16 @@ async function insertUser(db: Pool, discordId: string, osuId: number, userName: 
  *
  * @returns { Promise<DatabaseErrors.OK | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR> } Promise object with `true` if updated successfully. Returns `DatabaseErrors` enum otherwise.
  */
-async function updateUser(db: Pool, osuId: number, points: number, userName: string | null, country: string | null): Promise<DBResponseBase<true> | DBResponseBase<DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+async function updateUser(db: Pool, osuId: number, points: number, userName: string | null = null, country: string | null = null): Promise<DBResponseBase<true> | DBResponseBase<DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
   const updateQuery = `
     UPDATE
       users
     SET
-      ${ userName !== null ? "users.\"username\" = $1" : "" }${ userName !== null && country !== null ? "," : "" }
-      ${ country !== null ? `users."country" = ${ userName !== null ? "$2" : "$1" }` : "" }
+      points = $1${ userName !== null || country !== null ? "," : "" }
+      ${ userName !== null ? "username = $2" : "" }${ userName !== null && country !== null ? "," : "" }
+      ${ country !== null ? `country = ${ userName !== null ? "$3" : "$2" }` : "" }
     WHERE
-      users."osuid" = ${ userName !== null && country !== null ? "$3" : "$2" }
+      osuid = ${ userName !== null && country !== null ? "$4" : (userName !== null || country !== null) ? "$3" : "$2" }
   `;
   const updateValues: (string | number)[] = [ osuId ];
 
@@ -483,6 +484,8 @@ async function updateUser(db: Pool, osuId: number, points: number, userName: str
   if(userName !== null) {
     updateValues.unshift(userName);
   }
+
+  updateValues.unshift(points);
 
   try {
     await db.query(updateQuery, updateValues);

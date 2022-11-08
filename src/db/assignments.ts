@@ -5,6 +5,7 @@ import { DatabaseErrors, DatabaseSuccess, AssignmentType } from "../utils/common
 import { DBResponseBase } from "../types/db/main";
 import { IDBServerAssignmentQueryData, IDBServerAssignmentData, IDBAssignmentResultData } from "../types/db/assignments";
 import { IDBServerRoleData, IDBServerRoleQueryData } from "../types/db/roles";
+import { getServerByDiscordId } from "./servers";
 
 /**
  * Gets user assignment by osu! ID from the database.
@@ -205,8 +206,23 @@ async function insertOrUpdateAssignment(db: Pool, serverDiscordId: string, osuId
     let assignmentId = 0; // update
     let userId = 0;
     let discordId = "";
+    let serverId = 0;
     let currentPoints = 0; // update
     let update = new Date(); // update
+
+    // serverId
+    {
+      const serverResult = await getServerByDiscordId(db, serverDiscordId);
+      if(serverResult.status !== DatabaseSuccess.OK) {
+        log(LogSeverity.ERROR, "insertOrUpdateAssignment", "Server not found in database.");
+
+        return {
+          status: DatabaseErrors.CLIENT_ERROR
+        };
+      }
+
+      serverId = serverResult.data.serverId;
+    }
 
     if(assignmentResult.status !== DatabaseErrors.NO_RECORD) {
       // userId found, then update
@@ -277,7 +293,7 @@ async function insertOrUpdateAssignment(db: Pool, serverDiscordId: string, osuId
     if(rolesResult.status !== DatabaseSuccess.OK) {
       switch(rolesResult.status) {
         case DatabaseErrors.NO_RECORD:
-          log(LogSeverity.ERROR, "insertOrUpdateAssignment2", `No roles returned. Make sure the lowest value (0) exist on server ID ${ serverDiscordId }.`);
+          log(LogSeverity.ERROR, "insertOrUpdateAssignment", `No roles returned. Make sure the lowest value (0) exist on server ID ${ serverDiscordId }.`);
       }
 
       return {
@@ -285,21 +301,14 @@ async function insertOrUpdateAssignment(db: Pool, serverDiscordId: string, osuId
       };
     }
 
-    if(rolesResult.data.minPoints < points) {
-      client.release();
-
-      log(LogSeverity.ERROR, "insertOrUpdateAssignment", "Invalid role returned due to wrong minimum points.");
-      return {
-        status: DatabaseErrors.CLIENT_ERROR
-      };
-    }
+    log(LogSeverity.DEBUG, "insertOrUpdateAssignment", `rolename: ${ rolesResult.data.roleName }, min: ${ rolesResult.data.minPoints }`);
 
     if(insert) {
-      await insertAssignment(client, userId, rolesResult.data.roleId);
+      await insertAssignment(client, userId, rolesResult.data.roleId, serverId);
       log(LogSeverity.LOG, "insertOrUpdateAssignment", "assignment: Inserted 1 row.");
     }
     else {
-      await insertAssignment(client, userId, rolesResult.data.roleId, assignmentId);
+      await insertAssignment(client, userId, rolesResult.data.roleId, serverId, assignmentId);
       log(LogSeverity.LOG, "insertOrUpdateAssignment", "assignment: Updated 1 row.");
     }
 
@@ -625,18 +634,18 @@ async function getTargetServerRoleDataByPoints(client: PoolClient, serverDiscord
  * @param { PoolClient } client Database pool client.
  * @param { number } userId User ID in the database.
  * @param { number } roleId Role ID in the database.
- * @param { number } points Calculated points.
+ * @param { number } serverId Database server ID.
  * @param { number? } assignmentId Assignment ID. Leave `null` to insert sequentially.
  *
  * @returns { Promise<boolean> } Promise object with `true` if inserted successfully, `false` otherwise.
  */
-async function insertAssignment(client: PoolClient, userId: number, roleId: number, assignmentId: number | null = null): Promise<boolean> {
+async function insertAssignment(client: PoolClient, userId: number, roleId: number, serverId: number, assignmentId: number | null = null): Promise<boolean> {
   const insertQuery = `
-    INSERT INTO assignments (${ assignmentId !== null ? "assignmentid, " : "" }userid, roleid, lastupdate)
-      VALUES ($1, $2, $3${ assignmentId !== null ? ", $4" : "" })
+    INSERT INTO assignments (${ assignmentId !== null ? "assignmentid, " : "" }userid, roleid, lastupdate, serverid)
+      VALUES ($1, $2, $3, $4${ assignmentId !== null ? ", $5" : "" })
   `;
 
-  const insertValues = [ userId, roleId, new Date() ];
+  const insertValues = [ userId, roleId, new Date(), serverId ];
   if(assignmentId !== null) {
     insertValues.unshift(assignmentId);
   }
@@ -649,17 +658,17 @@ async function insertAssignment(client: PoolClient, userId: number, roleId: numb
     if(e instanceof DatabaseError) {
       switch(e.code) {
         case "ECONNREFUSED":
-          log(LogSeverity.ERROR, "getTargetServerRoleDataByPoints", "Database connection failed.");
+          log(LogSeverity.ERROR, "insertAssignment", "Database connection failed.");
           break;
         default:
-          log(LogSeverity.ERROR, "getTargetServerRoleDataByPoints", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+          log(LogSeverity.ERROR, "insertAssignment", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
       }
     }
     else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "getTargetServerRoleDataByPoints", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+      log(LogSeverity.ERROR, "insertAssignment", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
     }
     else {
-      log(LogSeverity.ERROR, "getTargetServerRoleDataByPoints", "Unknown error occurred.");
+      log(LogSeverity.ERROR, "insertAssignment", "Unknown error occurred.");
     }
 
     return false;
