@@ -44,7 +44,7 @@ function createLeaderboardEmbed(data: IDBServerLeaderboardData[], lastUpdated: D
     draft.setTitle("Top 50 players based on points count");
     draft.setDescription(rankingsDesc);
     draft.setFooter({
-      text: `Last updated: ${ offsetLastUpdated.getDate() }/${ offsetLastUpdated.getMonth() + 1 }/${ offsetLastUpdated.getFullYear() }, ${ offsetLastUpdated.getHours().toString().padStart(2, "0") }: ${ offsetLastUpdated.getMinutes.toString().padStart(2, "0") }`
+      text: `Last updated: ${ offsetLastUpdated.getDate() }/${ offsetLastUpdated.getMonth() + 1 }/${ offsetLastUpdated.getFullYear() }, ${ offsetLastUpdated.getHours().toString().padStart(2, "0") }:${ offsetLastUpdated.getMinutes().toString().padStart(2, "0") }`
     });
   }
   else {
