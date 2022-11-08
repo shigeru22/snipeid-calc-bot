@@ -115,7 +115,7 @@ async function setServerCountryConfiguration(db: Pool, channel: TextChannel, mes
     return;
   }
 
-  await channel.send(!disable ? `Set server country restriction to ${ contents[3].toUpperCase() }.` : "Server country restriction disabled.");
+  await channel.send(!disable ? `Set server country restriction to **${ contents[3].toUpperCase() }**.` : "Server country restriction disabled.");
 }
 
 async function setServerVerifiedRoleIdConfiguration(db: Pool, channel: TextChannel, message: Message) {
@@ -182,7 +182,7 @@ async function setServerVerifiedRoleIdConfiguration(db: Pool, channel: TextChann
     return;
   }
 
-  await channel.send(!disable ? `Set server country restriction to ${ contents[3].toUpperCase() }.` : "Server country restriction disabled.");
+  await channel.send(!disable ? `Set server verified role to **${ roleName }**.` : "Server verified role disabled.");
 }
 
 async function setServerCommandsChannelConfiguration(db: Pool, channel: TextChannel, message: Message) {
@@ -253,7 +253,7 @@ async function setServerCommandsChannelConfiguration(db: Pool, channel: TextChan
     return;
   }
 
-  await channel.send(!disable ? `Set server commands channel to ${ contents[3].toUpperCase() }.` : "Server commands channel restriction disabled.");
+  await channel.send(!disable ? `Set server commands channel to **${ channelName }**.` : "Server commands channel restriction disabled.");
 }
 
 async function setServerLeaderboardsChannelConfiguration(db: Pool, channel: TextChannel, message: Message) {
@@ -324,7 +324,7 @@ async function setServerLeaderboardsChannelConfiguration(db: Pool, channel: Text
     return;
   }
 
-  await channel.send(!disable ? `Set server commands channel to ${ contents[3].toUpperCase() }.` : "Server commands channel restriction disabled.");
+  await channel.send(!disable ? `Set server leaderboards commands channel to **${ channelName }**.` : "Server leaderboards channel restriction disabled.");
 }
 
 export { handleConfigCommands };
