@@ -1,10 +1,11 @@
 import { TextChannel } from "discord.js";
 import { Pool } from "pg";
 import { LogSeverity, log } from "../utils/log";
-import { getAllAssignments, getAllAssignmentsByCountry, getLastAssignmentUpdate } from "../db/assignments";
+import { getLastAssignmentUpdate } from "../db/assignments";
 import { getServerByDiscordId, isLeaderboardChannel } from "../db/servers";
-import { AssignmentSort, DatabaseErrors, DatabaseSuccess } from "../utils/common";
+import { DatabaseErrors, DatabaseSuccess } from "../utils/common";
 import { createLeaderboardEmbed } from "../messages/leaderboard";
+import { getPointsLeaderboard, getPointsLeaderboardByCountry } from "../db/users";
 
 /**
  * Sends top 50 leaderboard from the database to specified channel.
@@ -35,10 +36,15 @@ async function sendPointLeaderboard(channel: TextChannel, db: Pool): Promise<voi
 
   log(LogSeverity.LOG, "sendPointLeaderboard", "Retrieving leaderboard data.");
 
-  const rankings = serverData.data.country === null ? await getAllAssignments(db, channel.guild.id, AssignmentSort.POINTS, true) : await getAllAssignmentsByCountry(db, channel.guild.id, serverData.data.country, AssignmentSort.POINTS, true);
+  log(LogSeverity.DEBUG, "sendPointLeaderboard", `country: ${ serverData.data.country }`);
+
+  const rankings = serverData.data.country === null ? await getPointsLeaderboard(db, channel.guild.id) : await getPointsLeaderboardByCountry(db, channel.guild.id, serverData.data.country.toUpperCase());
 
   if(rankings.status !== DatabaseSuccess.OK) {
     switch(rankings.status) { // rankings is number, or DatabaseErrors constant
+      case DatabaseErrors.NO_RECORD:
+        await channel.send("**Error:** No records found. Be the first!");
+        break;
       case DatabaseErrors.CONNECTION_ERROR:
         await channel.send("**Error:** Database connection failed. Please contact bot administrator.");
         break;
@@ -76,7 +82,7 @@ async function sendPointLeaderboard(channel: TextChannel, db: Pool): Promise<voi
   const draft = createLeaderboardEmbed(rankings.data, lastUpdated);
   await channel.send({ embeds: [ draft ] });
 
-  log(LogSeverity.LOG, "sendPointLeaderboard", `Leaderboard sent for server ID ${ channel.guildId } (${ channel.name }).`);
+  log(LogSeverity.LOG, "sendPointLeaderboard", `Leaderboard sent for server ID ${ channel.guildId } (${ channel.guild.name }).`);
 }
 
 export { sendPointLeaderboard };

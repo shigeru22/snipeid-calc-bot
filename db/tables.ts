@@ -50,7 +50,8 @@ class Tables {
         discordId VARCHAR(255) NOT NULL,
         osuId INTEGER NOT NULL,
         userName VARCHAR(255) NOT NULL,
-        country VARCHAR(2) NOT NULL
+        country VARCHAR(2) NOT NULL,
+        points INTEGER DEFAULT 0
       )
     `;
 
@@ -174,7 +175,6 @@ class Tables {
         userId INTEGER NOT NULL,
         serverId INTEGER NOT NULL,
         roleId INTEGER NOT NULL,
-        points INTEGER DEFAULT 0 NOT NULL,
         lastUpdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT fk_user
           FOREIGN KEY(userId) REFERENCES users(userId),

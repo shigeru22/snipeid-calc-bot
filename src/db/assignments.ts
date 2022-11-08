@@ -1,168 +1,10 @@
 import { Pool, PoolClient, DatabaseError } from "pg";
 import { LogSeverity, log } from "../utils/log";
 import { getDiscordUserByOsuId, updateUser } from "./users";
-import { DatabaseErrors, DatabaseSuccess, AssignmentType, AssignmentSort, assignmentSortToString } from "../utils/common";
+import { DatabaseErrors, DatabaseSuccess, AssignmentType } from "../utils/common";
 import { DBResponseBase } from "../types/db/main";
 import { IDBServerAssignmentQueryData, IDBServerAssignmentData, IDBAssignmentResultData } from "../types/db/assignments";
 import { IDBServerRoleData, IDBServerRoleQueryData } from "../types/db/roles";
-import { IDBServerUserData } from "../types/db/users";
-
-/**
- * Gets all `assignments` table data by Discord server ID.
- *
- * @param { Pool } db Database connection pool.
- * @param { string } serverDiscordId Server snowflake ID.
- * @param { AssignmentSort } sort Sort order criteria.
- * @param { boolean } desc Whether results should be sorted in descending order.
- *
- * @returns { Promise<DBResponseBase<IDBServerAssignmentData[]> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with array of assignments.
- */
-async function getAllAssignments(db: Pool, serverDiscordId: string, sort = AssignmentSort.POINTS, desc = true): Promise<DBResponseBase<IDBServerAssignmentData[]> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
-  const selectQuery = `
-    SELECT
-      assignments."assignmentid",
-      users."username",
-      roles."rolename",
-      assignments."points",
-      assignments."lastupdate"
-    FROM
-      assignments
-    JOIN
-      users ON assignments."userid" = users."userid"
-    JOIN
-      servers ON assignments."serverid" = servers."serverid"
-    JOIN
-      roles ON assignments."roleid" = roles."roleid"
-    WHERE
-      servers."discordid" = $1
-    ORDER BY
-      ${ assignmentSortToString(sort) } ${ desc ? "DESC" : "" }
-  `;
-  const selectValues = [ serverDiscordId ];
-
-  try {
-    const response = await db.query <IDBServerAssignmentQueryData>(selectQuery, selectValues);
-
-    if(response.rows.length <= 0) {
-      return {
-        status: DatabaseErrors.NO_RECORD
-      };
-    }
-
-    return {
-      status: DatabaseSuccess.OK,
-      data: response.rows.map(row => ({
-        assignmentId: row.assignmentid,
-        userName: row.username,
-        roleName: row.rolename,
-        points: row.points,
-        lastUpdate: row.lastupdate
-      }))
-    };
-  }
-  catch (e) {
-    if(e instanceof DatabaseError) {
-      switch(e.code) {
-        case "ECONNREFUSED":
-          log(LogSeverity.ERROR, "getAllAssignments", "Database connection failed.");
-          return {
-            status: DatabaseErrors.CONNECTION_ERROR
-          };
-        default:
-          log(LogSeverity.ERROR, "getAllAssignments", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
-      }
-    }
-    else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "getAllAssignments", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
-    }
-    else {
-      log(LogSeverity.ERROR, "getAllAssignments", "Unknown error occurred.");
-    }
-
-    return {
-      status: DatabaseErrors.CLIENT_ERROR
-    };
-  }
-}
-
-/**
- * Gets all `assignments` table data by Discord server ID and country code.
- *
- * @param { Pool } db Database connection pool.
- * @param { string } serverDiscordId Server snowflake ID.
- * @param { string } countryCode Country code.
- * @param { AssignmentSort } sort Sort order criteria.
- * @param { boolean } desc Whether results should be sorted in descending order.
- *
- * @returns { Promise<DBResponseBase<IDBServerAssignmentData[]> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with array of assignments.
- */
-async function getAllAssignmentsByCountry(db: Pool, serverDiscordId: string, countryCode: string, sort = AssignmentSort.POINTS, desc = true): Promise<DBResponseBase<IDBServerAssignmentData[]> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
-  const selectQuery = `
-    SELECT
-      assignments."assignmentid",
-      users."username",
-      roles."rolename",
-      assignments."points",
-      assignments."lastupdate"
-    FROM
-      assignments
-    JOIN
-      users ON assignments."userid" = users."userid"
-    JOIN
-      servers ON assignments."serverid" = servers."serverid"
-    JOIN
-      roles ON assignments."roleid" = roles."roleid"
-    WHERE
-      servers."discordid" = $1 AND servers."country" = $2
-    ORDER BY
-      ${ assignmentSortToString(sort) } ${ desc ? "DESC" : "" }
-  `;
-  const selectValues = [ serverDiscordId, countryCode ];
-
-  try {
-    const response = await db.query <IDBServerAssignmentQueryData>(selectQuery, selectValues);
-
-    if(response.rows.length <= 0) {
-      return {
-        status: DatabaseErrors.NO_RECORD
-      };
-    }
-
-    return {
-      status: DatabaseSuccess.OK,
-      data: response.rows.map(row => ({
-        assignmentId: row.assignmentid,
-        userName: row.username,
-        roleName: row.rolename,
-        points: row.points,
-        lastUpdate: row.lastupdate
-      }))
-    };
-  }
-  catch (e) {
-    if(e instanceof DatabaseError) {
-      switch(e.code) {
-        case "ECONNREFUSED":
-          log(LogSeverity.ERROR, "getAllAssignments", "Database connection failed.");
-          return {
-            status: DatabaseErrors.CONNECTION_ERROR
-          };
-        default:
-          log(LogSeverity.ERROR, "getAllAssignments", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
-      }
-    }
-    else if(e instanceof Error) {
-      log(LogSeverity.ERROR, "getAllAssignments", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
-    }
-    else {
-      log(LogSeverity.ERROR, "getAllAssignments", "Unknown error occurred.");
-    }
-
-    return {
-      status: DatabaseErrors.CLIENT_ERROR
-    };
-  }
-}
 
 /**
  * Gets user assignment by osu! ID from the database.
@@ -171,24 +13,21 @@ async function getAllAssignmentsByCountry(db: Pool, serverDiscordId: string, cou
  * @param { string } serverDiscordId Server snowflake ID.
  * @param { number } osuId osu! ID of the user.
  *
- * @returns { Promise<{ status: DatabaseErrors.OK | DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR; assignment?: { userId: number; discordId: string; osuId: number; }; }> } Promise object with user assignment.
+ * @returns { Promise<DBResponseBase<IDBServerAssignmentData> | DBResponseBase<DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> }> } Promise object with user assignment.
  */
-async function getAssignmentByOsuId(db: Pool, serverDiscordId: string, osuId: number): Promise<DBResponseBase<IDBServerUserData> | DBResponseBase<DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+async function getAssignmentByOsuId(db: Pool, serverDiscordId: string, osuId: number): Promise<DBResponseBase<IDBServerAssignmentData> | DBResponseBase<DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
   const selectQuery = `
     SELECT
       assignments."assignmentid",
-      assignments."userid",
-      users."discordid",
-      users."osuid",
       users."username",
-      users."country",
-      assignments."roleid",
-      assignments."points",
+      roles."rolename",
       assignments."lastupdate"
     FROM
       assignments
     JOIN
       users ON assignments."userid" = users."userid"
+    JOIN
+      roles ON assignments."roleid" = roles."roleid"
     JOIN
       servers ON assignments."serverid" = servers."serverid"
     WHERE
@@ -197,7 +36,7 @@ async function getAssignmentByOsuId(db: Pool, serverDiscordId: string, osuId: nu
   const selectValues = [ osuId, serverDiscordId ];
 
   try {
-    const discordUserResult = await db.query(selectQuery, selectValues);
+    const discordUserResult = await db.query<IDBServerAssignmentQueryData>(selectQuery, selectValues);
 
     if(discordUserResult.rows.length <= 0) {
       return {
@@ -205,25 +44,19 @@ async function getAssignmentByOsuId(db: Pool, serverDiscordId: string, osuId: nu
       };
     }
 
-    if(discordUserResult.rows[0].osuid > 1) {
+    if(discordUserResult.rows.length > 1) {
       return {
         status: DatabaseErrors.DUPLICATED_RECORD
-      };
-    }
-
-    if(discordUserResult.rows[0].osuid !== osuId) {
-      return {
-        status: DatabaseErrors.CLIENT_ERROR
       };
     }
 
     return {
       status: DatabaseSuccess.OK,
       data: {
-        userId: discordUserResult.rows[0].userid,
-        discordId: discordUserResult.rows[0].discordid,
-        osuId: discordUserResult.rows[0].osuid,
-        country: discordUserResult.rows[0].country
+        assignmentId: discordUserResult.rows[0].assignmentid,
+        userName: discordUserResult.rows[0].username,
+        roleName: discordUserResult.rows[0].rolename,
+        lastUpdate: discordUserResult.rows[0].lastupdate
       }
     };
   }
@@ -381,10 +214,11 @@ async function insertOrUpdateAssignment(db: Pool, serverDiscordId: string, osuId
         insert = false;
 
         if(assignmentResult.data.userName !== userName || assignmentResult.data.country !== countryCode) {
-          // update user
+          // update user, also update points here
           const ret = await updateUser(
             db,
             osuId,
+            points,
             assignmentResult.data.userName !== userName ? userName : null,
             assignmentResult.data.country !== countryCode ? countryCode : null
           );
@@ -461,11 +295,11 @@ async function insertOrUpdateAssignment(db: Pool, serverDiscordId: string, osuId
     }
 
     if(insert) {
-      await insertAssignment(client, userId, rolesResult.data.roleId, points);
+      await insertAssignment(client, userId, rolesResult.data.roleId);
       log(LogSeverity.LOG, "insertOrUpdateAssignment", "assignment: Inserted 1 row.");
     }
     else {
-      await insertAssignment(client, userId, rolesResult.data.roleId, points, assignmentId);
+      await insertAssignment(client, userId, rolesResult.data.roleId, assignmentId);
       log(LogSeverity.LOG, "insertOrUpdateAssignment", "assignment: Updated 1 row.");
     }
 
@@ -567,8 +401,8 @@ async function getServerUserAssignmentDataByOsuId(client: PoolClient, serverDisc
       users."osuid",
       users."username",
       users."country",
+      users."points",
       assignments."roleid",
-      assignments."points",
       assignments."lastupdate"
     FROM
       assignments
@@ -796,13 +630,13 @@ async function getTargetServerRoleDataByPoints(client: PoolClient, serverDiscord
  *
  * @returns { Promise<boolean> } Promise object with `true` if inserted successfully, `false` otherwise.
  */
-async function insertAssignment(client: PoolClient, userId: number, roleId: number, points: number, assignmentId: number | null = null): Promise<boolean> {
+async function insertAssignment(client: PoolClient, userId: number, roleId: number, assignmentId: number | null = null): Promise<boolean> {
   const insertQuery = `
-    INSERT INTO assignments (${ assignmentId !== null ? "assignmentid, " : "" }userid, roleid, points, lastupdate)
-      VALUES ($1, $2, $3, $4${ assignmentId !== null ? ", $5" : "" })
+    INSERT INTO assignments (${ assignmentId !== null ? "assignmentid, " : "" }userid, roleid, lastupdate)
+      VALUES ($1, $2, $3${ assignmentId !== null ? ", $4" : "" })
   `;
 
-  const insertValues = [ userId, roleId, points, new Date() ];
+  const insertValues = [ userId, roleId, new Date() ];
   if(assignmentId !== null) {
     insertValues.unshift(assignmentId);
   }
@@ -874,4 +708,4 @@ async function deleteAssignmentById(client: PoolClient, assignmentId: number): P
   }
 }
 
-export { getAllAssignments, getAllAssignmentsByCountry, getAssignmentByOsuId, getLastAssignmentUpdate, insertOrUpdateAssignment };
+export { getAssignmentByOsuId, getLastAssignmentUpdate, insertOrUpdateAssignment };

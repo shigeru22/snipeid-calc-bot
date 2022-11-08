@@ -2,7 +2,70 @@ import { Pool, DatabaseError } from "pg";
 import { LogSeverity, log } from "../utils/log";
 import { DatabaseErrors, DatabaseSuccess } from "../utils/common";
 import { DBResponseBase } from "../types/db/main";
-import { IDBServerUserData, IDBServerUserQueryData } from "../types/db/users";
+import { IDBServerUserData, IDBServerLeaderboardQueryData, IDBServerUserQueryData, IDBServerLeaderboardData } from "../types/db/users";
+
+/**
+ * Gets Discord user by Discord ID from the database.
+ *
+ * @param { Pool } db Database connection pool.
+ *
+ * @returns { Promise<DBResponseBase<IDBServerUserData[]> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with user data array.
+ */
+async function getAllUsers(db: Pool): Promise<DBResponseBase<IDBServerUserData[]> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  const selectQuery = `
+    SELECT
+      users."userid",
+      users."discordid",
+      users."osuid",
+      users."points",
+      users."country"
+    FROM
+      users
+  `;
+
+  try {
+    const result = await db.query<IDBServerUserQueryData>(selectQuery);
+    if(result.rows.length <= 0) {
+      return {
+        status: DatabaseErrors.NO_RECORD
+      };
+    }
+
+    return {
+      status: DatabaseSuccess.OK,
+      data: result.rows.map(row => ({
+        userId: row.userid,
+        discordId: row.discordid,
+        osuId: row.osuid,
+        points: row.points,
+        country: row.country
+      }))
+    };
+  }
+  catch (e) {
+    if(e instanceof DatabaseError) {
+      switch(e.code) {
+        case "ECONNREFUSED":
+          log(LogSeverity.ERROR, "getDiscordUserById", "Database connection failed.");
+          return {
+            status: DatabaseErrors.CONNECTION_ERROR
+          };
+        default:
+          log(LogSeverity.ERROR, "getDiscordUserById", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+      }
+    }
+    else if(e instanceof Error) {
+      log(LogSeverity.ERROR, "getDiscordUserById", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+    }
+    else {
+      log(LogSeverity.ERROR, "getDiscordUserById", "Unknown error occurred.");
+    }
+
+    return {
+      status: DatabaseErrors.CLIENT_ERROR
+    };
+  }
+}
 
 /**
  * Gets Discord user by osu! ID from the database.
@@ -17,7 +80,9 @@ async function getDiscordUserByOsuId(db: Pool, osuId: number): Promise<DBRespons
     SELECT
       users."userid",
       users."discordid",
-      users."osuid"
+      users."osuid",
+      users."points",
+      users."country"
     FROM
       users
     WHERE
@@ -47,6 +112,7 @@ async function getDiscordUserByOsuId(db: Pool, osuId: number): Promise<DBRespons
         userId: discordUserResult.rows[0].userid,
         discordId: discordUserResult.rows[0].discordid,
         osuId: discordUserResult.rows[0].osuid,
+        points: discordUserResult.rows[0].points,
         country: discordUserResult.rows[0].country
       }
     };
@@ -89,7 +155,9 @@ async function getDiscordUserByDiscordId(db: Pool, discordId: string): Promise<D
     SELECT
       users."userid",
       users."discordid",
-      users."osuid"
+      users."osuid",
+      users."points",
+      users."country"
     FROM
       users
     WHERE
@@ -111,6 +179,7 @@ async function getDiscordUserByDiscordId(db: Pool, discordId: string): Promise<D
         userId: result.rows[0].userid,
         discordId: result.rows[0].discordid,
         osuId: result.rows[0].osuid,
+        points: result.rows[0].points,
         country: result.rows[0].country
       }
     };
@@ -132,6 +201,145 @@ async function getDiscordUserByDiscordId(db: Pool, discordId: string): Promise<D
     }
     else {
       log(LogSeverity.ERROR, "getDiscordUserByDiscordId", "Unknown error occurred.");
+    }
+
+    return {
+      status: DatabaseErrors.CLIENT_ERROR
+    };
+  }
+}
+
+/**
+ * Retrieves points leaderboard by server ID.
+ *
+ * @param { Pool } db Database connection pool.
+ * @param { string } serverDiscordId Server snowflake ID.
+ * @param { boolean } desc Whether results should be sorted in descending order.
+ */
+async function getPointsLeaderboard(db: Pool, serverDiscordId: string, desc = true): Promise<DBResponseBase<IDBServerLeaderboardData[]> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  const selectQuery = `
+    SELECT
+      users."userid",
+      users."username",
+      users."points"
+    FROM
+      users
+    JOIN
+      assignments ON assignments."userid" = users."userid"
+    JOIN
+      servers ON servers."serverid" = assignments."serverid"
+    WHERE
+      servers."discordid" = $1
+    ORDER BY
+      users."points" ${ desc ? "DESC" : "" }
+  `;
+  const selectValues = [ serverDiscordId ];
+
+  try {
+    const response = await db.query<IDBServerLeaderboardQueryData>(selectQuery, selectValues);
+
+    if(response.rows.length <= 0) {
+      return {
+        status: DatabaseErrors.NO_RECORD
+      };
+    }
+
+    return {
+      status: DatabaseSuccess.OK,
+      data: response.rows.map(row => ({
+        userId: row.userid,
+        userName: row.username,
+        points: row.points
+      }))
+    };
+  }
+  catch (e) {
+    if(e instanceof DatabaseError) {
+      switch(e.code) {
+        case "ECONNREFUSED":
+          log(LogSeverity.ERROR, "getPointsLeaderboard", "Database connection failed.");
+          return {
+            status: DatabaseErrors.CONNECTION_ERROR
+          };
+        default:
+          log(LogSeverity.ERROR, "getPointsLeaderboard", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+      }
+    }
+    else if(e instanceof Error) {
+      log(LogSeverity.ERROR, "getPointsLeaderboard", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+    }
+    else {
+      log(LogSeverity.ERROR, "getPointsLeaderboard", "Unknown error occurred.");
+    }
+
+    return {
+      status: DatabaseErrors.CLIENT_ERROR
+    };
+  }
+}
+
+/**
+ * Retrieves points leaderboard by server ID and country specified.
+ *
+ * @param { Pool } db Database connection pool.
+ * @param { string } serverDiscordId Server snowflake ID.
+ * @param { string } countryCode Country code.
+ * @param { boolean } desc Whether results should be sorted in descending order.
+ */
+async function getPointsLeaderboardByCountry(db: Pool, serverDiscordId: string, countryCode: string, desc = true): Promise<DBResponseBase<IDBServerLeaderboardData[]> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  const selectQuery = `
+    SELECT
+      users."userid",
+      users."username",
+      users."points"
+    FROM
+      users
+    JOIN
+      assignments ON assignments."userid" = users."userid"
+    JOIN
+      servers ON servers."serverid" = assignments."serverid"
+    WHERE
+      servers."discordid" = $1 AND users."country" = $2
+    ORDER BY
+      users."points" ${ desc ? "DESC" : "" }
+  `;
+  const selectValues = [ serverDiscordId, countryCode ];
+
+  try {
+    const response = await db.query <IDBServerLeaderboardQueryData>(selectQuery, selectValues);
+
+    if(response.rows.length <= 0) {
+      return {
+        status: DatabaseErrors.NO_RECORD
+      };
+    }
+
+    return {
+      status: DatabaseSuccess.OK,
+      data: response.rows.map(row => ({
+        userId: row.userid,
+        userName: row.username,
+        points: row.points
+      }))
+    };
+  }
+  catch (e) {
+    if(e instanceof DatabaseError) {
+      switch(e.code) {
+        case "ECONNREFUSED":
+          log(LogSeverity.ERROR, "getPointsLeaderboardByCountry", "Database connection failed.");
+          return {
+            status: DatabaseErrors.CONNECTION_ERROR
+          };
+        default:
+          log(LogSeverity.ERROR, "getPointsLeaderboardByCountry", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+      }
+    }
+    else if(e instanceof Error) {
+      log(LogSeverity.ERROR, "getPointsLeaderboardByCountry", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+    }
+    else {
+      log(LogSeverity.ERROR, "getPointsLeaderboardByCountry", "Unknown error occurred.");
     }
 
     return {
@@ -250,14 +458,13 @@ async function insertUser(db: Pool, discordId: string, osuId: number, userName: 
  *
  * @param { Pool } db Database connection pool.
  * @param { number } osuId osu! user ID.
+ * @param { number | null } points Calculated points.
  * @param { string | null } userName osu! username.
  * @param { string | null } country Country code.
  *
  * @returns { Promise<DatabaseErrors.OK | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR> } Promise object with `true` if updated successfully. Returns `DatabaseErrors` enum otherwise.
  */
-async function updateUser(db: Pool, osuId: number, userName: string | null, country: string | null): Promise<DBResponseBase<true> | DBResponseBase<DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
-  /* only username should be updateable, since that changes are from osu! API */
-
+async function updateUser(db: Pool, osuId: number, points: number, userName: string | null, country: string | null): Promise<DBResponseBase<true> | DBResponseBase<DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
   const updateQuery = `
     UPDATE
       users
@@ -311,4 +518,4 @@ async function updateUser(db: Pool, osuId: number, userName: string | null, coun
   }
 }
 
-export { getDiscordUserByOsuId, getDiscordUserByDiscordId, insertUser, updateUser };
+export { getAllUsers, getDiscordUserByOsuId, getDiscordUserByDiscordId, getPointsLeaderboard, getPointsLeaderboardByCountry, insertUser, updateUser };

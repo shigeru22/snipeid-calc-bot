@@ -1,17 +1,17 @@
 import { MessageEmbed } from "discord.js";
 import { LogSeverity, log } from "../utils/log";
 import { TimeOperation, getTimeOffsetFromString } from "../utils/time";
-import { IDBServerAssignmentData } from "../types/db/assignments";
+import { IDBServerLeaderboardData } from "../types/db/users";
 
 /**
  * Creates leaderboard embed message.
  *
- * @param { IDBServerAssignmentData } data Leaderboard data.
+ * @param { IDBLeaderboardData[] } data Leaderboard data.
  * @param { Date } lastUpdated Last update time.
  *
  * @returns { MessageEmbed } Leaderboard embed message.
  */
-function createLeaderboardEmbed(data: IDBServerAssignmentData[], lastUpdated: Date): MessageEmbed {
+function createLeaderboardEmbed(data: IDBServerLeaderboardData[], lastUpdated: Date): MessageEmbed {
   let timeOperation = TimeOperation.INCREMENT;
   let hourOffset = 0;
   let minuteOffset = 0;

@@ -9,7 +9,6 @@ interface IDBAssignmentData {
   assignmentid: number;
   username: string;
   rolename: string;
-  points: number;
   lastupdate: Date;
 }
 
@@ -20,7 +19,6 @@ interface IDBServerAssignmentQueryData {
   assignmentid: number;
   username: string;
   rolename: string;
-  points: number;
   lastupdate: Date;
 }
 
@@ -31,7 +29,6 @@ interface IDBServerAssignmentData {
   assignmentId: number;
   userName: string;
   roleName: string;
-  points: number;
   lastUpdate: Date;
 }
 
