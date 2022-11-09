@@ -4,18 +4,16 @@ import { Client, GatewayIntentBits, ActivityType, ChannelType, Guild, GuildMembe
 import { Pool, PoolConfig } from "pg";
 import { createInterface } from "readline";
 import { OsuToken } from "./api/osu-token";
-import { insertServer } from "./db/servers";
-import { handleCommands } from "./commands";
-import { sendMessage } from "./commands/conversations";
-import { reassignRole } from "./commands/roles";
+import { DBServers } from "./db";
+import { handleCommands, Conversations, Roles } from "./commands";
+import { Environment } from "./utils";
 import { DatabaseErrors } from "./utils/common";
-import { validateEnvironmentVariables } from "./utils/env";
 import { LogSeverity, log } from "./utils/log";
 
 // configure environment variable file (if any)
 dotenv.config();
 
-if(!validateEnvironmentVariables()) {
+if(!Environment.validateEnvironmentVariables()) {
   process.exit(1);
 }
 
@@ -137,7 +135,7 @@ async function onNewMessage(msg: Message) {
     processed = await handleCommands(client, channel, db, tempToken, isClientMentioned, msg);
 
     // if bot is mentioned but nothing processed, send a random message.
-    (!processed && isClientMentioned) && await sendMessage(channel, contents);
+    (!processed && isClientMentioned) && await Conversations.sendMessage(channel, contents);
   }
 }
 
@@ -147,7 +145,7 @@ async function onNewMessage(msg: Message) {
  * @param { Message } guild Entered guild object.
  */
 async function onJoinGuild(guild: Guild) {
-  const result = await insertServer(db, guild.id);
+  const result = await DBServers.insertServer(db, guild.id);
   switch(result.status) {
     case DatabaseErrors.DUPLICATED_RECORD:
       log(LogSeverity.ERROR, "onJoinGuild", `Duplicated server data found with server ID ${ guild.id } (${ guild.name }).`);
@@ -177,7 +175,7 @@ function onLeaveGuild(guild: Guild) {
 
 async function onMemberJoinGuild(member: GuildMember) {
   log(LogSeverity.LOG, "onMemberJoin", `${ member.user.username }#${ member.user.discriminator } joined server ID ${ member.guild.id } (${ member.guild.name })`);
-  await reassignRole(db, member); // TODO: test usage
+  await Roles.reassignRole(db, member); // TODO: test usage
 }
 
 /**

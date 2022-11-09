@@ -1,6 +1,6 @@
 import { EmbedBuilder } from "discord.js";
 import { LogSeverity, log } from "../utils/log";
-import { TimeOperation, getTimeOffsetFromString } from "../utils/time";
+import { TimeOperation, TimeUtils } from "../utils/time";
 import { IDBServerLeaderboardData } from "../types/db/users";
 
 /**
@@ -16,7 +16,7 @@ function createLeaderboardEmbed(data: IDBServerLeaderboardData[], lastUpdated: D
   let hourOffset = 0;
   let minuteOffset = 0;
 
-  const offset = getTimeOffsetFromString(process.env.TZ_OFFSET as string);
+  const offset = TimeUtils.getTimeOffsetFromString(process.env.TZ_OFFSET as string);
   if(typeof(offset) === "undefined") {
     log(LogSeverity.WARN, "createLeaderboardEmbed", "Unable to get time offset from string. Using no offset.");
   }

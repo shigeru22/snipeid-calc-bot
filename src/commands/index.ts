@@ -1,9 +1,13 @@
 import { Client, TextChannel, Message } from "discord.js";
 import { Pool } from "pg";
-import { sendPointLeaderboard } from "./leaderboards";
-import { userLeaderboardsCountFromBathbot, userLeaderboardsCount, userWhatIfCount } from "./count";
-import { verifyUser } from "./verification";
-import { handleConfigCommands } from "./config";
+import Config from "./config";
+import Conversations from "./conversations";
+import Count from "./count";
+import Leaderboards from "./leaderboards";
+import Roles from "./roles";
+import Reactions from "./reactions";
+import UserData from "./userdata";
+import Verification from "./verification";
 
 // Bathbot ID
 const BATHBOT_USER_ID = "297073686916366336";
@@ -25,7 +29,7 @@ async function handleCommands(client: Client, channel: TextChannel, db: Pool, os
   let ret = false;
 
   if(message.author.id === BATHBOT_USER_ID) {
-    await userLeaderboardsCountFromBathbot(client, channel, db, osuToken, message);
+    await Count.userLeaderboardsCountFromBathbot(client, channel, db, osuToken, message);
     ret = true;
   }
   else if(isClientMentioned) {
@@ -33,24 +37,24 @@ async function handleCommands(client: Client, channel: TextChannel, db: Pool, os
 
     switch(contents[1]) {
       case "link":
-        await verifyUser(client, channel, db, osuToken, message);
+        await Verification.verifyUser(client, channel, db, osuToken, message);
         ret = true;
         break;
       case "count":
-        await userLeaderboardsCount(client, channel, db, osuToken, message.author.id);
+        await Count.userLeaderboardsCount(client, channel, db, osuToken, message.author.id);
         ret = true;
         break;
       case "whatif":
-        await userWhatIfCount(client, channel, db, osuToken, message);
+        await Count.userWhatIfCount(client, channel, db, osuToken, message);
         ret = true;
         break;
       case "lb": // fallthrough
       case "leaderboard":
-        await sendPointLeaderboard(channel, db);
+        await Leaderboards.sendPointLeaderboard(channel, db);
         ret = true;
         break;
       case "config":
-        await handleConfigCommands(client, channel, db, message);
+        await Config.handleConfigCommands(client, channel, db, message);
         ret = true;
         break;
     }
@@ -59,4 +63,4 @@ async function handleCommands(client: Client, channel: TextChannel, db: Pool, os
   return ret;
 }
 
-export { handleCommands };
+export { handleCommands, Config, Conversations, Count, Leaderboards, Reactions, Roles, UserData, Verification };

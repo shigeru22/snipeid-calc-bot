@@ -120,4 +120,19 @@ function assignmentSortToString(sort: AssignmentSort): string {
   }
 }
 
+const Commons = {
+  HTTPStatus,
+  OsuUserStatus,
+  OsuApiSuccessStatus,
+  OsuApiErrorStatus,
+  OsuStatsSuccessStatus,
+  OsuStatsErrorStatus,
+  DatabaseErrors,
+  DatabaseSuccess,
+  AssignmentType,
+  AssignmentSort,
+  assignmentSortToString
+};
+
 export { HTTPStatus, OsuUserStatus, OsuApiSuccessStatus, OsuApiErrorStatus, OsuStatsSuccessStatus, OsuStatsErrorStatus, DatabaseErrors, DatabaseSuccess, AssignmentType, AssignmentSort, assignmentSortToString };
+export default Commons;
