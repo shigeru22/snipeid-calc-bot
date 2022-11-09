@@ -1,5 +1,5 @@
 import { Pool, PoolClient, DatabaseError } from "pg";
-import { LogSeverity, log } from "../utils/log";
+import { Log } from "../utils/log";
 import DBUsers from "./users";
 import DBServers from "./servers";
 import { DatabaseErrors, DatabaseSuccess, AssignmentType } from "../utils/common";
@@ -97,19 +97,19 @@ class DBAssignments {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
-            log(LogSeverity.ERROR, "getAssignmentByOsuId", "Database connection failed.");
+            Log.error("getAssignmentByOsuId", "Database connection failed.");
             return {
               status: DatabaseErrors.CONNECTION_ERROR
             };
           default:
-            log(LogSeverity.ERROR, "getAssignmentByOsuId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getAssignmentByOsuId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
         }
       }
       else if(e instanceof Error) {
-        log(LogSeverity.ERROR, "getAssignmentByOsuId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getAssignmentByOsuId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "getAssignmentByOsuId", "Unknown error occurred.");
+        Log.error("getAssignmentByOsuId", "Unknown error occurred.");
       }
 
       return {
@@ -175,19 +175,19 @@ class DBAssignments {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
-            log(LogSeverity.ERROR, "getAssignmentRoleDataByDiscordId", "Database connection failed.");
+            Log.error("getAssignmentRoleDataByDiscordId", "Database connection failed.");
             return {
               status: DatabaseErrors.CONNECTION_ERROR
             };
           default:
-            log(LogSeverity.ERROR, "getAssignmentRoleDataByDiscordId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getAssignmentRoleDataByDiscordId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
         }
       }
       else if(e instanceof Error) {
-        log(LogSeverity.ERROR, "getAssignmentRoleDataByDiscordId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getAssignmentRoleDataByDiscordId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "getAssignmentRoleDataByDiscordId", "Unknown error occurred.");
+        Log.error("getAssignmentRoleDataByDiscordId", "Unknown error occurred.");
       }
 
       return {
@@ -220,7 +220,7 @@ class DBAssignments {
 
         switch(assignmentResult.status) {
           case DatabaseErrors.DUPLICATED_RECORD:
-            log(LogSeverity.ERROR, "insertOrUpdateAssignment", `Duplicated assignment data found in database with osu! ID ${ osuId } (server ID ${ serverDiscordId }).`);
+            Log.error("insertOrUpdateAssignment", `Duplicated assignment data found in database with osu! ID ${ osuId } (server ID ${ serverDiscordId }).`);
         }
 
         return {
@@ -234,7 +234,7 @@ class DBAssignments {
 
         switch(currentRoleResult.status) {
           case DatabaseErrors.NO_RECORD:
-            log(LogSeverity.WARN, "insertOrUpdateAssignment", "Role table is empty.");
+            Log.warn("insertOrUpdateAssignment", "Role table is empty.");
             return {
               status: DatabaseErrors.ROLES_EMPTY
             };
@@ -256,7 +256,7 @@ class DBAssignments {
       {
         const serverResult = await DBServers.getServerByDiscordId(db, serverDiscordId);
         if(serverResult.status !== DatabaseSuccess.OK) {
-          log(LogSeverity.ERROR, "insertOrUpdateAssignment", "Server not found in database.");
+          Log.error("insertOrUpdateAssignment", "Server not found in database.");
 
           return {
             status: DatabaseErrors.CLIENT_ERROR
@@ -284,7 +284,7 @@ class DBAssignments {
             if(ret.status !== DatabaseSuccess.OK) {
               client.release();
 
-              log(LogSeverity.ERROR, "insertOrUpdateAssignment", "Failed to update user due to connection or client error.");
+              Log.error("insertOrUpdateAssignment", "Failed to update user due to connection or client error.");
 
               return {
                 status: ret.status
@@ -304,7 +304,7 @@ class DBAssignments {
           // should not fall here, but whatever
           client.release();
 
-          log(LogSeverity.ERROR, "insertOrUpdateAssignment", "Invalid osuId returned from the database.");
+          Log.error("insertOrUpdateAssignment", "Invalid osuId returned from the database.");
           return {
             status: DatabaseErrors.CLIENT_ERROR
           };
@@ -318,7 +318,7 @@ class DBAssignments {
 
           switch(selectUserResult.status) {
             case DatabaseErrors.USER_NOT_FOUND:
-              log(LogSeverity.LOG, "insertOrUpdateAssignment", "User not found. Skipping assignment data update.");
+              Log.info("insertOrUpdateAssignment", "User not found. Skipping assignment data update.");
               break;
           }
 
@@ -335,7 +335,7 @@ class DBAssignments {
       if(rolesResult.status !== DatabaseSuccess.OK) {
         switch(rolesResult.status) {
           case DatabaseErrors.NO_RECORD:
-            log(LogSeverity.ERROR, "insertOrUpdateAssignment", `No roles returned. Make sure the lowest value (0) exist on server ID ${ serverDiscordId }.`);
+            Log.error("insertOrUpdateAssignment", `No roles returned. Make sure the lowest value (0) exist on server ID ${ serverDiscordId }.`);
         }
 
         return {
@@ -343,15 +343,15 @@ class DBAssignments {
         };
       }
 
-      log(LogSeverity.DEBUG, "insertOrUpdateAssignment", `rolename: ${ rolesResult.data.roleName }, min: ${ rolesResult.data.minPoints }`);
+      Log.debug("insertOrUpdateAssignment", `rolename: ${ rolesResult.data.roleName }, min: ${ rolesResult.data.minPoints }`);
 
       if(insert) {
         await this.insertAssignment(client, userId, rolesResult.data.roleId, serverId);
-        log(LogSeverity.LOG, "insertOrUpdateAssignment", "assignment: Inserted 1 row.");
+        Log.info("insertOrUpdateAssignment", "assignment: Inserted 1 row.");
       }
       else {
         await this.insertAssignment(client, userId, rolesResult.data.roleId, serverId, assignmentId);
-        log(LogSeverity.LOG, "insertOrUpdateAssignment", "assignment: Updated 1 row.");
+        Log.info("insertOrUpdateAssignment", "assignment: Updated 1 row.");
       }
 
       client.release();
@@ -381,19 +381,19 @@ class DBAssignments {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
-            log(LogSeverity.ERROR, "insertOrUpdateAssignment", "Database connection failed.");
+            Log.error("insertOrUpdateAssignment", "Database connection failed.");
             return {
               status: DatabaseErrors.CONNECTION_ERROR
             };
           default:
-            log(LogSeverity.ERROR, "insertOrUpdateAssignment", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("insertOrUpdateAssignment", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
         }
       }
       else if(e instanceof Error) {
-        log(LogSeverity.ERROR, "insertOrUpdateAssignment", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("insertOrUpdateAssignment", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "insertOrUpdateAssignment", "Unknown error occurred.");
+        Log.error("insertOrUpdateAssignment", "Unknown error occurred.");
       }
 
       return {
@@ -467,19 +467,19 @@ class DBAssignments {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
-            log(LogSeverity.ERROR, "getServerUserAssignmentDataByOsuId", "Database connection failed.");
+            Log.error("getServerUserAssignmentDataByOsuId", "Database connection failed.");
             return {
               status: DatabaseErrors.CONNECTION_ERROR
             };
           default:
-            log(LogSeverity.ERROR, "getServerUserAssignmentDataByOsuId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getServerUserAssignmentDataByOsuId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
         }
       }
       else if(e instanceof Error) {
-        log(LogSeverity.ERROR, "getServerUserAssignmentDataByOsuId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getServerUserAssignmentDataByOsuId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "getServerUserAssignmentDataByOsuId", "Unknown error occurred.");
+        Log.error("getServerUserAssignmentDataByOsuId", "Unknown error occurred.");
       }
 
       return {
@@ -545,19 +545,19 @@ class DBAssignments {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
-            log(LogSeverity.ERROR, "getServerUserRoleDataByOsuId", "Database connection failed.");
+            Log.error("getServerUserRoleDataByOsuId", "Database connection failed.");
             return {
               status: DatabaseErrors.CONNECTION_ERROR
             };
           default:
-            log(LogSeverity.ERROR, "getServerUserRoleDataByOsuId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getServerUserRoleDataByOsuId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
         }
       }
       else if(e instanceof Error) {
-        log(LogSeverity.ERROR, "getServerUserRoleDataByOsuId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getServerUserRoleDataByOsuId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "getServerUserRoleDataByOsuId", "Unknown error occurred.");
+        Log.error("getServerUserRoleDataByOsuId", "Unknown error occurred.");
       }
 
       return {
@@ -617,19 +617,19 @@ class DBAssignments {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
-            log(LogSeverity.ERROR, "getTargetServerRoleDataByPoints", "Database connection failed.");
+            Log.error("getTargetServerRoleDataByPoints", "Database connection failed.");
             return {
               status: DatabaseErrors.CONNECTION_ERROR
             };
           default:
-            log(LogSeverity.ERROR, "getTargetServerRoleDataByPoints", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getTargetServerRoleDataByPoints", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
         }
       }
       else if(e instanceof Error) {
-        log(LogSeverity.ERROR, "getTargetServerRoleDataByPoints", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getTargetServerRoleDataByPoints", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "getTargetServerRoleDataByPoints", "Unknown error occurred.");
+        Log.error("getTargetServerRoleDataByPoints", "Unknown error occurred.");
       }
 
       return {
@@ -668,17 +668,17 @@ class DBAssignments {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
-            log(LogSeverity.ERROR, "insertAssignment", "Database connection failed.");
+            Log.error("insertAssignment", "Database connection failed.");
             break;
           default:
-            log(LogSeverity.ERROR, "insertAssignment", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("insertAssignment", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
         }
       }
       else if(e instanceof Error) {
-        log(LogSeverity.ERROR, "insertAssignment", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("insertAssignment", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "insertAssignment", "Unknown error occurred.");
+        Log.error("insertAssignment", "Unknown error occurred.");
       }
 
       return false;
@@ -710,17 +710,17 @@ class DBAssignments {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
-            log(LogSeverity.ERROR, "deleteAssignmentById", "Database connection failed.");
+            Log.error("deleteAssignmentById", "Database connection failed.");
             break;
           default:
-            log(LogSeverity.ERROR, "deleteAssignmentById", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("deleteAssignmentById", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
         }
       }
       else if(e instanceof Error) {
-        log(LogSeverity.ERROR, "deleteAssignmentById", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("deleteAssignmentById", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "deleteAssignmentById", "Unknown error occurred.");
+        Log.error("deleteAssignmentById", "Unknown error occurred.");
       }
 
       return false;

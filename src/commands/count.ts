@@ -8,7 +8,7 @@ import UserData from "./userdata";
 import { calculatePoints, calculateRespektivePoints, counter, counterRespektive } from "../messages/counter";
 import { OsuUserStatus, OsuStatsSuccessStatus, OsuStatsErrorStatus, DatabaseErrors, DatabaseSuccess, OsuApiSuccessStatus, OsuApiErrorStatus } from "../utils/common";
 import { WhatIfParserStatus, Parser } from "../utils";
-import { LogSeverity, log } from "../utils/log";
+import { Log } from "../utils/log";
 
 class Count {// <osc, using Bathbot message response
   /**
@@ -27,7 +27,7 @@ class Count {// <osc, using Bathbot message response
       const isCommand = await DBServers.isCommandChannel(db, channel.guild.id, channel.id);
       switch(isCommand) {
         case false:
-          log(LogSeverity.WARN, "userLeaderboardsCountFromBathbot", `${ channel.guild.id }: Not in commands channel.`); // fallthrough
+          Log.warn("userLeaderboardsCountFromBathbot", `${ channel.guild.id }: Not in commands channel.`); // fallthrough
         case null:
           return;
       }
@@ -91,7 +91,7 @@ class Count {// <osc, using Bathbot message response
     const serverData = await DBServers.getServerByDiscordId(db, channel.guild.id);
 
     if(serverData.status !== DatabaseSuccess.OK) {
-      log(LogSeverity.WARN, "userLeaderboardsCount", "Someone asked for leaderboard count, but server not in database.");
+      Log.warn("userLeaderboardsCount", "Someone asked for leaderboard count, but server not in database.");
       return;
     }
 
@@ -99,7 +99,7 @@ class Count {// <osc, using Bathbot message response
       const isCommand = await DBServers.isCommandChannel(db, channel.guild.id, channel.id);
       switch(isCommand) {
         case false:
-          log(LogSeverity.WARN, "userLeaderboardsCount", `${ channel.guild.id }: Not in commands channel.`);
+          Log.warn("userLeaderboardsCount", `${ channel.guild.id }: Not in commands channel.`);
           await channel.send(`**Error:** Enter this command at <#${ serverData.data.commandsChannelId }> channel.`); // fallthrough
         case null:
           return;
@@ -249,7 +249,7 @@ class Count {// <osc, using Bathbot message response
     const serverData = await DBServers.getServerByDiscordId(db, channel.guild.id);
 
     if(serverData.status !== DatabaseSuccess.OK) {
-      log(LogSeverity.WARN, "userWhatIfCount", "Someone asked for leaderboard count, but server not in database.");
+      Log.warn("userWhatIfCount", "Someone asked for leaderboard count, but server not in database.");
       return;
     }
 
@@ -257,7 +257,7 @@ class Count {// <osc, using Bathbot message response
       const isCommand = await DBServers.isCommandChannel(db, channel.guild.id, channel.id);
       switch(isCommand) {
         case false:
-          log(LogSeverity.WARN, "userWhatIfCount", `${ channel.guild.id }: Not in commands channel.`);
+          Log.warn("userWhatIfCount", `${ channel.guild.id }: Not in commands channel.`);
           await channel.send(`**Error:** Enter this command at <#${ serverData.data.commandsChannelId }> channel.`); // fallthrough
         case null:
           return;
@@ -374,7 +374,7 @@ class Count {// <osc, using Bathbot message response
     const osuUsername = osuUser.data.user.userName as string;
     const useRespektive = typeof(process.env.USE_RESPEKTIVE) === "string" || process.env.USE_RESPEKTIVE === "1";
 
-    log(LogSeverity.LOG, "userWhatIfCount", `Calculating what-ifs for user: ${ osuUsername }`);
+    Log.info("userWhatIfCount", `Calculating what-ifs for user: ${ osuUsername }`);
 
     const topCounts: number[] = [];
     if(!useRespektive) {
@@ -499,7 +499,7 @@ class Count {// <osc, using Bathbot message response
    * @returns { Promise<Message> } Promise object with `Discord.Message` sent message object.
    */
   static async countPoints(client: Client, channel: TextChannel, username: string, topCounts: number[]): Promise<Message> {
-    log(LogSeverity.LOG, "countPoints", `Calculating points for username: ${ username }`);
+    Log.info("countPoints", `Calculating points for username: ${ username }`);
 
     const newPoints = calculatePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3], topCounts[4]);
     const draft = counter(
@@ -527,7 +527,7 @@ class Count {// <osc, using Bathbot message response
    * @returns { Promise<Message> } Promise object with `Discord.Message` sent message object.
    */
   static async countRespektivePoints(client: Client, channel: TextChannel, username: string, topCounts: number[]): Promise<Message> {
-    log(LogSeverity.LOG, "countRespektivePoints", `Calculating points for username: ${ username }`);
+    Log.info("countRespektivePoints", `Calculating points for username: ${ username }`);
 
     const newPoints = calculateRespektivePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3]);
     const draft = counterRespektive(

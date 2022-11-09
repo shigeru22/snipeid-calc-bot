@@ -1,5 +1,5 @@
 import { Client, Message } from "discord.js";
-import { LogSeverity, log } from "../utils/log";
+import { Log } from "../utils/log";
 
 class Reactions {
   /**
@@ -26,7 +26,7 @@ class Reactions {
     }
 
     if(wysi) {
-      log(LogSeverity.LOG, "addWysiReaction", "727 element detected. Adding reaction to message.");
+      Log.info("addWysiReaction", "727 element detected. Adding reaction to message.");
 
       const emoji = client.emojis.cache.get(process.env.OSUHOW_EMOJI_ID as string);
       if(emoji === undefined) {

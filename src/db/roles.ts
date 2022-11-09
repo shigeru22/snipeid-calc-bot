@@ -1,5 +1,5 @@
 import { Pool, DatabaseError } from "pg";
-import { LogSeverity, log } from "../utils/log";
+import { Log } from "../utils/log";
 import { DatabaseErrors, DatabaseSuccess } from "../utils/common";
 import { DBResponseBase } from "../types/db/main";
 import { IDBServerRoleData, IDBServerRoleQueryData } from "../types/db/roles";
@@ -52,19 +52,19 @@ class DBRoles {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
-            log(LogSeverity.ERROR, "getRolesList", "Database connection failed.");
+            Log.error("getRolesList", "Database connection failed.");
             return {
               status: DatabaseErrors.CONNECTION_ERROR
             };
           default:
-            log(LogSeverity.ERROR, "getRolesList", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getRolesList", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
         }
       }
       else if(e instanceof Error) {
-        log(LogSeverity.ERROR, "getRolesList", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getRolesList", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "getRolesList", "Unknown error occurred.");
+        Log.error("getRolesList", "Unknown error occurred.");
       }
 
       return {

@@ -1,5 +1,5 @@
 import { Pool, DatabaseError } from "pg";
-import { LogSeverity, log } from "../utils/log";
+import { Log } from "../utils/log";
 import { DatabaseSuccess, DatabaseErrors } from "../utils/common";
 import { DBResponseBase } from "../types/db/main";
 import { IDBServerQueryData, IDBServerData } from "../types/db/servers";
@@ -52,19 +52,19 @@ class DBServers {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
-            log(LogSeverity.ERROR, "getAllServers", "Database connection failed.");
+            Log.error("getAllServers", "Database connection failed.");
             return {
               status: DatabaseErrors.CONNECTION_ERROR
             };
           default:
-            log(LogSeverity.ERROR, "getAllServers", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getAllServers", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
         }
       }
       else if(e instanceof Error) {
-        log(LogSeverity.ERROR, "getAllServers", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getAllServers", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "getAllServers", "Unknown error occurred.");
+        Log.error("getAllServers", "Unknown error occurred.");
       }
 
       return {
@@ -129,19 +129,19 @@ class DBServers {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
-            log(LogSeverity.ERROR, "getServerByDiscordId", "Database connection failed.");
+            Log.error("getServerByDiscordId", "Database connection failed.");
             return {
               status: DatabaseErrors.CONNECTION_ERROR
             };
           default:
-            log(LogSeverity.ERROR, "getServerByDiscordId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getServerByDiscordId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
         }
       }
       else if(e instanceof Error) {
-        log(LogSeverity.ERROR, "getServerByDiscordId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getServerByDiscordId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "getServerByDiscordId", "Unknown error occurred.");
+        Log.error("getServerByDiscordId", "Unknown error occurred.");
       }
 
       return {
@@ -185,7 +185,7 @@ class DBServers {
 
       await db.query(insertQuery, insertValues);
 
-      log(LogSeverity.LOG, "insertServer", "servers: Inserted 1 row.");
+      Log.info("insertServer", "servers: Inserted 1 row.");
       return {
         status: DatabaseSuccess.OK,
         data: true
@@ -195,19 +195,19 @@ class DBServers {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
-            log(LogSeverity.ERROR, "insertServer", "Database connection failed.");
+            Log.error("insertServer", "Database connection failed.");
             return {
               status: DatabaseErrors.CONNECTION_ERROR
             };
           default:
-            log(LogSeverity.ERROR, "insertServer", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("insertServer", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
         }
       }
       else if(e instanceof Error) {
-        log(LogSeverity.ERROR, "insertServer", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("insertServer", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "insertServer", "Unknown error occurred.");
+        Log.error("insertServer", "Unknown error occurred.");
       }
 
       return {
@@ -227,7 +227,7 @@ class DBServers {
     try {
       await db.query(updateQuery, updateValues);
 
-      log(LogSeverity.LOG, "setServerCountry", "servers: Updated 1 row.");
+      Log.info("setServerCountry", "servers: Updated 1 row.");
       return {
         status: DatabaseSuccess.OK,
         data: true
@@ -237,19 +237,19 @@ class DBServers {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
-            log(LogSeverity.ERROR, "setServerCountry", "Database connection failed.");
+            Log.error("setServerCountry", "Database connection failed.");
             return {
               status: DatabaseErrors.CONNECTION_ERROR
             };
           default:
-            log(LogSeverity.ERROR, "setServerCountry", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("setServerCountry", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
         }
       }
       else if(e instanceof Error) {
-        log(LogSeverity.ERROR, "setServerCountry", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("setServerCountry", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "setServerCountry", "Unknown error occurred.");
+        Log.error("setServerCountry", "Unknown error occurred.");
       }
 
       return {
@@ -269,7 +269,7 @@ class DBServers {
     try {
       await db.query(updateQuery, updateValues);
 
-      log(LogSeverity.LOG, "setVerifiedRoleId", "servers: Updated 1 row.");
+      Log.info("setVerifiedRoleId", "servers: Updated 1 row.");
       return {
         status: DatabaseSuccess.OK,
         data: true
@@ -279,19 +279,19 @@ class DBServers {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
-            log(LogSeverity.ERROR, "setVerifiedRoleId", "Database connection failed.");
+            Log.error("setVerifiedRoleId", "Database connection failed.");
             return {
               status: DatabaseErrors.CONNECTION_ERROR
             };
           default:
-            log(LogSeverity.ERROR, "setVerifiedRoleId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("setVerifiedRoleId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
         }
       }
       else if(e instanceof Error) {
-        log(LogSeverity.ERROR, "setVerifiedRoleId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("setVerifiedRoleId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "setVerifiedRoleId", "Unknown error occurred.");
+        Log.error("setVerifiedRoleId", "Unknown error occurred.");
       }
 
       return {
@@ -311,7 +311,7 @@ class DBServers {
     try {
       await db.query(updateQuery, updateValues);
 
-      log(LogSeverity.LOG, "setServerCountry", "servers: Updated 1 row.");
+      Log.info("setServerCountry", "servers: Updated 1 row.");
       return {
         status: DatabaseSuccess.OK,
         data: true
@@ -321,19 +321,19 @@ class DBServers {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
-            log(LogSeverity.ERROR, "setCommandsChannelId", "Database connection failed.");
+            Log.error("setCommandsChannelId", "Database connection failed.");
             return {
               status: DatabaseErrors.CONNECTION_ERROR
             };
           default:
-            log(LogSeverity.ERROR, "setCommandsChannelId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("setCommandsChannelId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
         }
       }
       else if(e instanceof Error) {
-        log(LogSeverity.ERROR, "setCommandsChannelId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("setCommandsChannelId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "setCommandsChannelId", "Unknown error occurred.");
+        Log.error("setCommandsChannelId", "Unknown error occurred.");
       }
 
       return {
@@ -353,7 +353,7 @@ class DBServers {
     try {
       await db.query(updateQuery, updateValues);
 
-      log(LogSeverity.LOG, "setLeaderboardsChannelId", "servers: Updated 1 row.");
+      Log.info("setLeaderboardsChannelId", "servers: Updated 1 row.");
       return {
         status: DatabaseSuccess.OK,
         data: true
@@ -363,19 +363,19 @@ class DBServers {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
-            log(LogSeverity.ERROR, "setLeaderboardsChannelId", "Database connection failed.");
+            Log.error("setLeaderboardsChannelId", "Database connection failed.");
             return {
               status: DatabaseErrors.CONNECTION_ERROR
             };
           default:
-            log(LogSeverity.ERROR, "setLeaderboardsChannelId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("setLeaderboardsChannelId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
         }
       }
       else if(e instanceof Error) {
-        log(LogSeverity.ERROR, "setLeaderboardsChannelId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("setLeaderboardsChannelId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "setLeaderboardsChannelId", "Unknown error occurred.");
+        Log.error("setLeaderboardsChannelId", "Unknown error occurred.");
       }
 
       return {
@@ -388,7 +388,7 @@ class DBServers {
     const serverData = await this.getServerByDiscordId(db, serverDiscordId);
 
     if(serverData.status !== DatabaseSuccess.OK) {
-      log(LogSeverity.ERROR, "isCommandChannel", "An error occurred while querying server in database.");
+      Log.error("isCommandChannel", "An error occurred while querying server in database.");
       return null;
     }
 
@@ -403,7 +403,7 @@ class DBServers {
     const serverData = await this.getServerByDiscordId(db, serverDiscordId);
 
     if(serverData.status !== DatabaseSuccess.OK) {
-      log(LogSeverity.ERROR, "isLeaderboardChannel", "An error occurred while querying server in database.");
+      Log.error("isLeaderboardChannel", "An error occurred while querying server in database.");
       return null;
     }
 

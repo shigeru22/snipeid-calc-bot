@@ -3,7 +3,7 @@ import { Pool } from "pg";
 import { DBServers } from "../db";
 import UserData from "./userdata";
 import Roles from "./roles";
-import { LogSeverity, log } from "../utils/log";
+import { Log } from "../utils/log";
 import { DatabaseSuccess } from "../utils/common";
 
 class Verification {
@@ -22,7 +22,7 @@ class Verification {
     const serverData = await DBServers.getServerByDiscordId(db, channel.guild.id);
 
     if(serverData.status !== DatabaseSuccess.OK) {
-      log(LogSeverity.WARN, "verifyUser", "Someone asked for user verification, but server not in database.");
+      Log.warn("verifyUser", "Someone asked for user verification, but server not in database.");
       return;
     }
 
@@ -63,7 +63,7 @@ class Verification {
     await channel.send(`Linked Discord user <@${ message.author.id }> to osu! user **${ osuUser.userName }**.`);
 
     if(serverData.data.verifiedRoleId === null) {
-      log(LogSeverity.LOG, "verifyUser", `${ serverData.data.discordId }: Server's verifiedRoleId not set. Role granting skipped.`);
+      Log.info("verifyUser", `${ serverData.data.discordId }: Server's verifiedRoleId not set. Role granting skipped.`);
       return;
     }
 

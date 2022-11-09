@@ -1,5 +1,5 @@
 import { TextChannel } from "discord.js";
-import { LogSeverity, log } from "../utils/log";
+import { Log } from "../utils/log";
 import { greet, agree, disagree, notUnderstood } from "../messages/msg";
 
 class Conversations {
@@ -35,10 +35,10 @@ class Conversations {
     }
 
     if(isUnderstood) {
-      log(LogSeverity.LOG, "sendMessage", `Chat response sent to channel: #${ channel.name }`);
+      Log.info("sendMessage", `Chat response sent to channel: #${ channel.name }`);
     }
     else {
-      log(LogSeverity.LOG, "sendMessage", `Unknown command "${ contents[1] }" response sent to channel: #${ channel.name }`);
+      Log.info("sendMessage", `Unknown command "${ contents[1] }" response sent to channel: #${ channel.name }`);
     }
 
     await channel.send(reply);

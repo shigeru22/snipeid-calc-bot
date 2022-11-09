@@ -1,6 +1,6 @@
 import { TextChannel } from "discord.js";
 import { Pool } from "pg";
-import { LogSeverity, log } from "../utils/log";
+import { Log } from "../utils/log";
 import { DBUsers, DBServers } from "../db";
 import { DatabaseErrors, DatabaseSuccess } from "../utils/common";
 import { createLeaderboardEmbed } from "../messages/leaderboard";
@@ -18,7 +18,7 @@ class Leaderboards {
     const serverData = await DBServers.getServerByDiscordId(db, channel.guild.id);
 
     if(serverData.status !== DatabaseSuccess.OK) {
-      log(LogSeverity.WARN, "sendPointLeaderboard", "Someone asked for leaderboard count, but server not in database.");
+      Log.warn("sendPointLeaderboard", "Someone asked for leaderboard count, but server not in database.");
       return;
     }
 
@@ -26,16 +26,16 @@ class Leaderboards {
       const isCommand = await DBServers.isLeaderboardChannel(db, channel.guild.id, channel.id);
       switch(isCommand) {
         case false:
-          log(LogSeverity.WARN, "sendPointLeaderboard", `${ channel.guild.id }: Not in commands channel.`);
+          Log.warn("sendPointLeaderboard", `${ channel.guild.id }: Not in commands channel.`);
           await channel.send(`**Error:** Enter this command at <#${ serverData.data.leaderboardsChannelId }> channel.`); // fallthrough
         case null:
           return;
       }
     }
 
-    log(LogSeverity.LOG, "sendPointLeaderboard", "Retrieving leaderboard data.");
+    Log.info("sendPointLeaderboard", "Retrieving leaderboard data.");
 
-    log(LogSeverity.DEBUG, "sendPointLeaderboard", `country: ${ serverData.data.country }`);
+    Log.debug("sendPointLeaderboard", `country: ${ serverData.data.country }`);
 
     const rankings = serverData.data.country === null ? await DBUsers.getPointsLeaderboard(db, channel.guild.id) : await DBUsers.getPointsLeaderboardByCountry(db, channel.guild.id, serverData.data.country.toUpperCase());
 
@@ -81,7 +81,7 @@ class Leaderboards {
     const draft = createLeaderboardEmbed(rankings.data, lastUpdated);
     await channel.send({ embeds: [ draft ] });
 
-    log(LogSeverity.LOG, "sendPointLeaderboard", `Leaderboard sent for server ID ${ channel.guildId } (${ channel.guild.name }).`);
+    Log.info("sendPointLeaderboard", `Leaderboard sent for server ID ${ channel.guildId } (${ channel.guild.name }).`);
   }
 }
 

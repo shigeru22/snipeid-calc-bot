@@ -1,5 +1,5 @@
 import { Pool, DatabaseError } from "pg";
-import { LogSeverity, log } from "../utils/log";
+import { Log } from "../utils/log";
 import { DatabaseErrors, DatabaseSuccess } from "../utils/common";
 import { DBResponseBase } from "../types/db/main";
 import { IDBServerUserData, IDBServerLeaderboardQueryData, IDBServerUserQueryData, IDBServerLeaderboardData } from "../types/db/users";
@@ -49,19 +49,19 @@ class DBUsers {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
-            log(LogSeverity.ERROR, "getDiscordUserById", "Database connection failed.");
+            Log.error("getDiscordUserById", "Database connection failed.");
             return {
               status: DatabaseErrors.CONNECTION_ERROR
             };
           default:
-            log(LogSeverity.ERROR, "getDiscordUserById", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getDiscordUserById", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
         }
       }
       else if(e instanceof Error) {
-        log(LogSeverity.ERROR, "getDiscordUserById", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getDiscordUserById", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "getDiscordUserById", "Unknown error occurred.");
+        Log.error("getDiscordUserById", "Unknown error occurred.");
       }
 
       return {
@@ -104,7 +104,7 @@ class DBUsers {
       }
 
       if(discordUserResult.rows[0].osuid !== osuId) {
-        log(LogSeverity.ERROR, "getDiscordUserByOsuId", "Invalid row returned.");
+        Log.error("getDiscordUserByOsuId", "Invalid row returned.");
         return {
           status: DatabaseErrors.CLIENT_ERROR
         };
@@ -126,19 +126,19 @@ class DBUsers {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
-            log(LogSeverity.ERROR, "getDiscordUserByOsuId", "Database connection failed.");
+            Log.error("getDiscordUserByOsuId", "Database connection failed.");
             return {
               status: DatabaseErrors.CONNECTION_ERROR
             };
           default:
-            log(LogSeverity.ERROR, "getDiscordUserByOsuId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getDiscordUserByOsuId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
         }
       }
       else if(e instanceof Error) {
-        log(LogSeverity.ERROR, "getDiscordUserByOsuId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getDiscordUserByOsuId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "getDiscordUserByOsuId", "Unknown error occurred.");
+        Log.error("getDiscordUserByOsuId", "Unknown error occurred.");
       }
 
       return {
@@ -195,19 +195,19 @@ class DBUsers {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
-            log(LogSeverity.ERROR, "getDiscordUserByDiscordId", "Database connection failed.");
+            Log.error("getDiscordUserByDiscordId", "Database connection failed.");
             return {
               status: DatabaseErrors.CONNECTION_ERROR
             };
           default:
-            log(LogSeverity.ERROR, "getDiscordUserByDiscordId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getDiscordUserByDiscordId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
         }
       }
       else if(e instanceof Error) {
-        log(LogSeverity.ERROR, "getDiscordUserByDiscordId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getDiscordUserByDiscordId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "getDiscordUserByDiscordId", "Unknown error occurred.");
+        Log.error("getDiscordUserByDiscordId", "Unknown error occurred.");
       }
 
       return {
@@ -264,19 +264,19 @@ class DBUsers {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
-            log(LogSeverity.ERROR, "getPointsLeaderboard", "Database connection failed.");
+            Log.error("getPointsLeaderboard", "Database connection failed.");
             return {
               status: DatabaseErrors.CONNECTION_ERROR
             };
           default:
-            log(LogSeverity.ERROR, "getPointsLeaderboard", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getPointsLeaderboard", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
         }
       }
       else if(e instanceof Error) {
-        log(LogSeverity.ERROR, "getPointsLeaderboard", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getPointsLeaderboard", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "getPointsLeaderboard", "Unknown error occurred.");
+        Log.error("getPointsLeaderboard", "Unknown error occurred.");
       }
 
       return {
@@ -334,19 +334,19 @@ class DBUsers {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
-            log(LogSeverity.ERROR, "getPointsLeaderboardByCountry", "Database connection failed.");
+            Log.error("getPointsLeaderboardByCountry", "Database connection failed.");
             return {
               status: DatabaseErrors.CONNECTION_ERROR
             };
           default:
-            log(LogSeverity.ERROR, "getPointsLeaderboardByCountry", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getPointsLeaderboardByCountry", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
         }
       }
       else if(e instanceof Error) {
-        log(LogSeverity.ERROR, "getPointsLeaderboardByCountry", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getPointsLeaderboardByCountry", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "getPointsLeaderboardByCountry", "Unknown error occurred.");
+        Log.error("getPointsLeaderboardByCountry", "Unknown error occurred.");
       }
 
       return {
@@ -404,19 +404,19 @@ class DBUsers {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
-            log(LogSeverity.ERROR, "getLastPointUpdate", "Database connection failed.");
+            Log.error("getLastPointUpdate", "Database connection failed.");
             return {
               status: DatabaseErrors.CONNECTION_ERROR
             };
           default:
-            log(LogSeverity.ERROR, "getLastPointUpdate", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getLastPointUpdate", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
         }
       }
       else if(e instanceof Error) {
-        log(LogSeverity.ERROR, "getLastPointUpdate", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getLastPointUpdate", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "getLastPointUpdate", "Unknown error occurred.");
+        Log.error("getLastPointUpdate", "Unknown error occurred.");
       }
 
       return {
@@ -499,7 +499,7 @@ class DBUsers {
       await client.query(insertQuery, insertValues);
       client.release();
 
-      log(LogSeverity.LOG, "insertUser", "users: Inserted 1 row.");
+      Log.info("insertUser", "users: Inserted 1 row.");
       return {
         status: DatabaseSuccess.OK,
         data: true
@@ -509,19 +509,19 @@ class DBUsers {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
-            log(LogSeverity.ERROR, "insertUser", "Database connection failed.");
+            Log.error("insertUser", "Database connection failed.");
             return {
               status: DatabaseErrors.CONNECTION_ERROR
             };
           default:
-            log(LogSeverity.ERROR, "insertUser", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("insertUser", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
         }
       }
       else if(e instanceof Error) {
-        log(LogSeverity.ERROR, "insertUser", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("insertUser", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "insertUser", "Unknown error occurred.");
+        Log.error("insertUser", "Unknown error occurred.");
       }
 
       return {
@@ -568,7 +568,7 @@ class DBUsers {
     try {
       await db.query(updateQuery, updateValues);
 
-      log(LogSeverity.LOG, "updateUser", "users: Updated 1 row.");
+      Log.info("updateUser", "users: Updated 1 row.");
       return {
         status: DatabaseSuccess.OK,
         data: true
@@ -578,19 +578,19 @@ class DBUsers {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
-            log(LogSeverity.ERROR, "updateUser", "Database connection failed.");
+            Log.error("updateUser", "Database connection failed.");
             return {
               status: DatabaseErrors.CONNECTION_ERROR
             };
           default:
-            log(LogSeverity.ERROR, "updateUser", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("updateUser", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
         }
       }
       else if(e instanceof Error) {
-        log(LogSeverity.ERROR, "updateUser", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("updateUser", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "updateUser", "Unknown error occurred.");
+        Log.error("updateUser", "Unknown error occurred.");
       }
 
       return {

@@ -1,6 +1,6 @@
 import { Client, TextChannel } from "discord.js";
 import { Pool } from "pg";
-import { LogSeverity, log } from "../utils/log";
+import { Log } from "../utils/log";
 import { getUserByOsuId } from "../api/osu";
 import { getTopCounts } from "../api/osustats";
 import { DBAssignments, DBUsers, DBServers } from "../db";
@@ -26,11 +26,11 @@ class UserData {
     const serverData = await DBServers.getServerByDiscordId(db, channel.guild.id);
 
     if(serverData.status !== DatabaseSuccess.OK) {
-      log(LogSeverity.WARN, "DBUsers.updateUserData", "Someone asked for user data update, but server not in database.");
+      Log.warn("DBUsers.updateUserData", "Someone asked for user data update, but server not in database.");
       return;
     }
 
-    log(LogSeverity.DEBUG, "DBUsers.updateUserData", `Updating user data for osu! ID ${ osuId }.`);
+    Log.debug("DBUsers.updateUserData", `Updating user data for osu! ID ${ osuId }.`);
 
     const osuUser = await getUserByOsuId(osuToken, typeof(osuId) === "number" ? osuId : parseInt(osuId, 10));
     {
@@ -99,12 +99,12 @@ class UserData {
 
     try {
       if(assignmentResult.data.role.newRoleId === "0" && (typeof(assignmentResult.data.role.oldRoleId === "undefined") || (typeof(assignmentResult.data.role.oldRoleId) === "string" && assignmentResult.data.role.oldRoleId === "0"))) { // no role
-        log(LogSeverity.LOG, "DBUsers.updateUserData", "newRoleId is either zero or oldRoleId is not available. Skipping role granting.");
+        Log.info("DBUsers.updateUserData", "newRoleId is either zero or oldRoleId is not available. Skipping role granting.");
         return;
       }
 
       if(assignmentResult.data.role.oldRoleId === assignmentResult.data.role.newRoleId) {
-        log(LogSeverity.LOG, "DBUsers.updateUserData", "Role is currently the same. Skipping role granting.");
+        Log.info("DBUsers.updateUserData", "Role is currently the same. Skipping role granting.");
         return;
       }
 
@@ -122,19 +122,19 @@ class UserData {
               if(oldRole === null) {
                 // TODO: handle role re-addition after failed on next query
 
-                log(LogSeverity.WARN, "DBUsers.updateUserData", `Role with ID ${ assignmentResult.data.role.oldRoleId } from server with ID ${ serverData.data.discordId } (${ server.name }) can't be found. Informing server channel.`);
+                Log.warn("DBUsers.updateUserData", `Role with ID ${ assignmentResult.data.role.oldRoleId } from server with ID ${ serverData.data.discordId } (${ server.name }) can't be found. Informing server channel.`);
                 await channel.send("**Note:** Roles might have been changed. Check configurations for this server.");
 
                 warned = true;
               }
               else {
                 await member.roles.remove(oldRole);
-                log(LogSeverity.LOG, "DBUsers.updateUserData", `Role ${ oldRole.name } removed from user ${ member.user.username }#${ member.user.discriminator }.`);
+                Log.info("DBUsers.updateUserData", `Role ${ oldRole.name } removed from user ${ member.user.username }#${ member.user.discriminator }.`);
               }
             }
 
             if(assignmentResult.data.role.newRoleId === "0") {
-              log(LogSeverity.LOG, "DBUsers.updateUserData", "newRoleId is zero. Skipping role granting.");
+              Log.info("DBUsers.updateUserData", "newRoleId is zero. Skipping role granting.");
               await channel.send("You have been demoted to no role. Fight back at those leaderboards!");
 
               break; // break if new role is no role
@@ -148,7 +148,7 @@ class UserData {
             const newRole = await server.roles.fetch(assignmentResult.data.role.newRoleId);
 
             if(newRole === null) {
-              log(LogSeverity.WARN, "DBUsers.updateUserData", `Role with ID ${ assignmentResult.data.role.oldRoleId } from server with ID ${ serverData.data.serverId } (${ server.name }) can't be found. Informing server channel.`);
+              Log.warn("DBUsers.updateUserData", `Role with ID ${ assignmentResult.data.role.oldRoleId } from server with ID ${ serverData.data.serverId } (${ server.name }) can't be found. Informing server channel.`);
 
               if(!warned) {
                 await channel.send("**Note:** Roles might have been changed. Check configurations for this server.");
@@ -156,7 +156,7 @@ class UserData {
             }
             else {
               await member.roles.add(newRole);
-              log(LogSeverity.LOG, "DBUsers.updateUserData", `Role ${ newRole.name } added to user ${ member.user.username }#${ member.user.discriminator }.`);
+              Log.info("DBUsers.updateUserData", `Role ${ newRole.name } added to user ${ member.user.username }#${ member.user.discriminator }.`);
               updated = true;
             }
           }
@@ -171,10 +171,10 @@ class UserData {
     }
     catch (e) {
       if(e instanceof Error) {
-        log(LogSeverity.ERROR, "DBUsers.updateUserData", `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("DBUsers.updateUserData", `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "DBUsers.updateUserData", "Unknown error occurred.");
+        Log.error("DBUsers.updateUserData", "Unknown error occurred.");
       }
 
       await channel.send("**Error:** Unable to assign your role. Please contact bot administrator.");
@@ -191,7 +191,7 @@ class UserData {
    * @returns { Promise<IDBServerUserData | false> } Promise object with `userId`, `discordId`, and `osuId`, or `false` if user was not found.
    */
   static async fetchUser(channel: TextChannel, db: Pool, discordId: string): Promise<IDBServerUserData | false> {
-    log(LogSeverity.DEBUG, "fetchUser", `Fetching user with ID ${ discordId }.`);
+    Log.debug("fetchUser", `Fetching user with ID ${ discordId }.`);
 
     const user = await DBUsers.getDiscordUserByDiscordId(db, discordId);
     if(user.status !== DatabaseSuccess.OK) {
@@ -206,7 +206,7 @@ class UserData {
           await channel.send("**Error**: Client error has occurred. Please contact bot administrator.");
           break;
         default:
-          log(LogSeverity.ERROR, "fetchUser", "Unknown user fetch return value.");
+          Log.error("fetchUser", "Unknown user fetch return value.");
           break;
       }
 
@@ -226,7 +226,7 @@ class UserData {
    * @returns { Promise<IOsuUserData | false> } Promise object with `status` and `username`, or `false` in case of errors.
    */
   static async fetchOsuUser(channel: TextChannel, token: string, osuId: number | string): Promise<IOsuUserData | false> {
-    log(LogSeverity.DEBUG, "fetchOsuUser", `Fetching osu! user with ID ${ osuId }.`);
+    Log.debug("fetchOsuUser", `Fetching osu! user with ID ${ osuId }.`);
 
     const osuUser = await getUserByOsuId(token, typeof(osuId) === "number" ? osuId : parseInt(osuId, 10));
     {
@@ -274,7 +274,7 @@ class UserData {
    * @returns { Promise<number[] | boolean> } Promise object with number of ranks array (top 1, 8, 15, 25, and 50), or `false` in case of errors.
    */
   static async fetchOsuStats(channel: TextChannel, osuUsername: string): Promise<number[] | boolean> {
-    log(LogSeverity.DEBUG, "fetchOsuStats", `Fetching osu!Stats data for username ${ osuUsername }.`);
+    Log.debug("fetchOsuStats", `Fetching osu!Stats data for username ${ osuUsername }.`);
 
     const topCountsRequests = [
       getTopCounts(osuUsername, 1),
@@ -335,7 +335,7 @@ class UserData {
    * @returns { Promise<boolean> } Promise object with `true` if user was linked, or `false` in case of errors.
    */
   static async insertUserData(channel: TextChannel, db: Pool, discordId: string, osuId: number | string, osuUsername: string, countryCode: string): Promise<boolean> {
-    log(LogSeverity.DEBUG, "DBUsers.insertUserData", `Inserting user data for osu! ID ${ osuId } to Discord user ID ${ discordId }.`);
+    Log.debug("DBUsers.insertUserData", `Inserting user data for osu! ID ${ osuId } to Discord user ID ${ discordId }.`);
 
     const result = await DBUsers.insertUser(
       db,

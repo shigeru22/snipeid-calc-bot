@@ -2,7 +2,7 @@ import { Client, TextChannel, Message, PermissionFlagsBits, Role } from "discord
 import { Pool } from "pg";
 import { DBServers } from "../db";
 import { createConfigCommandsEmbed, createServerConfigurationEmbed } from "../messages/config";
-import { LogSeverity, log } from "../utils/log";
+import { Log } from "../utils/log";
 import { DatabaseErrors, DatabaseSuccess } from "../utils/common";
 
 class Config {
@@ -52,13 +52,13 @@ class Config {
     const serverData = await DBServers.getServerByDiscordId(db, channel.guild.id);
 
     if(serverData.status !== DatabaseSuccess.OK) {
-      log(LogSeverity.WARN, "userLeaderboardsCount", "Someone asked for server configuration, but server not in database.");
+      Log.warn("userLeaderboardsCount", "Someone asked for server configuration, but server not in database.");
       return;
     }
 
     await channel.sendTyping();
 
-    log(LogSeverity.LOG, "sendServerConfiguration", `Sending configuration for server ID ${ channel.guild.id } (${ channel.guild.name })`);
+    Log.info("sendServerConfiguration", `Sending configuration for server ID ${ channel.guild.id } (${ channel.guild.name })`);
 
     const guildName = channel.guild.name;
     const guildIconUrl = channel.guild.iconURL();
@@ -79,7 +79,7 @@ class Config {
     const serverData = await DBServers.getServerByDiscordId(db, channel.guild.id);
 
     if(serverData.status !== DatabaseSuccess.OK) {
-      log(LogSeverity.WARN, "setServerCountryConfiguration", "Someone asked for server configuration, but server not in database.");
+      Log.warn("setServerCountryConfiguration", "Someone asked for server configuration, but server not in database.");
       return;
     }
 
@@ -95,10 +95,10 @@ class Config {
     }
 
     if(!disable) {
-      log(LogSeverity.LOG, "setServerCountryConfiguration", `Setting ${ channel.guild.name } server country configuration to ${ contents[3].toUpperCase() }...`);
+      Log.info("setServerCountryConfiguration", `Setting ${ channel.guild.name } server country configuration to ${ contents[3].toUpperCase() }...`);
     }
     else {
-      log(LogSeverity.LOG, "setServerCountryConfiguration", `Disabling ${ channel.guild.name } server country configuration...`);
+      Log.info("setServerCountryConfiguration", `Disabling ${ channel.guild.name } server country configuration...`);
     }
 
     const result = await DBServers.setServerCountry(db, channel.guild.id, !disable ? contents[3] : null);
@@ -123,7 +123,7 @@ class Config {
     const serverData = await DBServers.getServerByDiscordId(db, channel.guild.id);
 
     if(serverData.status !== DatabaseSuccess.OK) {
-      log(LogSeverity.WARN, "setServerVerifiedRoleIdConfiguration", "Someone asked for server configuration, but server not in database.");
+      Log.warn("setServerVerifiedRoleIdConfiguration", "Someone asked for server configuration, but server not in database.");
       return;
     }
 
@@ -162,10 +162,10 @@ class Config {
     }
 
     if(!disable) {
-      log(LogSeverity.LOG, "setServerVerifiedRoleIdConfiguration", `Setting ${ channel.guild.name } server verified role ID to ${ roleId } (${ roleName })...`);
+      Log.info("setServerVerifiedRoleIdConfiguration", `Setting ${ channel.guild.name } server verified role ID to ${ roleId } (${ roleName })...`);
     }
     else {
-      log(LogSeverity.LOG, "setServerCountryConfiguration", `Disabling ${ channel.guild.name } server verified role ID configuration...`);
+      Log.info("setServerCountryConfiguration", `Disabling ${ channel.guild.name } server verified role ID configuration...`);
     }
 
     const result = await DBServers.setVerifiedRoleId(db, channel.guild.id, !disable ? roleId : null);
@@ -190,7 +190,7 @@ class Config {
     const serverData = await DBServers.getServerByDiscordId(db, channel.guild.id);
 
     if(serverData.status !== DatabaseSuccess.OK) {
-      log(LogSeverity.WARN, "setServerCommandsChannelConfiguration", "Someone asked for server configuration, but server not in database.");
+      Log.warn("setServerCommandsChannelConfiguration", "Someone asked for server configuration, but server not in database.");
       return;
     }
 
@@ -233,10 +233,10 @@ class Config {
     }
 
     if(!disable) {
-      log(LogSeverity.LOG, "setServerCommandsChannelConfiguration", `Setting ${ channel.guild.name } server commands channel ID to ${ channelId } (${ channelName })...`);
+      Log.info("setServerCommandsChannelConfiguration", `Setting ${ channel.guild.name } server commands channel ID to ${ channelId } (${ channelName })...`);
     }
     else {
-      log(LogSeverity.LOG, "setServerCountryConfiguration", `Disabling ${ channel.guild.name } server commands channel ID configuration...`);
+      Log.info("setServerCountryConfiguration", `Disabling ${ channel.guild.name } server commands channel ID configuration...`);
     }
 
     const result = await DBServers.setCommandsChannelId(db, channel.guild.id, !disable ? channelId : null);
@@ -261,7 +261,7 @@ class Config {
     const serverData = await DBServers.getServerByDiscordId(db, channel.guild.id);
 
     if(serverData.status !== DatabaseSuccess.OK) {
-      log(LogSeverity.WARN, "setServerLeaderboardsChannelConfiguration", "Someone asked for server configuration, but server not in database.");
+      Log.warn("setServerLeaderboardsChannelConfiguration", "Someone asked for server configuration, but server not in database.");
       return;
     }
 
@@ -304,10 +304,10 @@ class Config {
     }
 
     if(!disable) {
-      log(LogSeverity.LOG, "setServerLeaderboardsChannelConfiguration", `Setting ${ channel.guild.name } server leaderboard commands channel ID to ${ channelId } (${ channelName })...`);
+      Log.info("setServerLeaderboardsChannelConfiguration", `Setting ${ channel.guild.name } server leaderboard commands channel ID to ${ channelId } (${ channelName })...`);
     }
     else {
-      log(LogSeverity.LOG, "setServerCountryConfiguration", `Disabling ${ channel.guild.name } server leaderboard commands channel ID configuration...`);
+      Log.info("setServerCountryConfiguration", `Disabling ${ channel.guild.name } server leaderboard commands channel ID configuration...`);
     }
 
     const result = await DBServers.setLeaderboardsChannelId(db, channel.guild.id, !disable ? channelId : null);

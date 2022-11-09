@@ -8,7 +8,7 @@ import { DBServers } from "./db";
 import { handleCommands, Conversations, Roles } from "./commands";
 import { Environment } from "./utils";
 import { DatabaseErrors } from "./utils/common";
-import { LogSeverity, log } from "./utils/log";
+import { Log } from "./utils/log";
 
 // configure environment variable file (if any)
 dotenv.config();
@@ -68,15 +68,15 @@ async function onStartup() {
   await token.getToken();
 
   if(typeof(dbConfig.ssl) !== "undefined") {
-    log(LogSeverity.LOG, "onStartup", `Using SSL for database connection, CA path: ${ process.env.DB_SSL_CA }`);
+    Log.info("onStartup", `Using SSL for database connection, CA path: ${ process.env.DB_SSL_CA }`);
   }
   else {
-    log(LogSeverity.WARN, "onStartup", "Not using SSL for database connection. Caute procedere.");
+    Log.warn("onStartup", "Not using SSL for database connection. Caute procedere.");
   }
 
   // test connection before continuing
   {
-    log(LogSeverity.LOG, "onStartup", "Testing database connection...");
+    Log.info("onStartup", "Testing database connection...");
 
     try {
       const dbTemp = await db.connect();
@@ -84,27 +84,27 @@ async function onStartup() {
     }
     catch (e) {
       if(e instanceof Error) {
-        log(LogSeverity.ERROR, "onStartup", `Database connection error.\n${ e.stack }`);
+        Log.error("onStartup", `Database connection error.\n${ e.stack }`);
       }
       else {
-        log(LogSeverity.ERROR, "onStartup", `Unknown error occurred while connecting to database.\n${ e }`);
+        Log.error("onStartup", `Unknown error occurred while connecting to database.\n${ e }`);
       }
 
       process.exit(1);
     }
 
-    log(LogSeverity.LOG, "onStartup", "Successfully connected to database.");
+    Log.info("onStartup", "Successfully connected to database.");
   }
 
   if(client.user === null) {
     // this should not happen, but whatever
-    log(LogSeverity.ERROR, "onStartup", "client.user is null.");
+    Log.error("onStartup", "client.user is null.");
     client.destroy();
     process.exit(1);
   }
 
   client.user.setActivity("Bathbot everyday", { type: ActivityType.Watching });
-  log(LogSeverity.LOG, "onStartup", process.env.BOT_NAME + " is now running.");
+  Log.info("onStartup", process.env.BOT_NAME + " is now running.");
 }
 
 /**
@@ -115,7 +115,7 @@ async function onStartup() {
 async function onNewMessage(msg: Message) {
   if(client.user === null) {
     // this should not happen, but whatever
-    log(LogSeverity.ERROR, "onNewMessage", "client.user is null.");
+    Log.error("onNewMessage", "client.user is null.");
     client.destroy();
     process.exit(1);
   }
@@ -148,20 +148,20 @@ async function onJoinGuild(guild: Guild) {
   const result = await DBServers.insertServer(db, guild.id);
   switch(result.status) {
     case DatabaseErrors.DUPLICATED_RECORD:
-      log(LogSeverity.ERROR, "onJoinGuild", `Duplicated server data found with server ID ${ guild.id } (${ guild.name }).`);
+      Log.error("onJoinGuild", `Duplicated server data found with server ID ${ guild.id } (${ guild.name }).`);
       return;
     case DatabaseErrors.CONNECTION_ERROR: // fallthrough
     case DatabaseErrors.CLIENT_ERROR: // TODO: handle insertion by queuing
-      log(LogSeverity.ERROR, "onJoinGuild", `Failed to query database after joining server ID ${ guild.id } (${ guild.name }).`);
+      Log.error("onJoinGuild", `Failed to query database after joining server ID ${ guild.id } (${ guild.name }).`);
       return;
   }
 
   if(result.status === DatabaseErrors.DUPLICATED_DISCORD_ID) {
-    log(LogSeverity.LOG, "onJoinGuild", `Rejoined server with ID ${ guild.id } (${ guild.name }).`);
+    Log.info("onJoinGuild", `Rejoined server with ID ${ guild.id } (${ guild.name }).`);
     return;
   }
 
-  log(LogSeverity.LOG, "onJoinGuild", `Joined server with ID ${ guild.id } (${ guild.name }).`);
+  Log.info("onJoinGuild", `Joined server with ID ${ guild.id } (${ guild.name }).`);
 }
 
 /**
@@ -170,11 +170,11 @@ async function onJoinGuild(guild: Guild) {
  * @param { Message } guild Entered guild object.
  */
 function onLeaveGuild(guild: Guild) {
-  log(LogSeverity.LOG, "onJoinGuild", `Left server with ID ${ guild.id } (${ guild.name }).`);
+  Log.info("onJoinGuild", `Left server with ID ${ guild.id } (${ guild.name }).`);
 }
 
 async function onMemberJoinGuild(member: GuildMember) {
-  log(LogSeverity.LOG, "onMemberJoin", `${ member.user.username }#${ member.user.discriminator } joined server ID ${ member.guild.id } (${ member.guild.name })`);
+  Log.info("onMemberJoin", `${ member.user.username }#${ member.user.discriminator } joined server ID ${ member.guild.id } (${ member.guild.name })`);
   await Roles.reassignRole(db, member); // TODO: test usage
 }
 
@@ -186,14 +186,14 @@ async function onMemberJoinGuild(member: GuildMember) {
 function onException(e: unknown) {
   if(e instanceof Error) {
     if(e.name === "Error [TOKEN_INVALID]") {
-      log(LogSeverity.ERROR, "onException", "Invalid token provided. Check token in .env file and restart the client.");
+      Log.error("onException", "Invalid token provided. Check token in .env file and restart the client.");
     }
     else {
-      log(LogSeverity.ERROR, "onException", `Unhandled error occurred. Exception details below.\n${ e.stack }`);
+      Log.error("onException", `Unhandled error occurred. Exception details below.\n${ e.stack }`);
     }
   }
   else {
-    log(LogSeverity.ERROR, "onException", "Unknown error occurred.");
+    Log.error("onException", "Unknown error occurred.");
   }
 }
 
@@ -201,12 +201,12 @@ function onException(e: unknown) {
  * Exit event function.
  */
 async function onExit() {
-  log(LogSeverity.LOG, "onExit", "Exit signal received. Cleaning up process...");
+  Log.info("onExit", "Exit signal received. Cleaning up process...");
 
   await token.revokeToken();
   client.destroy();
 
-  log(LogSeverity.LOG, "onExit", "Cleanup success. Exiting...");
+  Log.info("onExit", "Cleanup success. Exiting...");
 
   process.exit(0);
 }

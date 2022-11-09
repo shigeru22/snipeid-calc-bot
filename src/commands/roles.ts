@@ -1,7 +1,7 @@
 import { Client, TextChannel, GuildMember } from "discord.js";
 import { Pool } from "pg";
 import { DBAssignments, DBServers } from "../db";
-import { LogSeverity, log } from "../utils/log";
+import { Log } from "../utils/log";
 import { DatabaseErrors, DatabaseSuccess } from "../utils/common";
 
 class Roles {
@@ -24,20 +24,20 @@ class Roles {
       const member = await server.members.fetch(discordId);
 
       if(role === null) {
-        log(LogSeverity.WARN, "addRole", `Role with ID ${ roleId } on server ID ${ serverId } (${ server.name }) can't be found.`);
+        Log.warn("addRole", `Role with ID ${ roleId } on server ID ${ serverId } (${ server.name }) can't be found.`);
         return;
       }
 
-      log(LogSeverity.LOG, "addRole", `Granting role for server member: ${ member.user.username }#${ member.user.discriminator }.`);
+      Log.info("addRole", `Granting role for server member: ${ member.user.username }#${ member.user.discriminator }.`);
 
       await member.roles.add(role);
     }
     catch (e) {
       if(e instanceof Error) {
-        log(LogSeverity.ERROR, "addRole", `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("addRole", `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "addRole", "Unknown error occurred.");
+        Log.error("addRole", "Unknown error occurred.");
       }
 
       await channel.send("**Error:** Unable to assign your role. Please contact bot administrator.");
@@ -52,7 +52,7 @@ class Roles {
       {
         const serverVerifiedRole = await DBServers.getServerByDiscordId(db, member.guild.id);
         if(serverVerifiedRole.status !== DatabaseSuccess.OK) {
-          log(LogSeverity.ERROR, "reassignRole", "Failed to fetch server in database."); // TODO: handle connection and client errors
+          Log.error("reassignRole", "Failed to fetch server in database."); // TODO: handle connection and client errors
           return;
         }
 
@@ -66,7 +66,7 @@ class Roles {
             case DatabaseErrors.NO_RECORD:
               break;
             default:
-              log(LogSeverity.ERROR, "reassignRole", "Failed to fetch member's assignment in database."); // TODO: handle connection and client errors
+              Log.error("reassignRole", "Failed to fetch member's assignment in database."); // TODO: handle connection and client errors
               return;
           }
         }
@@ -79,11 +79,11 @@ class Roles {
         const role = await member.guild.roles.fetch(verifiedRoleId);
 
         if(role === null) {
-          log(LogSeverity.WARN, "reassignRole", `${ member.guild.id }: Role with ID ${ verifiedRoleId } not found.`);
+          Log.warn("reassignRole", `${ member.guild.id }: Role with ID ${ verifiedRoleId } not found.`);
         }
         else {
           await member.roles.add(role);
-          log(LogSeverity.LOG, "reassignRole", `${ member.guild.id }: Granted ${ role.name } role to ${ member.user.username }#${ member.user.discriminator }.`);
+          Log.info("reassignRole", `${ member.guild.id }: Granted ${ role.name } role to ${ member.user.username }#${ member.user.discriminator }.`);
         }
       }
 
@@ -91,20 +91,20 @@ class Roles {
         const role = await member.guild.roles.fetch(currentPointsRoleId);
 
         if(role === null) {
-          log(LogSeverity.WARN, "reassignRole", `${ member.guild.id }: Role with ID ${ currentPointsRoleId } not found.`);
+          Log.warn("reassignRole", `${ member.guild.id }: Role with ID ${ currentPointsRoleId } not found.`);
         }
         else {
           await member.roles.add(role);
-          log(LogSeverity.LOG, "reassignRole", `${ member.guild.id }: Granted ${ role.name } role to ${ member.user.username }#${ member.user.discriminator }.`);
+          Log.info("reassignRole", `${ member.guild.id }: Granted ${ role.name } role to ${ member.user.username }#${ member.user.discriminator }.`);
         }
       }
     }
     catch (e) {
       if(e instanceof Error) {
-        log(LogSeverity.ERROR, "addRole", `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("addRole", `${ e.name }: ${ e.message }` + "\n" + e.stack);
       }
       else {
-        log(LogSeverity.ERROR, "addRole", "Unknown error occurred.");
+        Log.error("addRole", "Unknown error occurred.");
       }
     }
   }

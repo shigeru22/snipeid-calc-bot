@@ -1,6 +1,6 @@
 import { getAccessToken, revokeAccessToken } from "./osu";
 import { OsuApiSuccessStatus, OsuApiErrorStatus } from "../utils/common";
-import { LogSeverity, log } from "../utils/log";
+import { Log } from "../utils/log";
 
 /**
  * osu! API token class.
@@ -37,26 +37,26 @@ class OsuToken {
 
     if(now.getTime() >= this.#expirationTime.getTime()) {
       if(this.#token !== "") {
-        log(LogSeverity.LOG, "getToken", "Access token expired. Requesting new osu! access token...");
+        Log.info("getToken", "Access token expired. Requesting new osu! access token...");
       }
       else {
-        log(LogSeverity.LOG, "getToken", "Requesting new osu! access token...");
+        Log.info("getToken", "Requesting new osu! access token...");
       }
 
       const response = await getAccessToken(this.#clientId, this.#clientSecret);
 
       if(Object.keys(response).length === 0) {
-        log(LogSeverity.WARN, "getToken", "Unable to request access token. osu! API might be down?");
+        Log.warn("getToken", "Unable to request access token. osu! API might be down?");
         return "";
       }
 
       if(response.status !== OsuApiSuccessStatus.OK) {
         switch(response.status) {
           case OsuApiErrorStatus.CLIENT_ERROR:
-            log(LogSeverity.ERROR, "getToken", "Client error occurred. See above log for details.");
+            Log.error("getToken", "Client error occurred. See above log for details.");
             break;
           default:
-            log(LogSeverity.ERROR, "getToken", `osu! API returned status code ${ response.toString() }.`);
+            Log.error("getToken", `osu! API returned status code ${ response.toString() }.`);
         }
 
         return "";
@@ -75,17 +75,17 @@ class OsuToken {
    * @returns { Promise<void> } Promise object with no return value.
    */
   async revokeToken(): Promise<void> {
-    log(LogSeverity.LOG, "revokeToken", "Revoking osu! access token...");
+    Log.info("revokeToken", "Revoking osu! access token...");
 
     if(this.#token === "") {
-      log(LogSeverity.WARN, "revokeToken", "No token was requested. Skipping process.");
+      Log.warn("revokeToken", "No token was requested. Skipping process.");
       return;
     }
 
     const response = await revokeAccessToken(this.#token);
 
     if(response.status !== OsuApiSuccessStatus.OK) {
-      log(LogSeverity.ERROR, "revokeToken", "Unable to revoke access token. Check logs above.");
+      Log.error("revokeToken", "Unable to revoke access token. Check logs above.");
       return;
     }
 
