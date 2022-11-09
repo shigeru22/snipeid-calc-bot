@@ -1,4 +1,4 @@
-import { Client, TextChannel, Message, Permissions, Role } from "discord.js";
+import { Client, TextChannel, Message, PermissionFlagsBits, Role } from "discord.js";
 import { Pool } from "pg";
 import { getServerByDiscordId, setCommandsChannelId, setLeaderboardsChannelId, setServerCountry, setVerifiedRoleId } from "../db/servers";
 import { createConfigCommandsEmbed, createServerConfigurationEmbed } from "../messages/config";
@@ -11,7 +11,7 @@ async function handleConfigCommands(client: Client, channel: TextChannel, db: Po
     return;
   }
 
-  if(!message.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+  if(!message.member.permissions.has(PermissionFlagsBits.Administrator)) {
     await channel.send("**Error:** This command is only available for administrators.");
     return;
   }
@@ -207,7 +207,7 @@ async function setServerCommandsChannelConfiguration(db: Pool, channel: TextChan
     if(message.mentions.channels.size > 0) {
       const tempChannel = message.mentions.channels.at(0);
 
-      if(tempChannel !== undefined && tempChannel.isText()) {
+      if(tempChannel !== undefined && tempChannel.isTextBased()) {
         targetChannel = tempChannel as TextChannel;
       }
     }
@@ -278,7 +278,7 @@ async function setServerLeaderboardsChannelConfiguration(db: Pool, channel: Text
     if(message.mentions.channels.size > 0) {
       const tempChannel = message.mentions.channels.at(0);
 
-      if(tempChannel !== undefined && tempChannel.isText()) {
+      if(tempChannel !== undefined && tempChannel.isTextBased()) {
         targetChannel = tempChannel as TextChannel;
       }
     }

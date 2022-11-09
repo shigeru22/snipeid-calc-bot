@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { EmbedBuilder } from "discord.js";
 import { LogSeverity, log } from "../utils/log";
 import { TimeOperation, getTimeOffsetFromString } from "../utils/time";
 import { IDBServerLeaderboardData } from "../types/db/users";
@@ -9,9 +9,9 @@ import { IDBServerLeaderboardData } from "../types/db/users";
  * @param { IDBLeaderboardData[] } data Leaderboard data.
  * @param { Date } lastUpdated Last update time.
  *
- * @returns { MessageEmbed } Leaderboard embed message.
+ * @returns { EmbedBuilder } Leaderboard embed message.
  */
-function createLeaderboardEmbed(data: IDBServerLeaderboardData[], lastUpdated: Date): MessageEmbed {
+function createLeaderboardEmbed(data: IDBServerLeaderboardData[], lastUpdated: Date): EmbedBuilder {
   let timeOperation = TimeOperation.INCREMENT;
   let hourOffset = 0;
   let minuteOffset = 0;
@@ -34,23 +34,24 @@ function createLeaderboardEmbed(data: IDBServerLeaderboardData[], lastUpdated: D
     )
   );
 
-  const draft = new MessageEmbed();
   const len = data.length;
   let rankingsDesc = "";
 
   if(len > 0) {
-    data.forEach((data, index) => rankingsDesc += `${ index + 1 }. ${ data.userName }: ${ data.points }${ index < (len - 1) ? "\n" : "" }`);
-
-    draft.setTitle("Top 50 players based on points count");
-    draft.setDescription(rankingsDesc);
-    draft.setFooter({
-      text: `Last updated: ${ offsetLastUpdated.getDate() }/${ offsetLastUpdated.getMonth() + 1 }/${ offsetLastUpdated.getFullYear() }, ${ offsetLastUpdated.getHours().toString().padStart(2, "0") }:${ offsetLastUpdated.getMinutes().toString().padStart(2, "0") }`
+    data.forEach((data, index) => {
+      rankingsDesc += `${ index + 1 }. ${ data.userName }: ${ data.points }${ index < (len - 1) ? "\n" : "" }`;
     });
   }
   else {
-    draft.setDescription("Ranking list is empty. Go for the first!");
+    rankingsDesc = "Ranking list is empty. Go for the first!";
   }
-  draft.setColor("#ff0000");
+
+  const draft = new EmbedBuilder().setTitle("Top 50 players based on points count")
+    .setDescription(rankingsDesc)
+    .setFooter({
+      text: `Last updated: ${ offsetLastUpdated.getDate() }/${ offsetLastUpdated.getMonth() + 1 }/${ offsetLastUpdated.getFullYear() }, ${ offsetLastUpdated.getHours().toString().padStart(2, "0") }:${ offsetLastUpdated.getMinutes().toString().padStart(2, "0") }`
+    })
+    .setColor("#ff0000");
 
   return draft;
 }

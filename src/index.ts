@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import fs from "fs";
-import { Client, Guild, GuildMember, Message } from "discord.js";
+import { Client, GatewayIntentBits, ActivityType, ChannelType, Guild, GuildMember, Message } from "discord.js";
 import { Pool, PoolConfig } from "pg";
 import { createInterface } from "readline";
 import { OsuToken } from "./api/osu-token";
@@ -36,7 +36,7 @@ const dbConfig: PoolConfig = {
 const db = new Pool(dbConfig);
 
 // bot client
-const client = new Client({ intents: [ "GUILDS", "GUILD_MESSAGES" ] });
+const client = new Client({ intents: [ GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages ] });
 
 // osu! API token object
 const token = new OsuToken(process.env.OSU_CLIENT_ID as string, process.env.OSU_CLIENT_SECRET as string);
@@ -105,7 +105,7 @@ async function onStartup() {
     process.exit(1);
   }
 
-  client.user.setActivity("Bathbot everyday", { type: "WATCHING" });
+  client.user.setActivity("Bathbot everyday", { type: ActivityType.Watching });
   log(LogSeverity.LOG, "onStartup", process.env.BOT_NAME + " is now running.");
 }
 
@@ -127,7 +127,7 @@ async function onNewMessage(msg: Message) {
   let processed = false;
 
   const channel = msg.channel;
-  if(channel.type === "GUILD_TEXT") {
+  if(channel.type === ChannelType.GuildText) {
     const tempToken = await token.getToken();
     if(tempToken === "") {
       await channel.send("**Error:** Unable to retrieve osu! client authorizations. Check osu!status?");
