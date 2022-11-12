@@ -1,5 +1,3 @@
-import { Log } from "./log";
-
 /**
  * Time operation enum.
  */
@@ -44,45 +42,6 @@ class TimeUtils {
 
     const seconds = Math.floor(ms / 1000);
     return `${ seconds.toString() } second${ seconds !== 1 ? "s" : "" }`;
-  }
-
-  /**
-   * Parses time offset from string.
-   *
-   * @param { string } value Time offset string.
-   *
-   * @returns { { operation: TimeOperation; hours: number; minutes: number; } | undefined } Time offset object. Returns `undefined` in case of errors.
-   */
-  static getTimeOffsetFromString(value: string): { operation: TimeOperation; hours: number; minutes: number; } | undefined {
-    const temp = value.split(":");
-    if(temp.length !== 2) {
-      Log.error("getTimeOffsetFromString", "value must be in time format. Check .env-template for details.");
-      return undefined;
-    }
-
-    const inc = temp[0].slice(0, 1);
-    if(inc !== "+" && inc !== "-") {
-      Log.error("getTimeOffsetFromString", "First value character must be '+' or '-'. Check .env-template for details.");
-      return undefined;
-    }
-
-    const hours = parseInt(temp[0].slice(0 - (temp[0].length - 1)), 10);
-    if(isNaN(hours) || (hours < 0 || hours > 14)) { // well, earliest timezone is 14, but who use that?
-      Log.error("getTimeOffsetFromString", "Invalid hours value (0 to 14). Check .env-template for format details.");
-      return undefined;
-    }
-
-    const minutes = parseInt(temp[1], 10);
-    if(isNaN(minutes) || (minutes < 0 || minutes > 59)) {
-      Log.error("getTimeOffsetFromString", "Invalid minutes value (0 to 59). Check .env-template for format details.");
-      return undefined;
-    }
-
-    return {
-      operation: inc === "+" ? TimeOperation.INCREMENT : TimeOperation.DECREMENT,
-      hours,
-      minutes
-    };
   }
 }
 
