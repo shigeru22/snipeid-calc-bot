@@ -2,12 +2,12 @@ import { Pool, PoolClient, DatabaseError } from "pg";
 import { Log } from "../utils/log";
 import DBUsers from "./users";
 import DBServers from "./servers";
-import { DatabaseErrors, DatabaseSuccess, AssignmentType } from "../utils/common";
-import { DBResponseBase } from "../types/db/main";
+import { AssignmentType } from "../utils/common";
+import { DatabaseErrors, DuplicatedRecordError, UserNotFoundError, NoRecordError, DatabaseConnectionError, DatabaseClientError } from "../errors/db";
 import { IDBServerAssignmentQueryData, IDBServerAssignmentData, IDBAssignmentResultData } from "../types/db/assignments";
 import { IDBServerRoleData, IDBServerRoleQueryData } from "../types/db/roles";
 
-/* locally used query interfaces and functions */
+/* locally used query interfaces */
 
 /**
  * Database server member's assignment query interface.
@@ -47,9 +47,14 @@ class DBAssignments {
    * @param { string } serverDiscordId Server snowflake ID.
    * @param { number } osuId osu! ID of the user.
    *
-   * @returns { Promise<DBResponseBase<IDBServerAssignmentData> | DBResponseBase<DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> }> } Promise object with user assignment.
+   * @returns { Promise<IDBServerAssignmentData> } Promise object with user assignment data.
+   *
+   * @throws { UserNotFoundError } Assignment not found in database.
+   * @throws { DuplicatedRecordError } Duplicated record found in `userId` column at `assignments` table.
+   * @throws { DatabaseConnectionError } Database connection error occurred.
+   * @throws { DatabaseClientError } Unhandled client error occurred.
    */
-  static async getAssignmentByOsuId(db: Pool, serverDiscordId: string, osuId: number): Promise<DBResponseBase<IDBServerAssignmentData> | DBResponseBase<DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  static async getAssignmentByOsuId(db: Pool, serverDiscordId: string, osuId: number): Promise<IDBServerAssignmentData> {
     const selectQuery = `
       SELECT
         assignments."assignmentid",
@@ -69,53 +74,43 @@ class DBAssignments {
     `;
     const selectValues = [ osuId, serverDiscordId ];
 
+    let discordUserResult;
+
     try {
-      const discordUserResult = await db.query<IDBServerAssignmentQueryData>(selectQuery, selectValues);
-
-      if(discordUserResult.rows.length <= 0) {
-        return {
-          status: DatabaseErrors.USER_NOT_FOUND
-        };
-      }
-
-      if(discordUserResult.rows.length > 1) {
-        return {
-          status: DatabaseErrors.DUPLICATED_RECORD
-        };
-      }
-
-      return {
-        status: DatabaseSuccess.OK,
-        data: {
-          assignmentId: discordUserResult.rows[0].assignmentid,
-          userName: discordUserResult.rows[0].username,
-          roleName: discordUserResult.rows[0].rolename
-        }
-      };
+      discordUserResult = await db.query<IDBServerAssignmentQueryData>(selectQuery, selectValues);
     }
     catch (e) {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
             Log.error("getAssignmentByOsuId", "Database connection failed.");
-            return {
-              status: DatabaseErrors.CONNECTION_ERROR
-            };
+            throw new DatabaseConnectionError();
           default:
-            Log.error("getAssignmentByOsuId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getAssignmentByOsuId", `Unhandled database error occurred.\n${ e.stack }`);
         }
       }
       else if(e instanceof Error) {
-        Log.error("getAssignmentByOsuId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getAssignmentByOsuId", `Unhandled error occurred.\n${ e.stack }`);
       }
       else {
         Log.error("getAssignmentByOsuId", "Unknown error occurred.");
       }
 
-      return {
-        status: DatabaseErrors.CLIENT_ERROR
-      };
+      throw new DatabaseClientError();
     }
+
+    if(discordUserResult.rows.length <= 0) {
+      throw new UserNotFoundError();
+    }
+    else if(discordUserResult.rows.length > 1) {
+      throw new DuplicatedRecordError("assignments", "userId");
+    }
+
+    return {
+      assignmentId: discordUserResult.rows[0].assignmentid,
+      userName: discordUserResult.rows[0].username,
+      roleName: discordUserResult.rows[0].rolename
+    };
   }
 
   /**
@@ -125,9 +120,14 @@ class DBAssignments {
    * @param { string } serverDiscordId Server snowflake ID.
    * @param { string } discordId Discord user ID.
    *
-   * @returns { Promise<DBResponseBase<IDBServerRoleData> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> }> } Promise object with queried user data.
+   * @returns { Promise<IDBServerRoleData> } Promise object with queried user role data.
+   *
+   * @throws { UserNotFoundError } Assignment not found in database.
+   * @throws { DuplicatedRecordError } Duplicated record found in `userId` column at `assignments` table.
+   * @throws { DatabaseConnectionError } Database connection error occurred.
+   * @throws { DatabaseClientError } Unhandled client error occurred.
    */
-  static async getAssignmentRoleDataByDiscordId(db: Pool, serverDiscordId: string, discordId: string): Promise<DBResponseBase<IDBServerRoleData> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  static async getAssignmentRoleDataByDiscordId(db: Pool, serverDiscordId: string, discordId: string): Promise<IDBServerRoleData> {
     const selectQuery = `
       SELECT
         roles."roleid",
@@ -151,24 +151,17 @@ class DBAssignments {
       const result = await db.query<IDBServerRoleQueryData>(selectQuery, selectValues);
 
       if(result.rows.length <= 0) {
-        return {
-          status: DatabaseErrors.NO_RECORD
-        };
+        throw new NoRecordError();
       }
       else if(result.rows.length > 1) {
-        return {
-          status: DatabaseErrors.DUPLICATED_RECORD
-        };
+        throw new DuplicatedRecordError("assignments", "userId");
       }
 
       return {
-        status: DatabaseSuccess.OK,
-        data: {
-          roleId: result.rows[0].roleid,
-          discordId: result.rows[0].discordid,
-          roleName: result.rows[0].rolename,
-          minPoints: result.rows[0].minpoints
-        }
+        roleId: result.rows[0].roleid,
+        discordId: result.rows[0].discordid,
+        roleName: result.rows[0].rolename,
+        minPoints: result.rows[0].minpoints
       };
     }
     catch (e) {
@@ -176,23 +169,19 @@ class DBAssignments {
         switch(e.code) {
           case "ECONNREFUSED":
             Log.error("getAssignmentRoleDataByDiscordId", "Database connection failed.");
-            return {
-              status: DatabaseErrors.CONNECTION_ERROR
-            };
+            throw new DatabaseConnectionError();
           default:
-            Log.error("getAssignmentRoleDataByDiscordId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getAssignmentRoleDataByDiscordId", `Unhandled database error occurred.\n${ e.stack }`);
         }
       }
       else if(e instanceof Error) {
-        Log.error("getAssignmentRoleDataByDiscordId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getAssignmentRoleDataByDiscordId", `Unhandled error occurred.\n${ e.stack }`);
       }
       else {
         Log.error("getAssignmentRoleDataByDiscordId", "Unknown error occurred.");
       }
 
-      return {
-        status: DatabaseErrors.CLIENT_ERROR
-      };
+      throw new DatabaseClientError();
     }
   }
 
@@ -206,200 +195,185 @@ class DBAssignments {
    * @param { string } countryCode User's country code.
    * @param { number } points Calculated points.
    *
-   * @returns { Promise<DBResponseBase<IDBAssignmentResultData> | DBResponseBase<DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.ROLES_EMPTY | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with assignment results object.
+   * @returns { Promise<IDBAssignmentResultData> } Promise object with assignment result object.
+   *
+   * @throws { ServerNotFoundError } Server not found in database.
+   * @throws { UserNotFoundError } User not found in database.
+   * @throws { NoRecordError } No server roles found in database.
+   * @throws { DuplicatedRecordError } Duplicate `serverId` (servers)  or `userId` (assignments) found in database.
+   * @throws { DatabaseConnectionError } Database connection error occurred.
+   * @throws { DatabaseClientError } Unhandled client error occurred.
    */
-  static async insertOrUpdateAssignment(db: Pool, serverDiscordId: string, osuId: number, userName: string, countryCode: string, points: number): Promise<DBResponseBase<IDBAssignmentResultData> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.ROLES_EMPTY | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  static async insertOrUpdateAssignment(db: Pool, serverDiscordId: string, osuId: number, userName: string, countryCode: string, points: number): Promise<IDBAssignmentResultData> {
+    const client = await db.connect();
     let insert = true;
 
+    let assignmentId = 0; // update
+    let userId = 0;
+    let discordId = "";
+    let serverId = 0;
+    let currentPoints = 0; // update
+    let update = new Date(); // update
+
+    let currentRoleDiscordId = ""; // update
+    let currentRoleName = ""; // update
+
+    let targetRoleId = 0;
+    let targetRoleDiscordId = "";
+    let targetRoleName = "";
+    let targetRoleMinimumPoints = 0;
+
+    // serverId
     try {
-      const client = await db.connect();
-
-      const assignmentResult = await this.getServerUserAssignmentDataByOsuId(client, serverDiscordId, osuId);
-      if(assignmentResult.status !== DatabaseSuccess.OK && assignmentResult.status !== DatabaseErrors.NO_RECORD) {
-        client.release();
-
-        switch(assignmentResult.status) {
-          case DatabaseErrors.DUPLICATED_RECORD:
-            Log.error("insertOrUpdateAssignment", `Duplicated assignment data found in database with osu! ID ${ osuId } (server ID ${ serverDiscordId }).`);
-        }
-
-        return {
-          status: assignmentResult.status
-        };
+      const serverResult = await DBServers.getServerByDiscordId(db, serverDiscordId);
+      serverId = serverResult.serverId;
+    }
+    catch (e) {
+      if(e instanceof DatabaseErrors) {
+        throw e;
       }
 
-      const currentRoleResult = await this.getServerUserRoleDataByOsuId(client, serverDiscordId, osuId);
-      if(currentRoleResult.status !== DatabaseSuccess.OK) {
-        client.release();
+      Log.error("insertOrUpdateAssignment", "Unknown error occurred while querying server in database.");
+      throw new DatabaseClientError("Querying server failed.");
+    }
 
-        switch(currentRoleResult.status) {
-          case DatabaseErrors.NO_RECORD:
-            Log.warn("insertOrUpdateAssignment", "Role table is empty.");
-            return {
-              status: DatabaseErrors.ROLES_EMPTY
-            };
+    // currentRoleDiscordId and currentRoleName
+    {
+      try {
+        const currentRoleResult = await this.#getServerUserRoleDataByOsuId(client, serverDiscordId, osuId);
+        currentRoleDiscordId = currentRoleResult.discordId;
+        currentRoleName = currentRoleResult.roleName;
+      }
+      catch (e) {
+        if(e instanceof DatabaseErrors) {
+          throw e;
         }
 
-        return {
-          status: currentRoleResult.status
-        };
+        Log.error("insertOrUpdateAssignment", "Unknown error occurred while querying current user role in database.");
+        throw new DatabaseClientError("Querying user role failed.");
       }
+    }
 
-      let assignmentId = 0; // update
-      let userId = 0;
-      let discordId = "";
-      let serverId = 0;
-      let currentPoints = 0; // update
-      let update = new Date(); // update
+    // assignment
+    {
+      let noRecord = false;
 
-      // serverId
-      {
-        const serverResult = await DBServers.getServerByDiscordId(db, serverDiscordId);
-        if(serverResult.status !== DatabaseSuccess.OK) {
-          Log.error("insertOrUpdateAssignment", "Server not found in database.");
+      try {
+        const assignmentResult = await this.#getServerUserAssignmentDataByOsuId(client, serverDiscordId, osuId);
 
-          return {
-            status: DatabaseErrors.CLIENT_ERROR
-          };
-        }
-
-        serverId = serverResult.data.serverId;
-      }
-
-      if(assignmentResult.status !== DatabaseErrors.NO_RECORD) {
-        // userId found, then update
-        if(assignmentResult.data.osuId === osuId) {
+        if(assignmentResult.osuId === osuId) {
           insert = false;
 
-          if(assignmentResult.data.userName !== userName || assignmentResult.data.country !== countryCode) {
+          if(assignmentResult.userName !== userName || assignmentResult.country !== countryCode) {
             // update user, also update points here
-            const ret = await DBUsers.updateUser(
+            await DBUsers.updateUser(
               db,
               osuId,
               points,
-              assignmentResult.data.userName !== userName ? userName : null,
-              assignmentResult.data.country !== countryCode ? countryCode : null
+              assignmentResult.userName !== userName ? userName : null,
+              assignmentResult.country !== countryCode ? countryCode : null
             );
-
-            if(ret.status !== DatabaseSuccess.OK) {
-              client.release();
-
-              Log.error("insertOrUpdateAssignment", "Failed to update user due to connection or client error.");
-
-              return {
-                status: ret.status
-              };
-            }
           }
 
-          assignmentId = assignmentResult.data.assignmentId;
-          userId = assignmentResult.data.userId;
-          discordId = assignmentResult.data.discordId;
-          currentPoints = assignmentResult.data.points;
-          update = assignmentResult.data.lastUpdate;
+          assignmentId = assignmentResult.assignmentId;
+          userId = assignmentResult.userId;
+          discordId = assignmentResult.discordId;
+          currentPoints = assignmentResult.points;
+          update = assignmentResult.lastUpdate;
 
-          await this.deleteAssignmentById(client, assignmentResult.data.assignmentId);
+          await this.#deleteAssignmentById(client, assignmentResult.assignmentId);
+        }
+      }
+      catch (e) {
+        if(e instanceof DatabaseErrors && e instanceof NoRecordError) {
+          noRecord = true;
+        }
+        else if(e instanceof DatabaseErrors) {
+          throw e;
         }
         else {
-          // should not fall here, but whatever
-          client.release();
-
-          Log.error("insertOrUpdateAssignment", "Invalid osuId returned from the database.");
-          return {
-            status: DatabaseErrors.CLIENT_ERROR
-          };
+          Log.error("insertOrUpdateAssignment", "Unknown error occurred while querying assignment in database.");
+          throw new DatabaseClientError("Querying assignment failed.");
         }
       }
-      else {
-        // userId not found, then insert
-        const selectUserResult = await DBUsers.getDiscordUserByOsuId(db, osuId);
-        if(selectUserResult.status !== DatabaseSuccess.OK) {
-          client.release();
 
-          switch(selectUserResult.status) {
-            case DatabaseErrors.USER_NOT_FOUND:
-              Log.info("insertOrUpdateAssignment", "User not found. Skipping assignment data update.");
-              break;
+      if(noRecord) {
+        // userId not found, then insert
+        try {
+          const selectUserResult = await DBUsers.getDiscordUserByOsuId(db, osuId);
+
+          userId = selectUserResult.userId;
+          discordId = selectUserResult.discordId;
+        }
+        catch (e) {
+          if(e instanceof DatabaseError && e instanceof UserNotFoundError) {
+            Log.info("insertOrUpdateAssignment", "User not found. Skipping assignment data update.");
+            throw new UserNotFoundError(); // handle this at calling function level
+          }
+          else if(e instanceof DatabaseError) {
+            throw e;
           }
 
-          return {
-            status: selectUserResult.status
-          };
+          Log.error("insertOrUpdateAssignment", "Unknown error occurred while querying user in database.");
+          throw new DatabaseClientError("Querying user failed.");
         }
-
-        userId = selectUserResult.data.userId;
-        discordId = selectUserResult.data.discordId;
       }
-
-      const rolesResult = await this.getTargetServerRoleDataByPoints(client, serverDiscordId, points);
-      if(rolesResult.status !== DatabaseSuccess.OK) {
-        switch(rolesResult.status) {
-          case DatabaseErrors.NO_RECORD:
-            Log.error("insertOrUpdateAssignment", `No roles returned. Make sure the lowest value (0) exist on server ID ${ serverDiscordId }.`);
-        }
-
-        return {
-          status: rolesResult.status
-        };
-      }
-
-      Log.debug("insertOrUpdateAssignment", `rolename: ${ rolesResult.data.roleName }, min: ${ rolesResult.data.minPoints }`);
-
-      if(insert) {
-        await this.insertAssignment(client, userId, rolesResult.data.roleId, serverId);
-        Log.info("insertOrUpdateAssignment", "assignment: Inserted 1 row.");
-      }
-      else {
-        await this.insertAssignment(client, userId, rolesResult.data.roleId, serverId, assignmentId);
-        Log.info("insertOrUpdateAssignment", "assignment: Updated 1 row.");
-      }
-
-      client.release();
-
-      const role = insert ? {
-        newRoleId: rolesResult.data.discordId,
-        newRoleName: rolesResult.data.roleName
-      } : {
-        oldRoleId: currentRoleResult.data.discordId,
-        oldRoleName: currentRoleResult.data.roleName,
-        newRoleId: rolesResult.data.discordId,
-        newRoleName: rolesResult.data.roleName
-      };
-
-      return {
-        status: DatabaseSuccess.OK,
-        data: {
-          type: insert ? AssignmentType.INSERT : AssignmentType.UPDATE,
-          discordId,
-          role,
-          delta: insert ? points : points - currentPoints,
-          lastUpdate: !insert ? update : null
-        }
-      };
     }
-    catch (e) {
-      if(e instanceof DatabaseError) {
-        switch(e.code) {
-          case "ECONNREFUSED":
-            Log.error("insertOrUpdateAssignment", "Database connection failed.");
-            return {
-              status: DatabaseErrors.CONNECTION_ERROR
-            };
-          default:
-            Log.error("insertOrUpdateAssignment", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
-        }
-      }
-      else if(e instanceof Error) {
-        Log.error("insertOrUpdateAssignment", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
-      }
-      else {
-        Log.error("insertOrUpdateAssignment", "Unknown error occurred.");
-      }
 
-      return {
-        status: DatabaseErrors.CLIENT_ERROR
-      };
+    // targetRoleId, targetRoleDiscordId, targetRoleName
+    {
+      try {
+        const roleResult = await this.#getTargetServerRoleDataByPoints(client, serverDiscordId, points);
+
+        targetRoleId = roleResult.roleId;
+        targetRoleDiscordId = roleResult.discordId;
+        targetRoleName = roleResult.roleName;
+        targetRoleMinimumPoints = roleResult.minPoints;
+      }
+      catch (e) {
+        if(e instanceof DatabaseError) {
+          if(e instanceof NoRecordError) {
+            Log.info("insertOrUpdateAssignment", `No roles returned. Make sure the lowest value (0) exist on server ID ${ serverDiscordId }.`);
+          }
+
+          throw e;
+        }
+
+        Log.error("insertOrUpdateAssignment", "Unknown error occurred while querying user in database.");
+        throw new DatabaseClientError("Querying user failed.");
+      }
     }
+
+    Log.debug("insertOrUpdateAssignment", `rolename: ${ targetRoleName }, min: ${ targetRoleMinimumPoints }`);
+
+    if(insert) {
+      await this.#insertAssignment(client, userId, targetRoleId, serverId);
+      Log.info("insertOrUpdateAssignment", "assignment: Inserted 1 row.");
+    }
+    else {
+      await this.#insertAssignment(client, userId, targetRoleId, serverId, assignmentId);
+      Log.info("insertOrUpdateAssignment", "assignment: Updated 1 row.");
+    }
+
+    client.release();
+
+    const role = insert ? {
+      newRoleId: targetRoleDiscordId,
+      newRoleName: targetRoleName
+    } : {
+      oldRoleId: currentRoleDiscordId,
+      oldRoleName: currentRoleName,
+      newRoleId: targetRoleDiscordId,
+      newRoleName: targetRoleName
+    };
+
+    return {
+      type: insert ? AssignmentType.INSERT : AssignmentType.UPDATE,
+      discordId,
+      role,
+      delta: insert ? points : points - currentPoints,
+      lastUpdate: !insert ? update : null
+    };
   }
 
   /**
@@ -409,9 +383,14 @@ class DBAssignments {
    * @param { string } serverDiscordId Server snowflake ID.
    * @param { number } osuId osu! user ID.
    *
-   * @returns { Promise<DBResponseBase<IDBServerUserAssignmentQueryData> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with queried user data.
+   * @returns { Promise<IDBServerUserAssignmentData> } Promise object with queried user assignment data.
+   *
+   * @throws { UserNotFoundError } Assignment not found in database.
+   * @throws { DuplicatedRecordError } Duplicated record found in `userId` column at `assignments` table.
+   * @throws { DatabaseConnectionError } Database connection error occurred.
+   * @throws { DatabaseClientError } Unhandled client error occurred.
    */
-  static async getServerUserAssignmentDataByOsuId(client: PoolClient, serverDiscordId: string, osuId: number): Promise<DBResponseBase<IDBServerUserAssignmentData> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  static async #getServerUserAssignmentDataByOsuId(client: PoolClient, serverDiscordId: string, osuId: number): Promise<IDBServerUserAssignmentData> {
     const selectQuery = `
       SELECT
         assignments."assignmentid",
@@ -438,29 +417,22 @@ class DBAssignments {
       const result = await client.query<IDBServerUserAssignmentQueryData>(selectQuery, selectValues);
 
       if(result.rowCount <= 0) {
-        return {
-          status: DatabaseErrors.NO_RECORD
-        };
+        throw new NoRecordError();
       }
       else if(result.rowCount > 1) {
-        return {
-          status: DatabaseErrors.DUPLICATED_RECORD
-        };
+        throw new DuplicatedRecordError("assignments", "userId");
       }
 
       return {
-        status: DatabaseSuccess.OK,
-        data: {
-          assignmentId: result.rows[0].assignmentid,
-          userId: result.rows[0].userid,
-          discordId: result.rows[0].discordid,
-          osuId: result.rows[0].osuid,
-          userName: result.rows[0].username,
-          country: result.rows[0].country,
-          roleId: result.rows[0].roleid,
-          points: result.rows[0].points,
-          lastUpdate: result.rows[0].lastupdate
-        }
+        assignmentId: result.rows[0].assignmentid,
+        userId: result.rows[0].userid,
+        discordId: result.rows[0].discordid,
+        osuId: result.rows[0].osuid,
+        userName: result.rows[0].username,
+        country: result.rows[0].country,
+        roleId: result.rows[0].roleid,
+        points: result.rows[0].points,
+        lastUpdate: result.rows[0].lastupdate
       };
     }
     catch (e) {
@@ -468,23 +440,19 @@ class DBAssignments {
         switch(e.code) {
           case "ECONNREFUSED":
             Log.error("getServerUserAssignmentDataByOsuId", "Database connection failed.");
-            return {
-              status: DatabaseErrors.CONNECTION_ERROR
-            };
+            throw new DatabaseConnectionError();
           default:
-            Log.error("getServerUserAssignmentDataByOsuId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getServerUserAssignmentDataByOsuId", `Unhandled database error occurred.\n${ e.stack }`);
         }
       }
       else if(e instanceof Error) {
-        Log.error("getServerUserAssignmentDataByOsuId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getServerUserAssignmentDataByOsuId", `Unhandled error occurred.\n${ e.stack }`);
       }
       else {
         Log.error("getServerUserAssignmentDataByOsuId", "Unknown error occurred.");
       }
 
-      return {
-        status: DatabaseErrors.CLIENT_ERROR
-      };
+      throw new DatabaseClientError();
     }
   }
 
@@ -495,9 +463,14 @@ class DBAssignments {
    * @param { string } serverDiscordId Server snowflake ID.
    * @param { number } osuId osu! user ID.
    *
-   * @returns { Promise<DBResponseBase<IDBServerRoleData> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> }> } Promise object with queried user data.
+   * @returns { Promise<IDBServerRoleData> } Promise object with queried user data.
+   *
+   * @throws { UserNotFoundError } Assignment not found in database.
+   * @throws { DuplicatedRecordError } Duplicated record found in `userId` column at `assignments` table.
+   * @throws { DatabaseConnectionError } Database connection error occurred.
+   * @throws { DatabaseClientError } Unhandled client error occurred.
    */
-  static async getServerUserRoleDataByOsuId(client: PoolClient, serverDiscordId: string, osuId: number): Promise<DBResponseBase<IDBServerRoleData> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  static async #getServerUserRoleDataByOsuId(client: PoolClient, serverDiscordId: string, osuId: number): Promise<IDBServerRoleData> {
     const selectQuery = `
       SELECT
         roles."roleid",
@@ -521,24 +494,17 @@ class DBAssignments {
       const result = await client.query<IDBServerRoleQueryData>(selectQuery, selectValues);
 
       if(result.rows.length <= 0) {
-        return {
-          status: DatabaseErrors.NO_RECORD
-        };
+        throw new UserNotFoundError();
       }
       else if(result.rows.length > 1) {
-        return {
-          status: DatabaseErrors.DUPLICATED_RECORD
-        };
+        throw new DuplicatedRecordError("assignments", "userId");
       }
 
       return {
-        status: DatabaseSuccess.OK,
-        data: {
-          roleId: result.rows[0].roleid,
-          discordId: result.rows[0].discordid,
-          roleName: result.rows[0].rolename,
-          minPoints: result.rows[0].minpoints
-        }
+        roleId: result.rows[0].roleid,
+        discordId: result.rows[0].discordid,
+        roleName: result.rows[0].rolename,
+        minPoints: result.rows[0].minpoints
       };
     }
     catch (e) {
@@ -546,36 +512,36 @@ class DBAssignments {
         switch(e.code) {
           case "ECONNREFUSED":
             Log.error("getServerUserRoleDataByOsuId", "Database connection failed.");
-            return {
-              status: DatabaseErrors.CONNECTION_ERROR
-            };
+            throw new DatabaseConnectionError();
           default:
-            Log.error("getServerUserRoleDataByOsuId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getServerUserRoleDataByOsuId", `Unhandled database error occurred.\n${ e.stack }`);
         }
       }
       else if(e instanceof Error) {
-        Log.error("getServerUserRoleDataByOsuId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getServerUserRoleDataByOsuId", `Unhandled error occurred.\n${ e.stack }`);
       }
       else {
         Log.error("getServerUserRoleDataByOsuId", "Unknown error occurred.");
       }
 
-      return {
-        status: DatabaseErrors.CLIENT_ERROR
-      };
+      throw new DatabaseClientError();
     }
   }
 
   /**
-   * Queries specific server's user assignment data.
+   * Queries specific server's target role assignment data.
    *
    * @param { PoolClient } client Database connection pool client.
    * @param { string } serverDiscordId Server snowflake ID.
    * @param { number } points Calculated points.
    *
-   * @returns { Promise<DBResponseBase<IDBServerRoleData> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with queried user data.
+   * @returns { Promise<IDBServerRoleData> } Promise object with queried role data.
+   *
+   * @throws { NoRecordError } No target role returned.
+   * @throws { DatabaseConnectionError } Database connection error occurred.
+   * @throws { DatabaseClientError } Unhandled client error occurred.
    */
-  static async getTargetServerRoleDataByPoints(client: PoolClient, serverDiscordId: string, points: number): Promise<DBResponseBase<IDBServerRoleData> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.DUPLICATED_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  static async #getTargetServerRoleDataByPoints(client: PoolClient, serverDiscordId: string, points: number): Promise<IDBServerRoleData> {
     const selectQuery = `
       SELECT
         roles."roleid",
@@ -598,19 +564,14 @@ class DBAssignments {
       const result = await client.query(selectQuery, selectValues);
 
       if(result.rows.length <= 0) {
-        return {
-          status: DatabaseErrors.NO_RECORD
-        };
+        throw new NoRecordError();
       }
 
       return {
-        status: DatabaseSuccess.OK,
-        data: {
-          roleId: result.rows[0].roleid,
-          discordId: result.rows[0].discordid,
-          roleName: result.rows[0].rolename,
-          minPoints: result.rows[0].minpoints
-        }
+        roleId: result.rows[0].roleid,
+        discordId: result.rows[0].discordid,
+        roleName: result.rows[0].rolename,
+        minPoints: result.rows[0].minpoints
       };
     }
     catch (e) {
@@ -618,23 +579,19 @@ class DBAssignments {
         switch(e.code) {
           case "ECONNREFUSED":
             Log.error("getTargetServerRoleDataByPoints", "Database connection failed.");
-            return {
-              status: DatabaseErrors.CONNECTION_ERROR
-            };
+            throw new DatabaseConnectionError();
           default:
-            Log.error("getTargetServerRoleDataByPoints", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getTargetServerRoleDataByPoints", `Unhandled database error occurred.\n${ e.stack }`);
         }
       }
       else if(e instanceof Error) {
-        Log.error("getTargetServerRoleDataByPoints", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getTargetServerRoleDataByPoints", `Unhandled error occurred.\n${ e.stack }`);
       }
       else {
         Log.error("getTargetServerRoleDataByPoints", "Unknown error occurred.");
       }
 
-      return {
-        status: DatabaseErrors.CLIENT_ERROR
-      };
+      throw new DatabaseClientError();
     }
   }
 
@@ -647,9 +604,12 @@ class DBAssignments {
    * @param { number } serverId Database server ID.
    * @param { number? } assignmentId Assignment ID. Leave `null` to insert sequentially.
    *
-   * @returns { Promise<boolean> } Promise object with `true` if inserted successfully, `false` otherwise.
+   * @returns { Promise<void> } Promise object with no return value. Throws errors below if failed.
+   *
+   * @throws { DatabaseConnectionError } Database connection error occurred.
+   * @throws { DatabaseClientError } Unhandled client error occurred.
    */
-  static async insertAssignment(client: PoolClient, userId: number, roleId: number, serverId: number, assignmentId: number | null = null): Promise<boolean> {
+  static async #insertAssignment(client: PoolClient, userId: number, roleId: number, serverId: number, assignmentId: number | null = null): Promise<boolean> {
     const insertQuery = `
       INSERT INTO assignments (${ assignmentId !== null ? "assignmentid, " : "" }userid, roleid, serverid)
         VALUES ($1, $2, $3${ assignmentId !== null ? ", $4" : "" })
@@ -669,19 +629,19 @@ class DBAssignments {
         switch(e.code) {
           case "ECONNREFUSED":
             Log.error("insertAssignment", "Database connection failed.");
-            break;
+            throw new DatabaseConnectionError();
           default:
-            Log.error("insertAssignment", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("insertAssignment", `Unhandled database error occurred.\n${ e.stack }`);
         }
       }
       else if(e instanceof Error) {
-        Log.error("insertAssignment", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("insertAssignment", `Unhandled error occurred.\n${ e.stack }`);
       }
       else {
         Log.error("insertAssignment", "Unknown error occurred.");
       }
 
-      return false;
+      throw new DatabaseClientError();
     }
   }
 
@@ -691,9 +651,12 @@ class DBAssignments {
    * @param { PoolClient } client Database pool client.
    * @param { number } assignmentId Assignment ID in the database.
    *
-   * @returns { Promise<boolean> } Promise object with `true` if deleted successfully, `false` otherwise.
+   * @returns { Promise<void> } Promise object with no return value. Throws errors below if failed.
+   *
+   * @throws { DatabaseConnectionError } Database connection error occurred.
+   * @throws { DatabaseClientError } Unhandled client error occurred.
    */
-  static async deleteAssignmentById(client: PoolClient, assignmentId: number): Promise<boolean> {
+  static async #deleteAssignmentById(client: PoolClient, assignmentId: number): Promise<boolean> {
     const deleteQuery = `
       DELETE FROM
         assignments
@@ -711,19 +674,19 @@ class DBAssignments {
         switch(e.code) {
           case "ECONNREFUSED":
             Log.error("deleteAssignmentById", "Database connection failed.");
-            break;
+            throw new DatabaseConnectionError();
           default:
-            Log.error("deleteAssignmentById", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("deleteAssignmentById", `Unhandled database error occurred.\n${ e.stack }`);
         }
       }
       else if(e instanceof Error) {
-        Log.error("deleteAssignmentById", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("deleteAssignmentById", `Unhandled error occurred.\n${ e.stack }`);
       }
       else {
         Log.error("deleteAssignmentById", "Unknown error occurred.");
       }
 
-      return false;
+      throw new DatabaseClientError();
     }
   }
 }

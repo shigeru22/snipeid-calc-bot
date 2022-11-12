@@ -1,14 +1,14 @@
 import { Client, TextChannel, GuildMember } from "discord.js";
 import { Pool } from "pg";
 import { DBAssignments, DBServers } from "../db";
+import { DuplicatedRecordError, UserNotFoundError, ServerNotFoundError } from "../errors/db";
 import { Log } from "../utils/log";
-import { DatabaseErrors, DatabaseSuccess } from "../utils/common";
 
 class Roles {
   /**
    * Add specified role to user specified.
    *
-   * @param { Client } clien Discord bot client.
+   * @param { Client } client Discord bot client.
    * @param { TextChannel } channel Discord channel to send message to.
    * @param { string } discordId Discord ID of user to add role to.
    * @param { string } serverId Discord ID of server.
@@ -45,66 +45,60 @@ class Roles {
   }
 
   static async reassignRole(db: Pool, member: GuildMember) {
+    let verifiedRoleId;
+    let currentPointsRoleId;
+
     try {
-      let verifiedRoleId: string | null = null;
-      let currentPointsRoleId: string | null = null;
-
-      {
-        const serverVerifiedRole = await DBServers.getServerByDiscordId(db, member.guild.id);
-        if(serverVerifiedRole.status !== DatabaseSuccess.OK) {
-          Log.error("reassignRole", "Failed to fetch server in database."); // TODO: handle connection and client errors
-          return;
-        }
-
-        verifiedRoleId = serverVerifiedRole.data.verifiedRoleId;
-      }
-
-      {
-        const memberRoleAssignment = await DBAssignments.getAssignmentRoleDataByDiscordId(db, member.guild.id, member.user.id);
-        if(memberRoleAssignment.status !== DatabaseSuccess.OK) {
-          switch(memberRoleAssignment.status) {
-            case DatabaseErrors.NO_RECORD:
-              break;
-            default:
-              Log.error("reassignRole", "Failed to fetch member's assignment in database."); // TODO: handle connection and client errors
-              return;
-          }
-        }
-        else {
-          currentPointsRoleId = memberRoleAssignment.data.discordId;
-        }
-      }
-
-      if(verifiedRoleId !== null) {
-        const role = await member.guild.roles.fetch(verifiedRoleId);
-
-        if(role === null) {
-          Log.warn("reassignRole", `${ member.guild.id }: Role with ID ${ verifiedRoleId } not found.`);
-        }
-        else {
-          await member.roles.add(role);
-          Log.info("reassignRole", `${ member.guild.id }: Granted ${ role.name } role to ${ member.user.username }#${ member.user.discriminator }.`);
-        }
-      }
-
-      if(currentPointsRoleId !== null) {
-        const role = await member.guild.roles.fetch(currentPointsRoleId);
-
-        if(role === null) {
-          Log.warn("reassignRole", `${ member.guild.id }: Role with ID ${ currentPointsRoleId } not found.`);
-        }
-        else {
-          await member.roles.add(role);
-          Log.info("reassignRole", `${ member.guild.id }: Granted ${ role.name } role to ${ member.user.username }#${ member.user.discriminator }.`);
-        }
-      }
+      const serverVerifiedRole = await DBServers.getServerByDiscordId(db, member.guild.id);
+      verifiedRoleId = serverVerifiedRole.verifiedRoleId;
     }
     catch (e) {
-      if(e instanceof Error) {
-        Log.error("addRole", `${ e.name }: ${ e.message }` + "\n" + e.stack);
+      if(e instanceof ServerNotFoundError) {
+        Log.error("reassignRole", `${ member.guild.id }: Server not found in database.`);
+      }
+      else if(e instanceof DuplicatedRecordError) {
+        Log.error("reassignRole", `Duplicated records found with ID ${ member.guild.id }`);
+      }
+
+      return;
+    }
+
+    try {
+      const memberRoleAssignment = await DBAssignments.getAssignmentRoleDataByDiscordId(db, member.guild.id, member.user.id);
+      currentPointsRoleId = memberRoleAssignment.discordId;
+    }
+    catch (e) {
+      if(!(e instanceof UserNotFoundError)) {
+        if(e instanceof DuplicatedRecordError) {
+          Log.error("reassignRole", `Duplicated records found with ID ${ member.guild.id }`);
+        }
+        return;
+      }
+
+      currentPointsRoleId = null;
+    }
+
+    if(verifiedRoleId !== null) {
+      const role = await member.guild.roles.fetch(verifiedRoleId);
+
+      if(role === null) {
+        Log.warn("reassignRole", `${ member.guild.id }: Role with ID ${ verifiedRoleId } not found.`);
       }
       else {
-        Log.error("addRole", "Unknown error occurred.");
+        await member.roles.add(role);
+        Log.info("reassignRole", `${ member.guild.id }: Granted ${ role.name } role to ${ member.user.username }#${ member.user.discriminator }.`);
+      }
+    }
+
+    if(currentPointsRoleId !== null) {
+      const role = await member.guild.roles.fetch(currentPointsRoleId);
+
+      if(role === null) {
+        Log.warn("reassignRole", `${ member.guild.id }: Role with ID ${ currentPointsRoleId } not found.`);
+      }
+      else {
+        await member.roles.add(role);
+        Log.info("reassignRole", `${ member.guild.id }: Granted ${ role.name } role to ${ member.user.username }#${ member.user.discriminator }.`);
       }
     }
   }

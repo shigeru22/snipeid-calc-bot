@@ -1,24 +1,23 @@
 import { getAccessToken, revokeAccessToken } from "./osu";
-import { OsuApiSuccessStatus, OsuApiErrorStatus } from "../utils/common";
 import { Log } from "../utils/log";
 
 /**
  * osu! API token class.
  */
 class OsuToken {
-  #clientId = "";
+  #clientId = 0;
   #clientSecret = "";
-  #token = "";
+  #token: string | null = null;
   #expirationTime = new Date(0);
 
   /**
    * Instantiates `OsuToken` object. Also retrieves token if specified.
    *
-   * @param { string } clientId osu! API client ID.
+   * @param { number } clientId osu! API client ID.
    * @param { string } clientSecret osu! API client secret.
    * @param { boolean } retrieve whether to retrieve token immediately after instantiating the object.
    */
-  constructor(clientId: string, clientSecret: string, retrieve = false) {
+  constructor(clientId: number, clientSecret: string, retrieve = false) {
     this.#clientId = clientId;
     this.#clientSecret = clientSecret;
 
@@ -30,9 +29,9 @@ class OsuToken {
   /**
    * Retrieves current token. If expired, new token will be retrieved.
    *
-   * @returns { Promise<string> } Promise object with token response.
+   * @returns { Promise<string | null> } Promise object with token response.
    */
-  async getToken(): Promise<string> {
+  async getToken(): Promise<string | null> {
     const now = new Date();
 
     if(now.getTime() >= this.#expirationTime.getTime()) {
@@ -43,27 +42,18 @@ class OsuToken {
         Log.info("getToken", "Requesting new osu! access token...");
       }
 
-      const response = await getAccessToken(this.#clientId, this.#clientSecret);
+      let response;
 
-      if(Object.keys(response).length === 0) {
-        Log.warn("getToken", "Unable to request access token. osu! API might be down?");
-        return "";
+      try {
+        response = await getAccessToken(this.#clientId, this.#clientSecret);
+      }
+      catch (e) {
+        Log.error("getToken", "API request error occurred. See above log for details.");
+        return null;
       }
 
-      if(response.status !== OsuApiSuccessStatus.OK) {
-        switch(response.status) {
-          case OsuApiErrorStatus.CLIENT_ERROR:
-            Log.error("getToken", "Client error occurred. See above log for details.");
-            break;
-          default:
-            Log.error("getToken", `osu! API returned status code ${ response.toString() }.`);
-        }
-
-        return "";
-      }
-
-      this.#token = response.data.token as string;
-      this.#expirationTime = response.data.expire as Date;
+      this.#token = response.token as string;
+      this.#expirationTime = response.expire as Date;
     }
 
     return this.#token;
@@ -77,19 +67,20 @@ class OsuToken {
   async revokeToken(): Promise<void> {
     Log.info("revokeToken", "Revoking osu! access token...");
 
-    if(this.#token === "") {
+    if(this.#token === null) {
       Log.warn("revokeToken", "No token was requested. Skipping process.");
       return;
     }
 
-    const response = await revokeAccessToken(this.#token);
-
-    if(response.status !== OsuApiSuccessStatus.OK) {
-      Log.error("revokeToken", "Unable to revoke access token. Check logs above.");
+    try {
+      await revokeAccessToken(this.#token);
+    }
+    catch {
+      Log.error("getToken", "Client error occurred. See above log for details.");
       return;
     }
 
-    this.#token = "";
+    this.#token = null;
   }
 }
 

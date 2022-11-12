@@ -9,14 +9,37 @@ interface IOsuApiTokenData {
 }
 
 /**
+ * osu! API non-user data interface.
+ */
+interface IOsuApiNonUserData {
+  status: OsuUserStatus;
+}
+
+/**
  * osu! API user data interface.
  */
 interface IOsuApiUserData {
-  status: OsuUserStatus;
-  user?: {
+  status: OsuUserStatus.USER;
+  user: {
     userName: string;
     country: string;
   };
+}
+
+/**
+ * osu! API user data type.
+ */
+type OsuApiUserData<T> = T extends OsuUserStatus.USER ? IOsuApiUserData : IOsuApiNonUserData;
+
+/**
+ * Whether osu! user is a user.
+ *
+ * @param data osu! API user data response.
+ *
+ * @returns `true` if user, `false` otherwise (bot, deleted, or not found).
+ */
+function isOsuUser(data: OsuApiUserData<OsuUserStatus>): data is IOsuApiUserData {
+  return data.status === OsuUserStatus.USER;
 }
 
 /**
@@ -99,4 +122,4 @@ function isOsuApiErrorResponse(response: unknown): response is IOsuApiErrorRespo
   return (response as IOsuApiErrorResponseData<OsuApiErrorStatus>).status !== OsuApiErrorStatus.OK;
 }
 
-export { IOsuApiTokenData, IOsuApiUserData, IOsuApiTokenResponseData, IOsuApiUserResponseData, OsuApiResponseData, isOsuApiErrorResponse };
+export { IOsuApiTokenData, IOsuApiUserData, OsuApiUserData, IOsuApiTokenResponseData, IOsuApiUserResponseData, OsuApiResponseData, isOsuApiErrorResponse, isOsuUser };

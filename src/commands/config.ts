@@ -2,12 +2,22 @@ import { Client, TextChannel, Message, PermissionFlagsBits, Role } from "discord
 import { Pool } from "pg";
 import { DBServers } from "../db";
 import { createConfigCommandsEmbed, createServerConfigurationEmbed } from "../messages/config";
+import { ServerNotFoundError } from "../errors/db";
 import { Log } from "../utils/log";
-import { DatabaseErrors, DatabaseSuccess } from "../utils/common";
 
 class Config {
-  static async handleConfigCommands(client: Client, channel: TextChannel, db: Pool, message: Message) {
-    if(message.member === null) {
+  /**
+   * Handles configuration commands.
+   *
+   * @param { Client } client Bot client object.
+   * @param { TextChannel } channel Channel of received command.
+   * @param { Pool } db Database connection pool.
+   * @param { Message } message Message that triggered the object.
+   *
+   * @returns { Promise<void> } Promise object with no return value.
+   */
+  static async handleConfigCommands(client: Client, channel: TextChannel, db: Pool, message: Message): Promise<void> {
+    if(message.member === null) { // TODO: check if DM message
       await channel.send("**Error:** This should not happen, but you're not a member.");
       return;
     }
@@ -44,15 +54,39 @@ class Config {
     }
   }
 
-  static async sendConfigCommands(channel: TextChannel) {
+  /**
+   * Sends help commands embed to specified `channel`.
+   *
+   * @param { TextChannel } channel Channel to send embed to.
+   *
+   * @returns { Promise<void> } Promise object with no return value.
+   */
+  static async sendConfigCommands(channel: TextChannel): Promise<void> {
     await channel.send({ embeds: [ createConfigCommandsEmbed() ] });
   }
 
-  static async sendServerConfiguration(db: Pool, channel: TextChannel) {
-    const serverData = await DBServers.getServerByDiscordId(db, channel.guild.id);
+  /**
+   * Sends current `channel`'s server configuration.
+   *
+   * @param { Pool } db Database pool object.
+   * @param { TextChannel } channel Channel to send embed to.
+   *
+   * @returns { Promise<void> } Promise object with no return value.
+   */
+  static async sendServerConfiguration(db: Pool, channel: TextChannel): Promise<void> {
+    let serverData;
 
-    if(serverData.status !== DatabaseSuccess.OK) {
-      Log.warn("userLeaderboardsCount", "Someone asked for server configuration, but server not in database.");
+    try {
+      serverData = await DBServers.getServerByDiscordId(db, channel.guild.id);
+    }
+    catch (e) {
+      if(e instanceof ServerNotFoundError) {
+        await channel.send("**Error:** Server not in database. Please contact bot administrator.");
+      }
+      else {
+        await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
+      }
+
       return;
     }
 
@@ -63,11 +97,11 @@ class Config {
     const guildName = channel.guild.name;
     const guildIconUrl = channel.guild.iconURL();
 
-    const fetchedVerifiedRole = serverData.data.verifiedRoleId !== null ? (await channel.guild.roles.fetch(serverData.data.verifiedRoleId)) : null;
-    const fetchedCommandsChannel = serverData.data.commandsChannelId !== null ? (await channel.guild.channels.fetch(serverData.data.commandsChannelId)) : null;
-    const fetchedLeaderboardsChannel = serverData.data.leaderboardsChannelId !== null ? (await channel.guild.channels.fetch(serverData.data.leaderboardsChannelId)) : null;
+    const fetchedVerifiedRole = serverData.verifiedRoleId !== null ? (await channel.guild.roles.fetch(serverData.verifiedRoleId)) : null;
+    const fetchedCommandsChannel = serverData.commandsChannelId !== null ? (await channel.guild.channels.fetch(serverData.commandsChannelId)) : null;
+    const fetchedLeaderboardsChannel = serverData.leaderboardsChannelId !== null ? (await channel.guild.channels.fetch(serverData.leaderboardsChannelId)) : null;
 
-    const countryConfig = serverData.data.country;
+    const countryConfig = serverData.country;
     const verifiedRoleConfig = fetchedVerifiedRole !== null ? fetchedVerifiedRole.name : null;
     const commandsChannelConfig = fetchedCommandsChannel !== null ? fetchedCommandsChannel.name : null;
     const leaderboardsChannelConfig = fetchedLeaderboardsChannel !== null ? fetchedLeaderboardsChannel.name : null;
@@ -75,12 +109,31 @@ class Config {
     await channel.send({ embeds: [ createServerConfigurationEmbed(guildName, guildIconUrl, countryConfig, verifiedRoleConfig, commandsChannelConfig, leaderboardsChannelConfig) ] });
   }
 
-  static async setServerCountryConfiguration(db: Pool, channel: TextChannel, message: Message) {
-    const serverData = await DBServers.getServerByDiscordId(db, channel.guild.id);
+  /**
+   * Sets current `channel`'s server country configuration.
+   *
+   * @param { Pool } db Database connection pool.
+   * @param { TextChannel } channel Channel to set country configuration.
+   * @param { Message } message Message that triggered the command.
+   *
+   * @returns { Promise<void> } Promise object with no return value.
+   */
+  static async setServerCountryConfiguration(db: Pool, channel: TextChannel, message: Message): Promise<void> {
+    // check if server exists
+    {
+      try {
+        await DBServers.getServerByDiscordId(db, channel.guild.id);
+      }
+      catch (e) {
+        if(e instanceof ServerNotFoundError) {
+          await channel.send("**Error:** Server not in database. Please contact bot administrator.");
+        }
+        else {
+          await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
+        }
 
-    if(serverData.status !== DatabaseSuccess.OK) {
-      Log.warn("setServerCountryConfiguration", "Someone asked for server configuration, but server not in database.");
-      return;
+        return;
+      }
     }
 
     const contents = message.content.split(/\s+/g); // split by one or more spaces
@@ -101,30 +154,42 @@ class Config {
       Log.info("setServerCountryConfiguration", `Disabling ${ channel.guild.name } server country configuration...`);
     }
 
-    const result = await DBServers.setServerCountry(db, channel.guild.id, !disable ? contents[3] : null);
-
-    if(result.status !== DatabaseSuccess.OK) {
-      switch(result.status) {
-        case DatabaseErrors.CONNECTION_ERROR:
-          await channel.send("**Error:** Database connection failed. Please contact bot administrator.");
-          break;
-        case DatabaseErrors.CLIENT_ERROR:
-          await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
-          break;
-      }
-
+    try {
+      await DBServers.setServerCountry(db, channel.guild.id, !disable ? contents[3] : null);
+    }
+    catch (e) {
+      await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
       return;
     }
 
     await channel.send(!disable ? `Set server country restriction to **${ contents[3].toUpperCase() }**.` : "Server country restriction disabled.");
   }
 
-  static async setServerVerifiedRoleIdConfiguration(db: Pool, channel: TextChannel, message: Message) {
-    const serverData = await DBServers.getServerByDiscordId(db, channel.guild.id);
+  /**
+   * Sets current `channel`'s server verified role ID configuration.
+   *
+   * @param { Pool } db Database connection pool.
+   * @param { TextChannel } channel Channel to set country configuration.
+   * @param { Message } message Message that triggered the command.
+   *
+   * @returns { Promise<void> } Promise object with no return value.
+   */
+  static async setServerVerifiedRoleIdConfiguration(db: Pool, channel: TextChannel, message: Message): Promise<void> {
+    // check if server exists
+    {
+      try {
+        await DBServers.getServerByDiscordId(db, channel.guild.id);
+      }
+      catch (e) {
+        if(e instanceof ServerNotFoundError) {
+          await channel.send("**Error:** Server not in database. Please contact bot administrator.");
+        }
+        else {
+          await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
+        }
 
-    if(serverData.status !== DatabaseSuccess.OK) {
-      Log.warn("setServerVerifiedRoleIdConfiguration", "Someone asked for server configuration, but server not in database.");
-      return;
+        return;
+      }
     }
 
     const contents = message.content.split(/\s+/g); // split by one or more spaces
@@ -168,30 +233,42 @@ class Config {
       Log.info("setServerCountryConfiguration", `Disabling ${ channel.guild.name } server verified role ID configuration...`);
     }
 
-    const result = await DBServers.setVerifiedRoleId(db, channel.guild.id, !disable ? roleId : null);
-
-    if(result.status !== DatabaseSuccess.OK) {
-      switch(result.status) {
-        case DatabaseErrors.CONNECTION_ERROR:
-          await channel.send("**Error:** Database connection failed. Please contact bot administrator.");
-          break;
-        case DatabaseErrors.CLIENT_ERROR:
-          await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
-          break;
-      }
-
+    try {
+      await DBServers.setVerifiedRoleId(db, channel.guild.id, !disable ? roleId : null);
+    }
+    catch (e) {
+      await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
       return;
     }
 
     await channel.send(!disable ? `Set server verified role to **${ roleName }**.` : "Server verified role disabled.");
   }
 
-  static async setServerCommandsChannelConfiguration(db: Pool, channel: TextChannel, message: Message) {
-    const serverData = await DBServers.getServerByDiscordId(db, channel.guild.id);
+  /**
+   * Sets current `channel`'s server commands channel ID configuration.
+   *
+   * @param { Pool } db Database connection pool.
+   * @param { TextChannel } channel Channel to set country configuration.
+   * @param { Message } message Message that triggered the command.
+   *
+   * @returns { Promise<void> } Promise object with no return value.
+   */
+  static async setServerCommandsChannelConfiguration(db: Pool, channel: TextChannel, message: Message): Promise<void> {
+    // check if server exists
+    {
+      try {
+        await DBServers.getServerByDiscordId(db, channel.guild.id);
+      }
+      catch (e) {
+        if(e instanceof ServerNotFoundError) {
+          await channel.send("**Error:** Server not in database. Please contact bot administrator.");
+        }
+        else {
+          await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
+        }
 
-    if(serverData.status !== DatabaseSuccess.OK) {
-      Log.warn("setServerCommandsChannelConfiguration", "Someone asked for server configuration, but server not in database.");
-      return;
+        return;
+      }
     }
 
     const contents = message.content.split(/\s+/g); // split by one or more spaces
@@ -239,30 +316,42 @@ class Config {
       Log.info("setServerCountryConfiguration", `Disabling ${ channel.guild.name } server commands channel ID configuration...`);
     }
 
-    const result = await DBServers.setCommandsChannelId(db, channel.guild.id, !disable ? channelId : null);
-
-    if(result.status !== DatabaseSuccess.OK) {
-      switch(result.status) {
-        case DatabaseErrors.CONNECTION_ERROR:
-          await channel.send("**Error:** Database connection failed. Please contact bot administrator.");
-          break;
-        case DatabaseErrors.CLIENT_ERROR:
-          await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
-          break;
-      }
-
+    try {
+      await DBServers.setCommandsChannelId(db, channel.guild.id, !disable ? channelId : null);
+    }
+    catch (e) {
+      await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
       return;
     }
 
     await channel.send(!disable ? `Set server commands channel to **${ channelName }**.` : "Server commands channel restriction disabled.");
   }
 
-  static async setServerLeaderboardsChannelConfiguration(db: Pool, channel: TextChannel, message: Message) {
-    const serverData = await DBServers.getServerByDiscordId(db, channel.guild.id);
+  /**
+   * Sets current `channel`'s server leaderboards channel ID configuration.
+   *
+   * @param { Pool } db Database connection pool.
+   * @param { TextChannel } channel Channel to set country configuration.
+   * @param { Message } message Message that triggered the command.
+   *
+   * @returns { Promise<void> } Promise object with no return value.
+   */
+  static async setServerLeaderboardsChannelConfiguration(db: Pool, channel: TextChannel, message: Message): Promise<void> {
+    // check if server exists
+    {
+      try {
+        await DBServers.getServerByDiscordId(db, channel.guild.id);
+      }
+      catch (e) {
+        if(e instanceof ServerNotFoundError) {
+          await channel.send("**Error:** Server not in database. Please contact bot administrator.");
+        }
+        else {
+          await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
+        }
 
-    if(serverData.status !== DatabaseSuccess.OK) {
-      Log.warn("setServerLeaderboardsChannelConfiguration", "Someone asked for server configuration, but server not in database.");
-      return;
+        return;
+      }
     }
 
     const contents = message.content.split(/\s+/g); // split by one or more spaces
@@ -310,18 +399,11 @@ class Config {
       Log.info("setServerCountryConfiguration", `Disabling ${ channel.guild.name } server leaderboard commands channel ID configuration...`);
     }
 
-    const result = await DBServers.setLeaderboardsChannelId(db, channel.guild.id, !disable ? channelId : null);
-
-    if(result.status !== DatabaseSuccess.OK) {
-      switch(result.status) {
-        case DatabaseErrors.CONNECTION_ERROR:
-          await channel.send("**Error:** Database connection failed. Please contact bot administrator.");
-          break;
-        case DatabaseErrors.CLIENT_ERROR:
-          await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
-          break;
-      }
-
+    try {
+      await DBServers.setLeaderboardsChannelId(db, channel.guild.id, !disable ? channelId : null);
+    }
+    catch (e) {
+      await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
       return;
     }
 

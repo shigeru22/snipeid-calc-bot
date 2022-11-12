@@ -2,7 +2,7 @@ import { TextChannel } from "discord.js";
 import { Pool } from "pg";
 import { Log } from "../utils/log";
 import { DBUsers, DBServers } from "../db";
-import { DatabaseErrors, DatabaseSuccess } from "../utils/common";
+import { ServerNotFoundError, NoRecordError } from "../errors/db";
 import { createLeaderboardEmbed } from "../messages/leaderboard";
 
 class Leaderboards {
@@ -15,19 +15,39 @@ class Leaderboards {
    * @returns { Promise<void> } Promise object with no return value.
    */
   static async sendPointLeaderboard(channel: TextChannel, db: Pool): Promise<void> {
-    const serverData = await DBServers.getServerByDiscordId(db, channel.guild.id);
+    let serverData;
 
-    if(serverData.status !== DatabaseSuccess.OK) {
-      Log.warn("sendPointLeaderboard", "Someone asked for leaderboard count, but server not in database.");
-      return;
+    {
+      try {
+        serverData = await DBServers.getServerByDiscordId(db, channel.guild.id);
+      }
+      catch (e) {
+        if(e instanceof ServerNotFoundError) {
+          Log.error("sendPointLeaderboard", `Server with ID ${ channel.guild.id } not found in database.`);
+          await channel.send("**Error:** Server not in database.");
+        }
+        else {
+          await channel.send("**Error:** An error occurred. Please contact bot administrator.");
+        }
+
+        return;
+      }
     }
 
     {
-      const isCommand = await DBServers.isLeaderboardChannel(db, channel.guild.id, channel.id);
+      let isCommand;
+
+      try {
+        isCommand = await DBServers.isCommandChannel(db, channel.guild.id, channel.id);
+      }
+      catch (e) {
+        await channel.send("**Error:** An error occurred. Please contact bot administrator.");
+        return;
+      }
+
       switch(isCommand) {
         case false:
-          Log.warn("sendPointLeaderboard", `${ channel.guild.id }: Not in commands channel.`);
-          await channel.send(`**Error:** Enter this command at <#${ serverData.data.leaderboardsChannelId }> channel.`); // fallthrough
+          Log.warn("sendPointLeaderboard", `${ channel.guild.id }: Not in commands channel.`); // fallthrough
         case null:
           return;
       }
@@ -35,50 +55,40 @@ class Leaderboards {
 
     Log.info("sendPointLeaderboard", "Retrieving leaderboard data.");
 
-    Log.debug("sendPointLeaderboard", `country: ${ serverData.data.country }`);
+    let rankings;
 
-    const rankings = serverData.data.country === null ? await DBUsers.getPointsLeaderboard(db, channel.guild.id) : await DBUsers.getPointsLeaderboardByCountry(db, channel.guild.id, serverData.data.country.toUpperCase());
-
-    if(rankings.status !== DatabaseSuccess.OK) {
-      switch(rankings.status) { // rankings is number, or DatabaseErrors constant
-        case DatabaseErrors.NO_RECORD:
-          await channel.send("**Error:** No records found. Be the first!");
-          break;
-        case DatabaseErrors.CONNECTION_ERROR:
-          await channel.send("**Error:** Database connection failed. Please contact bot administrator.");
-          break;
-        case DatabaseErrors.CLIENT_ERROR:
-          await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
-          break;
+    try {
+      rankings = serverData.country === null ? await DBUsers.getServerPointsLeaderboard(db, channel.guild.id) : await DBUsers.getServerPointsLeaderboardByCountry(db, channel.guild.id, serverData.country.toUpperCase());
+    }
+    catch (e) {
+      if(e instanceof NoRecordError) {
+        await channel.send("**Error:** No records found. Be the first!");
+      }
+      else {
+        await channel.send("**Error:** An error occurred. Please contact bot administrator.");
       }
 
       return;
     }
 
-    let lastUpdated = new Date();
+    let lastUpdated;
     {
-      const lastUpdateQuery = await DBUsers.getLastPointUpdate(db, channel.guildId);
-
-      if(lastUpdateQuery.status !== DatabaseSuccess.OK) {
-        switch(lastUpdateQuery.status) {
-          case DatabaseErrors.NO_RECORD:
-            await channel.send("**Error:** No records found. Be the first!");
-            break;
-          case DatabaseErrors.CONNECTION_ERROR:
-            await channel.send("**Error:** Database connection failed. Please contact bot administrator.");
-            break;
-          case DatabaseErrors.CLIENT_ERROR:
-            await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
-            break;
+      try {
+        lastUpdated = await DBUsers.getServerLastPointUpdate(db, channel.guildId);
+      }
+      catch (e) {
+        if(e instanceof NoRecordError) {
+          await channel.send("**Error:** No records found. Be the first!");
+        }
+        else {
+          await channel.send("**Error:** An error occurred. Please contact bot administrator.");
         }
 
         return;
       }
-
-      lastUpdated = new Date(lastUpdateQuery.data);
     }
 
-    const draft = createLeaderboardEmbed(rankings.data, lastUpdated);
+    const draft = createLeaderboardEmbed(rankings, lastUpdated);
     await channel.send({ embeds: [ draft ] });
 
     Log.info("sendPointLeaderboard", `Leaderboard sent for server ID ${ channel.guildId } (${ channel.guild.name }).`);

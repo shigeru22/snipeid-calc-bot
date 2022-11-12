@@ -1,7 +1,8 @@
 import axios from "axios";
 import { Log } from "../utils/log";
-import { HTTPStatus, OsuUserStatus, OsuApiErrorStatus, OsuApiSuccessStatus } from "../utils/common";
-import { IOsuApiTokenData, IOsuApiUserData, IOsuApiTokenResponseData, IOsuApiUserResponseData, OsuApiResponseData } from "../types/api/osu";
+import { HTTPStatus, OsuUserStatus } from "../utils/common";
+import { NonOKError, NotFoundError, APIClientError } from "../errors/api";
+import { IOsuApiTokenData, OsuApiUserData, IOsuApiTokenResponseData, IOsuApiUserResponseData } from "../types/api/osu";
 
 const OSU_API_ENDPOINT = "https://osu.ppy.sh/api/v2";
 const OSU_TOKEN_ENDPOINT = "https://osu.ppy.sh/oauth/token";
@@ -9,66 +10,59 @@ const OSU_TOKEN_ENDPOINT = "https://osu.ppy.sh/oauth/token";
 /**
  * Gets access token using osu! client ID and secret.
  *
- * @param { string } clientId osu! client ID.
+ * @param { number } clientId osu! client ID.
  * @param { string } clientSecret osu! client secret.
  *
- * @returns { Promise<OsuApiResponseData<IOsuApiTokenData> | OsuApiResponseData<OsuApiErrorStatus.NON_OK | OsuApiErrorStatus.CLIENT_ERROR>> } Promise object with access token and expiration date.
+ * @returns { Promise<IOsuApiTokenData> } Promise object with access token and expiration date. Throws errors below if failed.
+ *
+ * @throws { NonOKError } API returned non-OK (200) status code.
+ * @throws { APIClientError } Unhandled client error occurred.
  */
-async function getAccessToken(clientId: string, clientSecret: string): Promise<OsuApiResponseData<IOsuApiTokenData> | OsuApiResponseData<OsuApiErrorStatus.NON_OK | OsuApiErrorStatus.CLIENT_ERROR>> {
-  const id = parseInt(clientId, 10); // no need to validate since already validated in env module
-  const secret = clientSecret;
+async function getAccessToken(clientId: number, clientSecret: string): Promise<IOsuApiTokenData> {
+  let response;
 
   try {
-    const response = await axios.post<IOsuApiTokenResponseData>(OSU_TOKEN_ENDPOINT, {
-      client_id: id,
-      client_secret: secret,
+    response = await axios.post<IOsuApiTokenResponseData>(OSU_TOKEN_ENDPOINT, {
+      client_id: clientId,
+      client_secret: clientSecret,
       grant_type: "client_credentials",
       scope: "public"
     });
-
-    if(response.status !== HTTPStatus.OK) {
-      Log.error("getAccessToken", `osu! API returned status code ${ response.status.toString() }.`);
-      return {
-        status: OsuApiErrorStatus.NON_OK
-      };
-    }
-
-    return {
-      status: OsuApiSuccessStatus.OK,
-      data: {
-        token: response.data.access_token,
-        expire: new Date((new Date()).getTime() + (response.data.expires_in * 1000))
-      }
-    };
   }
   catch (e) {
     if(axios.isAxiosError(e)) {
       if(e.response !== undefined) {
         if(e.response.status === HTTPStatus.UNAUTHORIZED) {
           Log.error("getAccessToken", "Failed to authenticate client. Check OSU_CLIENT_ID and OSU_CLIENT_SECRET variables, and try again.");
-          process.exit(1);
+          process.emit("SIGINT");
         }
 
-        Log.error("getAccessToken", `osu! API returned status code ${ e.response.status.toString() }.`);
-        return {
-          status: OsuApiErrorStatus.NON_OK
-        };
+        Log.error("getAccessToken", `osu! API returned status code ${ e.response.status }.`);
+        throw new NonOKError(e.response.status);
       }
       else {
-        Log.error("getAccessToken", `${ e.name }: ${ e.message }`);
+        Log.error("getAccessToken", `API request error occurred.\n${ e.stack }`);
       }
     }
     else if(e instanceof Error) {
-      Log.error("getAccessToken", `${ e.name }: ${ e.message }`);
+      Log.error("getAccessToken", `Unhandled error occurred.\n${ e.stack }`);
     }
     else {
       Log.error("getAccessToken", "Unknown error occurred.");
     }
 
-    return {
-      status: OsuApiErrorStatus.CLIENT_ERROR
-    };
+    throw new APIClientError();
   }
+
+  if(response.status !== HTTPStatus.OK) {
+    Log.error("getAccessToken", `osu! API returned status code ${ response.status.toString() }.`);
+    throw new NonOKError(response.status);
+  }
+
+  return {
+    token: response.data.access_token,
+    expire: new Date((new Date()).getTime() + (response.data.expires_in * 1000))
+  };
 }
 
 /**
@@ -76,52 +70,46 @@ async function getAccessToken(clientId: string, clientSecret: string): Promise<O
  *
  * @param { string } token osu! access token.
  *
- * @returns { Promise<OsuApiResponseData<true> | OsuApiResponseData<OsuApiErrorStatus.NON_OK | OsuApiErrorStatus.CLIENT_ERROR>> } Promise object with `OsuApiStatus` constant.
+ * @returns { Promise<void> } Promise object with no return value. Throws errors below if failed.
+ *
+ * @throws { NonOKError } API returned non-OK (200) status code.
+ * @throws { APIClientError } Unhandled client error occurred.
  */
-async function revokeAccessToken(token: string): Promise<OsuApiResponseData<true> | OsuApiResponseData<OsuApiErrorStatus.NON_OK | OsuApiErrorStatus.CLIENT_ERROR>> {
+async function revokeAccessToken(token: string): Promise<void> {
+  let response;
+
   try {
-    const response = await axios.delete(OSU_API_ENDPOINT + "/oauth/tokens/current", {
+    response = await axios.delete(`${ OSU_API_ENDPOINT }/oauth/tokens/current`, {
       headers: {
         "Accept": "application/json",
         "Content-Type": "application/json",
-        "Authorization": "Bearer " + token
+        "Authorization": `Bearer ${ token }`
       }
     });
-
-    if(response.status !== HTTPStatus.NO_CONTENT) {
-      Log.error("revokeAccessToken", "osu! API returned status code " + response.status.toString() + ".");
-      return {
-        status: OsuApiErrorStatus.NON_OK
-      };
-    }
-
-    return {
-      status: OsuApiSuccessStatus.OK,
-      data: true
-    };
   }
   catch (e) {
     if(axios.isAxiosError(e)) {
       if(e.response !== undefined) {
-        Log.error("getAccessToken", "osu! API returned status code " + e.response.status.toString() + ".");
-        return {
-          status: OsuApiErrorStatus.NON_OK
-        };
+        Log.error("revokeAccessToken", `osu! API returned status code ${ e.response.status }.`);
+        throw new NonOKError(e.response.status);
       }
       else {
-        Log.error("revokeAccessToken", `${ e.name }: ${ e.message }`);
+        Log.error("revokeAccessToken", `API request error occurred.\n${ e.stack }`);
       }
     }
     else if(e instanceof Error) {
-      Log.error("revokeAccessToken", `${ e.name }: ${ e.message }`);
+      Log.error("revokeAccessToken", `Unhandled error occurred.\n${ e.stack }`);
     }
     else {
       Log.error("revokeAccessToken", "Unknown error occurred.");
     }
 
-    return {
-      status: OsuApiErrorStatus.CLIENT_ERROR
-    };
+    throw new APIClientError();
+  }
+
+  if(response.status !== HTTPStatus.NO_CONTENT) {
+    Log.error("revokeAccessToken", `osu! API returned status code ${ response.status }.`);
+    throw new NonOKError(response.status);
   }
 }
 
@@ -131,91 +119,76 @@ async function revokeAccessToken(token: string): Promise<OsuApiResponseData<true
  * @param { string } token osu! access token.
  * @param { number } id osu! user ID.
  *
- * @returns { Promise<OsuApiResponseData<IOsuApiUserData> | OsuApiResponseData<OsuApiErrorStatus.NON_OK | OsuApiErrorStatus.CLIENT_ERROR>> } Promise object with user information.
+ * @returns { Promise<IOsuApiUserData> } Promise object with user information. Throws errors below if failed.
+ *
+ * @throws { NotFoundError } osu! user with specified `id` not found.
+ * @throws { NonOKError } API returned non-OK (200) status code.
+ * @throws { APIClientError } Unhandled client error occurred.
  */
-async function getUserByOsuId(token: string, id: number): Promise<OsuApiResponseData<IOsuApiUserData> | OsuApiResponseData<OsuApiErrorStatus.NON_OK | OsuApiErrorStatus.CLIENT_ERROR>> {
+async function getUserByOsuId(token: string, id: number): Promise<OsuApiUserData<OsuUserStatus>> {
+  let response;
+
   try {
-    const response = await axios.get<IOsuApiUserResponseData>(OSU_API_ENDPOINT + "/users/" + id.toString(), {
+    response = await axios.get<IOsuApiUserResponseData>(`${ OSU_API_ENDPOINT }/users/${ id }`, {
       params: {
         key: "id"
       },
       headers: {
         "Accept": "application/json",
         "Content-Type": "application/json",
-        "Authorization": "Bearer " + token
+        "Authorization": `Bearer ${ token }`
       }
     });
-
-    if(response.status !== HTTPStatus.OK) {
-      Log.error("getUserByOsuId", `osu! API returned status code ${ response.status.toString() }.`);
-      return {
-        status: OsuApiErrorStatus.CLIENT_ERROR
-      };
-    }
-
-    if(response.data.is_bot) {
-      return {
-        status: OsuApiSuccessStatus.OK,
-        data: {
-          status: OsuUserStatus.BOT
-        }
-      };
-    }
-    else if(response.data.is_deleted) {
-      return {
-        status: OsuApiSuccessStatus.OK,
-        data: {
-          status: OsuUserStatus.DELETED
-        }
-      };
-    }
-
-    return {
-      status: OsuApiSuccessStatus.OK,
-      data: {
-        status: OsuUserStatus.USER,
-        user: {
-          userName: response.data.username,
-          country: response.data.country_code
-        }
-      }
-    };
   }
   catch (e) {
     if(axios.isAxiosError(e)) {
       if(e.response !== undefined) {
-        let exit = false;
-
         switch(e.response.status) {
           case HTTPStatus.UNAUTHORIZED:
             Log.error("getUserByOsuId", "Failed to authenticate client. Check osu! client environment variables and token retrieval, and try again.");
-            exit = true;
+            process.emit("SIGINT"); // should exit after this line is executed
             break;
           case HTTPStatus.NOT_FOUND:
-            return {
-              status: OsuApiErrorStatus.NON_OK
-            };
-        }
-
-        if(exit) {
-          process.exit(1);
+            throw new NotFoundError();
         }
       }
       else {
-        Log.error("getUserByOsuId", `${ e.name }: ${ e.message }`);
+        Log.error("getUserByOsuId", `API request error occurred.\n${ e.stack }`);
       }
     }
     else if(e instanceof Error) {
-      Log.error("getUserByOsuId", `${ e.name }: ${ e.message }`);
+      Log.error("getUserByOsuId", `Unhandled error occurred.\n${ e.stack }`);
     }
     else {
       Log.error("getUserByOsuId", "Unknown error occurred.");
     }
 
+    throw new APIClientError();
+  }
+
+  if(response.status !== HTTPStatus.OK) {
+    Log.error("getUserByOsuId", `osu! API returned status code ${ response.status }.`);
+    throw new NonOKError(response.status);
+  }
+
+  if(response.data.is_bot) {
     return {
-      status: OsuApiErrorStatus.CLIENT_ERROR
+      status: OsuUserStatus.BOT
     };
   }
+  else if(response.data.is_deleted) {
+    return {
+      status: OsuUserStatus.DELETED
+    };
+  }
+
+  return {
+    status: OsuUserStatus.USER,
+    user: {
+      userName: response.data.username,
+      country: response.data.country_code
+    }
+  };
 }
 
 export { getAccessToken, revokeAccessToken, getUserByOsuId };

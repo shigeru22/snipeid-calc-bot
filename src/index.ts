@@ -7,8 +7,8 @@ import { OsuToken } from "./api/osu-token";
 import { DBServers } from "./db";
 import { handleCommands, Conversations, Roles } from "./commands";
 import { Environment } from "./utils";
-import { DatabaseErrors } from "./utils/common";
 import { Log } from "./utils/log";
+import { DuplicatedRecordError, ConflictError } from "./errors/db";
 
 // configure environment variable file (if any)
 dotenv.config();
@@ -37,7 +37,7 @@ const db = new Pool(dbConfig);
 const client = new Client({ intents: [ GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages ] });
 
 // osu! API token object
-const token = new OsuToken(process.env.OSU_CLIENT_ID as string, process.env.OSU_CLIENT_SECRET as string);
+const token = new OsuToken(Environment.getOsuClientId(), Environment.getOsuClientSecret());
 
 // handle Windows interrupt event
 if(process.platform === "win32") {
@@ -127,7 +127,7 @@ async function onNewMessage(msg: Message) {
   const channel = msg.channel;
   if(channel.type === ChannelType.GuildText) {
     const tempToken = await token.getToken();
-    if(tempToken === "") {
+    if(tempToken === null) {
       await channel.send("**Error:** Unable to retrieve osu! client authorizations. Check osu!status?");
       return;
     }
@@ -145,23 +145,21 @@ async function onNewMessage(msg: Message) {
  * @param { Message } guild Entered guild object.
  */
 async function onJoinGuild(guild: Guild) {
-  const result = await DBServers.insertServer(db, guild.id);
-  switch(result.status) {
-    case DatabaseErrors.DUPLICATED_RECORD:
+  try {
+    await DBServers.insertServer(db, guild.id);
+    Log.info("onJoinGuild", `Joined server with ID ${ guild.id } (${ guild.name }).`);
+  }
+  catch (e) {
+    if(!(e instanceof ConflictError)) {
+      Log.info("onJoinGuild", `Rejoined server with ID ${ guild.id } (${ guild.name }).`);
+    }
+    else if(e instanceof DuplicatedRecordError) {
       Log.error("onJoinGuild", `Duplicated server data found with server ID ${ guild.id } (${ guild.name }).`);
-      return;
-    case DatabaseErrors.CONNECTION_ERROR: // fallthrough
-    case DatabaseErrors.CLIENT_ERROR: // TODO: handle insertion by queuing
+    }
+    else {
       Log.error("onJoinGuild", `Failed to query database after joining server ID ${ guild.id } (${ guild.name }).`);
-      return;
+    }
   }
-
-  if(result.status === DatabaseErrors.DUPLICATED_DISCORD_ID) {
-    Log.info("onJoinGuild", `Rejoined server with ID ${ guild.id } (${ guild.name }).`);
-    return;
-  }
-
-  Log.info("onJoinGuild", `Joined server with ID ${ guild.id } (${ guild.name }).`);
 }
 
 /**

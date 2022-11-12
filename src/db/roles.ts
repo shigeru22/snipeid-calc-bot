@@ -1,18 +1,25 @@
 import { Pool, DatabaseError } from "pg";
 import { Log } from "../utils/log";
-import { DatabaseErrors, DatabaseSuccess } from "../utils/common";
-import { DBResponseBase } from "../types/db/main";
 import { IDBServerRoleData, IDBServerRoleQueryData } from "../types/db/roles";
+import { DatabaseClientError, DatabaseConnectionError, NoRecordError } from "../errors/db";
 
+/**
+ * Database `roles` table class.
+ */
 class DBRoles {
   /**
-   * Returns list of roles in the database.
+   * Returns list of server roles in the database.
    *
    * @param { Pool } db Database connection pool.
+   * @param { string } serverDiscordId Server snowflake ID.
    *
-   * @returns { Promise<DBResponseBase<IDBServerRoleData> | DBResponseBase<DatabaseErrors.ROLES_EMPTY | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with roles array.
+   * @returns { Promise<IDBServerRoleData[]> } Promise object with server roles array.
+   *
+   * @throws { NoRecordError } No server roles data found in database.
+   * @throws { DatabaseConnectionError } Database connection error occurred.
+   * @throws { DatabaseClientError } Unhandled client error occurred.
    */
-  static async getRolesList(db: Pool, serverDiscordId: string): Promise<DBResponseBase<IDBServerRoleData[]> | DBResponseBase<DatabaseErrors.ROLES_EMPTY | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  static async getAllServerRoles(db: Pool, serverDiscordId: string): Promise<IDBServerRoleData[]> {
     const selectQuery = `
       SELECT
         roles."roleid",
@@ -30,47 +37,41 @@ class DBRoles {
     `;
     const selectValues = [ serverDiscordId ];
 
-    try {
-      const rolesResult = await db.query<IDBServerRoleQueryData>(selectQuery, selectValues);
-      if(typeof(rolesResult.rows) === "undefined" || rolesResult.rows.length === 0) {
-        return {
-          status: DatabaseErrors.ROLES_EMPTY
-        };
-      }
+    let rolesResult;
 
-      return {
-        status: DatabaseSuccess.OK,
-        data: rolesResult.rows.map(row => ({
-          roleId: row.roleid,
-          discordId: row.discordid,
-          roleName: row.rolename,
-          minPoints: row.minpoints
-        }))
-      };
+    try {
+      rolesResult = await db.query<IDBServerRoleQueryData>(selectQuery, selectValues);
     }
     catch (e) {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
             Log.error("getRolesList", "Database connection failed.");
-            return {
-              status: DatabaseErrors.CONNECTION_ERROR
-            };
+            throw new DatabaseConnectionError();
           default:
-            Log.error("getRolesList", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getRolesList", `Unhandled database error occurred.\n${ e.stack }`);
         }
       }
       else if(e instanceof Error) {
-        Log.error("getRolesList", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getRolesList", `Unhandled error occurred.\n${ e.stack }`);
       }
       else {
         Log.error("getRolesList", "Unknown error occurred.");
       }
 
-      return {
-        status: DatabaseErrors.CLIENT_ERROR
-      };
+      throw new DatabaseClientError();
     }
+
+    if(rolesResult.rows.length <= 0) {
+      throw new NoRecordError();
+    }
+
+    return rolesResult.rows.map(row => ({
+      roleId: row.roleid,
+      discordId: row.discordid,
+      roleName: row.rolename,
+      minPoints: row.minpoints
+    }));
   }
 }
 

@@ -4,7 +4,7 @@ import { DBServers } from "../db";
 import UserData from "./userdata";
 import Roles from "./roles";
 import { Log } from "../utils/log";
-import { DatabaseSuccess } from "../utils/common";
+import { ServerNotFoundError } from "../errors/db";
 
 class Verification {
   /**
@@ -19,10 +19,20 @@ class Verification {
    * @returns { Promise<void> } Promise object with no return value.
    */
   static async verifyUser(client: Client, channel: TextChannel, db: Pool, osuToken: string, message: Message): Promise<void> {
-    const serverData = await DBServers.getServerByDiscordId(db, channel.guild.id);
+    let serverData;
 
-    if(serverData.status !== DatabaseSuccess.OK) {
-      Log.warn("verifyUser", "Someone asked for user verification, but server not in database.");
+    try {
+      serverData = await DBServers.getServerByDiscordId(db, channel.guild.id);
+    }
+    catch (e) {
+      if(e instanceof ServerNotFoundError) {
+        Log.error("verifyUser", `Server with ID ${ channel.guild.id } not found in database.`);
+        await channel.send("**Error:** Server not in database.");
+      }
+      else {
+        await channel.send("**Error:** An error occurred. Please contact bot administrator.");
+      }
+
       return;
     }
 
@@ -46,12 +56,7 @@ class Verification {
     }
 
     const osuUser = await UserData.fetchOsuUser(channel, osuToken, osuId);
-    if(typeof(osuUser) === "boolean") { // infer boolean returns as not found value
-      return;
-    }
-
-    if(osuUser.country !== serverData.data.country) {
-      await channel.send("**Error:** Wrong country code from osu! profile. Please contact server moderators.");
+    if(osuUser === null) {
       return;
     }
 
@@ -62,12 +67,12 @@ class Verification {
 
     await channel.send(`Linked Discord user <@${ message.author.id }> to osu! user **${ osuUser.userName }**.`);
 
-    if(serverData.data.verifiedRoleId === null) {
-      Log.info("verifyUser", `${ serverData.data.discordId }: Server's verifiedRoleId not set. Role granting skipped.`);
+    if(serverData.verifiedRoleId === null) {
+      Log.info("verifyUser", `${ serverData.discordId }: Server's verifiedRoleId not set. Role granting skipped.`);
       return;
     }
 
-    await Roles.addRole(client, channel, message.author.id, channel.guild.id, serverData.data.verifiedRoleId);
+    await Roles.addRole(client, channel, message.author.id, channel.guild.id, serverData.verifiedRoleId);
     return;
   }
 }

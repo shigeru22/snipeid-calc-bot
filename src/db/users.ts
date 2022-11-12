@@ -1,18 +1,24 @@
 import { Pool, DatabaseError } from "pg";
 import { Log } from "../utils/log";
-import { DatabaseErrors, DatabaseSuccess } from "../utils/common";
-import { DBResponseBase } from "../types/db/main";
+import { DuplicatedRecordError, UserNotFoundError, NoRecordError, ConflictError, DatabaseConnectionError, DatabaseClientError } from "../errors/db";
 import { IDBServerUserData, IDBServerLeaderboardQueryData, IDBServerUserQueryData, IDBServerLeaderboardData } from "../types/db/users";
 
+/**
+ * Database `users` table class.
+ */
 class DBUsers {
   /**
    * Gets Discord user by Discord ID from the database.
    *
    * @param { Pool } db Database connection pool.
    *
-   * @returns { Promise<DBResponseBase<IDBServerUserData[]> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with user data array.
+   * @returns { Promise<IDBServerUserData[]> } Promise object with all users data array.
+   *
+   * @throws { NoRecordError } No user data found in database.
+   * @throws { DatabaseConnectionError } Database connection error occurred.
+   * @throws { DatabaseClientError } Unhandled client error occurred.
    */
-  static async getAllUsers(db: Pool): Promise<DBResponseBase<IDBServerUserData[]> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  static async getAllUsers(db: Pool): Promise<IDBServerUserData[]> {
     const selectQuery = `
       SELECT
         users."userid",
@@ -25,49 +31,43 @@ class DBUsers {
         users
     `;
 
-    try {
-      const result = await db.query<IDBServerUserQueryData>(selectQuery);
-      if(result.rows.length <= 0) {
-        return {
-          status: DatabaseErrors.NO_RECORD
-        };
-      }
+    let usersResult;
 
-      return {
-        status: DatabaseSuccess.OK,
-        data: result.rows.map(row => ({
-          userId: row.userid,
-          discordId: row.discordid,
-          osuId: row.osuid,
-          points: row.points,
-          country: row.country,
-          lastUpdate: row.lastupdate
-        }))
-      };
+    try {
+      usersResult = await db.query<IDBServerUserQueryData>(selectQuery);
     }
     catch (e) {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
-            Log.error("getDiscordUserById", "Database connection failed.");
-            return {
-              status: DatabaseErrors.CONNECTION_ERROR
-            };
+            Log.error("getAllUsers", "Database connection failed.");
+            throw new DatabaseConnectionError();
           default:
-            Log.error("getDiscordUserById", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getAllUsers", `Unhandled database error occurred.\n${ e.stack }`);
         }
       }
       else if(e instanceof Error) {
-        Log.error("getDiscordUserById", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getAllUsers", `Unhandled error occurred.\n${ e.stack }`);
       }
       else {
-        Log.error("getDiscordUserById", "Unknown error occurred.");
+        Log.error("getAllUsers", "Unknown error occurred.");
       }
 
-      return {
-        status: DatabaseErrors.CLIENT_ERROR
-      };
+      throw new DatabaseClientError();
     }
+
+    if(usersResult.rows.length <= 0) {
+      throw new NoRecordError();
+    }
+
+    return usersResult.rows.map(row => ({
+      userId: row.userid,
+      discordId: row.discordid,
+      osuId: row.osuid,
+      points: row.points,
+      country: row.country,
+      lastUpdate: row.lastupdate
+    }));
   }
 
   /**
@@ -76,9 +76,14 @@ class DBUsers {
    * @param { Pool } db Database connection pool.
    * @param { number } osuId osu! user ID.
    *
-   * @returns { Promise<DBResponseBase<IDBServerUserData> | DBResponseBase<DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with user data.
+   * @returns { Promise<IDBServerUserData> } Promise object with user data.
+   *
+   * @throws { UserNotFoundError } User with specified osu! ID not found in database.
+   * @throws { DuplicatedRecordError } Duplicated `osuId` data found in `users` table.
+   * @throws { DatabaseConnectionError } Database connection error occurred.
+   * @throws { DatabaseClientError } Client error occurred.
    */
-  static async getDiscordUserByOsuId(db: Pool, osuId: number): Promise<DBResponseBase<IDBServerUserData> | DBResponseBase<DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  static async getDiscordUserByOsuId(db: Pool, osuId: number): Promise<IDBServerUserData> {
     const selectQuery = `
       SELECT
         users."userid",
@@ -94,57 +99,52 @@ class DBUsers {
     `;
     const selectValues = [ osuId ];
 
+    let discordUserResult;
+
     try {
-      const discordUserResult = await db.query<IDBServerUserQueryData>(selectQuery, selectValues);
-
-      if(typeof(discordUserResult.rows[0]) === "undefined") {
-        return {
-          status: DatabaseErrors.USER_NOT_FOUND
-        };
-      }
-
-      if(discordUserResult.rows[0].osuid !== osuId) {
-        Log.error("getDiscordUserByOsuId", "Invalid row returned.");
-        return {
-          status: DatabaseErrors.CLIENT_ERROR
-        };
-      }
-
-      return {
-        status: DatabaseSuccess.OK,
-        data: {
-          userId: discordUserResult.rows[0].userid,
-          discordId: discordUserResult.rows[0].discordid,
-          osuId: discordUserResult.rows[0].osuid,
-          points: discordUserResult.rows[0].points,
-          country: discordUserResult.rows[0].country,
-          lastUpdate: discordUserResult.rows[0].lastupdate
-        }
-      };
+      discordUserResult = await db.query<IDBServerUserQueryData>(selectQuery, selectValues);
     }
     catch (e) {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
             Log.error("getDiscordUserByOsuId", "Database connection failed.");
-            return {
-              status: DatabaseErrors.CONNECTION_ERROR
-            };
+            throw new DatabaseConnectionError();
           default:
-            Log.error("getDiscordUserByOsuId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getDiscordUserByOsuId", `Unhandled database error occurred.\n${ e.stack }`);
         }
       }
       else if(e instanceof Error) {
-        Log.error("getDiscordUserByOsuId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getDiscordUserByOsuId", `Unhandled error occurred.\n${ e.stack }`);
       }
       else {
         Log.error("getDiscordUserByOsuId", "Unknown error occurred.");
       }
 
-      return {
-        status: DatabaseErrors.CLIENT_ERROR
-      };
+      throw new DatabaseClientError();
     }
+
+    if(discordUserResult.rows.length <= 0) {
+      throw new UserNotFoundError();
+    }
+
+    if(discordUserResult.rows.length > 1) {
+      throw new DuplicatedRecordError("users", "osuId");
+    }
+
+    if(discordUserResult.rows[0].osuid !== osuId) {
+      Log.error("getDiscordUserByOsuId", "Invalid row returned.");
+      throw new DatabaseClientError("Invalid row returned.");
+    }
+
+    return {
+      userId: discordUserResult.rows[0].userid,
+      discordId: discordUserResult.rows[0].discordid,
+      osuId: discordUserResult.rows[0].osuid,
+      points: discordUserResult.rows[0].points,
+      country: discordUserResult.rows[0].country,
+      lastUpdate: discordUserResult.rows[0].lastupdate
+    };
   }
 
   /**
@@ -153,9 +153,14 @@ class DBUsers {
    * @param { Pool } db Database connection pool.
    * @param { string } discordId Discord ID of the user.
    *
-   * @returns { Promise<DBResponseBase<IDBServerUserData> | DBResponseBase<DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with user data.
+   * @returns { Promise<IDBServerUserData> } Promise object with user data.
+   *
+   * @throws { UserNotFoundError } User with specified osu! ID not found in database.
+   * @throws { DuplicatedRecordError } Duplicated `discordId` data found in `users` table.
+   * @throws { DatabaseConnectionError } Database connection error occurred.
+   * @throws { DatabaseClientError } Client error occurred.
    */
-  static async getDiscordUserByDiscordId(db: Pool, discordId: string): Promise<DBResponseBase<IDBServerUserData> | DBResponseBase<DatabaseErrors.USER_NOT_FOUND | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  static async getDiscordUserByDiscordId(db: Pool, discordId: string): Promise<IDBServerUserData> {
     const selectQuery = `
       SELECT
         users."userid",
@@ -171,50 +176,50 @@ class DBUsers {
     `;
     const selectValues = [ discordId ];
 
-    try {
-      const result = await db.query<IDBServerUserQueryData>(selectQuery, selectValues);
-      if(typeof(result.rows[0]) === "undefined") {
-        return {
-          status: DatabaseErrors.USER_NOT_FOUND
-        };
-      }
+    let discordUserResult;
 
-      return {
-        status: DatabaseSuccess.OK,
-        data: {
-          userId: result.rows[0].userid,
-          discordId: result.rows[0].discordid,
-          osuId: result.rows[0].osuid,
-          points: result.rows[0].points,
-          country: result.rows[0].country,
-          lastUpdate: result.rows[0].lastupdate
-        }
-      };
+    try {
+      discordUserResult = await db.query<IDBServerUserQueryData>(selectQuery, selectValues);
     }
     catch (e) {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
             Log.error("getDiscordUserByDiscordId", "Database connection failed.");
-            return {
-              status: DatabaseErrors.CONNECTION_ERROR
-            };
+            throw new DatabaseConnectionError();
           default:
-            Log.error("getDiscordUserByDiscordId", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getDiscordUserByDiscordId", `Unhandled database error occurred.\n${ e.stack }`);
         }
       }
       else if(e instanceof Error) {
-        Log.error("getDiscordUserByDiscordId", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getDiscordUserByDiscordId", `Unhandled error occurred.\n${ e.stack }`);
       }
       else {
         Log.error("getDiscordUserByDiscordId", "Unknown error occurred.");
       }
 
-      return {
-        status: DatabaseErrors.CLIENT_ERROR
-      };
+      throw new DatabaseClientError();
     }
+
+    if(discordUserResult.rows.length <= 0) {
+      throw new UserNotFoundError();
+    }
+
+    if(discordUserResult.rows.length > 1) {
+      throw new DuplicatedRecordError("users", "discordId");
+    }
+
+    return {
+      userId: discordUserResult.rows[0].userid,
+      discordId: discordUserResult.rows[0].discordid,
+      osuId: discordUserResult.rows[0].osuid,
+      points: discordUserResult.rows[0].points,
+      country: discordUserResult.rows[0].country,
+      lastUpdate: discordUserResult.rows[0].lastupdate
+    };
   }
+
+  // TODO: create getAllServerPointsLeaderboard?
 
   /**
    * Retrieves points leaderboard by server ID.
@@ -222,8 +227,14 @@ class DBUsers {
    * @param { Pool } db Database connection pool.
    * @param { string } serverDiscordId Server snowflake ID.
    * @param { boolean } desc Whether results should be sorted in descending order.
+   *
+   * @returns { Promise<IDBServerLeaderboardData[]> } Promise object with server points leaderboard data array.
+   *
+   * @throws { NoRecordError } No user data found in database for the specified `serverDiscordId`.
+   * @throws { DatabaseConnectionError } Database connection error occurred.
+   * @throws { DatabaseClientError } Unhandled client error occurred.
    */
-  static async getPointsLeaderboard(db: Pool, serverDiscordId: string, desc = true): Promise<DBResponseBase<IDBServerLeaderboardData[]> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  static async getServerPointsLeaderboard(db: Pool, serverDiscordId: string, desc = true): Promise<IDBServerLeaderboardData[]> {
     const selectQuery = `
       SELECT
         users."userid",
@@ -242,47 +253,40 @@ class DBUsers {
     `;
     const selectValues = [ serverDiscordId ];
 
+    let serverLeaderboardData;
+
     try {
-      const response = await db.query<IDBServerLeaderboardQueryData>(selectQuery, selectValues);
-
-      if(response.rows.length <= 0) {
-        return {
-          status: DatabaseErrors.NO_RECORD
-        };
-      }
-
-      return {
-        status: DatabaseSuccess.OK,
-        data: response.rows.map(row => ({
-          userId: row.userid,
-          userName: row.username,
-          points: row.points
-        }))
-      };
+      serverLeaderboardData = await db.query<IDBServerLeaderboardQueryData>(selectQuery, selectValues);
     }
     catch (e) {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
             Log.error("getPointsLeaderboard", "Database connection failed.");
-            return {
-              status: DatabaseErrors.CONNECTION_ERROR
-            };
+            throw new DatabaseConnectionError();
           default:
-            Log.error("getPointsLeaderboard", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getPointsLeaderboard", `Unhandled database error occurred.\n${ e.stack }`);
         }
       }
       else if(e instanceof Error) {
-        Log.error("getPointsLeaderboard", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getPointsLeaderboard", `Unhandled error occurred.\n${ e.stack }`);
       }
       else {
         Log.error("getPointsLeaderboard", "Unknown error occurred.");
       }
 
-      return {
-        status: DatabaseErrors.CLIENT_ERROR
-      };
+      throw new DatabaseClientError();
     }
+
+    if(serverLeaderboardData.rows.length <= 0) {
+      throw new NoRecordError();
+    }
+
+    return serverLeaderboardData.rows.map(row => ({
+      userId: row.userid,
+      userName: row.username,
+      points: row.points
+    }));
   }
 
   /**
@@ -292,8 +296,12 @@ class DBUsers {
    * @param { string } serverDiscordId Server snowflake ID.
    * @param { string } countryCode Country code.
    * @param { boolean } desc Whether results should be sorted in descending order.
+   *
+   * @throws { NoRecordError } No user data found in database for the specified `serverDiscordId` (and/or `countryCode`).
+   * @throws { DatabaseConnectionError } Database connection error occurred.
+   * @throws { DatabaseClientError } Unhandled client error occurred.
    */
-  static async getPointsLeaderboardByCountry(db: Pool, serverDiscordId: string, countryCode: string, desc = true): Promise<DBResponseBase<IDBServerLeaderboardData[]> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  static async getServerPointsLeaderboardByCountry(db: Pool, serverDiscordId: string, countryCode: string, desc = true): Promise<IDBServerLeaderboardData[]> {
     const selectQuery = `
       SELECT
         users."userid",
@@ -312,48 +320,43 @@ class DBUsers {
     `;
     const selectValues = [ serverDiscordId, countryCode ];
 
+    let serverLeaderboardData;
+
     try {
-      const response = await db.query <IDBServerLeaderboardQueryData>(selectQuery, selectValues);
-
-      if(response.rows.length <= 0) {
-        return {
-          status: DatabaseErrors.NO_RECORD
-        };
-      }
-
-      return {
-        status: DatabaseSuccess.OK,
-        data: response.rows.map(row => ({
-          userId: row.userid,
-          userName: row.username,
-          points: row.points
-        }))
-      };
+      serverLeaderboardData = await db.query <IDBServerLeaderboardQueryData>(selectQuery, selectValues);
     }
     catch (e) {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
             Log.error("getPointsLeaderboardByCountry", "Database connection failed.");
-            return {
-              status: DatabaseErrors.CONNECTION_ERROR
-            };
+            throw new DatabaseConnectionError();
           default:
-            Log.error("getPointsLeaderboardByCountry", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getPointsLeaderboardByCountry", `Unhandled database error occurred.\n${ e.stack }`);
         }
       }
       else if(e instanceof Error) {
-        Log.error("getPointsLeaderboardByCountry", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getPointsLeaderboardByCountry", `Unhandled error occurred.\n${ e.stack }`);
       }
       else {
         Log.error("getPointsLeaderboardByCountry", "Unknown error occurred.");
       }
 
-      return {
-        status: DatabaseErrors.CLIENT_ERROR
-      };
+      throw new DatabaseClientError();
     }
+
+    if(serverLeaderboardData.rows.length <= 0) {
+      throw new NoRecordError();
+    }
+
+    return serverLeaderboardData.rows.map(row => ({
+      userId: row.userid,
+      userName: row.username,
+      points: row.points
+    }));
   }
+
+  // TODO: create getLastPointUpdate?
 
   /**
    * Gets last points update time.
@@ -361,9 +364,13 @@ class DBUsers {
    * @param { Pool } db Database connection pool.
    * @param { string } serverDiscordId Server snowflake ID.
    *
-   * @returns { Promise<DBResponseBase<Date> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with last assignment update time.
+   * @returns { Promise<Date> } Promise object with last assignment update time.
+   *
+   * @throws { NoRecordError } No user data found in database for the specified `serverDiscordId`.
+   * @throws { DatabaseConnectionError } Database connection error occurred.
+   * @throws { DatabaseClientError } Unhandled client error occurred.
    */
-  static async getLastPointUpdate(db: Pool, serverDiscordId: string): Promise<DBResponseBase<Date> | DBResponseBase<DatabaseErrors.NO_RECORD | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  static async getServerLastPointUpdate(db: Pool, serverDiscordId: string): Promise<Date> {
     const selectQuery = `
       SELECT
         users."lastupdate"
@@ -381,48 +388,36 @@ class DBUsers {
     `;
     const selectValues = [ serverDiscordId ];
 
+    let lastUpdatedResult;
+
     try {
-      const client = await db.connect();
-
-      const result = await client.query(selectQuery, selectValues);
-
-      if(typeof(result.rows[0]) === "undefined") {
-        client.release();
-        return {
-          status: DatabaseErrors.NO_RECORD
-        };
-      }
-
-      client.release();
-
-      return {
-        status: DatabaseSuccess.OK,
-        data: result.rows[0].lastupdate
-      };
+      lastUpdatedResult = await db.query(selectQuery, selectValues);
     }
     catch (e) {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
             Log.error("getLastPointUpdate", "Database connection failed.");
-            return {
-              status: DatabaseErrors.CONNECTION_ERROR
-            };
+            throw new DatabaseConnectionError();
           default:
-            Log.error("getLastPointUpdate", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("getLastPointUpdate", `Unhandled database error occurred.\n${ e.stack }`);
         }
       }
       else if(e instanceof Error) {
-        Log.error("getLastPointUpdate", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("getLastPointUpdate", `Unhandled error occurred.\n${ e.stack }`);
       }
       else {
         Log.error("getLastPointUpdate", "Unknown error occurred.");
       }
 
-      return {
-        status: DatabaseErrors.CLIENT_ERROR
-      };
+      throw new DatabaseClientError();
     }
+
+    if(lastUpdatedResult.rows[0] === undefined) {
+      throw new NoRecordError();
+    }
+
+    return lastUpdatedResult.rows[0].lastupdate; // should be date
   }
 
   /**
@@ -434,9 +429,13 @@ class DBUsers {
    * @param { string } userName osu! username.
    * @param { string } country Country code.
    *
-   * @returns { Promise<DBResponseBase<true> | DBResponseBase<DatabaseErrors.DUPLICATED_DISCORD_ID | DatabaseErrors.DUPLICATED_OSU_ID | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> } Promise object with `true` if inserted successfully. Returns `DatabaseErrors` enum otherwise.
+   * @returns { Promise<void> } Promise object no return value. Throws errors below if failed.
+   *
+   * @throws { ConflictError } Specified Discord user ID or osu! ID already in database.
+   * @throws { DatabaseConnectionError } Database connection error occurred.
+   * @throws { DatabaseClientError } Unhandled client error occurred.
    */
-  static async insertUser(db: Pool, discordId: string, osuId: number, userName: string, country: string): Promise<DBResponseBase<true> | DBResponseBase<DatabaseErrors.DUPLICATED_DISCORD_ID | DatabaseErrors.DUPLICATED_OSU_ID | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  static async insertUser(db: Pool, discordId: string, osuId: number, userName: string, country: string): Promise<void> {
     const selectDiscordIdQuery = `
       SELECT
         users."userid",
@@ -469,17 +468,15 @@ class DBUsers {
     `;
     const insertValues = [ discordId, osuId, userName, country ];
 
-    try {
-      const client = await db.connect();
+    const client = await db.connect();
 
+    try {
       {
         const discordIdResult = await client.query<IDBServerUserQueryData>(selectDiscordIdQuery, selectDiscordIdValues);
         if(discordIdResult.rows.length > 0) {
           if(discordIdResult.rows[0].discordid === discordId) {
             client.release();
-            return {
-              status: DatabaseErrors.DUPLICATED_DISCORD_ID
-            };
+            throw new ConflictError("users", "discordId");
           }
         }
       }
@@ -489,9 +486,7 @@ class DBUsers {
         if(osuIdResult.rows.length > 0) {
           if(osuIdResult.rows[0].osuid === osuId) {
             client.release();
-            return {
-              status: DatabaseErrors.DUPLICATED_OSU_ID
-            };
+            throw new ConflictError("users", "osuId");
           }
         }
       }
@@ -500,33 +495,25 @@ class DBUsers {
       client.release();
 
       Log.info("insertUser", "users: Inserted 1 row.");
-      return {
-        status: DatabaseSuccess.OK,
-        data: true
-      };
     }
     catch (e) {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
             Log.error("insertUser", "Database connection failed.");
-            return {
-              status: DatabaseErrors.CONNECTION_ERROR
-            };
+            throw new DatabaseConnectionError();
           default:
-            Log.error("insertUser", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("insertUser", `Unhandled database error occurred.\n${ e.stack }`);
         }
       }
       else if(e instanceof Error) {
-        Log.error("insertUser", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("insertUser", `Unhandled error occurred.\n${ e.stack }`);
       }
       else {
         Log.error("insertUser", "Unknown error occurred.");
       }
 
-      return {
-        status: DatabaseErrors.CLIENT_ERROR
-      };
+      throw new DatabaseClientError();
     }
   }
 
@@ -539,9 +526,14 @@ class DBUsers {
    * @param { string | null } userName osu! username.
    * @param { string | null } country Country code.
    *
-   * @returns { Promise<DatabaseErrors.OK | DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR> } Promise object with `true` if updated successfully. Returns `DatabaseErrors` enum otherwise.
+   * @returns { Promise<void> } Promise object no return value. Throws errors below if failed.
+   *
+   * @throws { DatabaseConnectionError } Database connection error occurred.
+   * @throws { DatabaseClientError } Unhandled client error occurred.
    */
-  static async updateUser(db: Pool, osuId: number, points: number, userName: string | null = null, country: string | null = null): Promise<DBResponseBase<true> | DBResponseBase<DatabaseErrors.CONNECTION_ERROR | DatabaseErrors.CLIENT_ERROR>> {
+  static async updateUser(db: Pool, osuId: number, points: number, userName: string | null = null, country: string | null = null): Promise<void> {
+    // only points, userName, and country are updatable
+
     const updateQuery = `
       UPDATE
         users
@@ -567,35 +559,26 @@ class DBUsers {
 
     try {
       await db.query(updateQuery, updateValues);
-
       Log.info("updateUser", "users: Updated 1 row.");
-      return {
-        status: DatabaseSuccess.OK,
-        data: true
-      };
     }
     catch (e) {
       if(e instanceof DatabaseError) {
         switch(e.code) {
           case "ECONNREFUSED":
             Log.error("updateUser", "Database connection failed.");
-            return {
-              status: DatabaseErrors.CONNECTION_ERROR
-            };
+            throw new DatabaseConnectionError();
           default:
-            Log.error("updateUser", "Database error occurred. Exception details below." + "\n" + `${ e.code }: ${ e.message }` + "\n" + e.stack);
+            Log.error("updateUser", `Unhandled database error occurred.\n${ e.stack }`);
         }
       }
       else if(e instanceof Error) {
-        Log.error("updateUser", "An error occurred while executing query. Exception details below." + "\n" + `${ e.name }: ${ e.message }` + "\n" + e.stack);
+        Log.error("updateUser", `Unhandled error occurred.\n${ e.stack }`);
       }
       else {
         Log.error("updateUser", "Unknown error occurred.");
       }
 
-      return {
-        status: DatabaseErrors.CLIENT_ERROR
-      };
+      throw new DatabaseClientError();
     }
   }
 }

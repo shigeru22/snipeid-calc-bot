@@ -5,6 +5,7 @@ class Environment {
   static #botToken = "";
   static #osuClientId = 0;
   static #osuClientSecret = "";
+  static #useRespektive = false;
 
   /**
    * Validates environment variables.
@@ -47,6 +48,8 @@ class Environment {
 
     this.#osuClientSecret = process.env.OSU_CLIENT_SECRET;
 
+    this.#useRespektive = process.env.USE_RESPEKTIVE !== undefined && process.env.USE_RESPEKTIVE === "1";
+
     Log.info("validateEnvironmentVariables", "Environment variable checks completed.");
     return true;
   }
@@ -65,6 +68,10 @@ class Environment {
 
   static getOsuClientSecret(): string {
     return this.#osuClientSecret;
+  }
+
+  static useRespektive(): boolean {
+    return this.#useRespektive;
   }
 }
 
