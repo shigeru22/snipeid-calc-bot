@@ -2,6 +2,9 @@ import { TextChannel } from "discord.js";
 import { Log } from "../utils/log";
 import { greet, agree, disagree, notUnderstood } from "../messages/msg";
 
+/**
+ * Conversations command class.
+ */
 class Conversations {
   /**
    * Sends message based on what message was received.

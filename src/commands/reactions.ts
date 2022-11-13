@@ -1,6 +1,9 @@
 import { Client, Message } from "discord.js";
 import { Log } from "../utils/log";
 
+/**
+ * Reaction-related actions class.
+ */
 class Reactions {
   /**
    * Adds specified reaction to certain number element inside the calculated points result.

@@ -1,6 +1,9 @@
 import { InvalidRequiredElement } from "../errors/utils/invalid-element";
 import { InvalidExpressionError, InvalidTypeError, InvalidNumberOfRanksError, InvalidTopRankError } from "../errors/utils/parser";
 
+/**
+ * Parser utilities class.
+ */
 class Parser {
   /**
    * Parses Bathbot's top count embed into arrays.

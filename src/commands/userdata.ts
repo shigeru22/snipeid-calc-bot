@@ -1,17 +1,20 @@
 import { Client, TextChannel } from "discord.js";
 import { Pool } from "pg";
-import { Log } from "../utils/log";
 import { getUserByOsuId } from "../api/osu";
 import { getTopCounts, getTopCountsFromRespektive } from "../api/osustats";
 import { DBAssignments, DBUsers, DBServers } from "../db";
+import { Log } from "../utils/log";
+import { AssignmentType, OsuUserStatus } from "../utils/common";
 import { TimeUtils } from "../utils/time";
 import { NonOKError, NotFoundError } from "../errors/api";
 import { UserNotFoundError, ServerNotFoundError, RolesEmptyError, ConflictError } from "../errors/db";
+import { isOsuUser } from "../types/api/osu";
 import { IDBServerUserData } from "../types/db/users";
 import { IOsuUserData } from "../types/commands/userdata";
-import { AssignmentType, OsuUserStatus } from "../utils/common";
-import { isOsuUser } from "../types/api/osu";
 
+/**
+ * User data actions class.
+ */
 class UserData {
   /**
    * Updates user data in the database and assigns roles based on points received.
@@ -198,7 +201,7 @@ class UserData {
    * @param { Pool } db Database connection.
    * @param { string } discordId Discord ID of the user.
    *
-   * @returns { Promise<IDBServerUserData | false> } Promise object with `userId`, `discordId`, and `osuId`, or `false` if user was not found.
+   * @returns { Promise<IDBServerUserData | null> } Promise object with `userId`, `discordId`, and `osuId`, or `null` if user was not found.
    */
   static async fetchUser(channel: TextChannel, db: Pool, discordId: string): Promise<IDBServerUserData | null> {
     Log.debug("fetchUser", `Fetching user with ID ${ discordId }.`);
@@ -324,7 +327,7 @@ class UserData {
    * @param { TextChannel } channel Channel to send message to.
    * @param { string | number } osuId osu! user ID.
    *
-   * @returns { Promise<[ number, number, number, number ] | null> } Promise object with number of ranks array (top 1, 8, 25, and 50), or `false` in case of errors.
+   * @returns { Promise<[ number, number, number, number ] | null> } Promise object with number of ranks array (top 1, 8, 25, and 50), or `null` in case of errors.
    */
   static async fetchRespektiveOsuStats(channel: TextChannel, osuId: string | number): Promise<[ number, number, number, number ] | null> {
     Log.debug("fetchRespektiveOsuStats", `Fetching respektive osu!Stats data for osu! ID ${ osuId }.`);

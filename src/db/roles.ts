@@ -1,7 +1,7 @@
 import { Pool, DatabaseError } from "pg";
 import { Log } from "../utils/log";
-import { IDBServerRoleData, IDBServerRoleQueryData } from "../types/db/roles";
 import { DatabaseClientError, DatabaseConnectionError, NoRecordError } from "../errors/db";
+import { IDBServerRoleData, IDBServerRoleQueryData } from "../types/db/roles";
 
 /**
  * Database `roles` table class.

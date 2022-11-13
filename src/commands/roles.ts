@@ -1,9 +1,12 @@
 import { Client, TextChannel, GuildMember } from "discord.js";
 import { Pool } from "pg";
 import { DBAssignments, DBServers } from "../db";
-import { DuplicatedRecordError, UserNotFoundError, ServerNotFoundError } from "../errors/db";
 import { Log } from "../utils/log";
+import { DuplicatedRecordError, UserNotFoundError, ServerNotFoundError } from "../errors/db";
 
+/**
+ * Roles-related actions class.
+ */
 class Roles {
   /**
    * Add specified role to user specified.
@@ -44,7 +47,15 @@ class Roles {
     }
   }
 
-  static async reassignRole(db: Pool, member: GuildMember) {
+  /**
+   * Assigns back rejoined server member's roles.
+   *
+   * @param { Pool } db Database connection pool.
+   * @param { GuildMember } member Rejoined server member.
+   *
+   * @returns { Promise<void> } Promise object with no return value.
+   */
+  static async reassignRole(db: Pool, member: GuildMember): Promise<void> {
     let verifiedRoleId;
     let currentPointsRoleId;
 

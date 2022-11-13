@@ -1,5 +1,8 @@
 import { Log } from "./log";
 
+/**
+ * Environment variables class.
+ */
 class Environment {
   static #botName = "";
   static #botToken = "";

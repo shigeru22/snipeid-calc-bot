@@ -1,10 +1,13 @@
 import { TextChannel } from "discord.js";
 import { Pool } from "pg";
-import { Log } from "../utils/log";
 import { DBUsers, DBServers } from "../db";
-import { ServerNotFoundError, NoRecordError } from "../errors/db";
+import { Log } from "../utils/log";
 import { createLeaderboardEmbed } from "../messages/leaderboard";
+import { ServerNotFoundError, NoRecordError } from "../errors/db";
 
+/**
+ * Leaderboard commands class.
+ */
 class Leaderboards {
   /**
    * Sends top 50 leaderboard from the database to specified channel.

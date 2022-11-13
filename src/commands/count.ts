@@ -12,7 +12,11 @@ import { UserNotFoundError, ServerNotFoundError } from "../errors/db";
 import { InvalidExpressionError, InvalidTypeError, InvalidNumberOfRanksError, InvalidTopRankError } from "../errors/utils/parser";
 import { isOsuUser } from "../types/api/osu";
 
-class Count {// <osc, using Bathbot message response
+/**
+ * Count commands class.
+ */
+class Count {
+  // <osc, using Bathbot message response
   /**
    * Sends calculated points from Bathbot `<osc` command.
    *

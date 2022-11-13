@@ -1,10 +1,13 @@
 import { Client, TextChannel, Message, PermissionFlagsBits, Role } from "discord.js";
 import { Pool } from "pg";
 import { DBServers } from "../db";
+import { Log } from "../utils/log";
 import { createConfigCommandsEmbed, createServerConfigurationEmbed } from "../messages/config";
 import { ServerNotFoundError } from "../errors/db";
-import { Log } from "../utils/log";
 
+/**
+ * Config commands class.
+ */
 class Config {
   /**
    * Handles configuration commands.
@@ -17,7 +20,7 @@ class Config {
    * @returns { Promise<void> } Promise object with no return value.
    */
   static async handleConfigCommands(client: Client, channel: TextChannel, db: Pool, message: Message): Promise<void> {
-    if(message.member === null) { // TODO: check if DM message
+    if(message.member === null) {
       await channel.send("**Error:** This should not happen, but you're not a member.");
       return;
     }

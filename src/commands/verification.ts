@@ -1,11 +1,13 @@
 import { Client, TextChannel, Message } from "discord.js";
 import { Pool } from "pg";
 import { DBServers } from "../db";
-import UserData from "./userdata";
-import Roles from "./roles";
+import { UserData, Roles } from ".";
 import { Log } from "../utils/log";
 import { ServerNotFoundError } from "../errors/db";
 
+/**
+ * Verification commands class.
+ */
 class Verification {
   /**
    * Verifies the user and inserts their data into the database.

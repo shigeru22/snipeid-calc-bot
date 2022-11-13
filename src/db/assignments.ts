@@ -1,7 +1,6 @@
 import { Pool, PoolClient, DatabaseError } from "pg";
+import { DBUsers, DBServers } from ".";
 import { Log } from "../utils/log";
-import DBUsers from "./users";
-import DBServers from "./servers";
 import { AssignmentType } from "../utils/common";
 import { DatabaseErrors, DuplicatedRecordError, UserNotFoundError, NoRecordError, DatabaseConnectionError, DatabaseClientError } from "../errors/db";
 import { IDBServerAssignmentQueryData, IDBServerAssignmentData, IDBAssignmentResultData } from "../types/db/assignments";
@@ -39,6 +38,9 @@ interface IDBServerUserAssignmentData {
     lastUpdate: Date;
 }
 
+/**
+ * Database `assignments` table class.
+ */
 class DBAssignments {
   /**
    * Gets user assignment by osu! ID from the database.
@@ -602,14 +604,14 @@ class DBAssignments {
    * @param { number } userId User ID in the database.
    * @param { number } roleId Role ID in the database.
    * @param { number } serverId Database server ID.
-   * @param { number? } assignmentId Assignment ID. Leave `null` to insert sequentially.
+   * @param { number | null } assignmentId Assignment ID. Leave `null` to insert sequentially.
    *
    * @returns { Promise<void> } Promise object with no return value. Throws errors below if failed.
    *
    * @throws { DatabaseConnectionError } Database connection error occurred.
    * @throws { DatabaseClientError } Unhandled client error occurred.
    */
-  static async #insertAssignment(client: PoolClient, userId: number, roleId: number, serverId: number, assignmentId: number | null = null): Promise<boolean> {
+  static async #insertAssignment(client: PoolClient, userId: number, roleId: number, serverId: number, assignmentId: number | null = null): Promise<void> {
     const insertQuery = `
       INSERT INTO assignments (${ assignmentId !== null ? "assignmentid, " : "" }userid, roleid, serverid)
         VALUES ($1, $2, $3${ assignmentId !== null ? ", $4" : "" })
@@ -622,7 +624,6 @@ class DBAssignments {
 
     try {
       await client.query(insertQuery, insertValues);
-      return true;
     }
     catch (e) {
       if(e instanceof DatabaseError) {
@@ -656,7 +657,7 @@ class DBAssignments {
    * @throws { DatabaseConnectionError } Database connection error occurred.
    * @throws { DatabaseClientError } Unhandled client error occurred.
    */
-  static async #deleteAssignmentById(client: PoolClient, assignmentId: number): Promise<boolean> {
+  static async #deleteAssignmentById(client: PoolClient, assignmentId: number): Promise<void> {
     const deleteQuery = `
       DELETE FROM
         assignments
@@ -667,7 +668,6 @@ class DBAssignments {
 
     try {
       await client.query(deleteQuery, deleteValue);
-      return true;
     }
     catch (e) {
       if(e instanceof DatabaseError) {

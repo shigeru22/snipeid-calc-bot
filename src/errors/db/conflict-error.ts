@@ -1,5 +1,8 @@
 import DatabaseErrors from "./database-error";
 
+/**
+ * Database record conflict error class.
+ */
 class ConflictError extends DatabaseErrors {
   table: string | null = null;
   column: string | null = null;

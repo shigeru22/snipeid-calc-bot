@@ -220,6 +220,7 @@ class DBServers {
    *
    * @param { Pool } db Database connection pool.
    * @param { string } serverDiscordId Server snowflake ID.
+   * @param { string | null } countryCode Country code to be set. Set to `null` to disable.
    *
    * @returns { Promise<void> } Promise object with no return value. Throws errors below if failed.
    *
@@ -264,6 +265,7 @@ class DBServers {
    *
    * @param { Pool } db Database connection pool.
    * @param { string } serverDiscordId Server snowflake ID.
+   * @param { string | null } verifiedRoleId Verified role ID to be set. Set to `null` to disable.
    *
    * @returns { Promise<void> } Promise object with no return value. Throws errors below if failed.
    *
@@ -308,6 +310,7 @@ class DBServers {
    *
    * @param { Pool } db Database connection pool.
    * @param { string } serverDiscordId Server snowflake ID.
+   * @param { string | null } commandsChannelId Commands channel ID to be set. Set to `null` to disable.
    *
    * @returns { Promise<void> } Promise object with no return value. Throws errors below if failed.
    *
@@ -352,6 +355,7 @@ class DBServers {
    *
    * @param { Pool } db Database connection pool.
    * @param { string } serverDiscordId Server snowflake ID.
+   * @param { string | null } leaderboardsChannelId Leaderboards channel ID to be set. Set to `null` to disable.
    *
    * @returns { Promise<void> } Promise object with no return value. Throws errors below if failed.
    *

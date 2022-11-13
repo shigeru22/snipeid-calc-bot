@@ -10,6 +10,9 @@ enum LogSeverity {
 
 const severities = [ "DEBUG", "LOG", "WARN", "ERROR" ];
 
+/**
+ * Custom logging class.
+ */
 class Log {
   /**
    * Outputs logs using custom severity and function name format.

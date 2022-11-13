@@ -1,11 +1,3 @@
-/**
- * Time operation enum.
- */
-enum TimeOperation {
-  DECREMENT,
-  INCREMENT
-}
-
 class TimeUtils {
   /**
    * Converts delta time into its string representation.
@@ -55,4 +47,4 @@ class TimeUtils {
   }
 }
 
-export { TimeOperation, TimeUtils };
+export { TimeUtils };

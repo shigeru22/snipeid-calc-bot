@@ -1,5 +1,8 @@
 import ParserError from "./parser-error";
 
+/**
+ * Invalid parsed data typing error class.
+ */
 class InvalidTypeError extends ParserError {
   position: 0 | 1 | null = null;
 
