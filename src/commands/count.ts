@@ -1,17 +1,16 @@
 import { Client, TextChannel, Message } from "discord.js";
 import { Pool } from "pg";
 import { getUserByOsuId } from "../api/osu";
-import { getTopCounts, getTopCountsFromRespektive } from "../api/osustats";
 import { DBUsers, DBServers } from "../db";
 import Reactions from "./reactions";
 import UserData from "./userdata";
 import { calculatePoints, calculateRespektivePoints, counter, counterRespektive } from "../messages/counter";
 import { WhatIfParserStatus, Parser, Environment } from "../utils";
 import { Log } from "../utils/log";
-import { UserNotFoundError, ServerNotFoundError } from "../errors/db";
-import { NonOKError, NotFoundError } from "../errors/api";
-import { isOsuUser } from "../types/api/osu";
 import { OsuUserStatus } from "../utils/common";
+import { UserNotFoundError, ServerNotFoundError } from "../errors/db";
+import { NotFoundError } from "../errors/api";
+import { isOsuUser } from "../types/api/osu";
 
 class Count {// <osc, using Bathbot message response
   /**
@@ -78,8 +77,14 @@ class Count {// <osc, using Bathbot message response
     const username = Parser.parseUsername(title);
     const osuId = Parser.parseOsuIdFromLink(link);
 
-    // [ top_1, top_8, top_15, top_25, top_50 ]
-    const topCounts = Parser.parseTopCountDescription(desc);
+    let topCounts; // [ top_1, top_8, top_15, top_25, top_50 ]
+
+    try {
+      topCounts = Parser.parseTopCountDescription(desc);
+    }
+    catch (e) {
+      return;
+    }
     const points = calculatePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3], topCounts[4]);
     await this.countPoints(client, channel, username, topCounts);
 
@@ -181,73 +186,23 @@ class Count {// <osc, using Bathbot message response
     }
 
     const osuUsername = osuUser.user.userName;
-
-    const topCounts: number[] = [];
-    if(!Environment.useRespektive()) { // TODO: refactor for userWhatIfCount function usage
-      const topCountsRequest = [
-        getTopCounts(osuUsername, 1),
-        getTopCounts(osuUsername, 8),
-        getTopCounts(osuUsername, 15),
-        getTopCounts(osuUsername, 25),
-        getTopCounts(osuUsername, 50)
-      ];
-
-      let tempResponse;
-
-      try {
-        tempResponse = await Promise.all(topCountsRequest);
-      }
-      catch (e) {
-        if(e instanceof NotFoundError) {
-          await channel.send("**Error:** osu!Stats API said you're not found. Check osu!Stats manually?");
-        }
-        else if(e instanceof NonOKError) {
-          await channel.send("**Error:** osu!Stats API error occurred. Please contact bot administrator.");
-        }
-        else {
-          await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
-        }
-
-        return;
-      }
-
-      topCounts.push(
-        tempResponse[0].count,
-        tempResponse[1].count,
-        tempResponse[2].count,
-        tempResponse[3].count,
-        tempResponse[4].count
-      );
-    }
-    else {
-      let tempResponse;
-
-      try {
-        tempResponse = await getTopCountsFromRespektive(user.osuId);
-      }
-      catch (e) {
-        if(e instanceof NotFoundError) {
-          await channel.send("**Error:** osu!Stats API said you're not found. Check osu!Stats manually?");
-        }
-        else if(e instanceof NonOKError) {
-          await channel.send("**Error:** osu!Stats API error occurred. Please contact bot administrator.");
-        }
-        else {
-          await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
-        }
-
-        return;
-      }
-
-      topCounts.push(...tempResponse);
-    }
-
     let points = 0;
+
     if(!Environment.useRespektive()) {
+      const topCounts = await UserData.fetchOsuStats(channel, osuUser.user.userName);
+      if(topCounts === null) {
+        return;
+      }
+
       points = calculatePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3], topCounts[4]);
       await this.countPoints(client, channel, osuUsername, topCounts);
     }
     else {
+      const topCounts = await UserData.fetchRespektiveOsuStats(channel, user.osuId);
+      if(topCounts === null) {
+        return;
+      }
+
       points = calculateRespektivePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3]);
       await this.countRespektivePoints(client, channel, osuUsername, topCounts);
     }
@@ -415,68 +370,27 @@ class Count {// <osc, using Bathbot message response
     Log.info("userWhatIfCount", `Calculating what-ifs for user: ${ osuUsername }`);
 
     const topCounts: number[] = [];
+    let originalPoints = 0;
+
     if(!Environment.useRespektive()) {
-      {
-        const topCountsRequest = [
-          getTopCounts(osuUsername, 1),
-          getTopCounts(osuUsername, 8),
-          getTopCounts(osuUsername, 15),
-          getTopCounts(osuUsername, 25),
-          getTopCounts(osuUsername, 50)
-        ];
-
-        let tempResponse;
-
-        try {
-          tempResponse = await Promise.all(topCountsRequest);
-        }
-        catch (e) {
-          if(e instanceof NotFoundError) {
-            await channel.send("**Error:** osu!Stats API said you're not found. Check osu!Stats manually?");
-          }
-          else if(e instanceof NonOKError) {
-            await channel.send("**Error:** osu!Stats API error occurred. Please contact bot administrator.");
-          }
-          else {
-            await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
-          }
-
-          return;
-        }
-
-        topCounts.push(
-          tempResponse[0].count,
-          tempResponse[1].count,
-          tempResponse[2].count,
-          tempResponse[3].count,
-          tempResponse[4].count
-        );
-      }
-    }
-    else {
-      let tempResponse;
-
-      try {
-        tempResponse = await getTopCountsFromRespektive(user.osuId);
-      }
-      catch (e) {
-        if(e instanceof NotFoundError) {
-          await channel.send("**Error:** osu!Stats API said you're not found. Check osu!Stats manually?");
-        }
-        else if(e instanceof NonOKError) {
-          await channel.send("**Error:** osu!Stats API error occurred. Please contact bot administrator.");
-        }
-        else {
-          await channel.send("**Error:** Client error occurred. Please contact bot administrator.");
-        }
-
+      const topCounts = await UserData.fetchOsuStats(channel, osuUser.user.userName);
+      if(topCounts === null) {
         return;
       }
 
-      topCounts.push(...tempResponse);
+      originalPoints = calculatePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3], topCounts[4]);
+      await this.countPoints(client, channel, osuUsername, topCounts);
+    }
+    else {
+      const topCounts = await UserData.fetchRespektiveOsuStats(channel, user.osuId);
+      if(topCounts === null) {
+        return;
+      }
+
+      originalPoints = calculateRespektivePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3]);
+      await this.countRespektivePoints(client, channel, osuUsername, topCounts);
     }
 
-    let originalPoints = 0;
     if(!Environment.useRespektive()) {
       originalPoints = calculatePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3], topCounts[4]);
     }
@@ -506,14 +420,24 @@ class Count {// <osc, using Bathbot message response
 
     let newPoints = 0;
     if(!Environment.useRespektive()) {
-      newPoints = calculatePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3], topCounts[4]);
+      if(topCounts.length !== 5) {
+        Log.error("userWhatIfCount", "Invalid number of elements for osu!Stats' what-if count.");
+        await channel.send("**Error:** An error occurred. Please contact bot administrator.");
+        return;
+      }
 
-      await this.countPoints(client, channel, osuUsername, topCounts);
+      newPoints = calculatePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3], topCounts[4]);
+      await this.countPoints(client, channel, osuUsername, topCounts as [ number, number, number, number, number ]);
     }
     else {
-      newPoints = calculateRespektivePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3]);
+      if(topCounts.length !== 4) {
+        Log.error("userWhatIfCount", "Invalid number of elements for osu!Stats (respektive)'s what-if count.");
+        await channel.send("**Error:** An error occurred. Please contact bot administrator.");
+        return;
+      }
 
-      await this.countRespektivePoints(client, channel, osuUsername, topCounts);
+      newPoints = calculateRespektivePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3]);
+      await this.countRespektivePoints(client, channel, osuUsername, topCounts as [ number, number, number, number ]);
     }
 
     const difference = newPoints - originalPoints;
@@ -531,11 +455,11 @@ class Count {// <osc, using Bathbot message response
    * @param { Client } client Discord bot client.
    * @param { TextChannel } channel Discord channel to send message to.
    * @param { string } username osu! username.
-   * @param { number[] } topCounts Array of top counts.
+   * @param { [ number, number, number, number, number ] } topCounts Array of top counts.
    *
    * @returns { Promise<Message> } Promise object with `Discord.Message` sent message object.
    */
-  static async countPoints(client: Client, channel: TextChannel, username: string, topCounts: number[]): Promise<Message> {
+  static async countPoints(client: Client, channel: TextChannel, username: string, topCounts: [ number, number, number, number, number ]): Promise<Message> {
     Log.info("countPoints", `Calculating points for username: ${ username }`);
 
     const newPoints = calculatePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3], topCounts[4]);
@@ -559,11 +483,11 @@ class Count {// <osc, using Bathbot message response
    * @param { Client } client Discord bot client.
    * @param { TextChannel } channel Discord channel to send message to.
    * @param { string } username osu! username.
-   * @param { number[] } topCounts Array of top counts.
+   * @param { [ number, number, number, number ] } topCounts Array of top counts.
    *
    * @returns { Promise<Message> } Promise object with `Discord.Message` sent message object.
    */
-  static async countRespektivePoints(client: Client, channel: TextChannel, username: string, topCounts: number[]): Promise<Message> {
+  static async countRespektivePoints(client: Client, channel: TextChannel, username: string, topCounts: [ number, number, number, number ]): Promise<Message> {
     Log.info("countRespektivePoints", `Calculating points for username: ${ username }`);
 
     const newPoints = calculateRespektivePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3]);
