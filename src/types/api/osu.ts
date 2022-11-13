@@ -1,4 +1,4 @@
-import { OsuUserStatus, OsuApiErrorStatus, OsuApiSuccessStatus } from "../../utils/common";
+import { OsuUserStatus } from "../../utils/common";
 
 /**
  * osu! API token data interface.
@@ -91,35 +91,4 @@ interface IOsuApiUserResponseData {
   website?: string;
 }
 
-/**
- * osu! API success response data generic interface.
- */
-interface IOsuApiSuccessResponseData<T> {
-  status: OsuApiSuccessStatus.OK;
-  data: T;
-}
-
-/**
- * osu! API error response data generic interface.
- */
-interface IOsuApiErrorResponseData<T extends OsuApiErrorStatus> {
-  status: T;
-}
-
-/**
- * Main osu! API response data type.
- */
-type OsuApiResponseData<T> = T extends OsuApiErrorStatus ? IOsuApiErrorResponseData<T> : IOsuApiSuccessResponseData<T>;
-
-/**
- * Checks whether response's type is `IOsuApiErrorResponseData`.
- *
- * @param { unknown } response Response to be checked.
- *
- * @returns { response is IOsuApiErrorResponseData<OsuApiErrorStatus> } Returns `true` if response is an error, `false` otherwise.
- */
-function isOsuApiErrorResponse(response: unknown): response is IOsuApiErrorResponseData<OsuApiErrorStatus> {
-  return (response as IOsuApiErrorResponseData<OsuApiErrorStatus>).status !== OsuApiErrorStatus.OK;
-}
-
-export { IOsuApiTokenData, IOsuApiUserData, OsuApiUserData, IOsuApiTokenResponseData, IOsuApiUserResponseData, OsuApiResponseData, isOsuApiErrorResponse, isOsuUser };
+export { IOsuApiTokenData, IOsuApiUserData, OsuApiUserData, IOsuApiTokenResponseData, IOsuApiUserResponseData, isOsuUser };
