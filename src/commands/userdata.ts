@@ -377,7 +377,20 @@ class UserData {
     }
     catch (e) {
       if(e instanceof ConflictError) {
-        await channel.send("**Error:** Either you have linked an osu! ID or osu! ID already linked to other Discord user.");
+        if(e.column !== null) {
+          if(e.column === "discordId") {
+            await channel.send("**Error:** You have linked your osu! ID. Contact bot administrator to make changes.");
+          }
+          else if(e.column === "osuId") {
+            await channel.send("**Error:** osu! ID linked to other Discord user.");
+          }
+          else {
+            await channel.send("**Error:** Unknown data conflict occurred.");
+          }
+        }
+        else {
+          await channel.send("**Error:** Either you have linked an osu! ID or osu! ID already linked to other Discord user.");
+        }
       }
       else {
         await channel.send("**Error:** An error occurred. Please contact bot administrator.");

@@ -150,8 +150,13 @@ async function onJoinGuild(guild: Guild) {
     Log.info("onJoinGuild", `Joined server with ID ${ guild.id } (${ guild.name }).`);
   }
   catch (e) {
-    if(!(e instanceof ConflictError)) {
-      Log.info("onJoinGuild", `Rejoined server with ID ${ guild.id } (${ guild.name }).`);
+    if(e instanceof ConflictError) {
+      if(e.column === "discordId") {
+        Log.info("onJoinGuild", `Rejoined server with ID ${ guild.id } (${ guild.name }).`);
+      }
+      else {
+        Log.error("onJoinGuild", `Unknown data conflict occurred while inserting server ID ${ guild.id } (${ guild.name })`);
+      }
     }
     else if(e instanceof DuplicatedRecordError) {
       Log.error("onJoinGuild", `Duplicated server data found with server ID ${ guild.id } (${ guild.name }).`);
