@@ -1,0 +1,9 @@
+import ParserError from "./parser-error";
+
+class InvalidNumberOfRanksError extends ParserError {
+  constructor() {
+    super("Number of ranks must be higher than or equal to 0.");
+  }
+}
+
+export default InvalidNumberOfRanksError;

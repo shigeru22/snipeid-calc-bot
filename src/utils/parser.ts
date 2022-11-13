@@ -1,10 +1,5 @@
-enum WhatIfParserStatus {
-  OK,
-  INVALID_EXPRESSION,
-  TYPE_ERROR,
-  TOP_RANK_ERROR,
-  NUMBER_OF_RANKS_ERROR
-}
+import { InvalidRequiredElement } from "../errors/utils/invalid-element";
+import { InvalidExpressionError, InvalidTypeError, InvalidNumberOfRanksError, InvalidTopRankError } from "../errors/utils/parser";
 
 class Parser {
   /**
@@ -12,9 +7,11 @@ class Parser {
    *
    * @param { string } desc Embed description.
    *
-   * @returns { number[] } Array of top counts.
+   * @returns { [ number, number, number, number, number ] } Array of top counts.
+   *
+   * @throws { InvalidRequiredElement } Invalid number of elements parsed.
    */
-  static parseTopCountDescription(desc: string): number[] {
+  static parseTopCountDescription(desc: string): [ number, number, number, number, number ] {
     const tops = desc.replace(/```(\n)*/g, "").split("\n");
 
     const len = tops.length;
@@ -30,7 +27,11 @@ class Parser {
       }
     });
 
-    return topsArray;
+    if(topsArray.length !== 5) {
+      throw new InvalidRequiredElement(5);
+    }
+
+    return topsArray as [ number, number, number, number, number ];
   }
 
   /**
@@ -60,31 +61,40 @@ class Parser {
    *
    * @param { string } exp Query expression.
    *
-   * @returns { number[] | number } Array of what-if top counts. Returns `WhatIfParserStatus` constant in case of errors.
+   * @returns { number[] } Array of what-if top counts. Throws below errors if failed.
+   *
+   * @throws { InvalidExpressionError } Invalid expression found in `exp`.
+   * @throws { InvalidTypeError } Invalid type either in left or right side of `=` in `exp`.
+   * @throws { InvalidTopRankError } Invalid top rank value (must be higher than 0).
+   * @throws { InvalidNumberOfRanksError } Invalid number of top ranks value (must be higher than or equal to 0).
    */
-  static parseWhatIfCount(exp: string): number[] | number {
+  static parseWhatIfCount(exp: string): number[] {
     const temp = exp.split("=");
 
     if(temp.length !== 2) {
-      return WhatIfParserStatus.INVALID_EXPRESSION;
+      throw new InvalidExpressionError();
     }
 
     const testerArray = [ parseInt(temp[0], 10), parseInt(temp[1], 10) ];
 
-    if(isNaN(testerArray[0]) || isNaN(testerArray[1])) {
-      return WhatIfParserStatus.TYPE_ERROR;
+    if(isNaN(testerArray[0])) {
+      throw new InvalidTypeError(0);
+    }
+
+    if(isNaN(testerArray[1])) {
+      throw new InvalidTypeError(1);
     }
 
     if(testerArray[0] < 1) {
-      return WhatIfParserStatus.TOP_RANK_ERROR;
+      throw new InvalidTopRankError();
     }
 
     if(testerArray[1] < 0) {
-      return WhatIfParserStatus.NUMBER_OF_RANKS_ERROR;
+      throw new InvalidNumberOfRanksError();
     }
 
     return testerArray;
   }
 }
 
-export { WhatIfParserStatus, Parser };
+export { Parser };

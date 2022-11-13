@@ -2,14 +2,14 @@ import { Client, TextChannel, Message } from "discord.js";
 import { Pool } from "pg";
 import { getUserByOsuId } from "../api/osu";
 import { DBUsers, DBServers } from "../db";
-import Reactions from "./reactions";
-import UserData from "./userdata";
-import { calculatePoints, calculateRespektivePoints, counter, counterRespektive } from "../messages/counter";
-import { WhatIfParserStatus, Parser, Environment } from "../utils";
+import { Reactions, UserData } from ".";
+import { Parser, Environment } from "../utils";
 import { Log } from "../utils/log";
 import { OsuUserStatus } from "../utils/common";
-import { UserNotFoundError, ServerNotFoundError } from "../errors/db";
+import { calculatePoints, calculateRespektivePoints, counter, counterRespektive } from "../messages/counter";
 import { NotFoundError } from "../errors/api";
+import { UserNotFoundError, ServerNotFoundError } from "../errors/db";
+import { InvalidExpressionError, InvalidTypeError, InvalidNumberOfRanksError, InvalidTopRankError } from "../errors/utils/parser";
 import { isOsuUser } from "../types/api/osu";
 
 class Count {// <osc, using Bathbot message response
@@ -273,37 +273,31 @@ class Count {// <osc, using Bathbot message response
 
     const whatIfsArray: number[][] = [];
     {
-      let status = WhatIfParserStatus.OK;
-      let errorIndex = -1;
-
       const len = commands.length;
-      for(let i = 0; i < len; i++) {
-        const temp = Parser.parseWhatIfCount(commands[i]);
-        if(typeof(temp) === "number") {
-          status = temp;
-          errorIndex = i;
-          break;
-        }
+      let current = 0;
 
-        whatIfsArray.push(temp);
+      try {
+        while(current < len) {
+          whatIfsArray.push(Parser.parseWhatIfCount(commands[current]));
+          current++;
+        }
       }
-
-      if(status > WhatIfParserStatus.OK) {
-        switch(status) {
-          case WhatIfParserStatus.INVALID_EXPRESSION: // fallthrough
-          case WhatIfParserStatus.TYPE_ERROR:
-            await channel.send(`**Error:** Invalid what if expression${ len > 1 ? "s" : "" } [at command index ${ errorIndex + 2 }].`);
-            return;
-          case WhatIfParserStatus.TOP_RANK_ERROR:
-            await channel.send(`**Error:** Top rank must be higher than or equal to 1 [at command index ${ errorIndex + 2 }].`);
-            return;
-          case WhatIfParserStatus.NUMBER_OF_RANKS_ERROR:
-            await channel.send(`**Error:** Number of ranks must be higher than or equal to 0 [at command index ${ errorIndex + 2 }].`);
-            return;
-          default:
-            await channel.send("**Error:** Unhandled error occurred. Please contact bot administrator.");
-            return;
+      catch (e) {
+        if(e instanceof InvalidExpressionError || e instanceof InvalidTypeError) {
+          await channel.send(`**Error:** Invalid what if expression${ len > 1 ? "s" : "" } [at command index ${ current + 2 }].`);
         }
+        else if(e instanceof InvalidTopRankError) {
+          await channel.send(`**Error:** Top rank must be higher than or equal to 1 [at command index ${ current + 2 }].`);
+        }
+        else if(e instanceof InvalidNumberOfRanksError) {
+          await channel.send(`**Error:** Number of ranks must be higher than or equal to 0 [at command index ${ current + 2 }].`);
+        }
+        else if(e instanceof Error) {
+          Log.error("userWhatIfCount", `Unhandled error occurred while processing command.\n${ e.stack }`);
+          await channel.send(`**Error:** An error occurred [at command index ${ current + 2 }].`);
+        }
+
+        return;
       }
     }
 
