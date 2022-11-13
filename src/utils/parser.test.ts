@@ -1,4 +1,5 @@
-import { Parser, WhatIfParserStatus } from "./parser";
+import { Parser } from "./parser";
+import { InvalidExpressionError, InvalidTypeError, InvalidNumberOfRanksError, InvalidTopRankError } from "../errors/utils/parser";
 
 test("parseTopCountDescription", () => {
   const description = "```\nTop 1 :    52\nTop 8 : 1,892\nTop 15: 3,733\nTop 25: 5,404\nTop 50: 7,496\n```";
@@ -25,18 +26,18 @@ test("parseWhatIfCount", () => {
 });
 
 test("parseWhatIfCount (invalid expression)", () => {
-  expect(Parser.parseWhatIfCount("1=5=10")).toBe(WhatIfParserStatus.INVALID_EXPRESSION);
+  expect(Parser.parseWhatIfCount("1=5=10")).toThrowError(InvalidExpressionError);
 });
 
 test("parseWhatIfCount (wrong type)", () => {
-  expect(Parser.parseWhatIfCount("1=a")).toBe(WhatIfParserStatus.TYPE_ERROR);
-  expect(Parser.parseWhatIfCount("a=5")).toBe(WhatIfParserStatus.TYPE_ERROR);
+  expect(Parser.parseWhatIfCount("1=a")).toThrowError(InvalidTypeError);
+  expect(Parser.parseWhatIfCount("a=5")).toThrowError(InvalidTypeError);
 });
 
 test("parseWhatIfCount (wrong top rank value)", () => {
-  expect(Parser.parseWhatIfCount("0=5")).toBe(WhatIfParserStatus.TOP_RANK_ERROR);
+  expect(Parser.parseWhatIfCount("0=5")).toThrowError(InvalidTopRankError);
 });
 
 test("parseWhatIfCount (wrong number of rank value)", () => {
-  expect(Parser.parseWhatIfCount("1=-10")).toBe(WhatIfParserStatus.NUMBER_OF_RANKS_ERROR);
+  expect(Parser.parseWhatIfCount("1=-10")).toThrowError(InvalidNumberOfRanksError);
 });
