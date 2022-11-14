@@ -12,12 +12,7 @@ import { Log } from "./utils/log";
 // configure environment variable file (if any)
 dotenv.config();
 
-if(!Environment.validateEnvironmentVariables()) {
-  process.exit(1);
-}
-
-// database pool
-
+// database pool configuration
 const dbConfig: PoolConfig = {
   host: process.env.DB_HOST,
   port: parseInt(process.env.DB_PORT as string, 10),
@@ -34,7 +29,7 @@ const dbConfig: PoolConfig = {
 const client = new Client({ intents: [ GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages ] });
 
 // osu! API token object
-const token = new OsuToken(Environment.getOsuClientId(), Environment.getOsuClientSecret());
+let token: OsuToken;
 
 // handle Windows interrupt event
 if(process.platform === "win32") {
@@ -63,6 +58,7 @@ client.on("guildMemberAdd", async (member: GuildMember) => await onMemberJoinGui
  */
 async function onStartup() {
   Log.info("onStartup", "(1/3) Fetching osu!api token...");
+  token = new OsuToken(Environment.getOsuClientId(), Environment.getOsuClientSecret());
   await token.getToken();
 
   Log.info("onStartup", "(2/3) Configuring database...");
@@ -94,7 +90,8 @@ async function onStartup() {
         Log.error("onStartup", `Unknown error occurred while connecting to database.\n${ e }`);
       }
 
-      process.exit(1);
+      process.emit("SIGINT");
+      return;
     }
 
     Log.info("onStartup", "Successfully connected to database.");
@@ -193,5 +190,11 @@ async function onExit() {
   process.exit(0);
 }
 
-// main execution procedure
-client.login(process.env.BOT_TOKEN);
+(() => {
+  if(!Environment.validateEnvironmentVariables()) {
+    process.exit(1);
+  }
+
+  // main execution procedure
+  client.login(process.env.BOT_TOKEN);
+})();
