@@ -4,11 +4,9 @@ import { Client, GatewayIntentBits, ActivityType, ChannelType, Guild, GuildMembe
 import { Pool, PoolConfig } from "pg";
 import { createInterface } from "readline";
 import { OsuToken } from "./api/osu-token";
-import { DBServers } from "./db";
-import { handleCommands, Conversations, Roles } from "./commands";
+import { handleCommands, Conversations, Roles, Servers } from "./commands";
 import { Environment } from "./utils";
 import { Log } from "./utils/log";
-import { DuplicatedRecordError, ConflictError } from "./errors/db";
 
 // configure environment variable file (if any)
 dotenv.config();
@@ -57,7 +55,7 @@ process.on("uncaughtException", (e: unknown) => onException(e));
 // bot client event handling
 client.on("ready", async () => await onStartup());
 client.on("messageCreate", async (msg: Message) => await onNewMessage(msg));
-client.on("guildCreate", async (guild: Guild) => await onJoinGuild(guild));
+client.on("guildCreate", async (guild: Guild) => await Servers.onJoinServer(db, guild));
 client.on("guildDelete", (guild: Guild) => onLeaveGuild(guild));
 client.on("guildMemberAdd", async (member: GuildMember) => await onMemberJoinGuild(member));
 
@@ -136,34 +134,6 @@ async function onNewMessage(msg: Message) {
 
     // if bot is mentioned but nothing processed, send a random message.
     (!processed && isClientMentioned) && await Conversations.sendMessage(channel, contents);
-  }
-}
-
-/**
- * Event function upon joining guild.
- *
- * @param { Message } guild Entered guild object.
- */
-async function onJoinGuild(guild: Guild) {
-  try {
-    await DBServers.insertServer(db, guild.id);
-    Log.info("onJoinGuild", `Joined server with ID ${ guild.id } (${ guild.name }).`);
-  }
-  catch (e) {
-    if(e instanceof ConflictError) {
-      if(e.column === "discordId") {
-        Log.info("onJoinGuild", `Rejoined server with ID ${ guild.id } (${ guild.name }).`);
-      }
-      else {
-        Log.error("onJoinGuild", `Unknown data conflict occurred while inserting server ID ${ guild.id } (${ guild.name })`);
-      }
-    }
-    else if(e instanceof DuplicatedRecordError) {
-      Log.error("onJoinGuild", `Duplicated server data found with server ID ${ guild.id } (${ guild.name }).`);
-    }
-    else {
-      Log.error("onJoinGuild", `Failed to query database after joining server ID ${ guild.id } (${ guild.name }).`);
-    }
   }
 }
 

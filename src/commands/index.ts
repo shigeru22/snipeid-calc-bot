@@ -6,6 +6,7 @@ import Count from "./count";
 import Leaderboards from "./leaderboards";
 import Roles from "./roles";
 import Reactions from "./reactions";
+import Servers from "./servers";
 import UserData from "./userdata";
 import Verification from "./verification";
 
@@ -63,4 +64,4 @@ async function handleCommands(client: Client, channel: TextChannel, db: Pool, os
   return ret;
 }
 
-export { handleCommands, Config, Conversations, Count, Leaderboards, Reactions, Roles, UserData, Verification };
+export { handleCommands, Config, Conversations, Count, Leaderboards, Reactions, Roles, Servers, UserData, Verification };
