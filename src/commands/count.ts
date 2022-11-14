@@ -1,7 +1,6 @@
 import { Client, TextChannel, Message } from "discord.js";
-import { Pool } from "pg";
 import { getUserByOsuId } from "../api/osu";
-import { DBUsers, DBServers } from "../db";
+import { DatabaseWrapper } from "../db";
 import { Reactions, UserData } from ".";
 import { Parser, Environment } from "../utils";
 import { Log } from "../utils/log";
@@ -22,18 +21,17 @@ class Count {
    *
    * @param { Client } client Discord bot client.
    * @param { TextChannel } channel Channel to send points result to.
-   * @param { Pool } db Database connection pool.
    * @param { string } osuToken osu! API token.
    * @param { Message } message Message that triggered the command.
    *
    * @returns { Promise<void> } Promise object with no return value.
    */
-  static async userLeaderboardsCountFromBathbot(client: Client, channel: TextChannel, db: Pool, osuToken: string, message: Message): Promise<void> {
+  static async userLeaderboardsCountFromBathbot(client: Client, channel: TextChannel, osuToken: string, message: Message): Promise<void> {
     {
       let isCommand;
 
       try {
-        isCommand = await DBServers.isCommandChannel(db, channel.guild.id, channel.id);
+        isCommand = await DatabaseWrapper.getInstance().getServersModule().isCommandChannel(channel.guild.id, channel.id);
       }
       catch (e) {
         await channel.send("**Error:** An error occurred. Please contact bot administrator.");
@@ -92,7 +90,7 @@ class Count {
     const points = calculatePoints(topCounts[0], topCounts[1], topCounts[2], topCounts[3], topCounts[4]);
     await this.countPoints(client, channel, username, topCounts);
 
-    await UserData.updateUserData(osuToken, client, channel, db, osuId, points);
+    await UserData.updateUserData(osuToken, client, channel, osuId, points);
   }
 
   // @[BOT_NAME] count
@@ -102,19 +100,18 @@ class Count {
    *
    * @param { Client } client Discord bot client.
    * @param { TextChannel } channel Channel to send points result to.
-   * @param { Pool } db Database connection pool.
    * @param { string } osuToken osu! API token.
    * @param { string } discordId Discord ID of the user who sent the command.
    *
    * @returns { Promise<void> } Promise object with no return value.
    */
-  static async userLeaderboardsCount(client: Client, channel: TextChannel, db: Pool, osuToken: string, discordId: string): Promise<void> {
+  static async userLeaderboardsCount(client: Client, channel: TextChannel, osuToken: string, discordId: string): Promise<void> {
     let serverData;
     let user;
     let osuUser;
 
     try {
-      serverData = await DBServers.getServerByDiscordId(db, channel.guild.id);
+      serverData = await DatabaseWrapper.getInstance().getServersModule().getServerByDiscordId(channel.guild.id);
     }
     catch (e) {
       if(e instanceof ServerNotFoundError) {
@@ -132,7 +129,7 @@ class Count {
       let isCommand;
 
       try {
-        isCommand = await DBServers.isCommandChannel(db, channel.guild.id, channel.id);
+        isCommand = await DatabaseWrapper.getInstance().getServersModule().isCommandChannel(channel.guild.id, channel.id);
       }
       catch (e) {
         await channel.send("**Error:** An error occurred. Please contact bot administrator.");
@@ -148,7 +145,7 @@ class Count {
     }
 
     try {
-      user = await DBUsers.getDiscordUserByDiscordId(db, discordId);
+      user = await DatabaseWrapper.getInstance().getUsersModule().getDiscordUserByDiscordId(discordId);
     }
     catch (e) {
       if(e instanceof UserNotFoundError) {
@@ -211,7 +208,7 @@ class Count {
       await this.countRespektivePoints(client, channel, osuUsername, topCounts);
     }
 
-    await UserData.updateUserData(osuToken, client, channel, db, user.osuId, points);
+    await UserData.updateUserData(osuToken, client, channel, user.osuId, points);
   }
 
   // @[BOT_NAME] whatif [what-if expression]
@@ -220,19 +217,18 @@ class Count {
    *
    * @param { Client } client Discord bot client.
    * @param { TextChannel } channel Channel to send points result to.
-   * @param { Pool } db Database connection pool.
    * @param { string } osuToken osu! API token.
    * @param { Message } message Message that triggered the command.
    *
    * @returns { Promise<void> } Promise object with no return value.
    */
-  static async userWhatIfCount(client: Client, channel: TextChannel, db: Pool, osuToken: string, message: Message): Promise<void> {
+  static async userWhatIfCount(client: Client, channel: TextChannel, osuToken: string, message: Message): Promise<void> {
     let serverData;
     let user;
     let osuUser;
 
     try {
-      serverData = await DBServers.getServerByDiscordId(db, channel.guild.id);
+      serverData = await DatabaseWrapper.getInstance().getServersModule().getServerByDiscordId(channel.guild.id);
     }
     catch (e) {
       if(e instanceof ServerNotFoundError) {
@@ -250,7 +246,7 @@ class Count {
       let isCommand;
 
       try {
-        isCommand = await DBServers.isCommandChannel(db, channel.guild.id, channel.id);
+        isCommand = await DatabaseWrapper.getInstance().getServersModule().isCommandChannel(channel.guild.id, channel.id);
       }
       catch (e) {
         await channel.send("**Error:** An error occurred. Please contact bot administrator.");
@@ -320,7 +316,7 @@ class Count {
     }
 
     try {
-      user = await DBUsers.getDiscordUserByDiscordId(db, message.author.id);
+      user = await DatabaseWrapper.getInstance().getUsersModule().getDiscordUserByDiscordId(message.author.id);
     }
     catch (e) {
       if(e instanceof UserNotFoundError) {

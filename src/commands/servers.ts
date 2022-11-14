@@ -1,6 +1,5 @@
 import { Guild } from "discord.js";
-import { Pool } from "pg";
-import { DBServers } from "../db";
+import { DatabaseWrapper } from "../db";
 import { Log } from "../utils/log";
 import { ConflictError, DuplicatedRecordError } from "../errors/db";
 
@@ -11,12 +10,14 @@ class Servers {
   /**
    * Post-joined new server event function.
    *
-   * @param db Database pool object.
-   * @param guild Joined server object.
+   * @param { Guild } guild Joined server object.
    */
-  static async onJoinServer(db: Pool, guild: Guild) {
+  static async onJoinServer(guild: Guild) {
     try {
-      await DBServers.insertServer(db, guild.id);
+      await DatabaseWrapper.getInstance()
+        .getServersModule()
+        .insertServer(guild.id);
+
       Log.info("onJoinServer", `Joined server with ID ${ guild.id } (${ guild.name }).`);
     }
     catch (e) {

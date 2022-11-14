@@ -1,6 +1,5 @@
 import { Client, TextChannel, GuildMember } from "discord.js";
-import { Pool } from "pg";
-import { DBAssignments, DBServers } from "../db";
+import { DatabaseWrapper } from "../db";
 import { Log } from "../utils/log";
 import { DuplicatedRecordError, UserNotFoundError, ServerNotFoundError } from "../errors/db";
 
@@ -50,17 +49,19 @@ class Roles {
   /**
    * Assigns back rejoined server member's roles.
    *
-   * @param { Pool } db Database connection pool.
    * @param { GuildMember } member Rejoined server member.
    *
    * @returns { Promise<void> } Promise object with no return value.
    */
-  static async reassignRole(db: Pool, member: GuildMember): Promise<void> {
+  static async reassignRole(member: GuildMember): Promise<void> {
     let verifiedRoleId;
     let currentPointsRoleId;
 
     try {
-      const serverVerifiedRole = await DBServers.getServerByDiscordId(db, member.guild.id);
+      const serverVerifiedRole = await DatabaseWrapper.getInstance()
+        .getServersModule()
+        .getServerByDiscordId(member.guild.id);
+
       verifiedRoleId = serverVerifiedRole.verifiedRoleId;
     }
     catch (e) {
@@ -75,7 +76,10 @@ class Roles {
     }
 
     try {
-      const memberRoleAssignment = await DBAssignments.getAssignmentRoleDataByDiscordId(db, member.guild.id, member.user.id);
+      const memberRoleAssignment = await DatabaseWrapper.getInstance()
+        .getAssignmentsModule()
+        .getAssignmentRoleDataByDiscordId(member.guild.id, member.user.id);
+
       currentPointsRoleId = memberRoleAssignment.discordId;
     }
     catch (e) {

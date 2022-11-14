@@ -1,5 +1,4 @@
 import { Client, TextChannel, Message } from "discord.js";
-import { Pool } from "pg";
 import Config from "./config";
 import Conversations from "./conversations";
 import Count from "./count";
@@ -25,12 +24,12 @@ const BATHBOT_USER_ID = "297073686916366336";
  *
  * @returns { Promise<boolean> } Whether the command was handled.
  */
-async function handleCommands(client: Client, channel: TextChannel, db: Pool, osuToken: string, isClientMentioned: boolean, message: Message): Promise<boolean> {
+async function handleCommands(client: Client, channel: TextChannel, osuToken: string, isClientMentioned: boolean, message: Message): Promise<boolean> {
   const contents = message.content.split(/\s+/g); // split by one or more spaces
   let ret = false;
 
   if(message.author.id === BATHBOT_USER_ID) {
-    await Count.userLeaderboardsCountFromBathbot(client, channel, db, osuToken, message);
+    await Count.userLeaderboardsCountFromBathbot(client, channel, osuToken, message);
     ret = true;
   }
   else if(isClientMentioned) {
@@ -38,24 +37,24 @@ async function handleCommands(client: Client, channel: TextChannel, db: Pool, os
 
     switch(contents[1]) {
       case "link":
-        await Verification.verifyUser(client, channel, db, osuToken, message);
+        await Verification.verifyUser(client, channel, osuToken, message);
         ret = true;
         break;
       case "count":
-        await Count.userLeaderboardsCount(client, channel, db, osuToken, message.author.id);
+        await Count.userLeaderboardsCount(client, channel, osuToken, message.author.id);
         ret = true;
         break;
       case "whatif":
-        await Count.userWhatIfCount(client, channel, db, osuToken, message);
+        await Count.userWhatIfCount(client, channel, osuToken, message);
         ret = true;
         break;
       case "lb": // fallthrough
       case "leaderboard":
-        await Leaderboards.sendPointLeaderboard(channel, db);
+        await Leaderboards.sendPointLeaderboard(channel);
         ret = true;
         break;
       case "config":
-        await Config.handleConfigCommands(client, channel, db, message);
+        await Config.handleConfigCommands(client, channel, message);
         ret = true;
         break;
     }

@@ -1,6 +1,5 @@
 import { Client, TextChannel, Message } from "discord.js";
-import { Pool } from "pg";
-import { DBServers } from "../db";
+import { DatabaseWrapper } from "../db";
 import { UserData, Roles } from ".";
 import { Log } from "../utils/log";
 import { ServerNotFoundError } from "../errors/db";
@@ -14,17 +13,18 @@ class Verification {
    *
    * @param { Client } client Discord bot client.
    * @param { TextChannel } channel Discord channel to send message to.
-   * @param { Pool } db Database connection pool.
    * @param { string } osuToken osu! API token.
    * @param { Message } message Message that triggered the command.
    *
    * @returns { Promise<void> } Promise object with no return value.
    */
-  static async verifyUser(client: Client, channel: TextChannel, db: Pool, osuToken: string, message: Message): Promise<void> {
+  static async verifyUser(client: Client, channel: TextChannel, osuToken: string, message: Message): Promise<void> {
     let serverData;
 
     try {
-      serverData = await DBServers.getServerByDiscordId(db, channel.guild.id);
+      serverData = await DatabaseWrapper.getInstance()
+        .getServersModule()
+        .getServerByDiscordId(channel.guild.id);
     }
     catch (e) {
       if(e instanceof ServerNotFoundError) {
@@ -62,7 +62,7 @@ class Verification {
       return;
     }
 
-    const result = await UserData.insertUserData(channel, db, message.author.id, osuId, osuUser.userName, osuUser.country);
+    const result = await UserData.insertUserData(channel, message.author.id, osuId, osuUser.userName, osuUser.country);
     if(!result) {
       return;
     }

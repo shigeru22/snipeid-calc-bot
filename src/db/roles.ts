@@ -1,4 +1,5 @@
-import { Pool, DatabaseError } from "pg";
+import { PoolConfig, DatabaseError } from "pg";
+import DBConnectorBase from "./db-base";
 import { Log } from "../utils/log";
 import { DatabaseClientError, DatabaseConnectionError, NoRecordError } from "../errors/db";
 import { IDBServerRoleData, IDBServerRoleQueryData } from "../types/db/roles";
@@ -6,11 +7,14 @@ import { IDBServerRoleData, IDBServerRoleQueryData } from "../types/db/roles";
 /**
  * Database `roles` table class.
  */
-class DBRoles {
+class DBRoles extends DBConnectorBase {
+  constructor(config: PoolConfig) {
+    super(config);
+  }
+
   /**
    * Returns list of server roles in the database.
    *
-   * @param { Pool } db Database connection pool.
    * @param { string } serverDiscordId Server snowflake ID.
    *
    * @returns { Promise<IDBServerRoleData[]> } Promise object with server roles array.
@@ -19,7 +23,7 @@ class DBRoles {
    * @throws { DatabaseConnectionError } Database connection error occurred.
    * @throws { DatabaseClientError } Unhandled client error occurred.
    */
-  static async getAllServerRoles(db: Pool, serverDiscordId: string): Promise<IDBServerRoleData[]> {
+  async getAllServerRoles(serverDiscordId: string): Promise<IDBServerRoleData[]> {
     const selectQuery = `
       SELECT
         roles."roleid",
@@ -40,7 +44,7 @@ class DBRoles {
     let rolesResult;
 
     try {
-      rolesResult = await db.query<IDBServerRoleQueryData>(selectQuery, selectValues);
+      rolesResult = await super.getPool().query<IDBServerRoleQueryData>(selectQuery, selectValues);
     }
     catch (e) {
       if(e instanceof DatabaseError) {

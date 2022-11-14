@@ -1,8 +1,7 @@
 import { Client, TextChannel } from "discord.js";
-import { Pool } from "pg";
 import { getUserByOsuId } from "../api/osu";
 import { getTopCounts, getTopCountsFromRespektive } from "../api/osustats";
-import { DBAssignments, DBUsers, DBServers } from "../db";
+import { DatabaseWrapper } from "../db";
 import { Log } from "../utils/log";
 import { AssignmentType, OsuUserStatus } from "../utils/common";
 import { TimeUtils } from "../utils/time";
@@ -22,19 +21,20 @@ class UserData {
    * @param { string } osuToken osu! API token
    * @param { Client } client Discord bot client.
    * @param { TextChannel } channel Discord channel to send message to.
-   * @param { Pool } db Database connection pool.
    * @param { number | string } osuId osu! user ID.
    * @param { number } points Calculated points.
    *
    * @returns { Promise<void> } Promise object with no return value.
    */
-  static async updateUserData(osuToken: string, client: Client, channel: TextChannel, db: Pool, osuId: number | string, points: number): Promise<void> {
+  static async updateUserData(osuToken: string, client: Client, channel: TextChannel, osuId: number | string, points: number): Promise<void> {
     let serverData;
     let osuUser;
     let assignmentResult;
 
     try {
-      serverData = await DBServers.getServerByDiscordId(db, channel.guild.id);
+      serverData = await DatabaseWrapper.getInstance()
+        .getServersModule()
+        .getServerByDiscordId(channel.guild.id);
     }
     catch (e) {
       if(e instanceof ServerNotFoundError) {
@@ -79,14 +79,15 @@ class UserData {
     }
 
     try {
-      assignmentResult = await DBAssignments.insertOrUpdateAssignment(
-        db,
-        channel.guildId,
-        typeof(osuId) === "number" ? osuId : parseInt(osuId, 10),
-        osuUser.user.userName,
-        osuUser.user.country,
-        points
-      );
+      assignmentResult = await DatabaseWrapper.getInstance()
+        .getAssignmentsModule()
+        .insertOrUpdateAssignment(
+          channel.guildId,
+          typeof(osuId) === "number" ? osuId : parseInt(osuId, 10),
+          osuUser.user.userName,
+          osuUser.user.country,
+          points
+        );
     }
     catch (e) {
       if(e instanceof RolesEmptyError) {
@@ -100,7 +101,12 @@ class UserData {
     }
 
     try {
-      await DBUsers.updateUser(db, typeof(osuId) === "number" ? osuId : parseInt(osuId, 10), points);
+      await DatabaseWrapper.getInstance()
+        .getUsersModule()
+        .updateUser(
+          typeof(osuId) === "number" ? osuId : parseInt(osuId, 10)
+          , points
+        );
     }
     catch (e) {
       await channel.send("**Error:** Data update error occurred. Please contact bot administrator.");
@@ -123,12 +129,12 @@ class UserData {
     }
 
     if(assignmentResult.role.newRoleId === "0" && (typeof(assignmentResult.role.oldRoleId === "undefined") || (typeof(assignmentResult.role.oldRoleId) === "string" && assignmentResult.role.oldRoleId === "0"))) { // no role
-      Log.info("DBUsers.updateUserData", "newRoleId is either zero or oldRoleId is not available. Skipping role granting.");
+      Log.info("updateUserData", "newRoleId is either zero or oldRoleId is not available. Skipping role granting.");
       return;
     }
 
     if(assignmentResult.role.oldRoleId === assignmentResult.role.newRoleId) {
-      Log.info("DBUsers.updateUserData", "Role is currently the same. Skipping role granting.");
+      Log.info("updateUserData", "Role is currently the same. Skipping role granting.");
       return;
     }
 
@@ -146,19 +152,19 @@ class UserData {
             if(oldRole === null) {
               // TODO: handle role re-addition after failed on next query
 
-              Log.warn("DBUsers.updateUserData", `Role with ID ${ assignmentResult.role.oldRoleId } from server with ID ${ serverData.discordId } (${ server.name }) can't be found. Informing server channel.`);
+              Log.warn("updateUserData", `Role with ID ${ assignmentResult.role.oldRoleId } from server with ID ${ serverData.discordId } (${ server.name }) can't be found. Informing server channel.`);
               await channel.send("**Note:** Roles might have been changed. Check configurations for this server.");
 
               warned = true;
             }
             else {
               await member.roles.remove(oldRole);
-              Log.info("DBUsers.updateUserData", `Role ${ oldRole.name } removed from user ${ member.user.username }#${ member.user.discriminator }.`);
+              Log.info("updateUserData", `Role ${ oldRole.name } removed from user ${ member.user.username }#${ member.user.discriminator }.`);
             }
           }
 
           if(assignmentResult.role.newRoleId === "0") {
-            Log.info("DBUsers.updateUserData", "newRoleId is zero. Skipping role granting.");
+            Log.info("updateUserData", "newRoleId is zero. Skipping role granting.");
             await channel.send("You have been demoted to no role. Fight back at those leaderboards!");
 
             break; // break if new role is no role
@@ -172,7 +178,7 @@ class UserData {
           const newRole = await server.roles.fetch(assignmentResult.role.newRoleId);
 
           if(newRole === null) {
-            Log.warn("DBUsers.updateUserData", `Role with ID ${ assignmentResult.role.oldRoleId } from server with ID ${ serverData.serverId } (${ server.name }) can't be found. Informing server channel.`);
+            Log.warn("updateUserData", `Role with ID ${ assignmentResult.role.oldRoleId } from server with ID ${ serverData.serverId } (${ server.name }) can't be found. Informing server channel.`);
 
             if(!warned) {
               await channel.send("**Note:** Roles might have been changed. Check configurations for this server.");
@@ -180,7 +186,7 @@ class UserData {
           }
           else {
             await member.roles.add(newRole);
-            Log.info("DBUsers.updateUserData", `Role ${ newRole.name } added to user ${ member.user.username }#${ member.user.discriminator }.`);
+            Log.info("updateUserData", `Role ${ newRole.name } added to user ${ member.user.username }#${ member.user.discriminator }.`);
             updated = true;
           }
         }
@@ -198,18 +204,19 @@ class UserData {
    * Fetches user from the database.
    *
    * @param { TextChannel } channel Channel to send message to.
-   * @param { Pool } db Database connection.
    * @param { string } discordId Discord ID of the user.
    *
    * @returns { Promise<IDBServerUserData | null> } Promise object with `userId`, `discordId`, and `osuId`, or `null` if user was not found.
    */
-  static async fetchUser(channel: TextChannel, db: Pool, discordId: string): Promise<IDBServerUserData | null> {
+  static async fetchUser(channel: TextChannel, discordId: string): Promise<IDBServerUserData | null> {
     Log.debug("fetchUser", `Fetching user with ID ${ discordId }.`);
 
     let user;
 
     try {
-      user = await DBUsers.getDiscordUserByDiscordId(db, discordId);
+      user = await DatabaseWrapper.getInstance()
+        .getUsersModule()
+        .getDiscordUserByDiscordId(discordId);
     }
     catch (e) {
       if(e instanceof UserNotFoundError) {
@@ -366,17 +373,18 @@ class UserData {
    *
    * @returns { Promise<boolean> } Promise object with `true` if user was linked, or `false` in case of errors.
    */
-  static async insertUserData(channel: TextChannel, db: Pool, discordId: string, osuId: number | string, osuUsername: string, countryCode: string): Promise<boolean> {
+  static async insertUserData(channel: TextChannel, discordId: string, osuId: number | string, osuUsername: string, countryCode: string): Promise<boolean> {
     Log.debug("insertUserData", `Inserting user data for osu! ID ${ osuId } with Discord user ID ${ discordId }.`);
 
     try {
-      await DBUsers.insertUser(
-        db,
-        discordId,
-        typeof(osuId) === "number" ? osuId : parseInt(osuId, 10),
-        osuUsername,
-        countryCode
-      );
+      await DatabaseWrapper.getInstance()
+        .getUsersModule()
+        .insertUser(
+          discordId,
+          typeof(osuId) === "number" ? osuId : parseInt(osuId, 10),
+          osuUsername,
+          countryCode
+        );
     }
     catch (e) {
       if(e instanceof ConflictError) {

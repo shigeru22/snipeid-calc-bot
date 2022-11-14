@@ -1,6 +1,5 @@
 import { TextChannel } from "discord.js";
-import { Pool } from "pg";
-import { DBUsers, DBServers } from "../db";
+import { DatabaseWrapper } from "../db";
 import { Log } from "../utils/log";
 import { createLeaderboardEmbed } from "../messages/leaderboard";
 import { ServerNotFoundError, NoRecordError } from "../errors/db";
@@ -13,16 +12,17 @@ class Leaderboards {
    * Sends top 50 leaderboard from the database to specified channel.
    *
    * @param { TextChannel } channel Discord channel to send message to.
-   * @param { Pool } db Database connection pool.
    *
    * @returns { Promise<void> } Promise object with no return value.
    */
-  static async sendPointLeaderboard(channel: TextChannel, db: Pool): Promise<void> {
+  static async sendPointLeaderboard(channel: TextChannel): Promise<void> {
     let serverData;
 
     {
       try {
-        serverData = await DBServers.getServerByDiscordId(db, channel.guild.id);
+        serverData = await DatabaseWrapper.getInstance()
+          .getServersModule()
+          .getServerByDiscordId(channel.guild.id);
       }
       catch (e) {
         if(e instanceof ServerNotFoundError) {
@@ -41,7 +41,9 @@ class Leaderboards {
       let isCommand;
 
       try {
-        isCommand = await DBServers.isCommandChannel(db, channel.guild.id, channel.id);
+        isCommand = await DatabaseWrapper.getInstance()
+          .getServersModule()
+          .isCommandChannel(channel.guild.id, channel.id);
       }
       catch (e) {
         await channel.send("**Error:** An error occurred. Please contact bot administrator.");
@@ -61,7 +63,16 @@ class Leaderboards {
     let rankings;
 
     try {
-      rankings = serverData.country === null ? await DBUsers.getServerPointsLeaderboard(db, channel.guild.id) : await DBUsers.getServerPointsLeaderboardByCountry(db, channel.guild.id, serverData.country.toUpperCase());
+      if(serverData.country !== null) {
+        rankings = await DatabaseWrapper.getInstance()
+          .getUsersModule()
+          .getServerPointsLeaderboardByCountry(channel.guild.id, serverData.country.toUpperCase());
+      }
+      else {
+        rankings = await DatabaseWrapper.getInstance()
+          .getUsersModule()
+          .getServerPointsLeaderboard(channel.guild.id);
+      }
     }
     catch (e) {
       if(e instanceof NoRecordError) {
@@ -77,7 +88,9 @@ class Leaderboards {
     let lastUpdated;
     {
       try {
-        lastUpdated = await DBUsers.getServerLastPointUpdate(db, channel.guildId);
+        lastUpdated = await DatabaseWrapper.getInstance()
+          .getUsersModule()
+          .getServerLastPointUpdate(channel.guildId);
       }
       catch (e) {
         if(e instanceof NoRecordError) {

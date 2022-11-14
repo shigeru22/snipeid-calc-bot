@@ -1,9 +1,10 @@
 import dotenv from "dotenv";
 import fs from "fs";
 import { Client, GatewayIntentBits, ActivityType, ChannelType, Guild, GuildMember, Message } from "discord.js";
-import { Pool, PoolConfig } from "pg";
+import { PoolConfig } from "pg";
 import { createInterface } from "readline";
 import { OsuToken } from "./api/osu-token";
+import { DatabaseWrapper } from "./db";
 import { handleCommands, Conversations, Roles, Servers } from "./commands";
 import { Environment } from "./utils";
 import { Log } from "./utils/log";
@@ -29,8 +30,6 @@ const dbConfig: PoolConfig = {
   } : undefined)
 };
 
-const db = new Pool(dbConfig);
-
 // bot client
 const client = new Client({ intents: [ GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages ] });
 
@@ -55,7 +54,7 @@ process.on("uncaughtException", (e: unknown) => onException(e));
 // bot client event handling
 client.on("ready", async () => await onStartup());
 client.on("messageCreate", async (msg: Message) => await onNewMessage(msg));
-client.on("guildCreate", async (guild: Guild) => await Servers.onJoinServer(db, guild));
+client.on("guildCreate", async (guild: Guild) => await Servers.onJoinServer(guild));
 client.on("guildDelete", (guild: Guild) => onLeaveGuild(guild));
 client.on("guildMemberAdd", async (member: GuildMember) => await onMemberJoinGuild(member));
 
@@ -63,7 +62,11 @@ client.on("guildMemberAdd", async (member: GuildMember) => await onMemberJoinGui
  * Startup event function.
  */
 async function onStartup() {
+  Log.info("onStartup", "(1/3) Fetching osu!api token...");
   await token.getToken();
+
+  Log.info("onStartup", "(2/3) Configuring database...");
+  DatabaseWrapper.getInstance().setConfig(dbConfig);
 
   if(typeof(dbConfig.ssl) !== "undefined") {
     Log.info("onStartup", `Using SSL for database connection, CA path: ${ process.env.DB_SSL_CA }`);
@@ -72,13 +75,16 @@ async function onStartup() {
     Log.warn("onStartup", "Not using SSL for database connection. Caute procedere.");
   }
 
+  Log.info("onStartup", "(3/3) Testing database connection...");
+
   // test connection before continuing
   {
-    Log.info("onStartup", "Testing database connection...");
-
     try {
-      const dbTemp = await db.connect();
-      dbTemp.release();
+      const dbTemp = await DatabaseWrapper.getInstance()
+        .getServersModule()
+        .getPoolClient();
+
+      await dbTemp.releasePoolClient();
     }
     catch (e) {
       if(e instanceof Error) {
@@ -101,8 +107,11 @@ async function onStartup() {
     process.exit(1);
   }
 
+  Log.info("onStartup", "(4/4) Setting bot activity message...");
+
   client.user.setActivity("Bathbot everyday", { type: ActivityType.Watching });
-  Log.info("onStartup", process.env.BOT_NAME + " is now running.");
+
+  Log.info("onStartup", `${ client.user.username } is now ready.`);
 }
 
 /**
@@ -130,7 +139,7 @@ async function onNewMessage(msg: Message) {
       return;
     }
 
-    processed = await handleCommands(client, channel, db, tempToken, isClientMentioned, msg);
+    processed = await handleCommands(client, channel, tempToken, isClientMentioned, msg);
 
     // if bot is mentioned but nothing processed, send a random message.
     (!processed && isClientMentioned) && await Conversations.sendMessage(channel, contents);
@@ -148,7 +157,7 @@ function onLeaveGuild(guild: Guild) {
 
 async function onMemberJoinGuild(member: GuildMember) {
   Log.info("onMemberJoin", `${ member.user.username }#${ member.user.discriminator } joined server ID ${ member.guild.id } (${ member.guild.name })`);
-  await Roles.reassignRole(db, member); // TODO: test usage
+  await Roles.reassignRole(member); // TODO: test usage
 }
 
 /**

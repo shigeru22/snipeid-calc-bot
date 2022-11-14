@@ -1,5 +1,6 @@
-import { Pool, PoolClient, DatabaseError } from "pg";
+import { PoolClient, DatabaseError, PoolConfig } from "pg";
 import { DBUsers, DBServers } from ".";
+import DBConnectorBase from "./db-base";
 import { Log } from "../utils/log";
 import { AssignmentType } from "../utils/common";
 import { DatabaseErrors, DuplicatedRecordError, UserNotFoundError, NoRecordError, DatabaseConnectionError, DatabaseClientError } from "../errors/db";
@@ -41,11 +42,14 @@ interface IDBServerUserAssignmentData {
 /**
  * Database `assignments` table class.
  */
-class DBAssignments {
+class DBAssignments extends DBConnectorBase {
+  constructor(config: PoolConfig) {
+    super(config);
+  }
+
   /**
    * Gets user assignment by osu! ID from the database.
    *
-   * @param { Pool } db Database connection pool.
    * @param { string } serverDiscordId Server snowflake ID.
    * @param { number } osuId osu! ID of the user.
    *
@@ -56,7 +60,7 @@ class DBAssignments {
    * @throws { DatabaseConnectionError } Database connection error occurred.
    * @throws { DatabaseClientError } Unhandled client error occurred.
    */
-  static async getAssignmentByOsuId(db: Pool, serverDiscordId: string, osuId: number): Promise<IDBServerAssignmentData> {
+  async getAssignmentByOsuId(serverDiscordId: string, osuId: number): Promise<IDBServerAssignmentData> {
     const selectQuery = `
       SELECT
         assignments."assignmentid",
@@ -76,6 +80,7 @@ class DBAssignments {
     `;
     const selectValues = [ osuId, serverDiscordId ];
 
+    const db = super.getPool();
     let discordUserResult;
 
     try {
@@ -118,7 +123,6 @@ class DBAssignments {
   /**
    * Queries specific server's user assignment data.
    *
-   * @param { Pool } db Database connection pool client.
    * @param { string } serverDiscordId Server snowflake ID.
    * @param { string } discordId Discord user ID.
    *
@@ -129,7 +133,7 @@ class DBAssignments {
    * @throws { DatabaseConnectionError } Database connection error occurred.
    * @throws { DatabaseClientError } Unhandled client error occurred.
    */
-  static async getAssignmentRoleDataByDiscordId(db: Pool, serverDiscordId: string, discordId: string): Promise<IDBServerRoleData> {
+  async getAssignmentRoleDataByDiscordId(serverDiscordId: string, discordId: string): Promise<IDBServerRoleData> {
     const selectQuery = `
       SELECT
         roles."roleid",
@@ -148,6 +152,8 @@ class DBAssignments {
         users."discordid" = $1 AND servers."discordid" = $2
     `;
     const selectValues = [ discordId, serverDiscordId ];
+
+    const db = super.getPool();
 
     try {
       const result = await db.query<IDBServerRoleQueryData>(selectQuery, selectValues);
@@ -190,7 +196,6 @@ class DBAssignments {
   /**
    * Inserts or updates (if the user has already been inserted) assignment data in the database.
    *
-   * @param { Pool } db Database connection pool.
    * @param { string } serverDiscordId Server snowflake ID.
    * @param { number } osuId osu! user ID.
    * @param { string } userName osu! username.
@@ -206,8 +211,8 @@ class DBAssignments {
    * @throws { DatabaseConnectionError } Database connection error occurred.
    * @throws { DatabaseClientError } Unhandled client error occurred.
    */
-  static async insertOrUpdateAssignment(db: Pool, serverDiscordId: string, osuId: number, userName: string, countryCode: string, points: number): Promise<IDBAssignmentResultData> {
-    const client = await db.connect();
+  async insertOrUpdateAssignment(serverDiscordId: string, osuId: number, userName: string, countryCode: string, points: number): Promise<IDBAssignmentResultData> {
+    const client = await super.getPoolClient();
     let insert = true;
 
     let assignmentId = 0; // update
@@ -225,9 +230,12 @@ class DBAssignments {
     let targetRoleName = "";
     let targetRoleMinimumPoints = 0;
 
+    const db = super.getPool();
+
     // serverId
     try {
       const serverResult = await DBServers.getServerByDiscordId(db, serverDiscordId);
+
       serverId = serverResult.serverId;
     }
     catch (e) {
@@ -242,7 +250,7 @@ class DBAssignments {
     // currentRoleDiscordId and currentRoleName
     {
       try {
-        const currentRoleResult = await this.#getServerUserRoleDataByOsuId(client, serverDiscordId, osuId);
+        const currentRoleResult = await this.#getServerUserRoleDataByOsuId(serverDiscordId, osuId);
         currentRoleDiscordId = currentRoleResult.discordId;
         currentRoleName = currentRoleResult.roleName;
       }
@@ -261,7 +269,7 @@ class DBAssignments {
       let noRecord = false;
 
       try {
-        const assignmentResult = await this.#getServerUserAssignmentDataByOsuId(client, serverDiscordId, osuId);
+        const assignmentResult = await this.#getServerUserAssignmentDataByOsuId(serverDiscordId, osuId);
 
         if(assignmentResult.osuId === osuId) {
           insert = false;
@@ -269,7 +277,7 @@ class DBAssignments {
           if(assignmentResult.userName !== userName || assignmentResult.country !== countryCode) {
             // update user, also update points here
             await DBUsers.updateUser(
-              db,
+              client.getPoolClient(),
               osuId,
               points,
               assignmentResult.userName !== userName ? userName : null,
@@ -283,7 +291,7 @@ class DBAssignments {
           currentPoints = assignmentResult.points;
           update = assignmentResult.lastUpdate;
 
-          await this.#deleteAssignmentById(client, assignmentResult.assignmentId);
+          await DBAssignments.#deleteAssignmentById(client.getPoolClient(), assignmentResult.assignmentId);
         }
       }
       catch (e) {
@@ -302,7 +310,7 @@ class DBAssignments {
       if(noRecord) {
         // userId not found, then insert
         try {
-          const selectUserResult = await DBUsers.getDiscordUserByOsuId(db, osuId);
+          const selectUserResult = await DBUsers.getDiscordUserByOsuId(client.getPoolClient(), osuId);
 
           userId = selectUserResult.userId;
           discordId = selectUserResult.discordId;
@@ -325,7 +333,7 @@ class DBAssignments {
     // targetRoleId, targetRoleDiscordId, targetRoleName
     {
       try {
-        const roleResult = await this.#getTargetServerRoleDataByPoints(client, serverDiscordId, points);
+        const roleResult = await this.#getTargetServerRoleDataByPoints(serverDiscordId, points);
 
         targetRoleId = roleResult.roleId;
         targetRoleDiscordId = roleResult.discordId;
@@ -349,15 +357,15 @@ class DBAssignments {
     Log.debug("insertOrUpdateAssignment", `rolename: ${ targetRoleName }, min: ${ targetRoleMinimumPoints }`);
 
     if(insert) {
-      await this.#insertAssignment(client, userId, targetRoleId, serverId);
+      await DBAssignments.#insertAssignment(client.getPoolClient(), userId, targetRoleId, serverId);
       Log.info("insertOrUpdateAssignment", "assignment: Inserted 1 row.");
     }
     else {
-      await this.#insertAssignment(client, userId, targetRoleId, serverId, assignmentId);
+      await DBAssignments.#insertAssignment(client.getPoolClient(), userId, targetRoleId, serverId, assignmentId);
       Log.info("insertOrUpdateAssignment", "assignment: Updated 1 row.");
     }
 
-    client.release();
+    client.releasePoolClient();
 
     const role = insert ? {
       newRoleId: targetRoleDiscordId,
@@ -381,7 +389,6 @@ class DBAssignments {
   /**
    * Queries specific server's user assignment data.
    *
-   * @param { PoolClient } client Database connection pool client.
    * @param { string } serverDiscordId Server snowflake ID.
    * @param { number } osuId osu! user ID.
    *
@@ -392,7 +399,7 @@ class DBAssignments {
    * @throws { DatabaseConnectionError } Database connection error occurred.
    * @throws { DatabaseClientError } Unhandled client error occurred.
    */
-  static async #getServerUserAssignmentDataByOsuId(client: PoolClient, serverDiscordId: string, osuId: number): Promise<IDBServerUserAssignmentData> {
+  async #getServerUserAssignmentDataByOsuId(serverDiscordId: string, osuId: number): Promise<IDBServerUserAssignmentData> {
     const selectQuery = `
       SELECT
         assignments."assignmentid",
@@ -415,8 +422,10 @@ class DBAssignments {
     `;
     const selectValues = [ osuId, serverDiscordId ];
 
+    const db = super.getPool();
+
     try {
-      const result = await client.query<IDBServerUserAssignmentQueryData>(selectQuery, selectValues);
+      const result = await db.query<IDBServerUserAssignmentQueryData>(selectQuery, selectValues);
 
       if(result.rowCount <= 0) {
         throw new NoRecordError();
@@ -461,7 +470,6 @@ class DBAssignments {
   /**
    * Queries specific server's user assignment data.
    *
-   * @param { PoolClient } client Database connection pool client.
    * @param { string } serverDiscordId Server snowflake ID.
    * @param { number } osuId osu! user ID.
    *
@@ -472,7 +480,7 @@ class DBAssignments {
    * @throws { DatabaseConnectionError } Database connection error occurred.
    * @throws { DatabaseClientError } Unhandled client error occurred.
    */
-  static async #getServerUserRoleDataByOsuId(client: PoolClient, serverDiscordId: string, osuId: number): Promise<IDBServerRoleData> {
+  async #getServerUserRoleDataByOsuId(serverDiscordId: string, osuId: number): Promise<IDBServerRoleData> {
     const selectQuery = `
       SELECT
         roles."roleid",
@@ -492,8 +500,10 @@ class DBAssignments {
     `;
     const selectValues = [ osuId, serverDiscordId ];
 
+    const db = super.getPool();
+
     try {
-      const result = await client.query<IDBServerRoleQueryData>(selectQuery, selectValues);
+      const result = await db.query<IDBServerRoleQueryData>(selectQuery, selectValues);
 
       if(result.rows.length <= 0) {
         throw new UserNotFoundError();
@@ -533,7 +543,6 @@ class DBAssignments {
   /**
    * Queries specific server's target role assignment data.
    *
-   * @param { PoolClient } client Database connection pool client.
    * @param { string } serverDiscordId Server snowflake ID.
    * @param { number } points Calculated points.
    *
@@ -543,7 +552,7 @@ class DBAssignments {
    * @throws { DatabaseConnectionError } Database connection error occurred.
    * @throws { DatabaseClientError } Unhandled client error occurred.
    */
-  static async #getTargetServerRoleDataByPoints(client: PoolClient, serverDiscordId: string, points: number): Promise<IDBServerRoleData> {
+  async #getTargetServerRoleDataByPoints(serverDiscordId: string, points: number): Promise<IDBServerRoleData> {
     const selectQuery = `
       SELECT
         roles."roleid",
@@ -562,8 +571,10 @@ class DBAssignments {
     `;
     const selectValues = [ points, serverDiscordId ];
 
+    const db = super.getPool();
+
     try {
-      const result = await client.query(selectQuery, selectValues);
+      const result = await db.query(selectQuery, selectValues);
 
       if(result.rows.length <= 0) {
         throw new NoRecordError();
@@ -600,7 +611,7 @@ class DBAssignments {
   /**
    * Inserts assignment data to the database.
    *
-   * @param { PoolClient } client Database pool client.
+   * @param { PoolClient } client Database pool client (connected).
    * @param { number } userId User ID in the database.
    * @param { number } roleId Role ID in the database.
    * @param { number } serverId Database server ID.
@@ -649,7 +660,7 @@ class DBAssignments {
   /**
    * Deletes assignment in the database by ID.
    *
-   * @param { PoolClient } client Database pool client.
+   * @param { PoolClient } client Database pool client (connected).
    * @param { number } assignmentId Assignment ID in the database.
    *
    * @returns { Promise<void> } Promise object with no return value. Throws errors below if failed.
