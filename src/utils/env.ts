@@ -23,14 +23,14 @@ class Environment {
       return false;
     }
 
-    this.#botName = process.env.BOT_NAME;
+    Environment.#botName = process.env.BOT_NAME;
 
     if(typeof(process.env.BOT_TOKEN) !== "string" || !process.env.BOT_TOKEN) {
       Log.error("validateEnvironmentVariables", "BOT_TOKEN must be defined in environment variables. Exiting.");
       return false;
     }
 
-    this.#botToken = process.env.BOT_TOKEN;
+    Environment.#botToken = process.env.BOT_TOKEN;
 
     if(typeof(process.env.OSU_CLIENT_ID) !== "string" || !process.env.OSU_CLIENT_ID) {
       Log.error("validateEnvironmentVariables", "OSU_CLIENT_ID must be defined in environment variables. Exiting.");
@@ -42,39 +42,39 @@ class Environment {
       return false;
     }
 
-    this.#osuClientId = parseInt(process.env.OSU_CLIENT_ID, 10);
+    Environment.#osuClientId = parseInt(process.env.OSU_CLIENT_ID, 10);
 
     if(typeof(process.env.OSU_CLIENT_SECRET) !== "string" || !process.env.OSU_CLIENT_SECRET) {
       Log.error("validateEnvironmentVariables", "OSU_CLIENT_SECRET must be defined in environment variables. Exiting.");
       return false;
     }
 
-    this.#osuClientSecret = process.env.OSU_CLIENT_SECRET;
+    Environment.#osuClientSecret = process.env.OSU_CLIENT_SECRET;
 
-    this.#useRespektive = process.env.USE_RESPEKTIVE !== undefined && process.env.USE_RESPEKTIVE === "1";
+    Environment.#useRespektive = process.env.USE_RESPEKTIVE !== undefined && process.env.USE_RESPEKTIVE === "1";
 
     Log.info("validateEnvironmentVariables", "Environment variable checks completed.");
     return true;
   }
 
   static getBotName(): string {
-    return this.#botName;
+    return Environment.#botName;
   }
 
   static getBotToken(): string {
-    return this.#botToken;
+    return Environment.#botToken;
   }
 
   static getOsuClientId(): number {
-    return this.#osuClientId;
+    return Environment.#osuClientId;
   }
 
   static getOsuClientSecret(): string {
-    return this.#osuClientSecret;
+    return Environment.#osuClientSecret;
   }
 
   static useRespektive(): boolean {
-    return this.#useRespektive;
+    return Environment.#useRespektive;
   }
 }
 

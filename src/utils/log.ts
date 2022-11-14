@@ -26,19 +26,19 @@ class Log {
   }
 
   static debug(source: string, message: string) {
-    this.log(LogSeverity.DEBUG, source, message);
+    Log.log(LogSeverity.DEBUG, source, message);
   }
 
   static info(source: string, message: string) {
-    this.log(LogSeverity.LOG, source, message);
+    Log.log(LogSeverity.LOG, source, message);
   }
 
   static warn(source: string, message: string) {
-    this.log(LogSeverity.WARN, source, message);
+    Log.log(LogSeverity.WARN, source, message);
   }
 
   static error(source: string, message: string) {
-    this.log(LogSeverity.ERROR, source, message);
+    Log.log(LogSeverity.ERROR, source, message);
   }
 }
 
