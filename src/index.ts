@@ -19,10 +19,10 @@ const dbConfig: PoolConfig = {
   user: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  ssl: (typeof(process.env.DB_SSL_CA) !== "undefined" ? {
+  ssl: Environment.getCAPath() !== null ? {
     rejectUnauthorized: true,
-    ca: fs.readFileSync(process.env.DB_SSL_CA).toString()
-  } : undefined)
+    ca: fs.readFileSync(Environment.getCAPath() as string).toString()
+  } : undefined
 };
 
 // bot client
@@ -58,18 +58,20 @@ client.on("guildMemberAdd", async (member: GuildMember) => await onMemberJoinGui
  */
 async function onStartup() {
   Log.info("onStartup", "(1/4) Fetching osu!api token...");
+
   token = new OsuToken(Environment.getOsuClientId(), Environment.getOsuClientSecret());
   await token.getToken();
 
   Log.info("onStartup", "(2/4) Configuring database...");
-  DatabaseWrapper.getInstance().setConfig(dbConfig);
 
-  if(typeof(dbConfig.ssl) !== "undefined") {
-    Log.info("onStartup", `Using SSL for database connection, CA path: ${ process.env.DB_SSL_CA }`);
+  if(dbConfig.ssl !== undefined) {
+    Log.info("onStartup", `Using SSL for database connection, CA path: ${ Environment.getCAPath() }`);
   }
   else {
     Log.warn("onStartup", "Not using SSL for database connection. Caute procedere.");
   }
+
+  DatabaseWrapper.getInstance().setConfig(dbConfig);
 
   Log.info("onStartup", "(3/4) Testing database connection...");
 
