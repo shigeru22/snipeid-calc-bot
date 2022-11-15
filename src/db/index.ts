@@ -32,7 +32,7 @@ class DatabaseWrapper {
 
   getAssignmentsModule(): DBAssignments {
     if(this.#dbAssignments === null) {
-      throw new NoConfigError;
+      throw new NoConfigError();
     }
 
     return this.#dbAssignments;
@@ -40,7 +40,7 @@ class DatabaseWrapper {
 
   getRolesModule(): DBRoles {
     if(this.#dbRoles === null) {
-      throw new NoConfigError;
+      throw new NoConfigError();
     }
 
     return this.#dbRoles;
@@ -48,7 +48,7 @@ class DatabaseWrapper {
 
   getUsersModule(): DBUsers {
     if(this.#dbUsers === null) {
-      throw new NoConfigError;
+      throw new NoConfigError();
     }
 
     return this.#dbUsers;
@@ -56,7 +56,7 @@ class DatabaseWrapper {
 
   getServersModule(): DBServers {
     if(this.#dbServers === null) {
-      throw new NoConfigError;
+      throw new NoConfigError();
     }
 
     return this.#dbServers;
