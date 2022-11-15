@@ -57,11 +57,11 @@ client.on("guildMemberAdd", async (member: GuildMember) => await onMemberJoinGui
  * Startup event function.
  */
 async function onStartup() {
-  Log.info("onStartup", "(1/3) Fetching osu!api token...");
+  Log.info("onStartup", "(1/4) Fetching osu!api token...");
   token = new OsuToken(Environment.getOsuClientId(), Environment.getOsuClientSecret());
   await token.getToken();
 
-  Log.info("onStartup", "(2/3) Configuring database...");
+  Log.info("onStartup", "(2/4) Configuring database...");
   DatabaseWrapper.getInstance().setConfig(dbConfig);
 
   if(typeof(dbConfig.ssl) !== "undefined") {
@@ -71,7 +71,7 @@ async function onStartup() {
     Log.warn("onStartup", "Not using SSL for database connection. Caute procedere.");
   }
 
-  Log.info("onStartup", "(3/3) Testing database connection...");
+  Log.info("onStartup", "(3/4) Testing database connection...");
 
   // test connection before continuing
   {
