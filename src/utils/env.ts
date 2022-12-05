@@ -6,6 +6,7 @@ import { Log } from "./log";
 class Environment {
   static #botName = "";
   static #botToken = "";
+  static #botClientId = "";
   static #osuClientId = 0;
   static #osuClientSecret = "";
   static #useRespektive = false;
@@ -32,6 +33,13 @@ class Environment {
     }
 
     Environment.#botToken = process.env.BOT_TOKEN;
+
+    if(typeof(process.env.BOT_CLIENT_ID) !== "string" || !process.env.BOT_CLIENT_ID) {
+      Log.error("validateEnvironmentVariables", "BOT_CLIENT_ID must be defined in environment variables. Exiting.");
+      return false;
+    }
+
+    Environment.#botClientId = process.env.BOT_CLIENT_ID;
 
     if(typeof(process.env.OSU_CLIENT_ID) !== "string" || !process.env.OSU_CLIENT_ID) {
       Log.error("validateEnvironmentVariables", "OSU_CLIENT_ID must be defined in environment variables. Exiting.");
@@ -64,6 +72,10 @@ class Environment {
 
   static getBotToken(): string {
     return Environment.#botToken;
+  }
+
+  static getBotClientId(): string {
+    return Environment.#botClientId;
   }
 
   static getOsuClientId(): number {
