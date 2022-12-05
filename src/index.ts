@@ -1,11 +1,12 @@
 import dotenv from "dotenv";
 import fs from "fs";
-import { Client, GatewayIntentBits, ActivityType, ChannelType, Guild, GuildMember, Message } from "discord.js";
-import { PoolConfig } from "pg";
 import { createInterface } from "readline";
+import { Client, GatewayIntentBits, ActivityType, ChannelType, Guild, GuildMember, Message, Interaction } from "discord.js";
+import { PoolConfig } from "pg";
 import { OsuToken } from "./api/osu-token";
 import { DatabaseWrapper } from "./db";
 import { handleCommands, Conversations, Roles, Servers } from "./commands";
+import { handleInteractionCommands } from "./commands/interactions";
 import { Environment } from "./utils";
 import { Log } from "./utils/log";
 
@@ -49,6 +50,7 @@ process.on("uncaughtException", (e: unknown) => onException(e));
 // bot client event handling
 client.on("ready", async () => await onStartup());
 client.on("messageCreate", async (msg: Message) => await onNewMessage(msg));
+client.on("interactionCreate", async (interaction: Interaction) => await onInteraction(interaction));
 client.on("guildCreate", async (guild: Guild) => await Servers.onJoinServer(guild));
 client.on("guildDelete", (guild: Guild) => onLeaveGuild(guild));
 client.on("guildMemberAdd", async (member: GuildMember) => await onMemberJoinGuild(member));
@@ -107,7 +109,6 @@ async function onStartup() {
   }
 
   Log.info("onStartup", "(4/4) Setting bot activity message...");
-
   client.user.setActivity("Bathbot everyday", { type: ActivityType.Watching });
 
   Log.info("onStartup", `${ client.user.username } is now ready.`);
@@ -142,6 +143,12 @@ async function onNewMessage(msg: Message) {
 
     // if bot is mentioned but nothing processed, send a random message.
     (!processed && isClientMentioned) && await Conversations.sendMessage(channel, contents);
+  }
+}
+
+async function onInteraction(interaction: Interaction) {
+  if(interaction.isCommand()) {
+    await handleInteractionCommands(client, interaction);
   }
 }
 

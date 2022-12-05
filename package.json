@@ -7,6 +7,7 @@
     "start": "node .",
     "dev": "nodemon --signal SIGINT --delay 3 ./src/index.ts",
     "build": "tsc",
+    "register-cmds": "ts-node src/commands/interactions/register.ts",
     "init-db": "ts-node db/index.ts",
     "migrate-db": "ts-node db/migration/index.ts",
     "lint": "eslint .",
