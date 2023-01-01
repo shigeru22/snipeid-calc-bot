@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace LeaderpointsBot.Utils;
+namespace LeaderpointsBot.Client.Utils;
 
 public class Settings
 {

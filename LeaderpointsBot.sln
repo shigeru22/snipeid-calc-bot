@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeaderpointsBot", "LeaderpointsBot.csproj", "{188C8563-6B19-4DD3-8CD7-2B156E1EED30}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeaderpointsBot.Client", "LeaderpointsBot.Client\LeaderpointsBot.Client.csproj", "{1A42EC07-05B3-4F8F-8F3A-B60EAFD4E8D5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,9 +14,9 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{188C8563-6B19-4DD3-8CD7-2B156E1EED30}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{188C8563-6B19-4DD3-8CD7-2B156E1EED30}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{188C8563-6B19-4DD3-8CD7-2B156E1EED30}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{188C8563-6B19-4DD3-8CD7-2B156E1EED30}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A42EC07-05B3-4F8F-8F3A-B60EAFD4E8D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A42EC07-05B3-4F8F-8F3A-B60EAFD4E8D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A42EC07-05B3-4F8F-8F3A-B60EAFD4E8D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A42EC07-05B3-4F8F-8F3A-B60EAFD4E8D5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

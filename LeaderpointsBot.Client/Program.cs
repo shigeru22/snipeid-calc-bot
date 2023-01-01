@@ -1,6 +1,6 @@
-namespace LeaderpointsBot;
+using LeaderpointsBot.Client.Utils;
 
-using LeaderpointsBot.Utils;
+namespace LeaderpointsBot.Client;
 
 public class Program
 {

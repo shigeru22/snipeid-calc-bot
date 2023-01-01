@@ -1,7 +1,7 @@
 using Discord.WebSocket;
-using LeaderpointsBot.Utils;
+using LeaderpointsBot.Client.Utils;
 
-namespace LeaderpointsBot;
+namespace LeaderpointsBot.Client;
 
 public class Client
 {

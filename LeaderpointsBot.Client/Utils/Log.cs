@@ -1,6 +1,6 @@
 using Discord;
 
-namespace LeaderpointsBot.Utils;
+namespace LeaderpointsBot.Client.Utils;
 
 public static class Log
 {
