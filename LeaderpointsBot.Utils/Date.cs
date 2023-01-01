@@ -1,4 +1,4 @@
-namespace LeaderpointsBot.Client.Utils;
+namespace LeaderpointsBot.Utils;
 
 public static class Date
 {
