@@ -1,9 +1,12 @@
-﻿namespace LeaderpointsBot.Interactions;
+﻿using LeaderpointsBot.Utils;
+
+namespace LeaderpointsBot.Interactions;
 
 public class Program
 {
-	public static void Main(string[] args)
+	public static async Task Main(string[] args)
 	{
-		Console.WriteLine("Hello, world!");
+		Client client = new Client(Settings.Instance.Client.BotToken);
+		await client.Run();
 	}
 }
