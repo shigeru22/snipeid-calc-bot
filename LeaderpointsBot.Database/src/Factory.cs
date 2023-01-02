@@ -90,6 +90,9 @@ public class DatabaseFactory
 		Log.WriteVerbose("SetConfig", "Database data source created. Initializing per table instance.");
 
 		dbUsers = new DBUsers(dataSource);
+		dbRoles = new DBRoles(dataSource);
+		dbServers = new DBServers(dataSource);
+		dbAssignments = new DBAssignments(dataSource);
 
 		Log.WriteVerbose("SetConfig", "Database table wrapper instances created.");
 	}
