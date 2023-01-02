@@ -15,9 +15,19 @@ public static class Log
 
 	public static Task Write(LogMessage msg)
 	{
-		if(Settings.Instance.Client.LogSeverity >= (int)msg.Severity)
+		string output = $"{ Date.GetCurrentDateTime() } :: { logSeverity[((int)msg.Severity)][0] } :: { msg.Source } :: { msg.Message }";
+		int severitySetting = Settings.Instance.Client.LogSeverity;
+
+		if(severitySetting >= (int)msg.Severity)
 		{
-			Console.WriteLine($"{ Date.GetCurrentDateTime() } :: { logSeverity[((int)msg.Severity)][0] } :: { msg.Source } :: { msg.Message }");
+			if(msg.Severity >= LogSeverity.Warning) // warning and above
+			{
+				Console.WriteLine(output);
+			}
+			else
+			{
+				Console.Error.WriteLine(output);
+			}
 		}
 
 		return Task.CompletedTask;
@@ -25,9 +35,19 @@ public static class Log
 
 	public static Task Write(LogSeverity severity, string source, string message)
 	{
-		if(Settings.Instance.Client.LogSeverity >= (int)severity)
+		string output = $"{ Date.GetCurrentDateTime() } :: { logSeverity[((int)severity)][0] } :: { source } :: { message }";
+		int severitySetting = Settings.Instance.Client.LogSeverity;
+
+		if(severitySetting >= (int)severity)
 		{
-			Console.WriteLine($"{ Date.GetCurrentDateTime() } :: { logSeverity[((int)severity)][0] } :: { source } :: { message }");
+			if(severity >= LogSeverity.Warning) // warning and above
+			{
+				Console.WriteLine(output);
+			}
+			else
+			{
+				Console.Error.WriteLine(output);
+			}
 		}
 
 		return Task.CompletedTask;
@@ -35,8 +55,9 @@ public static class Log
 
 	public static Task WriteCritical(string source, string message)
 	{
-		if(Settings.Instance.Client.LogSeverity >= 0) {
-			Console.WriteLine($"{ Date.GetCurrentDateTime() } :: { logSeverity[0][0] } :: { source } :: { message }");
+		if(Settings.Instance.Client.LogSeverity >= 0)
+		{
+			Console.Error.WriteLine($"{ Date.GetCurrentDateTime() } :: { logSeverity[0][0] } :: { source } :: { message }");
 		}
 
 		return Task.CompletedTask;
@@ -44,8 +65,9 @@ public static class Log
 
 	public static Task WriteError(string source, string message)
 	{
-		if(Settings.Instance.Client.LogSeverity >= 1) {
-			Console.WriteLine($"{ Date.GetCurrentDateTime() } :: { logSeverity[1][0] } :: { source } :: { message }");
+		if(Settings.Instance.Client.LogSeverity >= 1)
+		{
+			Console.Error.WriteLine($"{ Date.GetCurrentDateTime() } :: { logSeverity[1][0] } :: { source } :: { message }");
 		}
 
 		return Task.CompletedTask;
@@ -53,7 +75,8 @@ public static class Log
 
 	public static Task WriteWarning(string source, string message)
 	{
-		if(Settings.Instance.Client.LogSeverity >= 2) {
+		if(Settings.Instance.Client.LogSeverity >= 2)
+		{
 			Console.WriteLine($"{ Date.GetCurrentDateTime() } :: { logSeverity[2][0] } :: { source } :: { message }");
 		}
 
@@ -62,7 +85,8 @@ public static class Log
 
 	public static Task WriteInfo(string source, string message)
 	{
-		if(Settings.Instance.Client.LogSeverity >= 3) {
+		if(Settings.Instance.Client.LogSeverity >= 3)
+		{
 			Console.WriteLine($"{ Date.GetCurrentDateTime() } :: { logSeverity[3][0] } :: { source } :: { message }");
 		}
 
@@ -71,7 +95,8 @@ public static class Log
 
 	public static Task WriteVerbose(string source, string message)
 	{
-		if(Settings.Instance.Client.LogSeverity >= 4) {
+		if(Settings.Instance.Client.LogSeverity >= 4)
+		{
 			Console.WriteLine($"{ Date.GetCurrentDateTime() } :: { logSeverity[4][0] } :: { source } :: { message }");
 		}
 
@@ -80,7 +105,8 @@ public static class Log
 
 	public static Task WriteDebug(string source, string message)
 	{
-		if(Settings.Instance.Client.LogSeverity >= 5) {
+		if(Settings.Instance.Client.LogSeverity >= 5)
+		{
 			Console.WriteLine($"{ Date.GetCurrentDateTime() } :: { logSeverity[5][0] } :: { source } :: { message }");
 		}
 
