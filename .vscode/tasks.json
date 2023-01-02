@@ -2,38 +2,75 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "build",
+      "label": "build-all",
       "command": "dotnet",
       "type": "process",
+	  "options": {
+		"cwd": "${workspaceFolder}"
+	  },
       "args": [
         "build",
-        "${workspaceFolder}/LeaderpointsBot.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
       ],
       "problemMatcher": "$msCompile"
     },
     {
-      "label": "publish",
+      "label": "build-client",
       "command": "dotnet",
       "type": "process",
+	  "options": {
+		"cwd": "${workspaceFolder}"
+	  },
+      "args": [
+        "build",
+        "${workspaceFolder}/LeaderpointsBot.Client/LeaderpointsBot.Client.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build-interactions",
+      "command": "dotnet",
+      "type": "process",
+	  "options": {
+		"cwd": "${workspaceFolder}"
+	  },
+      "args": [
+        "build",
+        "${workspaceFolder}/LeaderpointsBot.Interactions/LeaderpointsBot.Interactions.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "publish-all",
+      "command": "dotnet",
+      "type": "process",
+	  "options": {
+		"cwd": "${workspaceFolder}"
+	  },
       "args": [
         "publish",
-        "${workspaceFolder}/LeaderpointsBot.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
       ],
       "problemMatcher": "$msCompile"
     },
     {
-      "label": "watch",
+      "label": "watch-client",
       "command": "dotnet",
       "type": "process",
+	  "options": {
+		"cwd": "${workspaceFolder}"
+	  },
       "args": [
         "watch",
         "run",
         "--project",
-        "${workspaceFolder}/LeaderpointsBot.csproj"
+        "${workspaceFolder}/LeaderpointsBot.Client/LeaderpointsBot.Client.csproj"
       ],
       "problemMatcher": "$msCompile"
     }
