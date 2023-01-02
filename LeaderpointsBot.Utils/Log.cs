@@ -45,18 +45,28 @@ public static class Log
 
 	public static Task Write(LogSeverity severity, string source, string message)
 	{
-		string output = $"{ Date.GetCurrentDateTime() } :: { logSeverity[((int)severity)][0] } :: { source } :: { message }";
-		int severitySetting = Settings.Instance.Client.Logging.LogSeverity;
-
-		if(severitySetting >= (int)severity)
+		if(Settings.Instance.Client.Logging.LogSeverity >= (int)severity)
 		{
-			if(severity >= LogSeverity.Warning) // warning and above
+			switch(severity)
 			{
-				Console.WriteLine(output);
-			}
-			else
-			{
-				Console.Error.WriteLine(output);
+				case LogSeverity.Critical:
+					Log.WriteCritical(source, message);
+					break;
+				case LogSeverity.Error:
+					Log.WriteError(source, message);
+					break;
+				case LogSeverity.Warning:
+					Log.WriteWarning(source, message);
+					break;
+				case LogSeverity.Info:
+					Log.WriteInfo(source, message);
+					break;
+				case LogSeverity.Verbose:
+					Log.WriteVerbose(source, message);
+					break;
+				case LogSeverity.Debug:
+					Log.WriteDebug(source, message);
+					break;
 			}
 		}
 
