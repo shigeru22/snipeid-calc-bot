@@ -86,4 +86,18 @@ public static class Log
 
 		return Task.CompletedTask;
 	}
+
+	public static Task DeletePreviousLine(bool keepCurrentLine = false)
+	{
+		int currentCursorLine = Console.CursorTop;
+		Console.SetCursorPosition(0, currentCursorLine - 1);
+		Console.Write(new string(' ', Console.WindowWidth));
+
+		if(!keepCurrentLine)
+		{
+			Console.SetCursorPosition(0, currentCursorLine - 1);
+		}
+
+		return Task.CompletedTask;
+	}
 }
