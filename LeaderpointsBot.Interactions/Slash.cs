@@ -65,7 +65,7 @@ public static class SlashCommandsFactory
 
 			if(i < slashCommandsCount - 1)
 			{
-				if(Settings.Instance.Client.LogSeverity < 4) // logging level below debug
+				if(Settings.Instance.Client.Logging.LogSeverity < 4) // logging level below debug
 				{
 					await Log.DeletePreviousLine();
 				}

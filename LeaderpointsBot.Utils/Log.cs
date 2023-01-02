@@ -15,7 +15,7 @@ public static class Log
 
 	public static Task Write(LogMessage msg)
 	{
-		if(Settings.Instance.Client.LogSeverity >= (int)msg.Severity)
+		if(Settings.Instance.Client.Logging.LogSeverity >= (int)msg.Severity)
 		{
 			switch(msg.Severity)
 			{
@@ -46,7 +46,7 @@ public static class Log
 	public static Task Write(LogSeverity severity, string source, string message)
 	{
 		string output = $"{ Date.GetCurrentDateTime() } :: { logSeverity[((int)severity)][0] } :: { source } :: { message }";
-		int severitySetting = Settings.Instance.Client.LogSeverity;
+		int severitySetting = Settings.Instance.Client.Logging.LogSeverity;
 
 		if(severitySetting >= (int)severity)
 		{
@@ -68,9 +68,9 @@ public static class Log
 		ConsoleColor currentColor = Console.ForegroundColor;
 		Console.ForegroundColor = ConsoleColor.Red;
 
-		if(Settings.Instance.Client.LogSeverity >= 0)
+		if(Settings.Instance.Client.Logging.LogSeverity >= 0)
 		{
-			Console.Error.WriteLine($"{ Date.GetCurrentDateTime() } :: { logSeverity[0][0] } :: { source } :: { message }");
+			Console.Error.WriteLine($"{ Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC) } :: { logSeverity[0][0] } :: { source } :: { message }");
 		}
 
 		Console.ForegroundColor = currentColor;
@@ -83,9 +83,9 @@ public static class Log
 		ConsoleColor currentColor = Console.ForegroundColor;
 		Console.ForegroundColor = ConsoleColor.Red;
 
-		if(Settings.Instance.Client.LogSeverity >= 1)
+		if(Settings.Instance.Client.Logging.LogSeverity >= 1)
 		{
-			Console.Error.WriteLine($"{ Date.GetCurrentDateTime() } :: { logSeverity[1][0] } :: { source } :: { message }");
+			Console.Error.WriteLine($"{ Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC) } :: { logSeverity[1][0] } :: { source } :: { message }");
 		}
 
 		Console.ForegroundColor = currentColor;
@@ -98,9 +98,9 @@ public static class Log
 		ConsoleColor currentColor = Console.ForegroundColor;
 		Console.ForegroundColor = ConsoleColor.Yellow;
 
-		if(Settings.Instance.Client.LogSeverity >= 2)
+		if(Settings.Instance.Client.Logging.LogSeverity >= 2)
 		{
-			Console.WriteLine($"{ Date.GetCurrentDateTime() } :: { logSeverity[2][0] } :: { source } :: { message }");
+			Console.WriteLine($"{ Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC) } :: { logSeverity[2][0] } :: { source } :: { message }");
 		}
 
 		Console.ForegroundColor = currentColor;
@@ -110,9 +110,9 @@ public static class Log
 
 	public static Task WriteInfo(string source, string message)
 	{
-		if(Settings.Instance.Client.LogSeverity >= 3)
+		if(Settings.Instance.Client.Logging.LogSeverity >= 3)
 		{
-			Console.WriteLine($"{ Date.GetCurrentDateTime() } :: { logSeverity[3][0] } :: { source } :: { message }");
+			Console.WriteLine($"{ Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC) } :: { logSeverity[3][0] } :: { source } :: { message }");
 		}
 
 		return Task.CompletedTask;
@@ -123,9 +123,9 @@ public static class Log
 		ConsoleColor currentColor = Console.ForegroundColor;
 		Console.ForegroundColor = ConsoleColor.DarkGray;
 
-		if(Settings.Instance.Client.LogSeverity >= 4)
+		if(Settings.Instance.Client.Logging.LogSeverity >= 4)
 		{
-			Console.WriteLine($"{ Date.GetCurrentDateTime() } :: { logSeverity[4][0] } :: { source } :: { message }");
+			Console.WriteLine($"{ Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC) } :: { logSeverity[4][0] } :: { source } :: { message }");
 		}
 
 		Console.ForegroundColor = currentColor;
@@ -138,9 +138,9 @@ public static class Log
 		ConsoleColor currentColor = Console.ForegroundColor;
 		Console.ForegroundColor = ConsoleColor.DarkGray;
 
-		if(Settings.Instance.Client.LogSeverity >= 5)
+		if(Settings.Instance.Client.Logging.LogSeverity >= 5)
 		{
-			Console.WriteLine($"{ Date.GetCurrentDateTime() } :: { logSeverity[5][0] } :: { source } :: { message }");
+			Console.WriteLine($"{ Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC) } :: { logSeverity[5][0] } :: { source } :: { message }");
 		}
 
 		Console.ForegroundColor = currentColor;

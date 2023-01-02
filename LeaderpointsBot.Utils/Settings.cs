@@ -11,6 +11,12 @@ public class Settings
 		public struct JsonClientSettings
 		{
 			public string BotToken { get; set; }
+			public JsonClientLoggingSettings Logging { get; set; }
+		}
+
+		public struct JsonClientLoggingSettings
+		{
+			public bool UseUTC { get; set; }
 			public int LogSeverity { get; set; }
 		}
 
