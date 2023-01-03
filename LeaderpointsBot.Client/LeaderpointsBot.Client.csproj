@@ -15,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\LeaderpointsBot.Utils\LeaderpointsBot.Utils.csproj" />
     <ProjectReference Include="..\LeaderpointsBot.Database\LeaderpointsBot.Database.csproj" />
+    <ProjectReference Include="..\LeaderpointsBot.Api\LeaderpointsBot.Api.csproj" />
   </ItemGroup>
 
 </Project>
