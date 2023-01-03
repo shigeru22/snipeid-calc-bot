@@ -32,7 +32,7 @@ public class Settings
 
 		public struct JsonOsuClientSettings
 		{
-			public int ClientId { get; set; }
+			public int ClientID { get; set; }
 			public string ClientSecret { get; set; }
 		}
 
