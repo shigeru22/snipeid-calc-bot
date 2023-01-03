@@ -1,5 +1,4 @@
 using System.Net;
-using System.Text;
 using System.Text.Json;
 using LeaderpointsBot.Api.Exceptions;
 using LeaderpointsBot.Utils;
