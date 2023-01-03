@@ -15,4 +15,8 @@
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
+	<Target Name="AfterBuild">
+		<Copy SourceFiles="appsettings.json" DestinationFolder="$(OutputPath)" ContinueOnError="true" />
+	</Target>
+
 </Project>
