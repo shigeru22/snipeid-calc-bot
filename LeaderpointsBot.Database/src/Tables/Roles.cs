@@ -15,7 +15,7 @@ public class DBRoles : DBConnectorBase
 
 	public async Task<RolesQuerySchema.RolesTableData[]> GetRoles()
 	{
-		string query = @"
+		const string query = @"
 			SELECT
 				roles.""roleid"",
 				roles.""discordid"",
@@ -25,20 +25,20 @@ public class DBRoles : DBConnectorBase
 				roles
 		";
 
-		await using NpgsqlCommand command = dataSource.CreateCommand(query);
+		await using NpgsqlCommand command = DataSource.CreateCommand(query);
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
 
 		if(!reader.HasRows)
 		{
 			await Log.WriteVerbose("GetRoles", "roles: Returned 0 rows.");
-			return new RolesQuerySchema.RolesTableData[0];
+			return Array.Empty<RolesQuerySchema.RolesTableData>();
 		}
 
 		List<RolesQuerySchema.RolesTableData> ret = new();
 
 		while(await reader.ReadAsync())
 		{
-			ret.Add(new()
+			ret.Add(new RolesQuerySchema.RolesTableData()
 			{
 				RoleID = reader.GetInt32(0),
 				DiscordID = reader.GetString(1),
@@ -53,7 +53,7 @@ public class DBRoles : DBConnectorBase
 
 	public async Task<RolesQuerySchema.RolesTableData[]> GetServerRoles(string guildDiscordId)
 	{
-		string query = @"
+		const string query = @"
 			SELECT
 				roles.""roleid"",
 				roles.""discordid"",
@@ -69,7 +69,7 @@ public class DBRoles : DBConnectorBase
 				minPoints DESC
 		";
 
-		await using NpgsqlConnection tempConnection = dataSource.CreateConnection();
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
 		await Log.WriteVerbose("GetServerRoles", "Database connection created and opened from data source.");
@@ -77,7 +77,7 @@ public class DBRoles : DBConnectorBase
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
 			Parameters = {
-				new() { Value = guildDiscordId }
+				new NpgsqlParameter() { Value = guildDiscordId }
 			}
 		};
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
@@ -85,14 +85,14 @@ public class DBRoles : DBConnectorBase
 		if(!reader.HasRows)
 		{
 			await Log.WriteVerbose("GetServerRoles", "roles: Returned 0 rows.");
-			return new RolesQuerySchema.RolesTableData[0];
+			return Array.Empty<RolesQuerySchema.RolesTableData>();
 		}
 
 		List<RolesQuerySchema.RolesTableData> ret = new();
 
 		while(await reader.ReadAsync())
 		{
-			ret.Add(new()
+			ret.Add(new RolesQuerySchema.RolesTableData()
 			{
 				RoleID = reader.GetInt32(0),
 				DiscordID = reader.GetString(1),
@@ -110,7 +110,7 @@ public class DBRoles : DBConnectorBase
 
 	public async Task<RolesQuerySchema.RolesTableData> GetRoleByRoleID(int roleId)
 	{
-		string query = @"
+		const string query = @"
 			SELECT
 				roles.""roleid"",
 				roles.""discordid"",
@@ -122,7 +122,7 @@ public class DBRoles : DBConnectorBase
 				roles.""roleid"" = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = dataSource.CreateConnection();
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
 		await Log.WriteVerbose("GetRoleByRoleID", "Database connection created and opened from data source.");
@@ -130,7 +130,7 @@ public class DBRoles : DBConnectorBase
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
 			Parameters = {
-				new() { Value = roleId }
+				new NpgsqlParameter() { Value = roleId }
 			}
 		};
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
@@ -166,7 +166,7 @@ public class DBRoles : DBConnectorBase
 
 	public async Task<RolesQuerySchema.RolesTableData> GetRoleByDiscordID(string roleDiscordId)
 	{
-		string query = @"
+		const string query = @"
 			SELECT
 				roles.""roleid"",
 				roles.""discordid"",
@@ -178,7 +178,7 @@ public class DBRoles : DBConnectorBase
 				roles.""discordid"" = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = dataSource.CreateConnection();
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
 		await Log.WriteVerbose("GetRoleByDiscordID", "Database connection created and opened from data source.");
@@ -186,7 +186,7 @@ public class DBRoles : DBConnectorBase
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
 			Parameters = {
-				new() { Value = roleDiscordId }
+				new NpgsqlParameter() { Value = roleDiscordId }
 			}
 		};
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
@@ -222,12 +222,12 @@ public class DBRoles : DBConnectorBase
 
 	public async Task InsertRole(string roleDiscordId, string roleName, int minPoints, int serverId)
 	{
-		string query = @"
+		const string query = @"
 			INSERT INTO roles (discordid, rolename, minpoints, serverid)
 				VALUES ($1), ($2), ($3), ($4)
 		";
 
-		await using NpgsqlConnection tempConnection = dataSource.CreateConnection();
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
 		await Log.WriteVerbose("InsertRole", "Database connection created and opened from data source.");
@@ -235,10 +235,10 @@ public class DBRoles : DBConnectorBase
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
 			Parameters = {
-				new() { Value = roleDiscordId },
-				new() { Value = roleName },
-				new() { Value = minPoints },
-				new() { Value = serverId }
+				new NpgsqlParameter() { Value = roleDiscordId },
+				new NpgsqlParameter() { Value = roleName },
+				new NpgsqlParameter() { Value = minPoints },
+				new NpgsqlParameter() { Value = serverId }
 			}
 		};
 
@@ -260,12 +260,12 @@ public class DBRoles : DBConnectorBase
 
 	public async Task InsertRole(int roleId, string roleDiscordId, string roleName, int minPoints, int serverId)
 	{
-		string query = @"
+		const string query = @"
 			INSERT INTO roles (roleid, discordid, rolename, minpoints, serverid)
 				VALUES ($1), ($2), ($3), ($4), ($5)
 		";
 
-		await using NpgsqlConnection tempConnection = dataSource.CreateConnection();
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
 		await Log.WriteVerbose("InsertRole", "Database connection created and opened from data source.");
@@ -273,11 +273,11 @@ public class DBRoles : DBConnectorBase
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
 			Parameters = {
-				new() { Value = roleId },
-				new() { Value = roleDiscordId },
-				new() { Value = roleName },
-				new() { Value = minPoints },
-				new() { Value = serverId }
+				new NpgsqlParameter() { Value = roleId },
+				new NpgsqlParameter() { Value = roleDiscordId },
+				new NpgsqlParameter() { Value = roleName },
+				new NpgsqlParameter() { Value = minPoints },
+				new NpgsqlParameter() { Value = serverId }
 			}
 		};
 
@@ -299,7 +299,7 @@ public class DBRoles : DBConnectorBase
 
 	public async Task UpdateRole(int roleId, string? roleName = null, int? minPoints = null)
 	{
-		if((roleName == null || roleName == string.Empty) && (minPoints == null || minPoints < 0))
+		if(string.IsNullOrEmpty(roleName) && minPoints < 0)
 		{
 			await Log.WriteVerbose("UpdateRole", "Invalid argument(s). Throwing argument exception.");
 			throw new ArgumentException("Either or both roleName or minPoints must be specified and valid.");
@@ -309,49 +309,49 @@ public class DBRoles : DBConnectorBase
 		string query = $@"
 			UPDATE roles
 			SET
-				{ (roleName != null && roleName != string.Empty ? $"rolename = ($1){ (minPoints != null && minPoints >= 0 ? "," : "") }" : "") }
-				{ (minPoints != null && minPoints >= 0 ? $"minpoints = ({ (roleName != null && roleName != string.Empty ? "$2" : "$1") })" : "") }
+				{ (!string.IsNullOrEmpty(roleName) ? $"rolename = ($1){ (minPoints >= 0 ? "," : "") }" : "") }
+				{ (minPoints >= 0 ? $"minpoints = ({ (!string.IsNullOrEmpty(roleName) ? "$2" : "$1") })" : "") }
 			WHERE
-				roleid = ({ ((roleName != null && roleName != string.Empty) && (minPoints != null && minPoints >= 0) ? "$3" : "$2") })
+				roleid = ({ (!string.IsNullOrEmpty(roleName) && minPoints >= 0 ? "$3" : "$2") })
 		";
 
-		await using NpgsqlConnection tempConnection = dataSource.CreateConnection();
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
 		await Log.WriteVerbose("UpdateRole", "Database connection created and opened from data source.");
 
 		NpgsqlCommand command;
 
-		if((roleName != null && roleName != string.Empty) && (minPoints != null && minPoints >= 0))
+		if(!string.IsNullOrEmpty(roleName) && minPoints >= 0)
 		{
 			command = new NpgsqlCommand(query, tempConnection)
 			{
 				Parameters = {
-					new() { Value = roleName },
-					new() { Value = minPoints },
-					new() { Value = roleId }
+					new NpgsqlParameter() { Value = roleName },
+					new NpgsqlParameter() { Value = minPoints },
+					new NpgsqlParameter() { Value = roleId }
 				}
 			};
 		}
 		else
 		{
-			if(roleName != null && roleName != string.Empty)
+			if(!string.IsNullOrEmpty(roleName))
 			{
 				command = new NpgsqlCommand(query, tempConnection)
 				{
 					Parameters = {
-						new() { Value = roleName },
-						new() { Value = roleId }
+						new NpgsqlParameter() { Value = roleName },
+						new NpgsqlParameter() { Value = roleId }
 					}
 				};
 			}
-			else if(minPoints != null && minPoints >= 0)
+			else if(minPoints >= 0)
 			{
 				command = new NpgsqlCommand(query, tempConnection)
 				{
 					Parameters = {
-						new() { Value = minPoints },
-						new() { Value = roleId }
+						new NpgsqlParameter() { Value = minPoints },
+						new NpgsqlParameter() { Value = roleId }
 					}
 				};
 			}
@@ -362,7 +362,7 @@ public class DBRoles : DBConnectorBase
 				command = new NpgsqlCommand(query, tempConnection)
 				{
 					Parameters = {
-						new() { Value = roleId }
+						new NpgsqlParameter() { Value = roleId }
 					}
 				};
 			}
@@ -386,12 +386,12 @@ public class DBRoles : DBConnectorBase
 
 	public async Task DeleteRoleByRoleID(int roleId)
 	{
-		string query = @"
+		const string query = @"
 			DELETE FROM roles
 			WHERE roles.""roleid"" = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = dataSource.CreateConnection();
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
 		await Log.WriteVerbose("DeleteRoleByRoleID", "Database connection created and opened from data source.");
@@ -399,7 +399,7 @@ public class DBRoles : DBConnectorBase
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
 			Parameters = {
-				new() { Value = roleId }
+				new NpgsqlParameter() { Value = roleId }
 			}
 		};
 
@@ -421,12 +421,12 @@ public class DBRoles : DBConnectorBase
 
 	public async Task DeleteRoleByDiscordID(int discordId)
 	{
-		string query = @"
+		const string query = @"
 			DELETE FROM roles
 				WHERE roles.""discordid"" = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = dataSource.CreateConnection();
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
 		await Log.WriteVerbose("DeleteRoleByDiscordID", "Database connection created and opened from data source.");
@@ -434,7 +434,7 @@ public class DBRoles : DBConnectorBase
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
 			Parameters = {
-				new() { Value = discordId }
+				new NpgsqlParameter() { Value = discordId }
 			}
 		};
 
@@ -456,12 +456,12 @@ public class DBRoles : DBConnectorBase
 
 	public async Task DeleteServerRoles(int guildId)
 	{
-		string query = @"
+		const string query = @"
 			DELETE FROM roles
 				WHERE roles.""serverid"" = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = dataSource.CreateConnection();
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
 		await Log.WriteVerbose("DeleteServerRoles", "Database connection created and opened from data source.");
@@ -469,7 +469,7 @@ public class DBRoles : DBConnectorBase
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
 			Parameters = {
-				new() { Value = guildId }
+				new NpgsqlParameter() { Value = guildId }
 			}
 		};
 

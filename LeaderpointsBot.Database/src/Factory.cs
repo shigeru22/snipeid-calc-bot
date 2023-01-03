@@ -11,23 +11,23 @@ public class DatabaseFactory
 
 	public static DatabaseFactory Instance { get => instance; }
 
-	private NpgsqlDataSource? dataSource = null;
+	private NpgsqlDataSource? dataSource;
 
-	private DBUsers? dbUsers = null;
-	private DBRoles? dbRoles = null;
-	private DBServers? dbServers = null;
-	private DBAssignments? dbAssignments = null;
+	private DBUsers? dbUsers;
+	private DBRoles? dbRoles;
+	private DBServers? dbServers;
+	private DBAssignments? dbAssignments;
 
 	public DBUsers UsersInstance
 	{
 		get
 		{
-			if(this.dbUsers == null)
+			if(dbUsers == null)
 			{
 				throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
 			}
 
-			return this.dbUsers;
+			return dbUsers;
 		}
 	}
 
@@ -35,12 +35,12 @@ public class DatabaseFactory
 	{
 		get
 		{
-			if(this.dbRoles == null)
+			if(dbRoles == null)
 			{
 				throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
 			}
 
-			return this.dbRoles;
+			return dbRoles;
 		}
 	}
 
@@ -48,12 +48,12 @@ public class DatabaseFactory
 	{
 		get
 		{
-			if(this.dbServers == null)
+			if(dbServers == null)
 			{
 				throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
 			}
 
-			return this.dbServers;
+			return dbServers;
 		}
 	}
 
@@ -61,12 +61,12 @@ public class DatabaseFactory
 	{
 		get
 		{
-			if(this.dbAssignments == null)
+			if(dbAssignments == null)
 			{
 				throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
 			}
 
-			return this.dbAssignments;
+			return dbAssignments;
 		}
 	}
 
@@ -80,7 +80,7 @@ public class DatabaseFactory
 		Log.WriteVerbose("SetConfig", "Setting configuration based on config parameter.");
 
 		string connectionString = $"Host={ config.HostName };Port={ config.Port };Username={ config.Username };Password={ config.Password };Database={ config.DatabaseName }";
-		if(config.CAFilePath != null && config.CAFilePath != string.Empty)
+		if(!string.IsNullOrEmpty(config.CAFilePath))
 		{
 			connectionString += $";SSL Certificate={ Path.GetFullPath(config.CAFilePath) }";
 		}

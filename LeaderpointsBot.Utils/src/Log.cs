@@ -4,7 +4,7 @@ namespace LeaderpointsBot.Utils;
 
 public static class Log
 {
-	private static string[] logSeverity = {
+	private static readonly string[] logSeverity = {
 		"CRITICAL",
 		"ERROR",
 		"WARNING",
@@ -37,6 +37,8 @@ public static class Log
 				case LogSeverity.Debug:
 					Log.WriteDebug(msg.Source, msg.Message);
 					break;
+				default:
+					throw new ArgumentOutOfRangeException();
 			}
 		}
 
@@ -67,6 +69,8 @@ public static class Log
 				case LogSeverity.Debug:
 					Log.WriteDebug(source, message);
 					break;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(severity), severity, null);
 			}
 		}
 

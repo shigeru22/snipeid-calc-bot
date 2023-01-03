@@ -9,7 +9,7 @@ public class ApiFactory
 
 	public static ApiFactory Instance { get => instance; }
 
-	private OsuApi apiOsu;
+	private readonly OsuApi apiOsu;
 
 	public OsuApi OsuApiInstance
 	{
@@ -20,7 +20,7 @@ public class ApiFactory
 	{
 		Log.WriteVerbose("ApiFactory", "ApiFactory instance created. Initializing wrapper instances.");
 
-		apiOsu = new();
+		apiOsu = new OsuApi();
 
 		Log.WriteVerbose("ApiFactory", "API client wrapper instances created.");
 	}

@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace LeaderpointsBot.Api.Osu;
 
 public static class OsuDataTypes
@@ -7,16 +9,17 @@ public static class OsuDataTypes
 		public string Authorization { get; set; }
 	}
 
-	public struct OsuApiTokenRequestRawData
+	[SuppressMessage("ReSharper", "InconsistentNaming")]
+	public readonly struct OsuApiTokenRequestRawData
 	{
-		public int client_id { get; set; }
-		public string client_secret { get; set; }
-		public string grant_type { get; set; }
-		public string scope { get; set; }
+		public int client_id { get; init; }
+		public string client_secret { get; init; }
+		public string grant_type { get; init; }
+		public string scope { get; init; }
 
 		public OsuApiTokenRequestData ToStandardData()
 		{
-			return new()
+			return new OsuApiTokenRequestData()
 			{
 				ClientID = client_id,
 				ClientSecret = client_secret,
@@ -26,16 +29,16 @@ public static class OsuDataTypes
 		}
 	}
 
-	public struct OsuApiTokenRequestData
+	public readonly struct OsuApiTokenRequestData
 	{
-		public int ClientID { get; set; }
-		public string ClientSecret { get; set; }
-		public string GrantType { get; set; }
-		public string Scope { get; set; }
+		public int ClientID { get; init; }
+		public string ClientSecret { get; init; }
+		public string GrantType { get; init; }
+		public string Scope { get; init; }
 
 		public OsuApiTokenRequestRawData ToRawData()
 		{
-			return new()
+			return new OsuApiTokenRequestRawData()
 			{
 				client_id = ClientID,
 				client_secret = ClientSecret,
@@ -45,6 +48,7 @@ public static class OsuDataTypes
 		}
 	}
 
+	[SuppressMessage("ReSharper", "InconsistentNaming")]
 	public struct OsuApiTokenResponseRawData
 	{
 		public string token_type { get; set; }
@@ -53,7 +57,7 @@ public static class OsuDataTypes
 
 		public OsuApiTokenResponseData ToStandardData()
 		{
-			return new()
+			return new OsuApiTokenResponseData()
 			{
 				TokenType = token_type,
 				ExpiresIn = expires_in,
@@ -62,15 +66,15 @@ public static class OsuDataTypes
 		}
 	}
 
-	public struct OsuApiTokenResponseData
+	public readonly struct OsuApiTokenResponseData
 	{
-		public string TokenType { get; set; }
-		public int ExpiresIn { get; set; }
-		public string AccessToken { get; set; }
+		public string TokenType { get; init; }
+		public int ExpiresIn { get; init; }
+		public string AccessToken { get; init; }
 
 		public OsuApiTokenResponseRawData ToRawData()
 		{
-			return new()
+			return new OsuApiTokenResponseRawData()
 			{
 				token_type = TokenType,
 				expires_in = ExpiresIn,
@@ -79,6 +83,7 @@ public static class OsuDataTypes
 		}
 	}
 
+	[SuppressMessage("ReSharper", "InconsistentNaming")]
 	public struct OsuApiUserResponseRawData
 	{
 		public string avatar_url { get; set; }
@@ -115,7 +120,7 @@ public static class OsuDataTypes
 
 		public OsuApiUserResponseData ToStandardData()
 		{
-			return new()
+			return new OsuApiUserResponseData()
 			{
 				AvatarUrl = avatar_url,
 				CountryCode = country_code,
@@ -152,43 +157,43 @@ public static class OsuDataTypes
 		}
 	}
 
-	public struct OsuApiUserResponseData
+	public readonly struct OsuApiUserResponseData
 	{
-		public string AvatarUrl { get; set; }
-		public string CountryCode { get; set; }
-		public string CoverURL { get; set; }
-		public string DefaultGroup { get; set; }
-		public string? Discord { get; set; }
-		public bool HasSupported { get; set; }
-		public int ID { get; set; }
-		public string? Interests { get; set; }
-		public bool IsActive { get; set; }
-		public bool IsBot { get; set; }
-		public bool IsDeleted { get; set; }
-		public bool IsOnline { get; set; }
-		public bool IsSupporter { get; set; }
-		public DateTime JoinDate { get; set; }
-		public object Kudosu { get; set; } // Kudosu, not interested for now
-		public DateTime? LastVisit { get; set; }
-		public string? Location { get; set; }
-		public int MaxBlocks { get; set; }
-		public int MaxFriends { get; set; }
-		public string? Occupation { get; set; }
-		public object PlayMode { get; set; } // GameMode, not interested for now
-		public string[] PlayStyle { get; set; }
-		public bool PMFriendsOnly { get; set; }
-		public int PostCount { get; set; }
-		public string? ProfileColour { get; set; }
-		public object ProfileOrder { get; set; } // ProfilePage[], not interested for now
-		public string? Title { get; set; }
-		public string? TitleUrl { get; set; }
-		public string? Twitter { get; set; }
-		public string Username { get; set; }
-		public string? Website { get; set; }
+		public string AvatarUrl { get; init; }
+		public string CountryCode { get; init; }
+		public string CoverURL { get; init; }
+		public string DefaultGroup { get; init; }
+		public string? Discord { get; init; }
+		public bool HasSupported { get; init; }
+		public int ID { get; init; }
+		public string? Interests { get; init; }
+		public bool IsActive { get; init; }
+		public bool IsBot { get; init; }
+		public bool IsDeleted { get; init; }
+		public bool IsOnline { get; init; }
+		public bool IsSupporter { get; init; }
+		public DateTime JoinDate { get; init; }
+		public object Kudosu { get; init; } // Kudosu, not interested for now
+		public DateTime? LastVisit { get; init; }
+		public string? Location { get; init; }
+		public int MaxBlocks { get; init; }
+		public int MaxFriends { get; init; }
+		public string? Occupation { get; init; }
+		public object PlayMode { get; init; } // GameMode, not interested for now
+		public string[] PlayStyle { get; init; }
+		public bool PMFriendsOnly { get; init; }
+		public int PostCount { get; init; }
+		public string? ProfileColour { get; init; }
+		public object ProfileOrder { get; init; } // ProfilePage[], not interested for now
+		public string? Title { get; init; }
+		public string? TitleUrl { get; init; }
+		public string? Twitter { get; init; }
+		public string Username { get; init; }
+		public string? Website { get; init; }
 
 		public OsuApiUserResponseRawData ToRawData()
 		{
-			return new()
+			return new OsuApiUserResponseRawData()
 			{
 				avatar_url = AvatarUrl,
 				country_code = CountryCode,

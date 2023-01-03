@@ -15,7 +15,7 @@ public class DBAssignments : DBConnectorBase
 
 	public async Task<AssignmentsQuerySchema.AssignmentsTableData[]> GetAssignmentsByServerID(int serverId)
 	{
-		string query = @"
+		const string query = @"
 			SELECT
 				assignments.""assignmentid"",
 				users.""username"",
@@ -30,15 +30,15 @@ public class DBAssignments : DBConnectorBase
 				assignments.""serverid"" = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = dataSource.CreateConnection();
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
 		await Log.WriteVerbose("GetAssignmentsByServerID", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new(query, tempConnection)
 		{
 			Parameters = {
-				new() { Value = serverId }
+				new NpgsqlParameter() { Value = serverId }
 			}
 		};
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
@@ -53,7 +53,7 @@ public class DBAssignments : DBConnectorBase
 
 		while(await reader.ReadAsync())
 		{
-			ret.Add(new()
+			ret.Add(new AssignmentsQuerySchema.AssignmentsTableData()
 			{
 				AssignmentID = reader.GetInt32(0),
 				Username = reader.GetString(1),
@@ -67,7 +67,7 @@ public class DBAssignments : DBConnectorBase
 
 	public async Task<AssignmentsQuerySchema.AssignmentsTableData[]> GetAssignmentsByServerDiscordID(string guildDiscordId)
 	{
-		string query = @"
+		const string query = @"
 			SELECT
 				assignments.""assignmentid"",
 				users.""username"",
@@ -84,15 +84,15 @@ public class DBAssignments : DBConnectorBase
 				servers.""discordid"" = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = dataSource.CreateConnection();
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
 		await Log.WriteVerbose("GetAssignmentsByServerDiscordID", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new(query, tempConnection)
 		{
 			Parameters = {
-				new() { Value = guildDiscordId }
+				new NpgsqlParameter() { Value = guildDiscordId }
 			}
 		};
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
@@ -107,7 +107,7 @@ public class DBAssignments : DBConnectorBase
 
 		while(await reader.ReadAsync())
 		{
-			ret.Add(new()
+			ret.Add(new AssignmentsQuerySchema.AssignmentsTableData()
 			{
 				AssignmentID = reader.GetInt32(0),
 				Username = reader.GetString(1),
@@ -121,7 +121,7 @@ public class DBAssignments : DBConnectorBase
 
 	public async Task<AssignmentsQuerySchema.AssignmentsTableData> GetAssignmentByAssignmentID(int assignmentId)
 	{
-		string query = @"
+		const string query = @"
 			SELECT
 				assignments.""assignmentid"",
 				users.""username"",
@@ -136,15 +136,15 @@ public class DBAssignments : DBConnectorBase
 				assignments.""assignmentid"" = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = dataSource.CreateConnection();
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
 		await Log.WriteVerbose("GetAssignmentByAssignmentID", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new(query, tempConnection)
 		{
 			Parameters = {
-				new() { Value = assignmentId }
+				new NpgsqlParameter() { Value = assignmentId }
 			}
 		};
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
@@ -194,15 +194,15 @@ public class DBAssignments : DBConnectorBase
 				assignments.""userid"" = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = dataSource.CreateConnection();
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
 		await Log.WriteVerbose("GetAssignmentByUserID", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new(query, tempConnection)
 		{
 			Parameters = {
-				new() { Value = userId }
+				new NpgsqlParameter() { Value = userId }
 			}
 		};
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
@@ -254,16 +254,16 @@ public class DBAssignments : DBConnectorBase
 				assignments.""userid"" = ($1) AND servers.""discordid"" = ($2)
 		";
 
-		await using NpgsqlConnection tempConnection = dataSource.CreateConnection();
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
 		await Log.WriteVerbose("GetAssignmentByUserID", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new(query, tempConnection)
 		{
 			Parameters = {
-				new() { Value = userId },
-				new() { Value = guildDiscordId }
+				new NpgsqlParameter() { Value = userId },
+				new NpgsqlParameter() { Value = guildDiscordId }
 			}
 		};
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
@@ -298,7 +298,7 @@ public class DBAssignments : DBConnectorBase
 
 	public async Task<AssignmentsQuerySchema.AssignmentsTableData> GetAssignmentByUserDiscordID(string userDiscordId)
 	{
-		string query = @"
+		const string query = @"
 			SELECT
 				assignments.""assignmentid"",
 				users.""username"",
@@ -313,15 +313,15 @@ public class DBAssignments : DBConnectorBase
 				users.""discordid"" = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = dataSource.CreateConnection();
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
 		await Log.WriteVerbose("GetAssignmentByUserDiscordID", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new(query, tempConnection)
 		{
 			Parameters = {
-				new() { Value = userDiscordId }
+				new NpgsqlParameter() { Value = userDiscordId }
 			}
 		};
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
@@ -356,7 +356,7 @@ public class DBAssignments : DBConnectorBase
 
 	public async Task<AssignmentsQuerySchema.AssignmentsTableData> GetAssignmentByUserDiscordID(string guildDiscordId, string userDiscordId)
 	{
-		string query = @"
+		const string query = @"
 			SELECT
 				assignments.""assignmentid"",
 				users.""username"",
@@ -373,16 +373,16 @@ public class DBAssignments : DBConnectorBase
 				users.""discordid"" = ($1) AND servers.""discordid"" = ($2)
 		";
 
-		await using NpgsqlConnection tempConnection = dataSource.CreateConnection();
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
 		await Log.WriteVerbose("GetAssignmentByUserDiscordID", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new(query, tempConnection)
 		{
 			Parameters = {
-				new() { Value = userDiscordId },
-				new() { Value = guildDiscordId }
+				new NpgsqlParameter() { Value = userDiscordId },
+				new NpgsqlParameter() { Value = guildDiscordId }
 			}
 		};
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
@@ -417,7 +417,7 @@ public class DBAssignments : DBConnectorBase
 
 	public async Task<AssignmentsQuerySchema.AssignmentsTableData> GetAssignmentByOsuID(string guildDiscordId, int osuId)
 	{
-		string query = @"
+		const string query = @"
 			SELECT
 				assignments.""assignmentid"",
 				users.""username"",
@@ -434,16 +434,16 @@ public class DBAssignments : DBConnectorBase
 				users.""osuid"" = ($1) AND servers.""discordid"" = ($2)
 		";
 
-		await using NpgsqlConnection tempConnection = dataSource.CreateConnection();
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
 		await Log.WriteVerbose("GetAssignmentByOsuID", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new(query, tempConnection)
 		{
 			Parameters = {
-				new() { Value = osuId },
-				new() { Value = guildDiscordId }
+				new NpgsqlParameter() { Value = osuId },
+				new NpgsqlParameter() { Value = guildDiscordId }
 			}
 		};
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
@@ -478,22 +478,22 @@ public class DBAssignments : DBConnectorBase
 
 	public async Task InsertAssignment(string guildDiscordId, int userId, int roleId)
 	{
-		string query = @"
+		const string query = @"
 			INSERT INTO assignments (userid, roleid, serverid)
 				VALUES ($1), ($2), ($3)
 		";
 
-		await using NpgsqlConnection tempConnection = dataSource.CreateConnection();
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
 		await Log.WriteVerbose("InsertAssignmentByUserID", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new(query, tempConnection)
 		{
 			Parameters = {
-				new() { Value = userId },
-				new() { Value = roleId },
-				new() { Value = guildDiscordId }
+				new NpgsqlParameter() { Value = userId },
+				new NpgsqlParameter() { Value = roleId },
+				new NpgsqlParameter() { Value = guildDiscordId }
 			}
 		};
 
@@ -515,23 +515,23 @@ public class DBAssignments : DBConnectorBase
 
 	public async Task InsertAssignment(int assignmentId, string guildDiscordId, int userId, int roleId)
 	{
-		string query = @"
+		const string query = @"
 			INSERT INTO assignments (assignmentid, userid, roleid, serverid)
 				VALUES ($1), ($2), ($3), ($4)
 		";
 
-		await using NpgsqlConnection tempConnection = dataSource.CreateConnection();
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
 		await Log.WriteVerbose("InsertAssignmentByUserID", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new(query, tempConnection)
 		{
 			Parameters = {
-				new() { Value = assignmentId },
-				new() { Value = userId },
-				new() { Value = roleId },
-				new() { Value = guildDiscordId }
+				new NpgsqlParameter() { Value = assignmentId },
+				new NpgsqlParameter() { Value = userId },
+				new NpgsqlParameter() { Value = roleId },
+				new NpgsqlParameter() { Value = guildDiscordId }
 			}
 		};
 
@@ -553,7 +553,7 @@ public class DBAssignments : DBConnectorBase
 
 	public async Task UpdateAssignmentByAssignmentID(int assignmentId, int roleId)
 	{
-		string query = @"
+		const string query = @"
 			UPDATE assignments
 			SET
 				roleid = ($1)
@@ -561,16 +561,16 @@ public class DBAssignments : DBConnectorBase
 				assignmentid = ($2)
 		";
 
-		await using NpgsqlConnection tempConnection = dataSource.CreateConnection();
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
 		await Log.WriteVerbose("UpdateAssignmentByAssignmentID", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new(query, tempConnection)
 		{
 			Parameters = {
-				new() { Value = roleId },
-				new() { Value = assignmentId }
+				new NpgsqlParameter() { Value = roleId },
+				new NpgsqlParameter() { Value = assignmentId }
 			}
 		};
 
@@ -592,7 +592,7 @@ public class DBAssignments : DBConnectorBase
 
 	public async Task UpdateAssignmentByUserDatabaseID(int serverId, int userId, int roleId)
 	{
-		string query = @"
+		const string query = @"
 			UPDATE assignments
 			SET
 				roleid = ($1)
@@ -600,17 +600,17 @@ public class DBAssignments : DBConnectorBase
 				userid = ($2) AND serverid = ($3)
 		";
 
-		await using NpgsqlConnection tempConnection = dataSource.CreateConnection();
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
 		await Log.WriteVerbose("UpdateAssignmentByUserDatabaseID", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new(query, tempConnection)
 		{
 			Parameters = {
-				new() { Value = roleId },
-				new() { Value = userId },
-				new() { Value = serverId }
+				new NpgsqlParameter() { Value = roleId },
+				new NpgsqlParameter() { Value = userId },
+				new NpgsqlParameter() { Value = serverId }
 			}
 		};
 
@@ -632,20 +632,20 @@ public class DBAssignments : DBConnectorBase
 
 	public async Task DeleteAssignmentByAssignmentID(int assignmentId)
 	{
-		string query = @"
+		const string query = @"
 			DELETE FROM assignments
 			WHERE assignmentid = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = dataSource.CreateConnection();
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
 		await Log.WriteVerbose("DeleteAssignmentByAssignmentID", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new(query, tempConnection)
 		{
 			Parameters = {
-				new() { Value = assignmentId }
+				new NpgsqlParameter() { Value = assignmentId }
 			}
 		};
 
@@ -667,20 +667,20 @@ public class DBAssignments : DBConnectorBase
 
 	public async Task DeleteAssignmentByUserDatabaseID(int userId)
 	{
-		string query = @"
+		const string query = @"
 			DELETE FROM assignments
 			WHERE userid = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = dataSource.CreateConnection();
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
 		await Log.WriteVerbose("DeleteAssignmentByUserDatabaseID", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new(query, tempConnection)
 		{
 			Parameters = {
-				new() { Value = userId }
+				new NpgsqlParameter() { Value = userId }
 			}
 		};
 
@@ -702,21 +702,21 @@ public class DBAssignments : DBConnectorBase
 
 	public async Task DeleteAssignmentByUserDatabaseID(int userId, int serverId)
 	{
-		string query = @"
+		const string query = @"
 			DELETE FROM assignments
 			WHERE userid = ($1) AND serverid = ($2)
 		";
 
-		await using NpgsqlConnection tempConnection = dataSource.CreateConnection();
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
 		await Log.WriteVerbose("DeleteAssignmentByUserDatabaseID", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new(query, tempConnection)
 		{
 			Parameters = {
-				new() { Value = userId },
-				new() { Value = serverId },
+				new NpgsqlParameter() { Value = userId },
+				new NpgsqlParameter() { Value = serverId },
 			}
 		};
 
@@ -738,20 +738,20 @@ public class DBAssignments : DBConnectorBase
 
 	public async Task DeleteAssignmentByServerID(int serverId)
 	{
-		string query = @"
+		const string query = @"
 			DELETE FROM assignments
 			WHERE serverid = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = dataSource.CreateConnection();
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
 		await Log.WriteVerbose("DeleteAssignmentByServerID", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new(query, tempConnection)
 		{
 			Parameters = {
-				new() { Value = serverId },
+				new NpgsqlParameter() { Value = serverId },
 			}
 		};
 

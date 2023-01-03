@@ -4,7 +4,7 @@ namespace LeaderpointsBot.Api.Exceptions;
 
 public class ApiResponseException : ApiException
 {
-	public HttpStatusCode Code { get; private set; }
+	public HttpStatusCode Code { get; }
 
 	public ApiResponseException(int statusCode): base($"API client returned status code { statusCode }.")
 	{

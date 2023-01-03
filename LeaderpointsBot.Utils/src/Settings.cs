@@ -4,7 +4,7 @@ namespace LeaderpointsBot.Utils;
 
 public class Settings
 {
-	private static readonly string DEFAULT_SETTINGS_PATH = "appsettings.json";
+	private const string DEFAULT_SETTINGS_PATH = "appsettings.json";
 
 	public static class SettingsTypes
 	{

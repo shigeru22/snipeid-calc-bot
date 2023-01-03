@@ -8,15 +8,15 @@ namespace LeaderpointsBot.Api.Osu;
 
 public class OsuApi
 {
-	public static readonly string OSU_API_ENDPOINT = "https://osu.ppy.sh/api/v2";
+	public const string OSU_API_ENDPOINT = "https://osu.ppy.sh/api/v2";
 
-	public OsuToken Token { get; private set; }
+	public OsuToken Token { get; }
 
 	public OsuApi()
 	{
 		Log.WriteVerbose("OsuApi", "osu!api wrapper class instantiated.");
 
-		Token = new();
+		Token = new OsuToken();
 	}
 
 	public OsuApi(OsuToken token)
@@ -30,7 +30,7 @@ public class OsuApi
 	{
 		Log.WriteVerbose("OsuApi", "osu!api wrapper class instantiated.");
 
-		Token = new(clientId, clientSecret);
+		Token = new OsuToken(clientId, clientSecret);
 	}
 
 	public async Task<OsuDataTypes.OsuApiUserResponseData> GetUserByOsuID(int osuId)
@@ -41,14 +41,13 @@ public class OsuApi
 
 		try
 		{
-			using (HttpClient client = new())
-			{
-				client.DefaultRequestHeaders.Accept.Add(new("application/json"));
-				client.DefaultRequestHeaders.Add("Authorization", $"Bearer { await Token.GetTokenAsync() }");
+			using HttpClient client = new();
 
-				await Log.WriteVerbose("GetUserByOsuID", "Requesting osu!api user endpoint.");
-				response = await client.GetAsync($"{ OsuApi.OSU_API_ENDPOINT }/users/{ osuId }");
-			}
+			client.DefaultRequestHeaders.Accept.Add(new("application/json"));
+			client.DefaultRequestHeaders.Add("Authorization", $"Bearer { await Token.GetTokenAsync() }");
+
+			await Log.WriteVerbose("GetUserByOsuID", "Requesting osu!api user endpoint.");
+			response = await client.GetAsync($"{ OsuApi.OSU_API_ENDPOINT }/users/{ osuId }");
 		}
 		catch (Exception e)
 		{

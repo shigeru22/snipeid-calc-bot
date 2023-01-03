@@ -8,7 +8,7 @@ namespace LeaderpointsBot.Api.Osu;
 
 public class OsuToken
 {
-	public static readonly string OSU_TOKEN_ENDPOINT = "https://osu.ppy.sh/oauth/token";
+	public const string OSU_TOKEN_ENDPOINT = "https://osu.ppy.sh/oauth/token";
 
 	private int clientId = 0;
 	private string clientSecret = "";
@@ -62,21 +62,20 @@ public class OsuToken
 
 		try
 		{
-			using (HttpClient client = new())
+			using HttpClient client = new();
+
+			OsuDataTypes.OsuApiTokenRequestData requestData = new()
 			{
-				OsuDataTypes.OsuApiTokenRequestData requestData = new()
-				{
-					ClientID = clientId,
-					ClientSecret = clientSecret,
-					GrantType = "client_credentials",
-					Scope = "public"
-				};
+				ClientID = clientId,
+				ClientSecret = clientSecret,
+				GrantType = "client_credentials",
+				Scope = "public"
+			};
 
-				StringContent data = new StringContent(JsonSerializer.Serialize(requestData.ToRawData()), Encoding.UTF8, "application/json");
+			StringContent data = new(JsonSerializer.Serialize(requestData.ToRawData()), Encoding.UTF8, "application/json");
 
-				await Log.WriteVerbose("GetTokenAsync", "Requesting osu!api token endpoint.");
-				response = await client.PostAsync(OSU_TOKEN_ENDPOINT, data);
-			}
+			await Log.WriteVerbose("GetTokenAsync", "Requesting osu!api token endpoint.");
+			response = await client.PostAsync(OSU_TOKEN_ENDPOINT, data);
 		}
 		catch (Exception e)
 		{
@@ -113,14 +112,13 @@ public class OsuToken
 
 		try
 		{
-			using (HttpClient client = new())
-			{
-				client.DefaultRequestHeaders.Accept.Add(new("application/json"));
-				client.DefaultRequestHeaders.Add("Authorization", $"Bearer { token }");
+			using HttpClient client = new();
 
-				await Log.WriteVerbose("RevokeTokenAsync", "Requesting osu!api revoke token endpoint.");
-				response = await client.DeleteAsync($"{ OsuApi.OSU_API_ENDPOINT }/oauth/tokens/current");
-			}
+			client.DefaultRequestHeaders.Accept.Add(new("application/json"));
+			client.DefaultRequestHeaders.Add("Authorization", $"Bearer { token }");
+
+			await Log.WriteVerbose("RevokeTokenAsync", "Requesting osu!api revoke token endpoint.");
+			response = await client.DeleteAsync($"{ OsuApi.OSU_API_ENDPOINT }/oauth/tokens/current");
 		}
 		catch (Exception e)
 		{

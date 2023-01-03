@@ -4,10 +4,10 @@ namespace LeaderpointsBot.Database;
 
 public class DBConnectorBase
 {
-	protected NpgsqlDataSource dataSource;
+	protected readonly NpgsqlDataSource DataSource;
 
-	public DBConnectorBase(NpgsqlDataSource dataSource)
+	protected DBConnectorBase(NpgsqlDataSource dataSource)
 	{
-		this.dataSource = dataSource;
+		this.DataSource = dataSource;
 	}
 }

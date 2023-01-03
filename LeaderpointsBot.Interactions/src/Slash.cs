@@ -6,7 +6,8 @@ namespace LeaderpointsBot.Interactions;
 
 public static class SlashCommandsFactory
 {
-	private static SlashCommandBuilder[] slashCommands = {
+	public static SlashCommandBuilder[] SlashCommands { get; } =
+	{
 		new SlashCommandBuilder().WithName("ping")
 			.WithDescription("Pings the bot."),
 		new SlashCommandBuilder().WithName("count")
@@ -49,19 +50,17 @@ public static class SlashCommandsFactory
 			.WithDMPermission(false)
 	};
 
-	public static SlashCommandBuilder[] SlashCommands { get => slashCommands; }
-
 	public static async Task CreateSlashCommands(DiscordSocketClient client)
 	{
 		await Log.WriteVerbose("CreateSlashCommands", "Iterating slash commands array.");
 
-		int slashCommandsCount = slashCommands.Length;
+		int slashCommandsCount = SlashCommands.Length;
 		for(int i = 0; i < slashCommandsCount; i++)
 		{
 			await Log.WriteInfo("CreateSlashCommands", $"Creating slash commands ({ i + 1 }/{ slashCommandsCount })...");
 
 			await Log.WriteVerbose("CreateSlashCommands", $"Creating command (index { i }) on client.");
-			await client.CreateGlobalApplicationCommandAsync(slashCommands[i].Build());
+			await client.CreateGlobalApplicationCommandAsync(SlashCommands[i].Build());
 
 			if(i < slashCommandsCount - 1)
 			{

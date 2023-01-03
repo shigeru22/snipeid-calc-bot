@@ -5,13 +5,13 @@ namespace LeaderpointsBot.Interactions;
 
 public class Client
 {
-	private DiscordSocketClient client;
+	private readonly DiscordSocketClient client;
 
-	private string botToken;
+	private readonly string botToken;
 
 	public Client(string botToken)
 	{
-		client = new();
+		client = new DiscordSocketClient();
 		this.botToken = botToken;
 
 		client.Log += Log.Write;
@@ -50,7 +50,7 @@ public class Client
 		{
 			// TODO: determine application command creation errors
 
-			await Log.WriteCritical("OnReady", $"Unhandled error occurred while creating command. Exception details below.\n{ e.ToString() }");
+			await Log.WriteCritical("OnReady", $"Unhandled error occurred while creating command. Exception details below.\n{ e }");
 
 			await Log.WriteVerbose("OnReady", "Exiting with code 1.");
 			Environment.Exit(1);

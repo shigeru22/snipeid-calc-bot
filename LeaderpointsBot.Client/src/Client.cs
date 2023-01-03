@@ -5,13 +5,13 @@ namespace LeaderpointsBot.Client;
 
 public class Client
 {
-	private DiscordSocketClient client;
+	private readonly DiscordSocketClient client;
 
-	private string botToken;
+	private readonly string botToken;
 
 	public Client(string botToken)
 	{
-		client = new();
+		client = new DiscordSocketClient();
 		this.botToken = botToken;
 
 		client.Log += Log.Write;

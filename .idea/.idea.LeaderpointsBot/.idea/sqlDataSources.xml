@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DdlMappings">
+    <mapping uuid="be59ee64-4c27-4483-aa41-1e392f639916" name="PostgreSQL (SV1-VM, temp) Mapping">
+      <data-sources db="cb9edb9a-862f-4eb3-9f2c-a4a490a5b16f" ddl="6333d017-4006-426b-90a4-249e884427f8" />
+      <scope>
+        <node kind="database" negative="1">
+          <node kind="schema" negative="1" />
+        </node>
+      </scope>
+    </mapping>
+  </component>
+</project>
