@@ -1,5 +1,6 @@
 // ReSharper disable InconsistentlySynchronizedField
 
+using Discord;
 using Discord.WebSocket;
 using LeaderpointsBot.Utils;
 
@@ -16,7 +17,10 @@ public class Client
 
 	public Client(string botToken)
 	{
-		client = new DiscordSocketClient();
+		client = new DiscordSocketClient(new DiscordSocketConfig()
+		{
+			GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMessages | GatewayIntents.MessageContent
+		});
 		this.botToken = botToken;
 
 		Console.CancelKeyPress += OnProcessExit;
