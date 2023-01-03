@@ -40,13 +40,13 @@ public class Settings
 		{
 			public JsonClientSettings Client { get; set; }
 			public JsonDatabaseSettings Database { get; set; }
-			public JsonOsuClientSettings OsuClient { get; set; }
+			public JsonOsuClientSettings OsuApi { get; set; }
 		}
 	}
 
 	public SettingsTypes.JsonClientSettings Client { get; private set; }
 	public SettingsTypes.JsonDatabaseSettings Database { get; private set; }
-	public SettingsTypes.JsonOsuClientSettings OsuClient { get; private set; }
+	public SettingsTypes.JsonOsuClientSettings OsuApi { get; private set; }
 
 	private static readonly Settings instance = new(DEFAULT_SETTINGS_PATH);
 
@@ -63,6 +63,6 @@ public class Settings
 
 		Client = temp.Client;
 		Database = temp.Database;
-		OsuClient = temp.OsuClient;
+		OsuApi = temp.OsuApi;
 	}
 }
