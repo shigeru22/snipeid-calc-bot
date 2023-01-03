@@ -1,21 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
-    <RootNamespace>LeaderpointsBot.Client</RootNamespace>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net6.0</TargetFramework>
+		<RootNamespace>LeaderpointsBot.Client</RootNamespace>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Discord.Net" Version="3.9.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Discord.Net" Version="3.9.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\LeaderpointsBot.Utils\LeaderpointsBot.Utils.csproj" />
-    <ProjectReference Include="..\LeaderpointsBot.Database\LeaderpointsBot.Database.csproj" />
-    <ProjectReference Include="..\LeaderpointsBot.Api\LeaderpointsBot.Api.csproj" />
-  </ItemGroup>
+  	<ItemGroup>
+		<ProjectReference Include="..\LeaderpointsBot.Utils\LeaderpointsBot.Utils.csproj" />
+		<ProjectReference Include="..\LeaderpointsBot.Database\LeaderpointsBot.Database.csproj" />
+		<ProjectReference Include="..\LeaderpointsBot.Api\LeaderpointsBot.Api.csproj" />
+	</ItemGroup>
 
 </Project>
