@@ -1,3 +1,5 @@
+// ReSharper disable InconsistentlySynchronizedField
+
 using Discord.WebSocket;
 using LeaderpointsBot.Utils;
 
@@ -9,10 +11,16 @@ public class Client
 
 	private readonly string botToken;
 
+	private readonly object exitMutex = new();
+	private readonly CancellationTokenSource delayToken = new();
+
 	public Client(string botToken)
 	{
 		client = new DiscordSocketClient();
 		this.botToken = botToken;
+
+		Console.CancelKeyPress += OnProcessExit;
+		AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
 
 		client.Log += Log.Write;
 
@@ -27,6 +35,21 @@ public class Client
 		await client.StartAsync();
 
 		await Log.WriteVerbose("Run", "Client started. Awaiting process indefinitely.");
-		await Task.Delay(-1);
+		await Task.Delay(-1, delayToken.Token);
+	}
+
+	private void OnProcessExit(object? o, EventArgs e)
+	{
+		lock (exitMutex)
+		{
+			Log.WriteVerbose("OnProcessExit", "Method called. Logging out client.");
+
+			client.StopAsync();
+			client.LogoutAsync();
+
+			Log.WriteVerbose("OnProcessExit", "Client logged out. Exiting process.");
+
+			delayToken.Cancel();
+		}
 	}
 }
