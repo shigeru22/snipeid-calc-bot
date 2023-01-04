@@ -43,6 +43,7 @@ public static class MessageModules
 
 	public class CountModule : ModuleBase<SocketCommandContext>
 	{
+		// @bot count
 		[Command("count")]
 		[Summary("Calculates points based on leaderboard count.")]
 		public async Task CountPointsCommand()
@@ -50,6 +51,7 @@ public static class MessageModules
 			await Log.WriteInfo("CountPointsCommand", $"Calculating points for { Context.User.Username }#{ Context.User.Discriminator }.");
 		}
 
+		// @bot count [osu! username]
 		[Command("count")]
 		[Summary("Calculates points based on leaderboard count.")]
 		public async Task CountPointsCommand([Summary("osu! username.")] string osuUsername)
@@ -57,6 +59,7 @@ public static class MessageModules
 			await Log.WriteInfo("CountPointsCommand", $"Calculating points for osu! user { osuUsername }.");
 		}
 
+		// @bot whatif [what-if arguments, comma-delimited]
 		[Command("whatif")]
 		[Summary("Calculates what-if points based on leaderboard count.")]
 		public async Task WhatIfPointsCommand([Summary("Comma-delimited arguments representing what-if count.")] string pointsArgs)
@@ -67,6 +70,7 @@ public static class MessageModules
 
 	public class LeaderboardModule : ModuleBase<SocketCommandContext>
 	{
+		// @bot leaderboard | @bot lb
 		[Command("leaderboard")]
 		[Alias("lb")]
 		[Summary("Returns server points leaderboard.")]
@@ -80,6 +84,7 @@ public static class MessageModules
 	[Summary("Server configuration commands.")]
 	public class ConfigurationModule : ModuleBase<SocketCommandContext>
 	{
+		// @bot config show
 		[Command("show")]
 		[Summary("Returns current server configuration. Only available for server administrators.")]
 		public async Task ShowConfigurationCommand()
@@ -91,6 +96,7 @@ public static class MessageModules
 		[Summary("Configuration setter commands.")]
 		public class ConfigurationSetterModule : ModuleBase<SocketCommandContext>
 		{
+			// @bot config set country
 			[Command("country")]
 			[Summary("Sets country restriction for this server. Leave empty to disable.")]
 			public async Task SetServerCountryCommand()
@@ -98,6 +104,7 @@ public static class MessageModules
 				await Log.WriteInfo("SetServerCountryCommand", $"Disabling server country restriction (guild ID { Context.Guild.Id }).");
 			}
 
+			// @bot config set country [2-letter country code]
 			[Command("country")]
 			[Summary("Sets country restriction for this server. Leave empty to disable.")]
 			public async Task SetServerCountryCommand([Summary("2-letter country code. Leave empty to disable.")] string countryCode)
@@ -105,6 +112,7 @@ public static class MessageModules
 				await Log.WriteInfo("SetServerCountryCommand", $"Setting server country restriction to { countryCode } (guild ID { Context.Guild.Id }).");
 			}
 
+			// @bot config set verifiedrole
 			[Command("verifiedrole")]
 			[Summary("Sets verified user role, see commands help for details. Leave empty to disable.")]
 			public async Task SetServerVerifiedRoleCommand()
@@ -112,6 +120,7 @@ public static class MessageModules
 				await Log.WriteInfo("SetServerVerifiedRoleCommand", $"Disabling verified user role (guild ID { Context.Guild.Id }).");
 			}
 
+			// @bot config set verifiedrole [mentioned role]
 			[Command("verifiedrole")]
 			[Summary("Sets verified user role, see commands help for details. Leave empty to disable.")]
 			public async Task SetServerVerifiedRoleCommand([Summary("Role for verified users. Leave empty to disable.")] SocketRole role)
@@ -119,6 +128,7 @@ public static class MessageModules
 				await Log.WriteInfo("SetServerVerifiedRoleCommand", $"Setting verified user role to { role.Id } (guild ID { Context.Guild.Id }).");
 			}
 
+			// @bot config set verifiedrole [role ID]
 			[Command("verifiedrole")]
 			[Summary("Sets verified user role, see commands help for details. Leave empty to disable.")]
 			public async Task SetServerVerifiedRoleCommand([Summary("Role for verified users. Leave empty to disable.")] string roleDiscordId)
@@ -126,6 +136,7 @@ public static class MessageModules
 				await Log.WriteInfo("SetServerVerifiedRoleCommand", $"Setting verified user role to { roleDiscordId } (guild ID { Context.Guild.Id }).");
 			}
 
+			// @bot config set commandschannel
 			[Command("commandschannel")]
 			[Summary("Sets server commands channel restriction. Leave channel option empty to disable.")]
 			public async Task SetServerCommandsChannelCommand()
@@ -133,6 +144,7 @@ public static class MessageModules
 				await Log.WriteInfo("SetServerCommandsChannelCommand", $"Disabling command channel restriction (guild ID { Context.Guild.Id }).");
 			}
 
+			// @bot config set commandschannel [mentioned channel]
 			[Command("commandschannel")]
 			[Summary("Sets server commands channel restriction. Leave channel option empty to disable.")]
 			public async Task SetServerCommandsChannelCommand([Summary("Channel for commands restriction. Leave empty to disable.")] SocketGuildChannel channel)
@@ -140,6 +152,7 @@ public static class MessageModules
 				await Log.WriteInfo("SetServerCommandsChannelCommand", $"Setting commands channel to { channel.Id } (guild ID { Context.Guild.Id }).");
 			}
 
+			// @bot config set commandschannel [channel ID]
 			[Command("commandschannel")]
 			[Summary("Sets server commands channel restriction. Leave channel option empty to disable.")]
 			public async Task SetServerCommandsChannelCommand([Summary("Channel for commands restriction. Leave empty to disable.")] string channelDiscordId)
@@ -147,6 +160,7 @@ public static class MessageModules
 				await Log.WriteInfo("SetServerCommandsChannelCommand", $"Setting commands channel to { channelDiscordId } (guild ID { Context.Guild.Id }).");
 			}
 
+			// @bot config set leaderboardschannel
 			[Command("leaderboardschannel")]
 			[Summary("Sets server leaderboard commands channel restriction. Leave channel option empty to disable.")]
 			public async Task SetServerLeaderboardsChannelCommand()
@@ -154,6 +168,7 @@ public static class MessageModules
 				await Log.WriteInfo("SetServerLeaderboardsChannelCommand", $"Disabling leaderboard commands channel restriction (guild ID { Context.Guild.Id }).");
 			}
 
+			// @bot config set leaderboardschannel [mentioned channel]
 			[Command("leaderboardschannel")]
 			[Summary("Sets server leaderboard commands channel restriction. Leave channel option empty to disable.")]
 			public async Task SetServerLeaderboardsChannelCommand([Summary("Channel for leaderboard command restriction. Leave empty to disable.")] SocketGuildChannel channel)
@@ -161,6 +176,7 @@ public static class MessageModules
 				await Log.WriteInfo("SetServerLeaderboardsChannelCommand", $"Setting leaderboard commands channel to { channel.Id } (guild ID { Context.Guild.Id }).");
 			}
 
+			// @bot config set leaderboardschannel [channel ID]
 			[Command("leaderboardschannel")]
 			[Summary("Sets server leaderboard commands channel restriction. Leave channel option empty to disable.")]
 			public async Task SetServerLeaderboardsChannelCommand([Summary("Channel for leaderboard command restriction. Leave empty to disable.")] string channelDiscordId)
