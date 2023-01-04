@@ -19,21 +19,27 @@ public class Client
 
 	public Client(string botToken)
 	{
+		Log.WriteVerbose("Client", "Client instantiated. Setting client config.");
+
 		client = new DiscordSocketClient(new DiscordSocketConfig()
 		{
 			GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMessages | GatewayIntents.MessageContent
 		});
 		this.botToken = botToken;
 
+		Log.WriteVerbose("Client", "Registering process events.");
+
 		Console.CancelKeyPress += OnProcessExit;
 		AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+
+		Log.WriteVerbose("Client", "Registering client events.");
 
 		client.Log += Log.Write;
 		client.MessageReceived += MessagesFactory.OnNewMessage;
 		client.SlashCommandExecuted += InteractionsFactory.OnInvokeSlashInteraction;
 		client.UserCommandExecuted += InteractionsFactory.OnInvokeUserContextInteraction;
 
-		Log.WriteVerbose("Client", "Client initialized using botToken parameter.");
+		Log.WriteVerbose("Client", "Client initialized.");
 	}
 
 	public async Task Run()
