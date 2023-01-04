@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Discord;
 using Discord.Commands;
@@ -10,31 +11,42 @@ namespace LeaderpointsBot.Client.Messages;
 public class MessagesFactory
 {
 	private readonly DiscordSocketClient client;
+	private readonly CommandService commandService;
 
-	public MessagesFactory(DiscordSocketClient client)
+	public MessagesFactory(DiscordSocketClient client, CommandService commandService)
 	{
 		Log.WriteVerbose("MessagesFactory", "MessagesFactory instance created.");
 
 		this.client = client;
+		this.commandService = commandService;
 
-		Log.WriteVerbose("MessagesFactory", "Instance client set with client parameter.");
+		Log.WriteVerbose("MessagesFactory", "Instance parameters set.");
+	}
+
+	public async Task InitializeServiceAsync()
+	{
+		await Log.WriteVerbose("InitializeServiceAsync", "Registering entry assembly as command service module.");
+		await commandService.AddModulesAsync(assembly: Assembly.GetEntryAssembly(), services: null);
 	}
 
 	public async Task OnNewMessage(SocketMessage msg)
 	{
+		await Log.WriteDebug("OnNewMessage", $"Message from { msg.Author.Username }#{ msg.Author.Discriminator }: { msg.Content }");
+
 		if(msg is not SocketUserMessage userMsg)
 		{
+			await Log.WriteDebug("OnNewMessage", "Message is not from user.");
 			return;
 		}
 
 		if(msg.Channel.GetChannelType() != ChannelType.Text)
 		{
+			await Log.WriteDebug("OnNewMessage", "Message is not from text-based channel.");
 			return;
 		}
 
-		// await Log.WriteDebug("OnNewMessage", $"Message from { msg.Author.Username }#{ msg.Author.Discriminator }: { msg.Content }");
-
-		await HandleCommands(userMsg);
+		await Log.WriteDebug("OnNewMessage", "Message is from user and text-based channel. Handling command.");
+		await HandleCommandsAsync(userMsg);
 	}
 
 	private async Task HandleCommands(SocketUserMessage msg)
@@ -54,10 +66,6 @@ public class MessagesFactory
 			case "link":
 				// TODO: verify user
 				await Log.WriteDebug("HandleCommands", "Link user command received.");
-				break;
-			case "ping":
-				await Log.WriteDebug("HandleCommands", $"Send ping command received{ (guildChannel != null ? $" (guild ID { guildChannel.Guild.Id })" : "") }.");
-				await SendPingCommand(context);
 				break;
 			case "count":
 				// TODO: count points
@@ -83,19 +91,19 @@ public class MessagesFactory
 		}
 	}
 
-	private async Task SendPingCommand(SocketCommandContext msgContext)
+	private async Task HandleCommandsAsync(SocketUserMessage msg)
 	{
-		await Log.WriteVerbose("SendPing", "Sending ping message.");
+		int argPos = 0; // TODO: create per-server prefix setting
 
-		string replyMsg = CommandsFactory.GetPingMessage(client);
+		if(!msg.HasMentionPrefix(client.CurrentUser, ref argPos))
+		{
+			await Log.WriteDebug("HandleCommands", "Bot is not mentioned.");
+			return;
+		}
 
-		if(Settings.Instance.Client.UseReply)
-		{
-			await msgContext.Message.ReplyAsync(replyMsg);
-		}
-		else
-		{
-			await msgContext.Channel.SendMessageAsync(replyMsg);
-		}
+		await Log.WriteVerbose("HandleCommands", "Creating context and executing command.");
+
+		SocketCommandContext context = new(client, msg);
+		await commandService.ExecuteAsync(context: context, argPos: argPos, services: null);
 	}
 }

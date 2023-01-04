@@ -1,6 +1,7 @@
 // ReSharper disable InconsistentlySynchronizedField
 
 using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 using LeaderpointsBot.Client.Messages;
 using LeaderpointsBot.Client.Interactions;
@@ -11,11 +12,15 @@ namespace LeaderpointsBot.Client;
 public class Client
 {
 	private readonly DiscordSocketClient client;
+	private readonly CommandService commandService;
 
 	private readonly string botToken;
 
 	private readonly object exitMutex = new();
 	private readonly CancellationTokenSource delayToken = new();
+
+	private readonly MessagesFactory messagesFactory;
+	private readonly InteractionsFactory interactionsFactory;
 
 	public Client(string botToken)
 	{
@@ -27,10 +32,18 @@ public class Client
 		});
 		this.botToken = botToken;
 
+		Log.WriteVerbose("Client", "Instantiating command service instance.");
+
+		commandService = new CommandService(new CommandServiceConfig()
+		{
+			LogLevel = LogSeverity.Info,
+			CaseSensitiveCommands = false
+		});
+
 		Log.WriteVerbose("Client", "Instantiating event factories.");
 
-		MessagesFactory messagesFactory = new(client);
-		InteractionsFactory interactionsFactory = new(client);
+		messagesFactory = new MessagesFactory(client, commandService);
+		interactionsFactory = new InteractionsFactory(client);
 
 		Log.WriteVerbose("Client", "Registering process events.");
 
@@ -49,6 +62,8 @@ public class Client
 
 	public async Task Run()
 	{
+		await messagesFactory.InitializeServiceAsync();
+
 		await Log.WriteVerbose("Run", "Start client using specified botToken.");
 
 		await client.LoginAsync(Discord.TokenType.Bot, botToken);
