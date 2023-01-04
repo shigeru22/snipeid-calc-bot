@@ -5,7 +5,7 @@ namespace LeaderpointsBot.Client.Interactions;
 
 public class InteractionsFactory
 {
-	private DiscordSocketClient client;
+	private readonly DiscordSocketClient client;
 
 	public InteractionsFactory(DiscordSocketClient client)
 	{

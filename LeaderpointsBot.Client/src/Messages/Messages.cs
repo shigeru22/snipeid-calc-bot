@@ -7,7 +7,7 @@ namespace LeaderpointsBot.Client.Messages;
 
 public class MessagesFactory
 {
-	private DiscordSocketClient client;
+	private readonly DiscordSocketClient client;
 
 	public MessagesFactory(DiscordSocketClient client)
 	{
