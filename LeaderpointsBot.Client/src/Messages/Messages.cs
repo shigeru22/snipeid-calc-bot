@@ -3,7 +3,6 @@ using System.Text.RegularExpressions;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using LeaderpointsBot.Client.Commands;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client.Messages;
@@ -53,48 +52,6 @@ public class MessagesFactory
 
 		await Log.WriteDebug("OnNewMessage", "Message is from user and text-based channel. Handling command.");
 		await HandleCommandsAsync(userMsg);
-	}
-
-	private async Task HandleCommands(SocketUserMessage msg)
-	{
-		string[] contents = new Regex("\\s+").Split(msg.Content);
-		if(contents.Length < 2)
-		{
-			return;
-		}
-
-		SocketCommandContext context = new(client, msg);
-		SocketGuildChannel? guildChannel = msg.Channel as SocketGuildChannel;
-
-		// yeah, I went old style. problem?
-		switch(contents[1])
-		{
-			case "link":
-				// TODO: verify user
-				await Log.WriteDebug("HandleCommands", "Link user command received.");
-				break;
-			case "count":
-				// TODO: count points
-				await Log.WriteDebug("HandleCommands", "Count points command received.");
-				break;
-			case "whatif":
-				// TODO: count what-if points
-				await Log.WriteDebug("HandleCommands", "Count what-if points command received.");
-				break;
-			case "lb": // fallthrough
-			case "leaderboard":
-				// TODO: send server leaderboard
-				await Log.WriteDebug("HandleCommands", "Get server leaderboard command received.");
-				break;
-			case "config":
-				// TODO: configure server settings
-				await Log.WriteDebug("HandleCommands", "Configuration command received.");
-				break;
-			case "help":
-				// TODO: send help message
-				await Log.WriteDebug("HandleCommands", "Send help message command received.");
-				break;
-		}
 	}
 
 	private async Task HandleCommandsAsync(SocketUserMessage msg)
