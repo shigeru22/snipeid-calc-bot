@@ -1,4 +1,5 @@
 using Discord.WebSocket;
+using LeaderpointsBot.Client.Commands;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client.Interactions;
@@ -20,6 +21,8 @@ public class InteractionsFactory
 	{
 		// await Log.WriteDebug("OnInvokeSlashInteraction", $"Slash interaction from { cmd.User.Username }#{ cmd.User.Discriminator }: { cmd.Data.Name } ({ cmd.Data.Id })");
 
+		SocketGuildChannel? guildChannel = cmd.Channel as SocketGuildChannel;
+
 		switch(cmd.Data.Name)
 		{
 			case "link":
@@ -28,7 +31,8 @@ public class InteractionsFactory
 				break;
 			case "ping":
 				// TODO: send ping
-				await Log.WriteDebug("OnInvokeSlashInteraction", "Send ping command received.");
+				await Log.WriteDebug("OnInvokeSlashInteraction", $"Send ping command received{ (guildChannel != null ? $" (guild ID { guildChannel.Guild.Id })" : "") }.");
+				await SendPingCommand(cmd);
 				break;
 			case "count":
 				// TODO: count points
@@ -64,5 +68,15 @@ public class InteractionsFactory
 				await Log.WriteDebug("OnInvokeUserContextInteraction", "Count points command received.");
 				break;
 		}
+	}
+
+	private async Task SendPingCommand(SocketInteraction cmd)
+	{
+		await cmd.DeferAsync();
+
+		await Log.WriteVerbose("SendPingSlashCommand", "Sending ping message.");
+
+		string replyMsg = CommandsFactory.GetPingMessage(client);
+		await cmd.ModifyOriginalResponseAsync(msg => msg.Content = replyMsg);
 	}
 }

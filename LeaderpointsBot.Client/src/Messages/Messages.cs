@@ -1,6 +1,8 @@
 using System.Text.RegularExpressions;
 using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
+using LeaderpointsBot.Client.Commands;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client.Messages;
@@ -20,6 +22,11 @@ public class MessagesFactory
 
 	public async Task OnNewMessage(SocketMessage msg)
 	{
+		if(msg is not SocketUserMessage userMsg)
+		{
+			return;
+		}
+
 		if(msg.Channel.GetChannelType() != ChannelType.Text)
 		{
 			return;
@@ -27,28 +34,21 @@ public class MessagesFactory
 
 		// await Log.WriteDebug("OnNewMessage", $"Message from { msg.Author.Username }#{ msg.Author.Discriminator }: { msg.Content }");
 
-		string[] contents = new Regex("\\s+").Split(msg.Content);
-		bool isClientMentioned = msg.MentionedUsers.Count(user => user.Id == client.CurrentUser.Id) == 1 && contents[0].Contains(client.CurrentUser.Id.ToString());
-
-		bool processed = await HandleCommands(msg);
-
-		if(!processed && isClientMentioned)
-		{
-			// TODO: send random conversation message
-			await Log.WriteDebug("OnNewMessage", "Bot mentioned but nothing processed. Send random message.");
-		}
+		await HandleCommands(userMsg);
 	}
 
-	private async Task<bool> HandleCommands(SocketMessage msg)
+	private async Task HandleCommands(SocketUserMessage msg)
 	{
 		string[] contents = new Regex("\\s+").Split(msg.Content);
 		if(contents.Length < 2)
 		{
-			return false;
+			return;
 		}
 
-		bool processed = true;
+		SocketCommandContext context = new(client, msg);
+		SocketGuildChannel? guildChannel = msg.Channel as SocketGuildChannel;
 
+		// yeah, I went old style. problem?
 		switch(contents[1])
 		{
 			case "link":
@@ -56,8 +56,8 @@ public class MessagesFactory
 				await Log.WriteDebug("HandleCommands", "Link user command received.");
 				break;
 			case "ping":
-				// TODO: send ping
-				await Log.WriteDebug("HandleCommands", "Send ping command received.");
+				await Log.WriteDebug("HandleCommands", $"Send ping command received{ (guildChannel != null ? $" (guild ID { guildChannel.Guild.Id })" : "") }.");
+				await SendPingCommand(context);
 				break;
 			case "count":
 				// TODO: count points
@@ -80,11 +80,14 @@ public class MessagesFactory
 				// TODO: send help message
 				await Log.WriteDebug("HandleCommands", "Send help message command received.");
 				break;
-			default:
-				processed = false;
-				break;
 		}
+	}
 
-		return processed;
+	private async Task SendPingCommand(SocketCommandContext msgContext)
+	{
+		await Log.WriteVerbose("SendPing", "Sending ping message.");
+
+		string replyMsg = CommandsFactory.GetPingMessage(client);
+		await msgContext.Message.ReplyAsync(replyMsg);
 	}
 }
