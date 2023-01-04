@@ -27,6 +27,11 @@ public class Client
 		});
 		this.botToken = botToken;
 
+		Log.WriteVerbose("Client", "Instantiating event factories.");
+
+		MessagesFactory messagesFactory = new(client);
+		InteractionsFactory interactionsFactory = new(client);
+
 		Log.WriteVerbose("Client", "Registering process events.");
 
 		Console.CancelKeyPress += OnProcessExit;
@@ -35,9 +40,9 @@ public class Client
 		Log.WriteVerbose("Client", "Registering client events.");
 
 		client.Log += Log.Write;
-		client.MessageReceived += MessagesFactory.OnNewMessage;
-		client.SlashCommandExecuted += InteractionsFactory.OnInvokeSlashInteraction;
-		client.UserCommandExecuted += InteractionsFactory.OnInvokeUserContextInteraction;
+		client.MessageReceived += messagesFactory.OnNewMessage;
+		client.SlashCommandExecuted += interactionsFactory.OnInvokeSlashInteraction;
+		client.UserCommandExecuted += interactionsFactory.OnInvokeUserContextInteraction;
 
 		Log.WriteVerbose("Client", "Client initialized.");
 	}
