@@ -2,6 +2,8 @@
 
 using Discord;
 using Discord.WebSocket;
+using LeaderpointsBot.Client.Messages;
+using LeaderpointsBot.Client.Interactions;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client;
@@ -27,6 +29,9 @@ public class Client
 		AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
 
 		client.Log += Log.Write;
+		client.MessageReceived += MessagesFactory.OnNewMessage;
+		client.SlashCommandExecuted += InteractionsFactory.OnInvokeSlashInteraction;
+		client.UserCommandExecuted += InteractionsFactory.OnInvokeUserContextInteraction;
 
 		Log.WriteVerbose("Client", "Client initialized using botToken parameter.");
 	}
