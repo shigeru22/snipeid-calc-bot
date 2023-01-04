@@ -6,7 +6,7 @@ using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client.Messages;
 
-public static class MessageCommands
+public static class MessageModules
 {
 	public class LinkModule : ModuleBase<SocketCommandContext>
 	{
