@@ -31,6 +31,12 @@ public class MessagesFactory
 
 	public async Task OnNewMessage(SocketMessage msg)
 	{
+		// ignore own messages silently
+		if(msg.Author.Id == client.CurrentUser.Id)
+		{
+			return;
+		}
+
 		await Log.WriteDebug("OnNewMessage", $"Message from { msg.Author.Username }#{ msg.Author.Discriminator }: { msg.Content }");
 
 		if(msg is not SocketUserMessage userMsg)
