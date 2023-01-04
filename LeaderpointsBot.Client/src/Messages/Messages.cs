@@ -88,6 +88,14 @@ public class MessagesFactory
 		await Log.WriteVerbose("SendPing", "Sending ping message.");
 
 		string replyMsg = CommandsFactory.GetPingMessage(client);
-		await msgContext.Message.ReplyAsync(replyMsg);
+
+		if(Settings.Instance.Client.UseReply)
+		{
+			await msgContext.Message.ReplyAsync(replyMsg);
+		}
+		else
+		{
+			await msgContext.Channel.SendMessageAsync(replyMsg);
+		}
 	}
 }

@@ -11,6 +11,7 @@ public class Settings
 		public struct JsonClientSettings
 		{
 			public string BotToken { get; set; }
+			public bool UseReply { get; set; }
 			public JsonClientLoggingSettings Logging { get; set; }
 		}
 

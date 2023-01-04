@@ -1,7 +1,11 @@
 {
 	"client": {
-    	"botToken": "[Discord bot token goes here]",
-		"logSeverity": 3
+    	"botToken": "A1b2c3D4.e5F6...",
+		"useReply": false,
+		"logging": {
+			"useUtc": false,
+			"logSeverity": 3
+		}
 	},
     "database": {
         "hostname": "localhost",
