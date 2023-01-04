@@ -3,7 +3,7 @@ using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client.Interactions;
 
-public class InteractionsFactory
+public static class InteractionsFactory
 {
 	public static async Task OnInvokeSlashInteraction(SocketSlashCommand cmd)
 	{
