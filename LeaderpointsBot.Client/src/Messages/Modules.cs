@@ -80,6 +80,17 @@ public static class MessageModules
 		}
 	}
 
+	public class HelpModule : ModuleBase<SocketCommandContext>
+	{
+		// @bot config help
+		[Command("help")]
+		[Summary("Returns commands usage help message.")]
+		public async Task SendHelpCommand()
+		{
+			await Log.WriteInfo("SendHelpCommand", $"Sending commands usage help message (guild ID { Context.Guild.Id }).");
+		}
+	}
+
 	[Group("config")]
 	[Summary("Server configuration commands.")]
 	public class ConfigurationModule : ModuleBase<SocketCommandContext>
@@ -90,6 +101,14 @@ public static class MessageModules
 		public async Task ShowConfigurationCommand()
 		{
 			await Log.WriteInfo("ShowConfigurationCommand", $"Retrieving server configuration data (guild ID { Context.Guild.Id }).");
+		}
+
+		// @bot config help
+		[Command("help")]
+		[Summary("Returns server configuration commands help message. Only available for server administrators.")]
+		public async Task SendHelpConfigurationCommand()
+		{
+			await Log.WriteInfo("SendHelpConfigurationCommand", $"Sending server configuration commands help message (guild ID { Context.Guild.Id }).");
 		}
 
 		[Group("set")]
