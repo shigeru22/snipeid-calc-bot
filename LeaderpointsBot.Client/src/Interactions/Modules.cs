@@ -12,10 +12,10 @@ public static class InteractionModules
 		// /link [osuid]
 		public static async Task LinkUserCommand(DiscordSocketClient client, SocketSlashCommand cmd)
 		{
-			await cmd.DeferAsync();
 			int osuId = (int)cmd.Data.Options.First().Value;
 
 			await Log.WriteInfo("LinkUserCommand", $"Linking user { cmd.User.Username }#{ cmd.User.Discriminator } ({ cmd.User.Id }) to osu! user ID { osuId }.");
+			await cmd.DeferAsync();
 		}
 	}
 
@@ -24,9 +24,8 @@ public static class InteractionModules
 		// /ping
 		public static async Task SendPingCommand(DiscordSocketClient client, SocketSlashCommand cmd)
 		{
-			await cmd.DeferAsync();
-
 			await Log.WriteInfo("SendPingCommand", "Sending ping message.");
+			await cmd.DeferAsync();
 
 			string replyMsg = CommandsFactory.GetPingMessage(client);
 			await cmd.ModifyOriginalResponseAsync(msg => msg.Content = replyMsg);
@@ -53,20 +52,20 @@ public static class InteractionModules
 			catch (Exception e)
 			{
 				await Log.WriteError("CountPointsCommand", $"Unhandled exception occurred while retrieving options value.{ (Settings.Instance.Client.Logging.LogSeverity >= (int)LogSeverity.Verbose ? $" Exception details below.\n{ e }" : "") }");
-				cmd.RespondAsync("An error occurred while processing your command.", ephemeral: true);
+				await cmd.RespondAsync("An error occurred while processing your command.", ephemeral: true);
 				return;
 			}
-			
+
 			await cmd.DeferAsync();
 		}
 
 		// /whatif [pointsargs]
 		public static async Task WhatIfPointsCommand(DiscordSocketClient client, SocketSlashCommand cmd)
 		{
-			await cmd.DeferAsync();
 			string pointsArgs = (string)cmd.Data.Options.First().Value;
 
 			await Log.WriteInfo("WhatIfPointsCommand", $"Calculating what-if points for { cmd.User.Username }#{ cmd.User.Discriminator } ({ pointsArgs }).");
+			await cmd.DeferAsync();
 		}
 	}
 
@@ -75,10 +74,10 @@ public static class InteractionModules
 		// user context -> Calculate points
 		public static async Task CountPointsCommand(DiscordSocketClient client, SocketUserCommand cmd)
 		{
-			await cmd.DeferAsync();
 			SocketUser user = cmd.Data.Member;
-			
+
 			await Log.WriteInfo("CountPointsCommand", $"Calculating points for { user.Username }#{ user.Discriminator }.");
+			await cmd.DeferAsync();
 		}
 	}
 	
@@ -92,9 +91,8 @@ public static class InteractionModules
 				return;
 			}
 
-			await cmd.DeferAsync();
-
 			await Log.WriteInfo("SendServerLeaderboardCommand", $"Retrieving server points leaderboard (guild ID { guildChannel.Guild.Id }).");
+			await cmd.DeferAsync();
 		}
 	}
 
@@ -103,9 +101,8 @@ public static class InteractionModules
 		// /help
 		public static async Task SendHelpCommand(DiscordSocketClient client, SocketSlashCommand cmd)
 		{
-			await cmd.DeferAsync();
-			
 			await Log.WriteInfo("SendHelpCommand", $"Sending commands usage help message.");
+			await cmd.DeferAsync();
 		}
 	}
 
@@ -119,11 +116,10 @@ public static class InteractionModules
 				return;
 			}
 
-			await cmd.DeferAsync();
-
 			await Log.WriteInfo("ShowConfigurationCommand", $"Retrieving server configuration data (guild ID { guildChannel.Guild.Id }).");
+			await cmd.DeferAsync();
 		}
-		
+
 		// /config help
 		public static async Task SendHelpConfigurationCommand(DiscordSocketClient client, SocketSlashCommand cmd)
 		{
@@ -132,9 +128,8 @@ public static class InteractionModules
 				return;
 			}
 
-			await cmd.DeferAsync();
-
 			await Log.WriteInfo("SendHelpConfigurationCommand", $"Sending server configuration commands help message (guild ID { guildChannel.Guild.Id }).");
+			await cmd.DeferAsync();
 		}
 		
 		public static class ConfigurationSetterSlashModule
@@ -155,7 +150,7 @@ public static class InteractionModules
 			 * hence, cmd.Data.Options.First().Options.First().Options.First().Value
 			 * should contain option value.
 			 */
-			
+
 			// /config set country
 			public static async Task SetServerCountryCommand(DiscordSocketClient client, SocketSlashCommand cmd)
 			{
@@ -163,8 +158,7 @@ public static class InteractionModules
 				{
 					return;
 				}
-	
-				await cmd.DeferAsync();
+
 				string? countryCode = null;
 
 				try
@@ -180,9 +174,11 @@ public static class InteractionModules
 				catch (Exception e)
 				{
 					await Log.WriteError("CountPointsCommand", $"Unhandled exception occurred while retrieving options value.{ (Settings.Instance.Client.Logging.LogSeverity >= (int)LogSeverity.Verbose ? $" Exception details below.\n{ e }" : "") }");
-					cmd.RespondAsync("An error occurred while processing your command.", ephemeral: true);
+					await cmd.RespondAsync("An error occurred while processing your command.", ephemeral: true);
 					return;
 				}
+
+				await cmd.DeferAsync();
 			}
 
 			// /config set verifiedrole
@@ -192,8 +188,7 @@ public static class InteractionModules
 				{
 					return;
 				}
-	
-				await cmd.DeferAsync();
+
 				SocketRole? role = null;
 
 				try
@@ -209,9 +204,11 @@ public static class InteractionModules
 				catch (Exception e)
 				{
 					await Log.WriteError("SetServerVerifiedRoleCommand", $"Unhandled exception occurred while retrieving options value.{ (Settings.Instance.Client.Logging.LogSeverity >= (int)LogSeverity.Verbose ? $"Exception details below.\n{ e }" : "") }");
-					cmd.RespondAsync("An error occurred while processing your command.", ephemeral: true);
+					await cmd.RespondAsync("An error occurred while processing your command.", ephemeral: true);
 					return;
 				}
+
+				await cmd.DeferAsync();
 			}
 
 			// /config set commandschannel
@@ -221,8 +218,7 @@ public static class InteractionModules
 				{
 					return;
 				}
-	
-				await cmd.DeferAsync();
+
 				SocketChannel? channel = null;
 
 				try
@@ -238,9 +234,11 @@ public static class InteractionModules
 				catch (Exception e)
 				{
 					await Log.WriteError("SetServerCommandsChannelCommand", $"Unhandled exception occurred while retrieving options value.{ (Settings.Instance.Client.Logging.LogSeverity >= (int)LogSeverity.Verbose ? $" Exception details below.\n{ e }" : "") }");
-					cmd.RespondAsync("An error occurred while processing your command.", ephemeral: true);
+					await cmd.RespondAsync("An error occurred while processing your command.", ephemeral: true);
 					return;
 				}
+
+				await cmd.DeferAsync();
 			}
 
 			// /config set leaderboardschannel
@@ -250,8 +248,7 @@ public static class InteractionModules
 				{
 					return;
 				}
-	
-				await cmd.DeferAsync();
+
 				SocketChannel? channel = null;
 
 				try
@@ -267,9 +264,11 @@ public static class InteractionModules
 				catch (Exception e)
 				{
 					await Log.WriteError("SetServerLeaderboardsChannelCommand", $"Unhandled exception occurred while retrieving options value.{ (Settings.Instance.Client.Logging.LogSeverity >= (int)LogSeverity.Verbose ? $" Exception details below.\n{ e }" : "") }");
-					cmd.RespondAsync("An error occurred while processing your command.", ephemeral: true);
+					await cmd.RespondAsync("An error occurred while processing your command.", ephemeral: true);
 					return;
 				}
+
+				await cmd.DeferAsync();
 			}
 		}
 	}
