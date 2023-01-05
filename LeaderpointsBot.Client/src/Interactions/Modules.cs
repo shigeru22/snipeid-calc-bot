@@ -12,7 +12,7 @@ public static class InteractionModules
 		// /link [osuid]
 		public static async Task LinkUserCommand(DiscordSocketClient client, SocketSlashCommand cmd)
 		{
-			int osuId = (int)cmd.Data.Options.First().Value;
+			long osuId = (long)cmd.Data.Options.First().Value;
 
 			await Log.WriteInfo("LinkUserCommand", $"Linking user { cmd.User.Username }#{ cmd.User.Discriminator } ({ cmd.User.Id }) to osu! user ID { osuId }.");
 			await cmd.DeferAsync();
