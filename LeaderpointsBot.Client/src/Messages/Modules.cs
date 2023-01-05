@@ -87,7 +87,18 @@ public static class MessageModules
 		[Summary("Returns commands usage help message.")]
 		public async Task SendHelpCommand()
 		{
-			await Log.WriteInfo("SendHelpCommand", $"Sending commands usage help message (guild ID { Context.Guild.Id }).");
+			await Log.WriteInfo("SendHelpCommand", $"Sending commands usage help message.");
+
+			Embed replyEmbed = CommandsFactory.GetBotHelpMessage(Context.Client);
+
+			if(Settings.Instance.Client.UseReply)
+			{
+				await Context.Message.ReplyAsync(embed: replyEmbed);
+			}
+			else
+			{
+				await Context.Channel.SendMessageAsync(embed: replyEmbed);
+			}
 		}
 	}
 
