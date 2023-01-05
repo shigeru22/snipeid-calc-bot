@@ -118,7 +118,7 @@ public class InteractionsFactory
 		catch (Exception e)
 		{
 			await Log.WriteDebug("HandleConfigurationSetterSlashCommand", $"Unhandled exception occurred while retrieving second subcommand. Exception details below.\n{ e }");
-			cmd.RespondAsync("An error occurred while processing your command.", ephemeral: true);
+			await cmd.RespondAsync("An error occurred while processing your command.", ephemeral: true);
 			return;
 		}
 
