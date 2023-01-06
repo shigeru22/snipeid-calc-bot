@@ -134,6 +134,10 @@ public static class InteractionModules
 
 			await Log.WriteInfo("SendHelpConfigurationCommand", $"Sending server configuration commands help message (guild ID { guildChannel.Guild.Id }).");
 			await cmd.DeferAsync();
+
+			Embed replyEmbed = CommandsFactory.GetConfigHelpMessage(client, true);
+
+			await cmd.ModifyOriginalResponseAsync(msg => msg.Embed = replyEmbed);
 		}
 		
 		public static class ConfigurationSetterSlashModule

@@ -120,6 +120,17 @@ public static class MessageModules
 		public async Task SendHelpConfigurationCommand()
 		{
 			await Log.WriteInfo("SendHelpConfigurationCommand", $"Sending server configuration commands help message (guild ID { Context.Guild.Id }).");
+			
+			Embed replyEmbed = CommandsFactory.GetConfigHelpMessage(Context.Client);
+
+			if(Settings.Instance.Client.UseReply)
+			{
+				await Context.Message.ReplyAsync(embed: replyEmbed);
+			}
+			else
+			{
+				await Context.Channel.SendMessageAsync(embed: replyEmbed);
+			}
 		}
 
 		[Group("set")]
