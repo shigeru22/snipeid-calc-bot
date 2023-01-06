@@ -104,7 +104,7 @@ public static class InteractionModules
 			await Log.WriteInfo("SendHelpCommand", $"Sending commands usage help message.");
 			await cmd.DeferAsync();
 
-			Embed replyEmbed = CommandsFactory.GetBotHelpMessage(client);
+			Embed replyEmbed = CommandsFactory.GetBotHelpMessage(client, true);
 
 			await cmd.ModifyOriginalResponseAsync(msg => msg.Embed = replyEmbed);
 		}

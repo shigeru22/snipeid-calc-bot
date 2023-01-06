@@ -12,9 +12,9 @@ public static class CommandsFactory
 		return $"Pong! ({ client.Latency } ms)";
 	}
 
-	public static Embed GetBotHelpMessage(DiscordSocketClient client)
+	public static Embed GetBotHelpMessage(DiscordSocketClient client, bool useInteraction = false)
 	{
-		ulong clientId = client.CurrentUser.Id;
+		string commandPrefix = !useInteraction ? $"<@{ client.CurrentUser.Id }> " : "**/**";
 
 		return new EmbedBuilder().WithTitle("Help: Commands")
 			.WithDescription($@"
@@ -22,29 +22,29 @@ public static class CommandsFactory
 				Points could be calculated from Bathbot's `<osc` command, which this bot will follow up with calculated points and summary.
 				This bot is able to calculate points directly using `count` command.
 
-				<@{ clientId }> `link [osu! user ID]`
+				{ commandPrefix }`link [osu! user ID]`
 				Links your Discord user to an osu! user.
 
-				<@{ clientId }> `count [osu! username (optional)]`
+				{ commandPrefix }`count [osu! username (optional)]`
 				Calculates points based on leaderboard count.
 				If osu! username is omitted, will calculate points for your linked osu! user.
 
-				<@{ clientId }> `whatif [what-if parameters]`
+				{ commandPrefix }`whatif [what-if parameters]`
 				Calculates what-if points based on leaderboard count. See help page for details.
 				TL;DR, specify top counts in comma-delimited form. For example, `1=20,8=250`.
 				For now, this command requires osu! user linking.
 				**P.S.** Specifying osu! username WIP!
 
-				<@{ clientId }> `leaderboard`
-				<@{ clientId }> `lb`
+				{ commandPrefix }`leaderboard`
+				{ commandPrefix }`lb`
 				Returns server points leaderboard.
 
-				<@{ clientId }> `help`
+				{ commandPrefix }`help`
 				Returns this help message.
 
-				<@{ clientId }> `config`
+				{ commandPrefix }`config`
 				Server configuration commands. Only available for server administrators.
-				See <@{ clientId }> `config help` or `/config help` for details.
+				See <@{ client.CurrentUser.Id }> `config help` or **/**`config help` for details.
 			")
 			.WithUrl("https://leaderpoints.kyutorius.com/help")
 			.WithColor(238, 229, 229)
