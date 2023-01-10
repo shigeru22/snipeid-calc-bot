@@ -220,6 +220,131 @@ public class DBRoles : DBConnectorBase
 		return ret;
 	}
 
+	public async Task<RolesQuerySchema.RolesTableData> GetServerRoleByOsuID(string guildDiscordId, int osuId)
+	{
+		const string query = @"
+			SELECT
+				roles.""roleid"",
+				roles.""discordid"",
+				roles.""rolename"",
+				roles.""minpoints""
+			FROM
+				roles
+			JOIN
+				assignments ON assignments.""roleid"" = roles.""roleid""
+			JOIN
+				users ON assignments.""userid"" = users.""userid""
+			JOIN
+				servers ON assignments.""serverid"" = servers.""serverid""
+			WHERE
+			    users.""osuid"" = ($1) AND servers.""discordid"" = ($2)
+		";
+
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
+		await tempConnection.OpenAsync();
+
+		await Log.WriteVerbose("GetServerRoleByOsuID", "Database connection created and opened from data source.");
+
+		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		{
+			Parameters = {
+				new NpgsqlParameter() { Value = osuId },
+				new NpgsqlParameter() { Value = guildDiscordId }
+			}
+		};
+		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
+
+		if(!reader.HasRows)
+		{
+			await Log.WriteVerbose("GetServerRoleByOsuID", "roles: Returned 0 rows. Throwing not found exception.");
+			throw new DataNotFoundException();
+		}
+
+		if(reader.Rows > 1)
+		{
+			await Log.WriteInfo("GetServerRoleByOsuID", $"roles: Returned { reader.Rows } rows. Throwing duplicate record exception.");
+			throw new DuplicateRecordException("roles", "osuid or discordid");
+		}
+
+		await reader.ReadAsync();
+
+		RolesQuerySchema.RolesTableData ret = new()
+		{
+			RoleID = reader.GetInt32(0),
+			DiscordID = reader.GetString(1),
+			RoleName = reader.GetString(2),
+			MinPoints = reader.GetInt32(3)
+		};
+
+		await tempConnection.CloseAsync();
+		await Log.WriteVerbose("GetServerRoleByOsuID", "Database connection closed.");
+
+		await Log.WriteInfo("GetServerRoleByOsuID", "roles: Returned 1 row.");
+		return ret;
+	}
+
+	public async Task<RolesQuerySchema.RolesTableData> GetTargetServerRoleByPoints(string guildDiscordId, int points)
+	{
+		const string query = @"
+			SELECT
+		        roles.""roleid"",
+				roles.""discordid"",
+				roles.""rolename"",
+				roles.""minpoints""
+			FROM
+				roles
+			JOIN
+				servers ON servers.""serverid"" = roles.""serverid""
+			WHERE
+				minpoints <= $1 AND servers.""discordid"" = $2
+			ORDER BY
+				minpoints DESC
+			LIMIT 1
+		";
+
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
+		await tempConnection.OpenAsync();
+
+		await Log.WriteVerbose("GetTargetServerRoleByPoints", "Database connection created and opened from data source.");
+
+		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		{
+			Parameters = {
+				new NpgsqlParameter() { Value = points },
+				new NpgsqlParameter() { Value = guildDiscordId }
+			}
+		};
+		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
+
+		if(!reader.HasRows)
+		{
+			await Log.WriteVerbose("GetTargetServerRoleByPoints", "roles: Returned 0 rows. Throwing not found exception.");
+			throw new DataNotFoundException();
+		}
+
+		if(reader.Rows > 1)
+		{
+			await Log.WriteInfo("GetTargetServerRoleByPoints", $"roles: Returned { reader.Rows } rows. Throwing duplicate record exception.");
+			throw new DuplicateRecordException("roles", "osuid or discordid");
+		}
+
+		await reader.ReadAsync();
+
+		RolesQuerySchema.RolesTableData ret = new()
+		{
+			RoleID = reader.GetInt32(0),
+			DiscordID = reader.GetString(1),
+			RoleName = reader.GetString(2),
+			MinPoints = reader.GetInt32(3)
+		};
+
+		await tempConnection.CloseAsync();
+		await Log.WriteVerbose("GetTargetServerRoleByPoints", "Database connection closed.");
+
+		await Log.WriteInfo("GetTargetServerRoleByPoints", "roles: Returned 1 row.");
+		return ret;
+	}
+
 	public async Task InsertRole(string roleDiscordId, string roleName, int minPoints, int serverId)
 	{
 		const string query = @"
