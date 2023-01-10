@@ -20,6 +20,7 @@ public class DBUsers : DBConnectorBase
 				users.""userid"",
 				users.""discordid"",
 				users.""osuid"",
+				users.""username"",
 				users.""points"",
 				users.""country"",
 				users.""lastupdate""
@@ -45,9 +46,10 @@ public class DBUsers : DBConnectorBase
 				UserID = reader.GetInt32(0),
 				DiscordID = reader.GetString(1),
 				OsuID = reader.GetInt32(2),
-				Points = reader.GetInt32(3),
-				Country = reader.GetString(4),
-				LastUpdate = reader.GetDateTime(5)
+				Username = reader.GetString(3),
+				Points = reader.GetInt32(4),
+				Country = reader.GetString(5),
+				LastUpdate = reader.GetDateTime(6)
 			});
 		}
 
@@ -62,6 +64,7 @@ public class DBUsers : DBConnectorBase
 				users.""userid"",
 				users.""discordid"",
 				users.""osuid"",
+				users.""username"",
 				users.""points"",
 				users.""country"",
 				users.""lastupdate""
@@ -107,9 +110,10 @@ public class DBUsers : DBConnectorBase
 			UserID = reader.GetInt32(0),
 			DiscordID = reader.GetString(1),
 			OsuID = reader.GetInt32(2),
-			Points = reader.GetInt32(3),
-			Country = reader.GetString(4),
-			LastUpdate = reader.GetDateTime(5)
+			Username = reader.GetString(3),
+			Points = reader.GetInt32(4),
+			Country = reader.GetString(5),
+			LastUpdate = reader.GetDateTime(6)
 		};
 
 		await tempConnection.CloseAsync();
@@ -126,6 +130,7 @@ public class DBUsers : DBConnectorBase
 				users.""userid"",
 				users.""discordid"",
 				users.""osuid"",
+				users.""username"",
 				users.""points"",
 				users.""country"",
 				users.""lastupdate""
@@ -171,9 +176,10 @@ public class DBUsers : DBConnectorBase
 			UserID = reader.GetInt32(0),
 			DiscordID = reader.GetString(1),
 			OsuID = reader.GetInt32(2),
-			Points = reader.GetInt32(3),
-			Country = reader.GetString(4),
-			LastUpdate = reader.GetDateTime(5)
+			Username = reader.GetString(3),
+			Points = reader.GetInt32(4),
+			Country = reader.GetString(5),
+			LastUpdate = reader.GetDateTime(6)
 		};
 
 		await tempConnection.CloseAsync();
@@ -190,6 +196,7 @@ public class DBUsers : DBConnectorBase
 				users.""userid"",
 				users.""discordid"",
 				users.""osuid"",
+				users.""username"",
 				users.""points"",
 				users.""country"",
 				users.""lastupdate""
@@ -235,9 +242,10 @@ public class DBUsers : DBConnectorBase
 			UserID = reader.GetInt32(0),
 			DiscordID = reader.GetString(1),
 			OsuID = reader.GetInt32(2),
-			Points = reader.GetInt32(3),
-			Country = reader.GetString(4),
-			LastUpdate = reader.GetDateTime(5)
+			Username = reader.GetString(3),
+			Points = reader.GetInt32(4),
+			Country = reader.GetString(5),
+			LastUpdate = reader.GetDateTime(6)
 		};
 
 		await tempConnection.CloseAsync();
