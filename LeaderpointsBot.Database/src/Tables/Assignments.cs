@@ -179,7 +179,7 @@ public class DBAssignments : DBConnectorBase
 
 	public async Task<AssignmentsQuerySchema.AssignmentsTableData> GetAssignmentByUserID(int userId)
 	{
-		string query = @"
+		const string query = @"
 			SELECT
 				assignments.""assignmentid"",
 				users.""username"",
@@ -237,7 +237,7 @@ public class DBAssignments : DBConnectorBase
 
 	public async Task<AssignmentsQuerySchema.AssignmentsTableData> GetAssignmentByUserID(string guildDiscordId, int userId)
 	{
-		string query = @"
+		const string query = @"
 			SELECT
 				assignments.""assignmentid"",
 				users.""username"",
@@ -476,11 +476,13 @@ public class DBAssignments : DBConnectorBase
 		return ret;
 	}
 
-	public async Task InsertAssignment(string guildDiscordId, int userId, int roleId)
+	public async Task InsertAssignment(int serverId, int userId, int roleId)
 	{
+		// TODO: [2023-01-19] update positional parameters for all table classes
+
 		const string query = @"
 			INSERT INTO assignments (userid, roleid, serverid)
-				VALUES ($1), ($2), ($3)
+				VALUES ($1, $2, $3)
 		";
 
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
@@ -493,7 +495,7 @@ public class DBAssignments : DBConnectorBase
 			Parameters = {
 				new NpgsqlParameter() { Value = userId },
 				new NpgsqlParameter() { Value = roleId },
-				new NpgsqlParameter() { Value = guildDiscordId }
+				new NpgsqlParameter() { Value = serverId }
 			}
 		};
 
@@ -517,7 +519,7 @@ public class DBAssignments : DBConnectorBase
 	{
 		const string query = @"
 			INSERT INTO assignments (assignmentid, userid, roleid, serverid)
-				VALUES ($1), ($2), ($3), ($4)
+				VALUES ($1, $2, $3, $4)
 		";
 
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();

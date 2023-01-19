@@ -296,7 +296,7 @@ public class DBRoles : DBConnectorBase
 			JOIN
 				servers ON servers.""serverid"" = roles.""serverid""
 			WHERE
-				minpoints <= $1 AND servers.""discordid"" = $2
+				minpoints <= ($1) AND servers.""discordid"" = ($2)
 			ORDER BY
 				minpoints DESC
 			LIMIT 1
@@ -349,7 +349,7 @@ public class DBRoles : DBConnectorBase
 	{
 		const string query = @"
 			INSERT INTO roles (discordid, rolename, minpoints, serverid)
-				VALUES ($1), ($2), ($3), ($4)
+				VALUES ($1, $2, $3, $4)
 		";
 
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
@@ -387,7 +387,7 @@ public class DBRoles : DBConnectorBase
 	{
 		const string query = @"
 			INSERT INTO roles (roleid, discordid, rolename, minpoints, serverid)
-				VALUES ($1), ($2), ($3), ($4), ($5)
+				VALUES ($1, $2, $3, $4, $5)
 		";
 
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();

@@ -118,7 +118,7 @@ public class DBServers : DBConnectorBase
 
 	public async Task<ServersQuerySchema.ServersTableData> GetServerByServerID(int serverId)
 	{
-		string query = @"
+		const string query = @"
 			SELECT
 				servers.""serverid"",
 				servers.""discordid"",
@@ -180,7 +180,7 @@ public class DBServers : DBConnectorBase
 
 	public async Task<ServersQuerySchema.ServersTableData> GetServerByDiscordID(string guildDiscordId)
 	{
-		string query = @"
+		const string query = @"
 			SELECT
 				servers.""serverid"",
 				servers.""discordid"",
@@ -222,16 +222,72 @@ public class DBServers : DBConnectorBase
 
 		await reader.ReadAsync();
 
-		ServersQuerySchema.ServersTableData ret = new()
+		ServersQuerySchema.ServersTableData ret;
 		{
-			ServerID = reader.GetInt32(0),
-			DiscordID = reader.GetString(1),
-			Country = reader.GetString(2),
-			VerifyChannelID = reader.GetString(3),
-			VerifiedRoleID = reader.GetString(4),
-			CommandsChannelID = reader.GetString(5),
-			LeaderboardsChannelID = reader.GetString(6)
-		};
+			int serverId = reader.GetInt32(0);
+			string discordId = reader.GetString(1);
+			string? country;
+			string? verifyChannelId;
+			string? verifiedRoleId;
+			string? commandsChannelId;
+			string? leaderboardsChannelId;
+
+			try
+			{
+				country = reader.GetString(2);
+			}
+			catch (InvalidCastException)
+			{
+				country = null;
+			}
+
+			try
+			{
+				verifyChannelId = reader.GetString(3);
+			}
+			catch (InvalidCastException)
+			{
+				verifyChannelId = null;
+			}
+
+			try
+			{
+				verifiedRoleId = reader.GetString(4);
+			}
+			catch (InvalidCastException)
+			{
+				verifiedRoleId = null;
+			}
+
+			try
+			{
+				commandsChannelId = reader.GetString(5);
+			}
+			catch (InvalidCastException)
+			{
+				commandsChannelId = null;
+			}
+
+			try
+			{
+				leaderboardsChannelId = reader.GetString(6);
+			}
+			catch (InvalidCastException)
+			{
+				leaderboardsChannelId = null;
+			}
+			
+			ret = new ServersQuerySchema.ServersTableData()
+			{
+				ServerID = serverId,
+				DiscordID = discordId,
+				Country = country,
+				VerifyChannelID = verifyChannelId,
+				VerifiedRoleID = verifiedRoleId,
+				CommandsChannelID = commandsChannelId,
+				LeaderboardsChannelID = leaderboardsChannelId
+			};
+		}
 
 		await tempConnection.CloseAsync();
 		await Log.WriteVerbose("GetServerByDiscordID", "Database connection closed.");
@@ -279,7 +335,7 @@ public class DBServers : DBConnectorBase
 	{
 		const string query = @"
 			INSERT INTO servers (serverId, discordid)
-				VALUES ($1), ($2)
+				VALUES ($1, $2)
 		";
 
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();

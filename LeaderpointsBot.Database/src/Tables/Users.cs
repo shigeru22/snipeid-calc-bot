@@ -428,7 +428,7 @@ public class DBUsers : DBConnectorBase
 	{
 		const string query = @"
 			INSERT INTO users (discordid, osuid, username, country)
-				VALUES ($1), ($2), ($3), ($4)
+				VALUES ($1, $2, $3, $4)
 		";
 
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
@@ -466,7 +466,7 @@ public class DBUsers : DBConnectorBase
 	{
 		const string query = @"
 			INSERT INTO users (userid, discordid, osuid, username, country)
-				VALUES ($1), ($2), ($3), ($4), ($5)
+				VALUES ($1, $2, $3, $4, $5)
 		";
 
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
