@@ -1,6 +1,11 @@
 namespace LeaderpointsBot.Client.Structures;
 
-public class Common
+public static class Common
 {
-	
+	public enum ResponseMessageType
+	{
+		ERROR,
+		TEXT,
+		EMBED
+	}
 }

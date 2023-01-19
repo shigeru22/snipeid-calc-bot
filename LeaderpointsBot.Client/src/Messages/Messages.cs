@@ -1,14 +1,18 @@
 using System.Reflection;
-using System.Text.RegularExpressions;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using LeaderpointsBot.Client.Commands;
+using LeaderpointsBot.Client.Exceptions.Commands;
+using LeaderpointsBot.Client.Structures;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client.Messages;
 
 public class MessagesFactory
 {
+	private const string BATHBOT_DISCORD_ID = "297073686916366336";
+
 	private readonly DiscordSocketClient client;
 	private readonly CommandService commandService;
 
@@ -50,8 +54,85 @@ public class MessagesFactory
 			return;
 		}
 
+		// determine if Bathbot's leaderboard count embed is received
+		if(msg.Author.Id.ToString().Equals(BATHBOT_DISCORD_ID))
+		{
+			await Log.WriteDebug("OnNewMessage", "Message is from Bathbot. Handling message.");
+			await HandleBathbotMessageAsync(userMsg);
+			return;
+		}
+
 		await Log.WriteDebug("OnNewMessage", "Message is from user and text-based channel. Handling command.");
 		await HandleCommandsAsync(userMsg);
+	}
+
+	private async Task HandleBathbotMessageAsync(SocketUserMessage msg)
+	{
+		Embed botEmbed;
+		try
+		{
+			await Log.WriteVerbose("HandleBathbotMessageAsync", "Fetching first embed from Bathbot message.");
+			botEmbed = msg.Embeds.First();
+		}
+		catch (Exception e)
+		{
+			await Log.WriteVerbose("HandleBathbotMessageAsync", "No embeds found from Bathbot message. Cancelling process.");
+			return;
+		}
+
+		// filter embed by title
+		if(string.IsNullOrWhiteSpace(botEmbed.Title) || !botEmbed.Title.StartsWith("In how many top X map leaderboards is"))
+		{
+			await Log.WriteVerbose("HandleBathbotMessageAsync", "Embed is not leaderboards count. Cancelling process.");
+			return;
+		}
+
+		if(msg.Channel is not SocketGuildChannel guildChannel)
+		{
+			// TODO: handle direct message response
+			await Log.WriteVerbose("HandleBathbotMessageAsync", "Direct messages method not yet implemented.");
+			return;
+		}
+
+		SocketCommandContext context = new(client, msg);
+		Structures.Commands.CountModule.UserLeaderboardsCountMessages[] responses;
+
+		try
+		{
+			await Log.WriteVerbose("HandleBathbotMessageAsync", "Calculating leaderboards count from first embed.");
+			responses = await CountModule.UserLeaderboardsCountBathbotAsync(client, guildChannel.Guild, msg.Embeds.First());
+		}
+		catch (SendMessageException e)
+		{
+			await Log.WriteVerbose("HandleBathbotMessageAsync", "Send message signal received. Sending message and cancelling process.");
+			await context.Channel.SendMessageAsync(e.IsError ? $"**Error:** { e.Draft }" : e.Draft);
+			return;
+		}
+		catch (Exception e)
+		{
+			await Log.WriteError("HandleBathbotMessageAsync", $"Unhandled client error occurred.{ (Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{ e }" : "") }");
+			await context.Channel.SendMessageAsync("**Error:** Unhandled client error occurred.");
+			return;
+		}
+
+		await Log.WriteVerbose("HandleBathbotMessageAsync", "Sending responses.");
+		foreach(Structures.Commands.CountModule.UserLeaderboardsCountMessages response in responses)
+		{
+			switch(response.MessageType)
+			{
+				case Common.ResponseMessageType.EMBED:
+					await context.Channel.SendMessageAsync(embed: response.GetEmbed());
+					break;
+				case Common.ResponseMessageType.TEXT:
+					await context.Channel.SendMessageAsync(response.GetString());
+					break;
+				case Common.ResponseMessageType.ERROR:
+					await context.Channel.SendMessageAsync($"**Error:** { response.GetString() }");
+					break;
+				default:
+					continue;
+			}
+		}
 	}
 
 	private async Task HandleCommandsAsync(SocketUserMessage msg)
