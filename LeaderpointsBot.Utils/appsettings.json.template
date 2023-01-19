@@ -1,6 +1,6 @@
 {
 	"client": {
-    	"botToken": "A1b2c3D4.e5F6...",
+		"botToken": "A1b2c3D4.e5F6...",
 		"useReply": false,
 		"logging": {
 			"useUtc": false,
