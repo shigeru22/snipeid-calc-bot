@@ -44,7 +44,7 @@ public static class InteractionModules
 				osuUsername = (string)cmd.Data.Options.First().Value;
 				await Log.WriteInfo("CountPointsCommand", $"Calculating points for osu! user { osuUsername }.");
 			}
-			catch (InvalidOperationException e)
+			catch (InvalidOperationException)
 			{
 				await Log.WriteDebug("CountPointsCommand", $"cmd.Data.Options.First() contains no element. Calculating user's points instead.");
 				await Log.WriteInfo("CountPointsCommand", $"Calculating points for { cmd.User.Username }#{ cmd.User.Discriminator }.");
@@ -174,7 +174,7 @@ public static class InteractionModules
 					countryCode = (string)cmd.Data.Options.First().Options.First().Options.First().Value;
 					await Log.WriteInfo("SetServerCountryCommand", $"Setting server country restriction to { countryCode } (guild ID { guildChannel.Guild.Id }).");
 				}
-				catch (InvalidOperationException e)
+				catch (InvalidOperationException)
 				{
 					await Log.WriteDebug("SetServerCountryCommand", $"cmd.Data.Options.First() contains no element. Disabling server country restriction.");
 					await Log.WriteInfo("SetServerCountryCommand", $"Disabling server country restriction (guild ID { guildChannel.Guild.Id }).");
@@ -204,7 +204,7 @@ public static class InteractionModules
 					role = (SocketRole)cmd.Data.Options.First().Options.First().Options.First().Value;
 					await Log.WriteInfo("SetServerVerifiedRoleCommand", $"Setting verified user role to { role.Id } (guild ID { guildChannel.Guild.Id }).");
 				}
-				catch (InvalidOperationException e)
+				catch (InvalidOperationException)
 				{
 					await Log.WriteDebug("SetServerVerifiedRoleCommand", $"cmd.Data.Options.First() contains no element. Disabling verified user role.");
 					await Log.WriteInfo("SetServerVerifiedRoleCommand", $"Disabling verified user role (guild ID { guildChannel.Guild.Id }).");
@@ -234,7 +234,7 @@ public static class InteractionModules
 					channel = (SocketChannel)cmd.Data.Options.First().Options.First().Options.First().Value;
 					await Log.WriteInfo("SetServerCommandsChannelCommand", $"Setting commands channel to { channel.Id } (guild ID { guildChannel.Guild.Id }).");
 				}
-				catch (InvalidOperationException e)
+				catch (InvalidOperationException)
 				{
 					await Log.WriteDebug("SetServerCommandsChannelCommand", $"cmd.Data.Options.First() contains no element. Disabling command channel restriction.");
 					await Log.WriteInfo("SetServerCommandsChannelCommand", $"Disabling command channel restriction (guild ID { guildChannel.Guild.Id }).");
@@ -264,7 +264,7 @@ public static class InteractionModules
 					channel = (SocketChannel)cmd.Data.Options.First().Options.First().Options.First().Value;
 					await Log.WriteInfo("SetServerLeaderboardsChannelCommand", $"Setting leaderboard commands channel to { channel.Id } (guild ID { guildChannel.Guild.Id }).");
 				}
-				catch (InvalidOperationException e)
+				catch (InvalidOperationException)
 				{
 					await Log.WriteDebug("SetServerLeaderboardsChannelCommand", $"cmd.Data.Options.First() contains no element. Disabling leaderboards command channel restriction.");
 					await Log.WriteInfo("SetServerLeaderboardsChannelCommand", $"Disabling leaderboard commands channel restriction (guild ID { guildChannel.Guild.Id }).");

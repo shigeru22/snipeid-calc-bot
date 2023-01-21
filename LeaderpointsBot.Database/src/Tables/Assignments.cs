@@ -478,8 +478,6 @@ public class DBAssignments : DBConnectorBase
 
 	public async Task InsertAssignment(int serverId, int userId, int roleId)
 	{
-		// TODO: [2023-01-19] update positional parameters for all table classes
-
 		const string query = @"
 			INSERT INTO assignments (userid, roleid, serverid)
 				VALUES ($1, $2, $3)

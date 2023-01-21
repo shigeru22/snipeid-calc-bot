@@ -1,5 +1,4 @@
 using LeaderpointsBot.Api;
-using LeaderpointsBot.Api.OsuStats;
 using LeaderpointsBot.Database;
 using LeaderpointsBot.Utils;
 

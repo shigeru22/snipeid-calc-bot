@@ -299,7 +299,7 @@ public class DBUsers : DBConnectorBase
 
 		while(await reader.ReadAsync())
 		{
-			ret.Add(new UsersQuerySchema.UsersLeaderboardData
+			ret.Add(new UsersQuerySchema.UsersLeaderboardData()
 			{
 				UserID = reader.GetInt32(0),
 				Username = reader.GetString(1),
@@ -359,7 +359,7 @@ public class DBUsers : DBConnectorBase
 
 		while(await reader.ReadAsync())
 		{
-			ret.Add(new UsersQuerySchema.UsersLeaderboardData
+			ret.Add(new UsersQuerySchema.UsersLeaderboardData()
 			{
 				UserID = reader.GetInt32(0),
 				Username = reader.GetString(1),

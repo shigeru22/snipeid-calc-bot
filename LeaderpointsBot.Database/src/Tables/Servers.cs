@@ -97,7 +97,7 @@ public class DBServers : DBConnectorBase
 
 		while(await reader.ReadAsync())
 		{
-			ret.Add(new ServersQuerySchema.ServersTableData
+			ret.Add(new ServersQuerySchema.ServersTableData()
 			{
 				ServerID = reader.GetInt32(0),
 				DiscordID = reader.GetString(1),

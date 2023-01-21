@@ -6,7 +6,6 @@ using LeaderpointsBot.Client.Exceptions;
 using LeaderpointsBot.Client.Exceptions.Commands;
 using LeaderpointsBot.Client.Structures;
 using LeaderpointsBot.Utils;
-using LeaderpointsBot.Utils.Exceptions.Parser;
 
 namespace LeaderpointsBot.Client.Commands;
 
@@ -14,6 +13,11 @@ public static class CountModule
 {
 	public static async Task<Structures.Commands.CountModule.UserLeaderboardsCountMessages[]> UserLeaderboardsCountBathbotAsync(DiscordSocketClient client, SocketGuild guild, Embed topsCount)
 	{
+		if(!topsCount.Author.HasValue)
+		{
+			throw new ClientException("Invalid embed passed to method.");
+		}
+
 		string embedUsername = Parser.ParseUsernameFromBathbotEmbedTitle(topsCount.Title);
 		int embedOsuId = Parser.ParseOsuIDFromBathbotEmbedLink(topsCount.Author.Value.Url);
 		int[,] embedTopCounts; // assume non-respektive

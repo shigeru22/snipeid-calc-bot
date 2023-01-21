@@ -74,7 +74,7 @@ public class MessagesFactory
 			await Log.WriteVerbose("HandleBathbotMessageAsync", "Fetching first embed from Bathbot message.");
 			botEmbed = msg.Embeds.First();
 		}
-		catch (Exception e)
+		catch (Exception)
 		{
 			await Log.WriteVerbose("HandleBathbotMessageAsync", "No embeds found from Bathbot message. Cancelling process.");
 			return;
