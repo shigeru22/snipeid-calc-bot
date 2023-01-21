@@ -35,6 +35,7 @@ public class Settings
 		{
 			public int ClientID { get; set; }
 			public string ClientSecret { get; set; }
+			public bool UseRespektiveStats { get; set; }
 		}
 
 		public struct JsonSettings

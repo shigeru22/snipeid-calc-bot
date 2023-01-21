@@ -17,6 +17,7 @@
     },
     "osuApi": {
         "clientId": 1234,
-        "clientSecret": "a1b2c3d4e5..."
+        "clientSecret": "a1b2c3d4e5...",
+        "useRespektiveStats": false
     }
 }
