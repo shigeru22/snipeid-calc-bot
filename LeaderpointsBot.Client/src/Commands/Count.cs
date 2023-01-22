@@ -18,7 +18,7 @@ namespace LeaderpointsBot.Client.Commands;
 
 public static class CountModule
 {
-	public static async Task<Structures.Commands.CountModule.UserLeaderboardsCountMessages[]> UserLeaderboardsCountBathbotAsync(DiscordSocketClient client, SocketGuild guild, Embed topsCount)
+	public static async Task<Structures.Commands.CountModule.UserLeaderboardsCountMessages[]> UserLeaderboardsCountBathbotAsync(Embed topsCount, DiscordSocketClient client, SocketGuild guild)
 	{
 		if(!topsCount.Author.HasValue)
 		{
@@ -44,7 +44,16 @@ public static class CountModule
 
 		// Bathbot doesn't use respektive's API at the moment
 		int points = Counter.CalculateTopPoints(embedTopCounts);
-		Structures.Actions.Counter.UpdateUserDataMessages? updateMessages = await CounterActions.UpdateUserDataAsync(guild, embedOsuId, points);
+		Structures.Actions.Counter.UpdateUserDataMessages? updateMessages = null;
+
+		try
+		{
+			updateMessages = await CounterActions.UpdateUserDataAsync(guild, embedOsuId, points);
+		}
+		catch (SkipUpdateException)
+		{
+			await Log.WriteVerbose("UserLeaderboardsCountBathbotAsync", "No updateMessages set.");
+		}
 
 		List<Structures.Commands.CountModule.UserLeaderboardsCountMessages> responses = new()
 		{
@@ -52,21 +61,25 @@ public static class CountModule
 			{
 				MessageType = Common.ResponseMessageType.EMBED,
 				Contents = Counter.CreateCountEmbed(embedUsername, embedTopCounts)
-			},
-			new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
-			{
-				MessageType = Common.ResponseMessageType.TEXT,
-				Contents = updateMessages.Value.PointsMessage
 			}
 		};
 
-		if(!string.IsNullOrWhiteSpace(updateMessages.Value.RoleMessage))
+		if(updateMessages.HasValue)
 		{
 			responses.Add(new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
 			{
 				MessageType = Common.ResponseMessageType.TEXT,
-				Contents = updateMessages.Value.RoleMessage
+				Contents = updateMessages.Value.PointsMessage
 			});
+
+			if(!string.IsNullOrWhiteSpace(updateMessages.Value.RoleMessage))
+			{
+				responses.Add(new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
+				{
+					MessageType = Common.ResponseMessageType.TEXT,
+					Contents = updateMessages.Value.RoleMessage
+				});
+			}
 		}
 
 		return responses.ToArray();

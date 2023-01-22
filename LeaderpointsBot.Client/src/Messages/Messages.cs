@@ -100,7 +100,7 @@ public class MessagesFactory
 		try
 		{
 			await Log.WriteVerbose("HandleBathbotMessageAsync", "Calculating leaderboards count from first embed.");
-			responses = await CountModule.UserLeaderboardsCountBathbotAsync(client, guildChannel.Guild, msg.Embeds.First());
+			responses = await CountModule.UserLeaderboardsCountBathbotAsync(msg.Embeds.First(), client, guildChannel.Guild);
 		}
 		catch (SendMessageException e)
 		{
