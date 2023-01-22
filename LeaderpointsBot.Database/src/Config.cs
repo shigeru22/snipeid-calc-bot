@@ -18,4 +18,15 @@ public struct DatabaseConfig
     	DatabaseName = databaseName;
     	CAFilePath = caFilePath;
     }
+
+	public string ToConnectionString()
+	{
+		string connectionString = $"Host={ HostName };Port={ Port };Username={ Username };Password={ Password };Database={ DatabaseName }";
+		if(!string.IsNullOrEmpty(CAFilePath))
+		{
+			connectionString += $";SSL Certificate={ Path.GetFullPath(CAFilePath) }";
+		}
+
+		return connectionString;
+	}
 }

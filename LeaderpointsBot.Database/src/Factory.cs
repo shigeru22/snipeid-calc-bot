@@ -79,13 +79,7 @@ public class DatabaseFactory
 	{
 		Log.WriteVerbose("SetConfig", "Setting configuration based on config parameter.");
 
-		string connectionString = $"Host={ config.HostName };Port={ config.Port };Username={ config.Username };Password={ config.Password };Database={ config.DatabaseName }";
-		if(!string.IsNullOrEmpty(config.CAFilePath))
-		{
-			connectionString += $";SSL Certificate={ Path.GetFullPath(config.CAFilePath) }";
-		}
-
-		dataSource = NpgsqlDataSource.Create(connectionString);
+		dataSource = NpgsqlDataSource.Create(config.ToConnectionString());
 
 		Log.WriteVerbose("SetConfig", "Database data source created. Initializing per table instance.");
 
