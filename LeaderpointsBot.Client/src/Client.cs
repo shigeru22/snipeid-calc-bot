@@ -28,6 +28,7 @@ public class Client
 
 		client = new DiscordSocketClient(new DiscordSocketConfig()
 		{
+			UseInteractionSnowflakeDate = false,
 			GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMessages | GatewayIntents.MessageContent
 		});
 		this.botToken = botToken;
