@@ -48,7 +48,7 @@ public static class Date
 
 		if(deltaTime.Minute >= 1)
 		{
-			return $"{ deltaTime.Minute - 1 } month{ (deltaTime.Minute - 1 != 1 ? "s" : "") }";
+			return $"{ deltaTime.Minute - 1 } minute{ (deltaTime.Minute - 1 != 1 ? "s" : "") }";
 		}
 		
 		return $"{ deltaTime.Second - 1 } second{ (deltaTime.Second - 1 != 1 ? "s" : "") }";
