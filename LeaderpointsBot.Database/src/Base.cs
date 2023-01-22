@@ -2,7 +2,7 @@ using Npgsql;
 
 namespace LeaderpointsBot.Database;
 
-public class DBConnectorBase
+public abstract class DBConnectorBase
 {
 	protected readonly NpgsqlDataSource DataSource;
 
