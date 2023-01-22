@@ -1,4 +1,5 @@
 using Discord.WebSocket;
+using LeaderpointsBot.Client.Exceptions.Commands;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client.Interactions;
@@ -16,50 +17,83 @@ public class InteractionsFactory
 		Log.WriteVerbose("InteractionsFactory", "Instance client set with client parameter.");
 	}
 
-	public async Task OnInvokeSlashInteraction(SocketSlashCommand cmd)
+	public Task OnInvokeSlashInteraction(SocketSlashCommand cmd)
 	{
 		// await Log.WriteDebug("OnInvokeSlashInteraction", $"Slash interaction from { cmd.User.Username }#{ cmd.User.Discriminator }: { cmd.Data.Name } ({ cmd.Data.Id })");
 
-		SocketGuildChannel? guildChannel = cmd.Channel as SocketGuildChannel;
+		Task.Run(async () => {
+			try
+			{
+				SocketGuildChannel? guildChannel = cmd.Channel as SocketGuildChannel;
 
-		switch(cmd.Data.Name)
-		{
-			case "link":
-				// TODO: link user
-				await Log.WriteDebug("OnInvokeSlashInteraction", "Link user command received.");
-				await InteractionModules.LinkSlashModule.LinkUserCommand(client, cmd);
-				break;
-			case "ping":
-				// TODO: send ping
-				await Log.WriteDebug("OnInvokeSlashInteraction", $"Send ping command received{ (guildChannel != null ? $" (guild ID { guildChannel.Guild.Id })" : "") }.");
-				await InteractionModules.PingSlashModule.SendPingCommand(client, cmd);
-				break;
-			case "count":
-				// TODO: count points
-				await Log.WriteDebug("OnInvokeSlashInteraction", "Count points command received.");
-				await InteractionModules.CountSlashModule.CountPointsCommand(client, cmd);
-				break;
-			case "whatif":
-				// TODO: count what-if points
-				await Log.WriteDebug("OnInvokeSlashInteraction", "Count what-if points command received.");
-				await InteractionModules.CountSlashModule.WhatIfPointsCommand(client, cmd);
-				break;
-			case "serverleaderboard":
-				// TODO: send server leaderboard
-				await Log.WriteDebug("OnInvokeSlashInteraction", "Get server leaderboard command received.");
-				await InteractionModules.LeaderboardSlashModule.SendServerLeaderboardCommand(client, cmd);
-				break;
-			case "config":
-				// TODO: configure server settings
-				await Log.WriteDebug("OnInvokeSlashInteraction", "Server configuration command received. Handling subcommand.");
-				await HandleConfigurationSlashCommand(cmd);
-				break;
-			case "help":
-				// TODO: send help message
-				await Log.WriteDebug("OnInvokeSlashInteraction", "Send help message command received.");
-				await InteractionModules.HelpModule.SendHelpCommand(client, cmd);
-				break;
-		}
+				switch(cmd.Data.Name)
+				{
+					case "link":
+						// TODO: link user
+						await Log.WriteDebug("OnInvokeSlashInteraction", "Link user command received.");
+						await InteractionModules.LinkSlashModule.LinkUserCommand(client, cmd);
+						break;
+					case "ping":
+						// TODO: send ping
+						await Log.WriteDebug("OnInvokeSlashInteraction", $"Send ping command received{ (guildChannel != null ? $" (guild ID { guildChannel.Guild.Id })" : "") }.");
+						await InteractionModules.PingSlashModule.SendPingCommand(client, cmd);
+						break;
+					case "count":
+						// TODO: count points
+						await Log.WriteDebug("OnInvokeSlashInteraction", "Count points command received.");
+						await InteractionModules.CountSlashModule.CountPointsCommand(client, cmd);
+						break;
+					case "whatif":
+						// TODO: count what-if points
+						await Log.WriteDebug("OnInvokeSlashInteraction", "Count what-if points command received.");
+						await InteractionModules.CountSlashModule.WhatIfPointsCommand(client, cmd);
+						break;
+					case "serverleaderboard":
+						// TODO: send server leaderboard
+						await Log.WriteDebug("OnInvokeSlashInteraction", "Get server leaderboard command received.");
+						await InteractionModules.LeaderboardSlashModule.SendServerLeaderboardCommand(client, cmd);
+						break;
+					case "config":
+						// TODO: configure server settings
+						await Log.WriteDebug("OnInvokeSlashInteraction", "Server configuration command received. Handling subcommand.");
+						await HandleConfigurationSlashCommand(cmd);
+						break;
+					case "help":
+						// TODO: send help message
+						await Log.WriteDebug("OnInvokeSlashInteraction", "Send help message command received.");
+						await InteractionModules.HelpModule.SendHelpCommand(client, cmd);
+						break;
+				}
+			}
+			catch (SendMessageException e)
+			{
+				await Log.WriteVerbose("OnInvokeSlashInteraction", "Send message signal received. Sending message and cancelling process.");
+
+				if(cmd.HasResponded)
+				{
+					await cmd.ModifyOriginalResponseAsync(msg => msg.Content = e.IsError ? $"**Error:** { e.Draft }" : e.Draft);
+				}
+				else
+				{
+					await cmd.RespondAsync(e.IsError ? $"**Error:** { e.Draft }" : e.Draft);
+				}
+			}
+			catch (Exception e)
+			{
+				await Log.WriteError("OnInvokeSlashInteraction", $"Unhandled client error occurred.{ (Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{ e }" : "") }");
+
+				if(cmd.HasResponded)
+				{
+					await cmd.ModifyOriginalResponseAsync(msg => msg.Content = "**Error:** Unhandled client error occurred.");
+				}
+				else
+				{
+					await cmd.RespondAsync("**Error:** Unhandled client error occurred.");
+				}
+			}
+		});
+
+		return Task.CompletedTask;
 	}
 
 	public async Task OnInvokeUserContextInteraction(SocketUserCommand cmd)

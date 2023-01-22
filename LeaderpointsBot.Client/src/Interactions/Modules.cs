@@ -1,6 +1,8 @@
 using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
 using LeaderpointsBot.Client.Commands;
+using LeaderpointsBot.Client.Structures;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client.Interactions;
@@ -38,7 +40,7 @@ public static class InteractionModules
 		public static async Task CountPointsCommand(DiscordSocketClient client, SocketSlashCommand cmd)
 		{
 			string? osuUsername = null;
-			
+
 			try
 			{
 				osuUsername = (string)cmd.Data.Options.First().Value;
@@ -57,6 +59,75 @@ public static class InteractionModules
 			}
 
 			await cmd.DeferAsync();
+
+			SocketGuildChannel? guildChannel = cmd.Channel as SocketGuildChannel;
+			Structures.Commands.CountModule.UserLeaderboardsCountMessages[] responses;
+
+			if(guildChannel != null)
+			{
+				if(!string.IsNullOrWhiteSpace(osuUsername))
+				{
+					responses = await Commands.CountModule.CountLeaderboardPointsByOsuUsernameAsync(osuUsername, guildChannel.Guild);
+				}
+				else
+				{
+					responses = await Commands.CountModule.CountLeaderboardPointsByDiscordUserAsync(cmd.User.Id.ToString(), client.CurrentUser.Id.ToString(), guildChannel.Guild);
+				}
+			}
+			else
+			{
+				await Log.WriteInfo("CountPointsCommand", "Command invoked from direct message. This will ignore update actions.");
+
+				if(!string.IsNullOrWhiteSpace(osuUsername))
+				{
+					responses = await Commands.CountModule.CountLeaderboardPointsByOsuUsernameAsync(osuUsername);
+				}
+				else
+				{
+					responses = await Commands.CountModule.CountLeaderboardPointsByDiscordUserAsync(cmd.User.Id.ToString(), client.CurrentUser.Id.ToString());
+				}
+			}
+
+			RestInteractionMessage? replyMsg = null;
+			foreach(Structures.Commands.CountModule.UserLeaderboardsCountMessages response in responses)
+			{
+				if(response.MessageType == Common.ResponseMessageType.EMBED)
+				{
+					if(replyMsg == null)
+					{
+						replyMsg = await cmd.ModifyOriginalResponseAsync(msg => {
+							msg.Content = "";
+							msg.Embed = response.GetEmbed();
+						});
+					}
+					else
+					{
+						await replyMsg.Channel.SendMessageAsync(embed: response.GetEmbed());
+					}
+				}
+				else if(response.MessageType == Common.ResponseMessageType.TEXT)
+				{
+					if(replyMsg == null)
+					{
+						replyMsg = await cmd.ModifyOriginalResponseAsync(msg => msg.Content = response.GetString());
+					}
+					else
+					{
+						await replyMsg.Channel.SendMessageAsync(response.GetString());
+					}
+				}
+				else if(response.MessageType == Common.ResponseMessageType.ERROR)
+				{
+					if(replyMsg == null)
+					{
+						replyMsg = await cmd.ModifyOriginalResponseAsync(msg => msg.Content = $"**Error:** { response.GetString() }");
+					}
+					else
+					{
+						await replyMsg.Channel.SendMessageAsync(response.GetString());
+					}
+				}
+			}
 		}
 
 		// /whatif [pointsargs]

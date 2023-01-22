@@ -3,6 +3,7 @@ using Discord.WebSocket;
 using LeaderpointsBot.Api;
 using LeaderpointsBot.Api.Exceptions;
 using LeaderpointsBot.Api.Osu;
+using LeaderpointsBot.Client.Exceptions.Actions;
 using LeaderpointsBot.Client.Exceptions.Commands;
 using LeaderpointsBot.Client.Structures.Actions;
 using LeaderpointsBot.Database;
@@ -69,6 +70,10 @@ public static class CounterActions
 		try
 		{
 			assignmentResult = await UserData.InsertOrUpdateAssignment(guild.Id.ToString(), osuId, osuUser.Username, osuUser.CountryCode, points);
+		}
+		catch (SkipUpdateException)
+		{
+			throw;
 		}
 		catch (Exception)
 		{

@@ -3,6 +3,7 @@ using LeaderpointsBot.Database;
 using LeaderpointsBot.Database.Schemas;
 using LeaderpointsBot.Database.Exceptions;
 using LeaderpointsBot.Utils;
+using LeaderpointsBot.Client.Exceptions.Actions;
 
 namespace LeaderpointsBot.Client.Actions;
 
@@ -41,7 +42,7 @@ public static class UserData
 		catch (DataNotFoundException)
 		{
 			await Log.WriteVerbose("InsertOrUpdateAssignment", $"User with osu! ID { osuId } not found in database. Skipping data update.");
-			throw new SendMessageException();
+			throw new SkipUpdateException();
 		}
 		catch (Exception)
 		{

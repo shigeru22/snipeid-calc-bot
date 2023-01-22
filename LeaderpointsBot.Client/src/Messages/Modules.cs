@@ -2,6 +2,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using LeaderpointsBot.Client.Commands;
+using LeaderpointsBot.Client.Structures;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client.Messages;
@@ -49,6 +50,47 @@ public static class MessageModules
 		public async Task CountPointsCommand()
 		{
 			await Log.WriteInfo("CountPointsCommand", $"Calculating points for { Context.User.Username }#{ Context.User.Discriminator }.");
+
+			await Context.Channel.TriggerTypingAsync();
+
+			Structures.Commands.CountModule.UserLeaderboardsCountMessages[] responses = await Commands.CountModule.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString(), Context.Guild);
+
+			foreach(Structures.Commands.CountModule.UserLeaderboardsCountMessages response in responses)
+			{
+				if(response.MessageType == Common.ResponseMessageType.EMBED)
+				{
+					if(Settings.Instance.Client.UseReply)
+					{
+						await Context.Message.ReplyAsync(embed: response.GetEmbed());
+					}
+					else
+					{
+						await Context.Channel.SendMessageAsync(embed: response.GetEmbed());
+					}
+				}
+				else if(response.MessageType == Common.ResponseMessageType.TEXT)
+				{
+					if(Settings.Instance.Client.UseReply)
+					{
+						await Context.Message.ReplyAsync(response.GetString());
+					}
+					else
+					{
+						await Context.Channel.SendMessageAsync(response.GetString());
+					}
+				}
+				else if(response.MessageType == Common.ResponseMessageType.ERROR)
+				{
+					if(Settings.Instance.Client.UseReply)
+					{
+						await Context.Message.ReplyAsync($"**Error:** { response.GetString() }");
+					}
+					else
+					{
+						await Context.Channel.SendMessageAsync($"**Error:** { response.GetString() }");
+					}
+				}
+			}
 		}
 
 		// @bot count [osu! username]
@@ -57,6 +99,47 @@ public static class MessageModules
 		public async Task CountPointsCommand([Summary("osu! username.")] string osuUsername)
 		{
 			await Log.WriteInfo("CountPointsCommand", $"Calculating points for osu! user { osuUsername }.");
+
+			await Context.Channel.TriggerTypingAsync();
+
+			Structures.Commands.CountModule.UserLeaderboardsCountMessages[] responses = await Commands.CountModule.CountLeaderboardPointsByOsuUsernameAsync(osuUsername);
+
+			foreach(Structures.Commands.CountModule.UserLeaderboardsCountMessages response in responses)
+			{
+				if(response.MessageType == Common.ResponseMessageType.EMBED)
+				{
+					if(Settings.Instance.Client.UseReply)
+					{
+						await Context.Message.ReplyAsync(embed: response.GetEmbed());
+					}
+					else
+					{
+						await Context.Channel.SendMessageAsync(embed: response.GetEmbed());
+					}
+				}
+				else if(response.MessageType == Common.ResponseMessageType.TEXT)
+				{
+					if(Settings.Instance.Client.UseReply)
+					{
+						await Context.Message.ReplyAsync(response.GetString());
+					}
+					else
+					{
+						await Context.Channel.SendMessageAsync(response.GetString());
+					}
+				}
+				else if(response.MessageType == Common.ResponseMessageType.ERROR)
+				{
+					if(Settings.Instance.Client.UseReply)
+					{
+						await Context.Message.ReplyAsync($"**Error:** { response.GetString() }");
+					}
+					else
+					{
+						await Context.Channel.SendMessageAsync($"**Error:** { response.GetString() }");
+					}
+				}
+			}
 		}
 
 		// @bot whatif [what-if arguments, comma-delimited]
