@@ -44,7 +44,7 @@ public static class CountModule
 
 		// Bathbot doesn't use respektive's API at the moment
 		int points = Counter.CalculateTopPoints(embedTopCounts);
-		Structures.Actions.Counter.UpdateUserDataMessages updateMessages = await CounterActions.UpdateUserDataAsync(guild, embedOsuId, points);
+		Structures.Actions.Counter.UpdateUserDataMessages? updateMessages = await CounterActions.UpdateUserDataAsync(guild, embedOsuId, points);
 
 		List<Structures.Commands.CountModule.UserLeaderboardsCountMessages> responses = new()
 		{
@@ -56,16 +56,16 @@ public static class CountModule
 			new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
 			{
 				MessageType = Common.ResponseMessageType.TEXT,
-				Contents = updateMessages.PointsMessage
+				Contents = updateMessages.Value.PointsMessage
 			}
 		};
 
-		if(!string.IsNullOrWhiteSpace(updateMessages.RoleMessage))
+		if(!string.IsNullOrWhiteSpace(updateMessages.Value.RoleMessage))
 		{
 			responses.Add(new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
 			{
 				MessageType = Common.ResponseMessageType.TEXT,
-				Contents = updateMessages.RoleMessage
+				Contents = updateMessages.Value.RoleMessage
 			});
 		}
 

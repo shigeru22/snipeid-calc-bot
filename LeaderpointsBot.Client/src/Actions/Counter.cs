@@ -14,7 +14,7 @@ namespace LeaderpointsBot.Client.Actions;
 
 public static class CounterActions
 {
-	public static async Task<Counter.UpdateUserDataMessages> UpdateUserDataAsync(SocketGuild guild, int osuId, int points)
+	public static async Task<Counter.UpdateUserDataMessages?> UpdateUserDataAsync(SocketGuild guild, int osuId, int points)
 	{
 		OsuDataTypes.OsuApiUserResponseData osuUser;
 		Structures.Actions.UserData.AssignmentResult assignmentResult;
@@ -73,7 +73,8 @@ public static class CounterActions
 		}
 		catch (SkipUpdateException)
 		{
-			throw;
+			await Log.WriteVerbose("UpdateUserDataAsync", "Data update skipped. Returning update messages as null.");
+			return null;
 		}
 		catch (Exception)
 		{
