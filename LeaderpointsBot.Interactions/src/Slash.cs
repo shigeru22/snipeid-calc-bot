@@ -1,3 +1,6 @@
+// Copyright (c) shigeru22, concept by Akshiro28.
+// Licensed under the MIT license. See LICENSE in the repository root for details.
+
 using Discord;
 using Discord.WebSocket;
 using LeaderpointsBot.Utils;
@@ -55,16 +58,17 @@ public static class SlashCommandsFactory
 		await Log.WriteVerbose("CreateSlashCommands", "Iterating slash commands array.");
 
 		int slashCommandsCount = SlashCommands.Length;
-		for(int i = 0; i < slashCommandsCount; i++)
+		for (int i = 0; i < slashCommandsCount; i++)
 		{
-			await Log.WriteInfo("CreateSlashCommands", $"Creating slash commands ({ i + 1 }/{ slashCommandsCount })...");
+			await Log.WriteInfo("CreateSlashCommands", $"Creating slash commands ({i + 1}/{slashCommandsCount})...");
 
-			await Log.WriteVerbose("CreateSlashCommands", $"Creating command (index { i }) on client.");
+			await Log.WriteVerbose("CreateSlashCommands", $"Creating command (index {i}) on client.");
 			await client.CreateGlobalApplicationCommandAsync(SlashCommands[i].Build());
 
-			if(i < slashCommandsCount - 1)
+			if (i < slashCommandsCount - 1)
 			{
-				if(Settings.Instance.Client.Logging.LogSeverity < 4) // logging level below debug
+				// logging level is not verbose or debug
+				if (Settings.Instance.Client.Logging.LogSeverity < 4)
 				{
 					await Log.DeletePreviousLine();
 				}

@@ -1,10 +1,13 @@
+// Copyright (c) shigeru22, concept by Akshiro28.
+// Licensed under the MIT license. See LICENSE in the repository root for details.
+
 // ReSharper disable InconsistentlySynchronizedField
 
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using LeaderpointsBot.Client.Messages;
 using LeaderpointsBot.Client.Interactions;
+using LeaderpointsBot.Client.Messages;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client;
@@ -16,8 +19,8 @@ public class Client
 
 	private readonly string botToken;
 
-	private readonly object exitMutex = new();
-	private readonly CancellationTokenSource delayToken = new();
+	private readonly object exitMutex = new object();
+	private readonly CancellationTokenSource delayToken = new CancellationTokenSource();
 
 	private readonly MessagesFactory messagesFactory;
 	private readonly InteractionsFactory interactionsFactory;

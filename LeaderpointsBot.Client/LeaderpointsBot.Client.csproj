@@ -10,12 +10,24 @@
 
 	<ItemGroup>
 		<PackageReference Include="Discord.Net" Version="3.9.0" />
+		<PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		  <PrivateAssets>all</PrivateAssets>
+		</PackageReference>
 	</ItemGroup>
 
   	<ItemGroup>
 		<ProjectReference Include="..\LeaderpointsBot.Utils\LeaderpointsBot.Utils.csproj" />
 		<ProjectReference Include="..\LeaderpointsBot.Database\LeaderpointsBot.Database.csproj" />
 		<ProjectReference Include="..\LeaderpointsBot.Api\LeaderpointsBot.Api.csproj" />
+	</ItemGroup>
+
+	<PropertyGroup>
+		<CodeAnalysisRuleSet>..\.stylecop.ruleset</CodeAnalysisRuleSet>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<AdditionalFiles Include="..\.stylecop.json"></AdditionalFiles>
 	</ItemGroup>
 
 </Project>

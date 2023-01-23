@@ -1,8 +1,11 @@
+// Copyright (c) shigeru22, concept by Akshiro28.
+// Licensed under the MIT license. See LICENSE in the repository root for details.
+
 using System.Data;
-using Npgsql;
-using LeaderpointsBot.Database.Schemas;
 using LeaderpointsBot.Database.Exceptions;
+using LeaderpointsBot.Database.Schemas;
 using LeaderpointsBot.Utils;
+using Npgsql;
 
 namespace LeaderpointsBot.Database.Tables;
 
@@ -31,15 +34,15 @@ public class DBUsers : DBConnectorBase
 		await using NpgsqlCommand command = DataSource.CreateCommand(query);
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
 
-		if(!reader.HasRows)
+		if (!reader.HasRows)
 		{
 			await Log.WriteInfo("GetUsers", "users: Returned 0 rows.");
 			return Array.Empty<UsersQuerySchema.UsersTableData>();
 		}
 
-		List<UsersQuerySchema.UsersTableData> ret = new();
+		List<UsersQuerySchema.UsersTableData> ret = new List<UsersQuerySchema.UsersTableData>();
 
-		while(await reader.ReadAsync())
+		while (await reader.ReadAsync())
 		{
 			ret.Add(new UsersQuerySchema.UsersTableData()
 			{
@@ -53,7 +56,7 @@ public class DBUsers : DBConnectorBase
 			});
 		}
 
-		await Log.WriteInfo("GetUsers", $"users: Returned { reader.Rows } row{ (reader.Rows != 1 ? "s" : "") }.");
+		await Log.WriteInfo("GetUsers", $"users: Returned {reader.Rows} row{(reader.Rows != 1 ? "s" : string.Empty)}.");
 		return ret.ToArray();
 	}
 
@@ -79,15 +82,16 @@ public class DBUsers : DBConnectorBase
 
 		await Log.WriteVerbose("GetUserByUserID", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
-			Parameters = {
+			Parameters =
+			{
 				new NpgsqlParameter() { Value = userId }
 			}
 		};
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
 
-		if(!reader.HasRows)
+		if (!reader.HasRows)
 		{
 			await reader.CloseAsync();
 			await Log.WriteVerbose("GetUserByUserID", "Database connection closed.");
@@ -95,17 +99,17 @@ public class DBUsers : DBConnectorBase
 			throw new DataNotFoundException();
 		}
 
-		if(reader.Rows > 1)
+		if (reader.Rows > 1)
 		{
 			await reader.CloseAsync();
 			await Log.WriteVerbose("GetUserByUserID", "Database connection closed.");
-			await Log.WriteInfo("GetUserByUserID", $"users: Returned { reader.Rows } rows. Throwing duplicate record exception.");
+			await Log.WriteInfo("GetUserByUserID", $"users: Returned {reader.Rows} rows. Throwing duplicate record exception.");
 			throw new DuplicateRecordException("users", "osuid");
 		}
 
 		await reader.ReadAsync();
 
-		UsersQuerySchema.UsersTableData ret = new()
+		UsersQuerySchema.UsersTableData ret = new UsersQuerySchema.UsersTableData()
 		{
 			UserID = reader.GetInt32(0),
 			DiscordID = reader.GetString(1),
@@ -145,15 +149,16 @@ public class DBUsers : DBConnectorBase
 
 		await Log.WriteVerbose("GetUserByOsuID", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
-			Parameters = {
+			Parameters =
+			{
 				new NpgsqlParameter() { Value = osuId }
 			}
 		};
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
 
-		if(!reader.HasRows)
+		if (!reader.HasRows)
 		{
 			await tempConnection.CloseAsync();
 			await Log.WriteVerbose("GetUserByOsuID", "Database connection closed.");
@@ -161,17 +166,17 @@ public class DBUsers : DBConnectorBase
 			throw new DataNotFoundException();
 		}
 
-		if(reader.Rows > 1)
+		if (reader.Rows > 1)
 		{
 			await tempConnection.CloseAsync();
 			await Log.WriteVerbose("GetUserByOsuID", "Database connection closed.");
-			await Log.WriteInfo("GetUserByOsuID", $"users: Returned { reader.Rows } rows. Throwing duplicate record exception.");
+			await Log.WriteInfo("GetUserByOsuID", $"users: Returned {reader.Rows} rows. Throwing duplicate record exception.");
 			throw new DuplicateRecordException("users", "osuid");
 		}
 
 		await reader.ReadAsync();
 
-		UsersQuerySchema.UsersTableData ret = new()
+		UsersQuerySchema.UsersTableData ret = new UsersQuerySchema.UsersTableData()
 		{
 			UserID = reader.GetInt32(0),
 			DiscordID = reader.GetString(1),
@@ -211,15 +216,16 @@ public class DBUsers : DBConnectorBase
 
 		await Log.WriteVerbose("GetUserByDiscordID", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
-			Parameters = {
+			Parameters =
+			{
 				new NpgsqlParameter() { Value = userDiscordId }
 			}
 		};
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
 
-		if(!reader.HasRows)
+		if (!reader.HasRows)
 		{
 			await tempConnection.CloseAsync();
 			await Log.WriteVerbose("GetUserByDiscordID", "Database connection closed.");
@@ -227,17 +233,17 @@ public class DBUsers : DBConnectorBase
 			throw new DataNotFoundException();
 		}
 
-		if(reader.Rows > 1)
+		if (reader.Rows > 1)
 		{
 			await tempConnection.CloseAsync();
 			await Log.WriteVerbose("GetUserByDiscordID", "Database connection closed.");
-			await Log.WriteInfo("GetUserByDiscordID", $"users: Returned { reader.Rows } rows. Throwing duplicate record exception.");
+			await Log.WriteInfo("GetUserByDiscordID", $"users: Returned {reader.Rows} rows. Throwing duplicate record exception.");
 			throw new DuplicateRecordException("users", "discordid");
 		}
 
 		await reader.ReadAsync();
 
-		UsersQuerySchema.UsersTableData ret = new()
+		UsersQuerySchema.UsersTableData ret = new UsersQuerySchema.UsersTableData()
 		{
 			UserID = reader.GetInt32(0),
 			DiscordID = reader.GetString(1),
@@ -271,7 +277,7 @@ public class DBUsers : DBConnectorBase
 			WHERE
 				servers.""discordid"" = ($1)
 			ORDER BY
-				users.""points"" { (descending ? "DESC" : "") }
+				users.""points"" {(descending ? "DESC" : string.Empty)}
 		";
 
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
@@ -279,15 +285,16 @@ public class DBUsers : DBConnectorBase
 
 		await Log.WriteVerbose("GetServerPointsLeaderboard", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
-			Parameters = {
+			Parameters =
+			{
 				new NpgsqlParameter() { Value = guildDiscordId }
 			}
 		};
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
 
-		if(!reader.HasRows)
+		if (!reader.HasRows)
 		{
 			await reader.CloseAsync();
 			await Log.WriteVerbose("GetServerPointsLeaderboard", "Database connection closed.");
@@ -295,9 +302,9 @@ public class DBUsers : DBConnectorBase
 			return Array.Empty<UsersQuerySchema.UsersLeaderboardData>();
 		}
 
-		List<UsersQuerySchema.UsersLeaderboardData> ret = new();
+		List<UsersQuerySchema.UsersLeaderboardData> ret = new List<UsersQuerySchema.UsersLeaderboardData>();
 
-		while(await reader.ReadAsync())
+		while (await reader.ReadAsync())
 		{
 			ret.Add(new UsersQuerySchema.UsersLeaderboardData()
 			{
@@ -310,7 +317,7 @@ public class DBUsers : DBConnectorBase
 		await reader.CloseAsync();
 		await Log.WriteVerbose("GetServerPointsLeaderboard", "Database connection closed.");
 
-		await Log.WriteInfo("GetServerPointsLeaderboard", $"users: Returned { reader.Rows } row{ (reader.Rows != 1 ? "s" : "") }.");
+		await Log.WriteInfo("GetServerPointsLeaderboard", $"users: Returned {reader.Rows} row{(reader.Rows != 1 ? "s" : string.Empty)}.");
 		return ret.ToArray();
 	}
 
@@ -330,7 +337,7 @@ public class DBUsers : DBConnectorBase
 			WHERE
 				servers.""discordid"" = ($1) AND users.""country"" = ($2)
 			ORDER BY
-				users.""points"" { (descending ? "DESC" : "") }
+				users.""points"" {(descending ? "DESC" : string.Empty)}
 		";
 
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
@@ -338,16 +345,17 @@ public class DBUsers : DBConnectorBase
 
 		await Log.WriteVerbose("GetServerPointsLeaderboardByCountry", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
-			Parameters = {
+			Parameters =
+			{
 				new NpgsqlParameter() { Value = guildDiscordId },
 				new NpgsqlParameter() { Value = countryCode }
 			}
 		};
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
 
-		if(!reader.HasRows)
+		if (!reader.HasRows)
 		{
 			await reader.CloseAsync();
 			await Log.WriteVerbose("GetServerPointsLeaderboardByCountry", "Database connection closed.");
@@ -355,9 +363,9 @@ public class DBUsers : DBConnectorBase
 			return Array.Empty<UsersQuerySchema.UsersLeaderboardData>();
 		}
 
-		List<UsersQuerySchema.UsersLeaderboardData> ret = new();
+		List<UsersQuerySchema.UsersLeaderboardData> ret = new List<UsersQuerySchema.UsersLeaderboardData>();
 
-		while(await reader.ReadAsync())
+		while (await reader.ReadAsync())
 		{
 			ret.Add(new UsersQuerySchema.UsersLeaderboardData()
 			{
@@ -370,7 +378,7 @@ public class DBUsers : DBConnectorBase
 		await reader.CloseAsync();
 		await Log.WriteVerbose("GetServerPointsLeaderboardByCountry", "Database connection closed.");
 
-		await Log.WriteInfo("GetServerPointsLeaderboardByCountry", $"users: Returned { reader.Rows } row{ (reader.Rows != 1 ? "s" : "") }.");
+		await Log.WriteInfo("GetServerPointsLeaderboardByCountry", $"users: Returned {reader.Rows} row{(reader.Rows != 1 ? "s" : string.Empty)}.");
 		return ret.ToArray();
 	}
 
@@ -397,15 +405,16 @@ public class DBUsers : DBConnectorBase
 
 		await Log.WriteVerbose("GetServerLastPointUpdate", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
-			Parameters = {
+			Parameters =
+			{
 				new NpgsqlParameter() { Value = guildDiscordId }
 			}
 		};
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
 
-		if(!reader.HasRows)
+		if (!reader.HasRows)
 		{
 			await tempConnection.CloseAsync();
 			await Log.WriteVerbose("GetServerLastPointUpdate", "Database connection closed.");
@@ -436,9 +445,10 @@ public class DBUsers : DBConnectorBase
 
 		await Log.WriteVerbose("InsertUser", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
-			Parameters = {
+			Parameters =
+			{
 				new NpgsqlParameter() { Value = userDiscordId },
 				new NpgsqlParameter() { Value = osuId },
 				new NpgsqlParameter() { Value = username },
@@ -448,7 +458,7 @@ public class DBUsers : DBConnectorBase
 
 		int affectedRows = await command.ExecuteNonQueryAsync();
 
-		if(affectedRows != 1)
+		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
 			await Log.WriteVerbose("InsertUser", "Database connection closed.");
@@ -474,10 +484,11 @@ public class DBUsers : DBConnectorBase
 
 		await Log.WriteVerbose("InsertUser", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
-			Parameters = {
-				new NpgsqlParameter() { Value = userId},
+			Parameters =
+			{
+				new NpgsqlParameter() { Value = userId },
 				new NpgsqlParameter() { Value = userDiscordId },
 				new NpgsqlParameter() { Value = osuId },
 				new NpgsqlParameter() { Value = username },
@@ -487,7 +498,7 @@ public class DBUsers : DBConnectorBase
 
 		int affectedRows = await command.ExecuteNonQueryAsync();
 
-		if(affectedRows != 1)
+		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
 			await Log.WriteVerbose("InsertUser", "Database connection closed.");
@@ -510,11 +521,11 @@ public class DBUsers : DBConnectorBase
 			UPDATE users
 			SET
 				points = ($1),
-				lastupdate = ($2){ (username != null || countryCode != null ? "," : "") }
-				{ (username != null ? "username = $3" : "") }{ (username != null && countryCode != null ? "," : "") }
-				{ (countryCode != null ? $"country = { (username != null ? "$4" : "$3") }" : "") }
+				lastupdate = ($2){(username != null || countryCode != null ? "," : string.Empty)}
+				{(username != null ? "username = $3" : string.Empty)}{(username != null && countryCode != null ? "," : string.Empty)}
+				{(countryCode != null ? $"country = {(username != null ? "$4" : "$3")}" : string.Empty)}
 			WHERE
-				osuid = { (username != null && countryCode != null ? "$5" : (username != null || countryCode != null ? "$4" : "$3")) }
+				osuid = {(username != null && countryCode != null ? "$5" : (username != null || countryCode != null ? "$4" : "$3"))}
 		";
 
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
@@ -524,11 +535,12 @@ public class DBUsers : DBConnectorBase
 
 		NpgsqlCommand command;
 
-		if(username != null && countryCode != null)
+		if (username != null && countryCode != null)
 		{
 			command = new NpgsqlCommand(query, tempConnection)
 			{
-				Parameters = {
+				Parameters =
+				{
 					new NpgsqlParameter() { Value = points },
 					new NpgsqlParameter() { Value = DateTime.Now },
 					new NpgsqlParameter() { Value = username },
@@ -537,13 +549,14 @@ public class DBUsers : DBConnectorBase
 				}
 			};
 		}
-		else if(username != null || countryCode != null)
+		else if (username != null || countryCode != null)
 		{
-			if(username != null)
+			if (username != null)
 			{
 				command = new NpgsqlCommand(query, tempConnection)
 				{
-					Parameters = {
+					Parameters =
+					{
 						new NpgsqlParameter() { Value = points },
 						new NpgsqlParameter() { Value = DateTime.Now },
 						new NpgsqlParameter() { Value = username },
@@ -551,11 +564,12 @@ public class DBUsers : DBConnectorBase
 					}
 				};
 			}
-			else if(countryCode != null)
+			else if (countryCode != null)
 			{
 				command = new NpgsqlCommand(query, tempConnection)
 				{
-					Parameters = {
+					Parameters =
+					{
 						new NpgsqlParameter() { Value = points },
 						new NpgsqlParameter() { Value = DateTime.Now },
 						new NpgsqlParameter() { Value = countryCode },
@@ -569,7 +583,8 @@ public class DBUsers : DBConnectorBase
 
 				command = new NpgsqlCommand(query, tempConnection)
 				{
-					Parameters = {
+					Parameters =
+					{
 						new NpgsqlParameter() { Value = points },
 						new NpgsqlParameter() { Value = DateTime.Now },
 						new NpgsqlParameter() { Value = osuId }
@@ -581,7 +596,8 @@ public class DBUsers : DBConnectorBase
 		{
 			command = new NpgsqlCommand(query, tempConnection)
 			{
-				Parameters = {
+				Parameters =
+				{
 					new NpgsqlParameter() { Value = points },
 					new NpgsqlParameter() { Value = DateTime.Now },
 					new NpgsqlParameter() { Value = osuId }
@@ -591,7 +607,7 @@ public class DBUsers : DBConnectorBase
 
 		int affectedRows = await command.ExecuteNonQueryAsync();
 
-		if(affectedRows != 1)
+		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
 			await Log.WriteVerbose("UpdateUser", "Database connection closed.");
@@ -617,16 +633,17 @@ public class DBUsers : DBConnectorBase
 
 		await Log.WriteVerbose("DeleteUserByUserID", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
-			Parameters = {
+			Parameters =
+			{
 				new NpgsqlParameter() { Value = userId }
 			}
 		};
 
 		int affectedRows = await command.ExecuteNonQueryAsync();
 
-		if(affectedRows != 1)
+		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
 			await Log.WriteVerbose("DeleteUserByUserID", "Database connection closed.");
@@ -652,16 +669,17 @@ public class DBUsers : DBConnectorBase
 
 		await Log.WriteVerbose("DeleteUserByDiscordID", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
-			Parameters = {
+			Parameters =
+			{
 				new NpgsqlParameter() { Value = userDiscordId }
 			}
 		};
 
 		int affectedRows = await command.ExecuteNonQueryAsync();
 
-		if(affectedRows != 1)
+		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
 			await Log.WriteVerbose("DeleteUserByDiscordID", "Database connection closed.");
@@ -687,16 +705,17 @@ public class DBUsers : DBConnectorBase
 
 		await Log.WriteVerbose("DeleteUserByOsuID", "Database connection created and opened from data source.");
 
-		await using NpgsqlCommand command = new(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
-			Parameters = {
+			Parameters =
+			{
 				new NpgsqlParameter() { Value = osuId }
 			}
 		};
 
 		int affectedRows = await command.ExecuteNonQueryAsync();
 
-		if(affectedRows != 1)
+		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
 			await Log.WriteVerbose("DeleteUserByOsuID", "Database connection closed.");

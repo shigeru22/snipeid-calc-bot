@@ -1,3 +1,6 @@
+// Copyright (c) shigeru22, concept by Akshiro28.
+// Licensed under the MIT license. See LICENSE in the repository root for details.
+
 using System.Reflection;
 using Discord;
 using Discord.Commands;
@@ -11,7 +14,7 @@ namespace LeaderpointsBot.Client.Messages;
 
 public class MessagesFactory
 {
-	private const string BATHBOT_DISCORD_ID = "297073686916366336";
+	private const string BathbotDiscordID = "297073686916366336";
 
 	private readonly DiscordSocketClient client;
 	private readonly CommandService commandService;
@@ -35,27 +38,27 @@ public class MessagesFactory
 	public async Task OnNewMessage(SocketMessage msg)
 	{
 		// ignore own messages silently
-		if(msg.Author.Id == client.CurrentUser.Id)
+		if (msg.Author.Id == client.CurrentUser.Id)
 		{
 			return;
 		}
 
-		await Log.WriteDebug("OnNewMessage", $"Message from { msg.Author.Username }#{ msg.Author.Discriminator }: { msg.Content }");
+		await Log.WriteDebug("OnNewMessage", $"Message from {msg.Author.Username}#{msg.Author.Discriminator}: {msg.Content}");
 
-		if(msg is not SocketUserMessage userMsg)
+		if (msg is not SocketUserMessage userMsg)
 		{
 			await Log.WriteDebug("OnNewMessage", "Message is not from user.");
 			return;
 		}
 
-		if(msg.Channel.GetChannelType() != ChannelType.Text)
+		if (msg.Channel.GetChannelType() != ChannelType.Text)
 		{
 			await Log.WriteDebug("OnNewMessage", "Message is not from text-based channel.");
 			return;
 		}
 
 		// determine if Bathbot's leaderboard count embed is received
-		if(msg.Author.Id.ToString().Equals(BATHBOT_DISCORD_ID))
+		if (msg.Author.Id.ToString().Equals(BathbotDiscordID))
 		{
 			await Log.WriteDebug("OnNewMessage", "Message is from Bathbot. Handling message.");
 			await HandleBathbotMessageAsync(userMsg);
@@ -81,44 +84,44 @@ public class MessagesFactory
 		}
 
 		// filter embed by title
-		if(string.IsNullOrWhiteSpace(botEmbed.Title) || !botEmbed.Title.StartsWith("In how many top X map leaderboards is"))
+		if (string.IsNullOrWhiteSpace(botEmbed.Title) || !botEmbed.Title.StartsWith("In how many top X map leaderboards is"))
 		{
 			await Log.WriteVerbose("HandleBathbotMessageAsync", "Embed is not leaderboards count. Cancelling process.");
 			return;
 		}
 
-		if(msg.Channel is not SocketGuildChannel guildChannel)
+		if (msg.Channel is not SocketGuildChannel guildChannel)
 		{
 			// TODO: handle direct message response
 			await Log.WriteVerbose("HandleBathbotMessageAsync", "Direct messages method not yet implemented.");
 			return;
 		}
 
-		SocketCommandContext context = new(client, msg);
+		SocketCommandContext context = new SocketCommandContext(client, msg);
 		Structures.Commands.CountModule.UserLeaderboardsCountMessages[] responses;
 
 		try
 		{
 			await Log.WriteVerbose("HandleBathbotMessageAsync", "Calculating leaderboards count from first embed.");
-			responses = await CountModule.UserLeaderboardsCountBathbotAsync(msg.Embeds.First(), client, guildChannel.Guild);
+			responses = await CountModule.UserLeaderboardsCountBathbotAsync(msg.Embeds.First(), guildChannel.Guild);
 		}
 		catch (SendMessageException e)
 		{
 			await Log.WriteVerbose("HandleBathbotMessageAsync", "Send message signal received. Sending message and cancelling process.");
-			await context.Channel.SendMessageAsync(e.IsError ? $"**Error:** { e.Draft }" : e.Draft);
+			await context.Channel.SendMessageAsync(e.IsError ? $"**Error:** {e.Draft}" : e.Draft);
 			return;
 		}
 		catch (Exception e)
 		{
-			await Log.WriteError("HandleBathbotMessageAsync", $"Unhandled client error occurred.{ (Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{ e }" : "") }");
+			await Log.WriteError("HandleBathbotMessageAsync", $"Unhandled client error occurred.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
 			await context.Channel.SendMessageAsync("**Error:** Unhandled client error occurred.");
 			return;
 		}
 
 		await Log.WriteVerbose("HandleBathbotMessageAsync", "Sending responses.");
-		foreach(Structures.Commands.CountModule.UserLeaderboardsCountMessages response in responses)
+		foreach (Structures.Commands.CountModule.UserLeaderboardsCountMessages response in responses)
 		{
-			switch(response.MessageType)
+			switch (response.MessageType)
 			{
 				case Common.ResponseMessageType.EMBED:
 					await context.Channel.SendMessageAsync(embed: response.GetEmbed());
@@ -127,7 +130,7 @@ public class MessagesFactory
 					await context.Channel.SendMessageAsync(response.GetString());
 					break;
 				case Common.ResponseMessageType.ERROR:
-					await context.Channel.SendMessageAsync($"**Error:** { response.GetString() }");
+					await context.Channel.SendMessageAsync($"**Error:** {response.GetString()}");
 					break;
 				default:
 					continue;
@@ -139,7 +142,7 @@ public class MessagesFactory
 	{
 		int argPos = 0; // TODO: create per-server prefix setting
 
-		if(!msg.HasMentionPrefix(client.CurrentUser, ref argPos))
+		if (!msg.HasMentionPrefix(client.CurrentUser, ref argPos))
 		{
 			await Log.WriteDebug("HandleCommands", "Bot is not mentioned.");
 			return;
@@ -147,7 +150,7 @@ public class MessagesFactory
 
 		await Log.WriteVerbose("HandleCommands", "Creating context and executing command.");
 
-		SocketCommandContext context = new(client, msg);
+		SocketCommandContext context = new SocketCommandContext(client, msg);
 		await commandService.ExecuteAsync(context: context, argPos: argPos, services: null);
 	}
 }

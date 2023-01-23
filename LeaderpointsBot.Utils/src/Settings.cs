@@ -1,10 +1,41 @@
+// Copyright (c) shigeru22, concept by Akshiro28.
+// Licensed under the MIT license. See LICENSE in the repository root for details.
+
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 namespace LeaderpointsBot.Utils;
 
 public class Settings
 {
-	private const string DEFAULT_SETTINGS_PATH = "appsettings.json";
+	private const string DefaultSettingsPath = "appsettings.json";
+
+	[SuppressMessage("csharp", "SA1311", Justification = "Private static readonly instance names should be lowercased (styling not yet configurable).")]
+	private static readonly Settings instance = new Settings(DefaultSettingsPath);
+
+	private SettingsTypes.JsonClientSettings client;
+	private SettingsTypes.JsonDatabaseSettings database;
+	private SettingsTypes.JsonOsuClientSettings osuApi;
+
+	private Settings(string settingsPath)
+	{
+		JsonSerializerOptions options = new JsonSerializerOptions()
+		{
+			PropertyNameCaseInsensitive = true
+		};
+
+		SettingsTypes.JsonSettings temp = JsonSerializer.Deserialize<SettingsTypes.JsonSettings>(File.ReadAllText(settingsPath), options);
+
+		client = temp.Client;
+		database = temp.Database;
+		osuApi = temp.OsuApi;
+	}
+
+	public static Settings Instance { get => instance; }
+
+	public SettingsTypes.JsonClientSettings Client { get => client; }
+	public SettingsTypes.JsonDatabaseSettings Database { get => database; }
+	public SettingsTypes.JsonOsuClientSettings OsuApi { get => osuApi; }
 
 	public static class SettingsTypes
 	{
@@ -44,27 +75,5 @@ public class Settings
 			public JsonDatabaseSettings Database { get; set; }
 			public JsonOsuClientSettings OsuApi { get; set; }
 		}
-	}
-
-	public SettingsTypes.JsonClientSettings Client { get; private set; }
-	public SettingsTypes.JsonDatabaseSettings Database { get; private set; }
-	public SettingsTypes.JsonOsuClientSettings OsuApi { get; private set; }
-
-	private static readonly Settings instance = new(DEFAULT_SETTINGS_PATH);
-
-	public static Settings Instance { get => instance; }
-
-	private Settings(string settingsPath)
-	{
-		JsonSerializerOptions options = new()
-		{
-			PropertyNameCaseInsensitive = true
-		};
-
-		SettingsTypes.JsonSettings temp = JsonSerializer.Deserialize<SettingsTypes.JsonSettings>(File.ReadAllText(settingsPath), options);
-
-		Client = temp.Client;
-		Database = temp.Database;
-		OsuApi = temp.OsuApi;
 	}
 }

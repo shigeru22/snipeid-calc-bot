@@ -1,3 +1,6 @@
+// Copyright (c) shigeru22, concept by Akshiro28.
+// Licensed under the MIT license. See LICENSE in the repository root for details.
+
 using System.Diagnostics.CodeAnalysis;
 
 namespace LeaderpointsBot.Api.Osu;
@@ -9,7 +12,9 @@ public static class OsuDataTypes
 		public string Authorization { get; set; }
 	}
 
-	[SuppressMessage("ReSharper", "InconsistentNaming")]
+	[SuppressMessage("csharp", "IDE1006", Justification = "osu!api raw data used these field names.")]
+	[SuppressMessage("csharp", "SA1300", Justification = "osu!api raw data used these field names.")]
+	[SuppressMessage("ReSharper", "InconsistentNaming", Justification = "osu!api raw data used these field names.")]
 	public readonly struct OsuApiTokenRequestRawData
 	{
 		public int client_id { get; init; }
@@ -48,7 +53,9 @@ public static class OsuDataTypes
 		}
 	}
 
-	[SuppressMessage("ReSharper", "InconsistentNaming")]
+	[SuppressMessage("csharp", "IDE1006", Justification = "osu!api raw data used these field names.")]
+	[SuppressMessage("csharp", "SA1300", Justification = "osu!api raw data used these field names.")]
+	[SuppressMessage("ReSharper", "InconsistentNaming", Justification = "osu!api raw data used these field names.")]
 	public struct OsuApiTokenResponseRawData
 	{
 		public string token_type { get; set; }
@@ -83,7 +90,9 @@ public static class OsuDataTypes
 		}
 	}
 
-	[SuppressMessage("ReSharper", "InconsistentNaming")]
+	[SuppressMessage("csharp", "IDE1006", Justification = "osu!api raw data used these field names.")]
+	[SuppressMessage("csharp", "SA1300", Justification = "osu!api raw data used these field names.")]
+	[SuppressMessage("ReSharper", "InconsistentNaming", Justification = "osu!api raw data used these field names.")]
 	public struct OsuApiUserResponseRawData
 	{
 		public string avatar_url { get; set; }

@@ -1,13 +1,16 @@
+// Copyright (c) shigeru22, concept by Akshiro28.
+// Licensed under the MIT license. See LICENSE in the repository root for details.
+
 namespace LeaderpointsBot.Utils;
 
 public static class ArrayOperations
 {
 	public static int[] SearchRankAtTopsArray(int[,] topsCount, IReadOnlyList<int> ranks)
 	{
-		List<int> tempTops = new();
+		List<int> tempTops = new List<int>();
 
 		int ranksLength = ranks.Count;
-		for(int i = 0; i < ranksLength; i++)
+		for (int i = 0; i < ranksLength; i++)
 		{
 			tempTops.Add(SearchRankArray(topsCount, ranks[i]));
 		}
@@ -17,10 +20,10 @@ public static class ArrayOperations
 
 	public static int[] SearchRankAtTopsArray(List<int[]> topsCount, IReadOnlyList<int> ranks)
 	{
-		List<int> tempTops = new();
+		List<int> tempTops = new List<int>();
 
 		int ranksLength = ranks.Count;
-		for(int i = 0; i < ranksLength; i++)
+		for (int i = 0; i < ranksLength; i++)
 		{
 			tempTops.Add(SearchRankArray(topsCount, ranks[i]));
 		}
@@ -34,7 +37,8 @@ public static class ArrayOperations
 		int max = topsCount.Length - 1;
 
 		// binary search anyone?
-		while (min <= max) {
+		while (min <= max)
+		{
 			int mid = (min + max) / 2;
 
 			if (rank == topsCount[mid, 0])
@@ -61,7 +65,8 @@ public static class ArrayOperations
 		int max = topsCount.Count - 1;
 
 		// binary search anyone?
-		while (min <= max) {
+		while (min <= max)
+		{
 			int mid = (min + max) / 2;
 
 			if (rank == topsCount[mid][0])

@@ -1,10 +1,14 @@
+// Copyright (c) shigeru22, concept by Akshiro28.
+// Licensed under the MIT license. See LICENSE in the repository root for details.
+
 using Discord;
 
 namespace LeaderpointsBot.Utils;
 
 public static class Log
 {
-	private static readonly string[] logSeverity = {
+	private static readonly string[] LogSeverity =
+	{
 		"CRITICAL",
 		"ERROR",
 		"WARNING",
@@ -15,30 +19,30 @@ public static class Log
 
 	public static Task Write(LogMessage msg)
 	{
-		if(Settings.Instance.Client.Logging.LogSeverity >= (int)msg.Severity)
+		if (Settings.Instance.Client.Logging.LogSeverity >= (int)msg.Severity)
 		{
-			switch(msg.Severity)
+			switch (msg.Severity)
 			{
-				case LogSeverity.Critical:
-					Log.WriteCritical(msg.Source, msg.Message);
+				case Discord.LogSeverity.Critical:
+					WriteCritical(msg.Source, msg.Message);
 					break;
-				case LogSeverity.Error:
-					Log.WriteError(msg.Source, msg.Message);
+				case Discord.LogSeverity.Error:
+					WriteError(msg.Source, msg.Message);
 					break;
-				case LogSeverity.Warning:
-					Log.WriteWarning(msg.Source, msg.Message);
+				case Discord.LogSeverity.Warning:
+					WriteWarning(msg.Source, msg.Message);
 					break;
-				case LogSeverity.Info:
-					Log.WriteInfo(msg.Source, msg.Message);
+				case Discord.LogSeverity.Info:
+					WriteInfo(msg.Source, msg.Message);
 					break;
-				case LogSeverity.Verbose:
-					Log.WriteVerbose(msg.Source, msg.Message);
+				case Discord.LogSeverity.Verbose:
+					WriteVerbose(msg.Source, msg.Message);
 					break;
-				case LogSeverity.Debug:
-					Log.WriteDebug(msg.Source, msg.Message);
+				case Discord.LogSeverity.Debug:
+					WriteDebug(msg.Source, msg.Message);
 					break;
 				default:
-					throw new ArgumentOutOfRangeException();
+					throw new ArgumentOutOfRangeException(nameof(msg));
 			}
 		}
 
@@ -47,26 +51,26 @@ public static class Log
 
 	public static Task Write(LogSeverity severity, string source, string message)
 	{
-		if(Settings.Instance.Client.Logging.LogSeverity >= (int)severity)
+		if (Settings.Instance.Client.Logging.LogSeverity >= (int)severity)
 		{
-			switch(severity)
+			switch (severity)
 			{
-				case LogSeverity.Critical:
+				case Discord.LogSeverity.Critical:
 					Log.WriteCritical(source, message);
 					break;
-				case LogSeverity.Error:
+				case Discord.LogSeverity.Error:
 					Log.WriteError(source, message);
 					break;
-				case LogSeverity.Warning:
+				case Discord.LogSeverity.Warning:
 					Log.WriteWarning(source, message);
 					break;
-				case LogSeverity.Info:
+				case Discord.LogSeverity.Info:
 					Log.WriteInfo(source, message);
 					break;
-				case LogSeverity.Verbose:
+				case Discord.LogSeverity.Verbose:
 					Log.WriteVerbose(source, message);
 					break;
-				case LogSeverity.Debug:
+				case Discord.LogSeverity.Debug:
 					Log.WriteDebug(source, message);
 					break;
 				default:
@@ -82,9 +86,9 @@ public static class Log
 		ConsoleColor currentColor = Console.ForegroundColor;
 		Console.ForegroundColor = ConsoleColor.Red;
 
-		if(Settings.Instance.Client.Logging.LogSeverity >= 0)
+		if (Settings.Instance.Client.Logging.LogSeverity >= 0)
 		{
-			Console.Error.WriteLine($"{ Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC) } :: { logSeverity[0][0] } :: { source } :: { message }");
+			Console.Error.WriteLine($"{Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC)} :: {LogSeverity[0][0]} :: {source} :: {message}");
 		}
 
 		Console.ForegroundColor = currentColor;
@@ -97,9 +101,9 @@ public static class Log
 		ConsoleColor currentColor = Console.ForegroundColor;
 		Console.ForegroundColor = ConsoleColor.Red;
 
-		if(Settings.Instance.Client.Logging.LogSeverity >= 1)
+		if (Settings.Instance.Client.Logging.LogSeverity >= 1)
 		{
-			Console.Error.WriteLine($"{ Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC) } :: { logSeverity[1][0] } :: { source } :: { message }");
+			Console.Error.WriteLine($"{Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC)} :: {LogSeverity[1][0]} :: {source} :: {message}");
 		}
 
 		Console.ForegroundColor = currentColor;
@@ -112,9 +116,9 @@ public static class Log
 		ConsoleColor currentColor = Console.ForegroundColor;
 		Console.ForegroundColor = ConsoleColor.Yellow;
 
-		if(Settings.Instance.Client.Logging.LogSeverity >= 2)
+		if (Settings.Instance.Client.Logging.LogSeverity >= 2)
 		{
-			Console.WriteLine($"{ Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC) } :: { logSeverity[2][0] } :: { source } :: { message }");
+			Console.WriteLine($"{Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC)} :: {LogSeverity[2][0]} :: {source} :: {message}");
 		}
 
 		Console.ForegroundColor = currentColor;
@@ -124,9 +128,9 @@ public static class Log
 
 	public static Task WriteInfo(string source, string message)
 	{
-		if(Settings.Instance.Client.Logging.LogSeverity >= 3)
+		if (Settings.Instance.Client.Logging.LogSeverity >= 3)
 		{
-			Console.WriteLine($"{ Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC) } :: { logSeverity[3][0] } :: { source } :: { message }");
+			Console.WriteLine($"{Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC)} :: {LogSeverity[3][0]} :: {source} :: {message}");
 		}
 
 		return Task.CompletedTask;
@@ -137,9 +141,9 @@ public static class Log
 		ConsoleColor currentColor = Console.ForegroundColor;
 		Console.ForegroundColor = ConsoleColor.DarkGray;
 
-		if(Settings.Instance.Client.Logging.LogSeverity >= 4)
+		if (Settings.Instance.Client.Logging.LogSeverity >= 4)
 		{
-			Console.WriteLine($"{ Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC) } :: { logSeverity[4][0] } :: { source } :: { message }");
+			Console.WriteLine($"{Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC)} :: {LogSeverity[4][0]} :: {source} :: {message}");
 		}
 
 		Console.ForegroundColor = currentColor;
@@ -152,9 +156,9 @@ public static class Log
 		ConsoleColor currentColor = Console.ForegroundColor;
 		Console.ForegroundColor = ConsoleColor.DarkGray;
 
-		if(Settings.Instance.Client.Logging.LogSeverity >= 5)
+		if (Settings.Instance.Client.Logging.LogSeverity >= 5)
 		{
-			Console.WriteLine($"{ Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC) } :: { logSeverity[5][0] } :: { source } :: { message }");
+			Console.WriteLine($"{Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC)} :: {LogSeverity[5][0]} :: {source} :: {message}");
 		}
 
 		Console.ForegroundColor = currentColor;
@@ -168,7 +172,7 @@ public static class Log
 		Console.SetCursorPosition(0, currentCursorLine - 1);
 		Console.Write(new string(' ', Console.WindowWidth));
 
-		if(!keepCurrentLine)
+		if (!keepCurrentLine)
 		{
 			Console.SetCursorPosition(0, currentCursorLine - 1);
 		}

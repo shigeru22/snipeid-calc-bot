@@ -1,4 +1,8 @@
+// Copyright (c) shigeru22, concept by Akshiro28.
+// Licensed under the MIT license. See LICENSE in the repository root for details.
+
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using LeaderpointsBot.Api.Exceptions;
@@ -8,12 +12,25 @@ namespace LeaderpointsBot.Api.Osu;
 
 public class OsuToken
 {
-	public const string OSU_TOKEN_ENDPOINT = "https://osu.ppy.sh/oauth/token";
+	public const string OsuTokenEndpoint = "https://osu.ppy.sh/oauth/token";
 
 	private int clientId = 0;
-	private string clientSecret = "";
+	private string clientSecret = string.Empty;
 	private string? token = null;
 	private DateTime expirationTime = DateTime.UtcNow; // use UTC for accurate results
+
+	public OsuToken()
+	{
+		Log.WriteVerbose("OsuToken", "osu!api token wrapper class instantiated.");
+	}
+
+	public OsuToken(int clientId, string clientSecret)
+	{
+		Log.WriteVerbose("OsuToken", "osu!api token wrapper class instantiated.");
+
+		ClientID = clientId;
+		ClientSecret = clientSecret;
+	}
 
 	public int ClientID
 	{
@@ -35,24 +52,11 @@ public class OsuToken
 		}
 	}
 
-	public OsuToken()
-	{
-		Log.WriteVerbose("OsuToken", "osu!api token wrapper class instantiated.");
-	}
-
-	public OsuToken(int clientId, string clientSecret)
-	{
-		Log.WriteVerbose("OsuToken", "osu!api token wrapper class instantiated.");
-
-		ClientID = clientId;
-		ClientSecret = clientSecret;
-	}
-
 	public async Task<string> GetTokenAsync()
 	{
 		await Log.WriteVerbose("GetTokenAsync", "Retrieving osu!api client token.");
 
-		if(token != null && DateTime.UtcNow < expirationTime)
+		if (token != null && DateTime.UtcNow < expirationTime)
 		{
 			await Log.WriteVerbose("GetTokenAsync", "Non-expired token found. Returning token.");
 			return token;
@@ -62,9 +66,9 @@ public class OsuToken
 
 		try
 		{
-			using HttpClient client = new();
+			using HttpClient client = new HttpClient();
 
-			OsuDataTypes.OsuApiTokenRequestData requestData = new()
+			OsuDataTypes.OsuApiTokenRequestData requestData = new OsuDataTypes.OsuApiTokenRequestData()
 			{
 				ClientID = clientId,
 				ClientSecret = clientSecret,
@@ -72,20 +76,21 @@ public class OsuToken
 				Scope = "public"
 			};
 
-			StringContent data = new(JsonSerializer.Serialize(requestData.ToRawData()), Encoding.UTF8, "application/json");
+			StringContent data = new StringContent(JsonSerializer.Serialize(requestData.ToRawData()), Encoding.UTF8, "application/json");
 
 			await Log.WriteVerbose("GetTokenAsync", "Requesting osu!api token endpoint.");
-			response = await client.PostAsync(OSU_TOKEN_ENDPOINT, data);
+			response = await client.PostAsync(OsuTokenEndpoint, data);
 		}
 		catch (Exception e)
 		{
-			await Log.WriteError("GetTokenAsync", $"An unhandled error occurred while requesting token. Exception details below.\n{ e }");
+			await Log.WriteError("GetTokenAsync", $"An unhandled error occurred while requesting token. Exception details below.\n{e}");
 			throw new ApiInstanceException("Unhandled exception.");
 		}
 
-		if(response.StatusCode != HttpStatusCode.OK) // not 200
+		// if not 200
+		if (response.StatusCode != HttpStatusCode.OK)
 		{
-			await Log.WriteWarning("GetTokenAsync", $"osu!api returned status code { (int)response.StatusCode }");
+			await Log.WriteWarning("GetTokenAsync", $"osu!api returned status code {(int)response.StatusCode}");
 			throw new ApiResponseException(response.StatusCode);
 		}
 
@@ -102,7 +107,7 @@ public class OsuToken
 	{
 		await Log.WriteVerbose("RevokeTokenAsync", "Revoking current osu!api client token.");
 
-		if(token == null || DateTime.UtcNow >= expirationTime)
+		if (token == null || DateTime.UtcNow >= expirationTime)
 		{
 			await Log.WriteError("RevokeTokenAsync", "Token either already revoked or expired.");
 			throw new InvalidDataException("osu!api token either already revoked or expired.");
@@ -112,23 +117,24 @@ public class OsuToken
 
 		try
 		{
-			using HttpClient client = new();
+			using HttpClient client = new HttpClient();
 
-			client.DefaultRequestHeaders.Accept.Add(new("application/json"));
-			client.DefaultRequestHeaders.Add("Authorization", $"Bearer { token }");
+			client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+			client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
 			await Log.WriteVerbose("RevokeTokenAsync", "Requesting osu!api revoke token endpoint.");
-			response = await client.DeleteAsync($"{ OsuApi.OSU_API_ENDPOINT }/oauth/tokens/current");
+			response = await client.DeleteAsync($"{OsuApi.OsuApiEndpoint}/oauth/tokens/current");
 		}
 		catch (Exception e)
 		{
-			await Log.WriteError("RevokeTokenAsync", $"An unhandled error occurred while revoking token. Exception details below.\n{ e }");
+			await Log.WriteError("RevokeTokenAsync", $"An unhandled error occurred while revoking token. Exception details below.\n{e}");
 			throw new ApiInstanceException("Unhandled exception.");
 		}
 
-		if(response.StatusCode != HttpStatusCode.NoContent) // not 204
+		// if not 204
+		if (response.StatusCode != HttpStatusCode.NoContent)
 		{
-			await Log.WriteWarning("RevokeTokenAsync", $"osu!api returned status code { (int)response.StatusCode }");
+			await Log.WriteWarning("RevokeTokenAsync", $"osu!api returned status code {(int)response.StatusCode}");
 			throw new ApiResponseException(response.StatusCode);
 		}
 

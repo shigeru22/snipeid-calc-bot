@@ -1,8 +1,11 @@
+// Copyright (c) shigeru22, concept by Akshiro28.
+// Licensed under the MIT license. See LICENSE in the repository root for details.
+
 using System.Data;
-using Npgsql;
-using LeaderpointsBot.Database.Schemas;
 using LeaderpointsBot.Database.Exceptions;
+using LeaderpointsBot.Database.Schemas;
 using LeaderpointsBot.Utils;
+using Npgsql;
 
 namespace LeaderpointsBot.Database.Tables;
 
@@ -28,15 +31,15 @@ public class DBRoles : DBConnectorBase
 		await using NpgsqlCommand command = DataSource.CreateCommand(query);
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
 
-		if(!reader.HasRows)
+		if (!reader.HasRows)
 		{
 			await Log.WriteVerbose("GetRoles", "roles: Returned 0 rows.");
 			return Array.Empty<RolesQuerySchema.RolesTableData>();
 		}
 
-		List<RolesQuerySchema.RolesTableData> ret = new();
+		List<RolesQuerySchema.RolesTableData> ret = new List<RolesQuerySchema.RolesTableData>();
 
-		while(await reader.ReadAsync())
+		while (await reader.ReadAsync())
 		{
 			ret.Add(new RolesQuerySchema.RolesTableData()
 			{
@@ -47,7 +50,7 @@ public class DBRoles : DBConnectorBase
 			});
 		}
 
-		await Log.WriteInfo("GetRoles", $"roles: Returned { reader.Rows } row{ (reader.Rows != 1 ? "s" : "") }.");
+		await Log.WriteInfo("GetRoles", $"roles: Returned {reader.Rows} row{(reader.Rows != 1 ? "s" : string.Empty)}.");
 		return ret.ToArray();
 	}
 
@@ -76,21 +79,22 @@ public class DBRoles : DBConnectorBase
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
-			Parameters = {
+			Parameters =
+			{
 				new NpgsqlParameter() { Value = guildDiscordId }
 			}
 		};
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
 
-		if(!reader.HasRows)
+		if (!reader.HasRows)
 		{
 			await Log.WriteVerbose("GetServerRoles", "roles: Returned 0 rows.");
 			return Array.Empty<RolesQuerySchema.RolesTableData>();
 		}
 
-		List<RolesQuerySchema.RolesTableData> ret = new();
+		List<RolesQuerySchema.RolesTableData> ret = new List<RolesQuerySchema.RolesTableData>();
 
-		while(await reader.ReadAsync())
+		while (await reader.ReadAsync())
 		{
 			ret.Add(new RolesQuerySchema.RolesTableData()
 			{
@@ -104,7 +108,7 @@ public class DBRoles : DBConnectorBase
 		await tempConnection.CloseAsync();
 		await Log.WriteVerbose("GetServerRoles", "Database connection closed.");
 
-		await Log.WriteInfo("GetServerRoles", $"roles: Returned { reader.Rows } row{ (reader.Rows != 1 ? "s" : "") }.");
+		await Log.WriteInfo("GetServerRoles", $"roles: Returned {reader.Rows} row{(reader.Rows != 1 ? "s" : string.Empty)}.");
 		return ret.ToArray();
 	}
 
@@ -129,27 +133,28 @@ public class DBRoles : DBConnectorBase
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
-			Parameters = {
+			Parameters =
+			{
 				new NpgsqlParameter() { Value = roleId }
 			}
 		};
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
 
-		if(!reader.HasRows)
+		if (!reader.HasRows)
 		{
 			await Log.WriteVerbose("GetRoleByRoleID", "roles: Returned 0 rows. Throwing not found exception.");
 			throw new DataNotFoundException();
 		}
 
-		if(reader.Rows > 1)
+		if (reader.Rows > 1)
 		{
-			await Log.WriteInfo("GetRoleByRoleID", $"roles: Returned { reader.Rows } rows. Throwing duplicate record exception.");
+			await Log.WriteInfo("GetRoleByRoleID", $"roles: Returned {reader.Rows} rows. Throwing duplicate record exception.");
 			throw new DuplicateRecordException("roles", "roleid");
 		}
 
 		await reader.ReadAsync();
 
-		RolesQuerySchema.RolesTableData ret = new()
+		RolesQuerySchema.RolesTableData ret = new RolesQuerySchema.RolesTableData()
 		{
 			RoleID = reader.GetInt32(0),
 			DiscordID = reader.GetString(1),
@@ -185,27 +190,28 @@ public class DBRoles : DBConnectorBase
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
-			Parameters = {
+			Parameters =
+			{
 				new NpgsqlParameter() { Value = roleDiscordId }
 			}
 		};
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
 
-		if(!reader.HasRows)
+		if (!reader.HasRows)
 		{
 			await Log.WriteVerbose("GetRoleByDiscordID", "roles: Returned 0 rows. Throwing not found exception.");
 			throw new DataNotFoundException();
 		}
 
-		if(reader.Rows > 1)
+		if (reader.Rows > 1)
 		{
-			await Log.WriteInfo("GetRoleByDiscordID", $"roles: Returned { reader.Rows } rows. Throwing duplicate record exception.");
+			await Log.WriteInfo("GetRoleByDiscordID", $"roles: Returned {reader.Rows} rows. Throwing duplicate record exception.");
 			throw new DuplicateRecordException("roles", "discordid");
 		}
 
 		await reader.ReadAsync();
 
-		RolesQuerySchema.RolesTableData ret = new()
+		RolesQuerySchema.RolesTableData ret = new RolesQuerySchema.RolesTableData()
 		{
 			RoleID = reader.GetInt32(0),
 			DiscordID = reader.GetString(1),
@@ -247,28 +253,29 @@ public class DBRoles : DBConnectorBase
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
-			Parameters = {
+			Parameters =
+			{
 				new NpgsqlParameter() { Value = osuId },
 				new NpgsqlParameter() { Value = guildDiscordId }
 			}
 		};
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
 
-		if(!reader.HasRows)
+		if (!reader.HasRows)
 		{
 			await Log.WriteVerbose("GetServerRoleByOsuID", "roles: Returned 0 rows. Throwing not found exception.");
 			throw new DataNotFoundException();
 		}
 
-		if(reader.Rows > 1)
+		if (reader.Rows > 1)
 		{
-			await Log.WriteInfo("GetServerRoleByOsuID", $"roles: Returned { reader.Rows } rows. Throwing duplicate record exception.");
+			await Log.WriteInfo("GetServerRoleByOsuID", $"roles: Returned {reader.Rows} rows. Throwing duplicate record exception.");
 			throw new DuplicateRecordException("roles", "osuid or discordid");
 		}
 
 		await reader.ReadAsync();
 
-		RolesQuerySchema.RolesTableData ret = new()
+		RolesQuerySchema.RolesTableData ret = new RolesQuerySchema.RolesTableData()
 		{
 			RoleID = reader.GetInt32(0),
 			DiscordID = reader.GetString(1),
@@ -309,28 +316,29 @@ public class DBRoles : DBConnectorBase
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
-			Parameters = {
+			Parameters =
+			{
 				new NpgsqlParameter() { Value = points },
 				new NpgsqlParameter() { Value = guildDiscordId }
 			}
 		};
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
 
-		if(!reader.HasRows)
+		if (!reader.HasRows)
 		{
 			await Log.WriteVerbose("GetTargetServerRoleByPoints", "roles: Returned 0 rows. Throwing not found exception.");
 			throw new DataNotFoundException();
 		}
 
-		if(reader.Rows > 1)
+		if (reader.Rows > 1)
 		{
-			await Log.WriteInfo("GetTargetServerRoleByPoints", $"roles: Returned { reader.Rows } rows. Throwing duplicate record exception.");
+			await Log.WriteInfo("GetTargetServerRoleByPoints", $"roles: Returned {reader.Rows} rows. Throwing duplicate record exception.");
 			throw new DuplicateRecordException("roles", "osuid or discordid");
 		}
 
 		await reader.ReadAsync();
 
-		RolesQuerySchema.RolesTableData ret = new()
+		RolesQuerySchema.RolesTableData ret = new RolesQuerySchema.RolesTableData()
 		{
 			RoleID = reader.GetInt32(0),
 			DiscordID = reader.GetString(1),
@@ -359,7 +367,8 @@ public class DBRoles : DBConnectorBase
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
-			Parameters = {
+			Parameters =
+			{
 				new NpgsqlParameter() { Value = roleDiscordId },
 				new NpgsqlParameter() { Value = roleName },
 				new NpgsqlParameter() { Value = minPoints },
@@ -369,7 +378,7 @@ public class DBRoles : DBConnectorBase
 
 		int affectedRows = await command.ExecuteNonQueryAsync();
 
-		if(affectedRows != 1)
+		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
 			await Log.WriteVerbose("InsertRole", "Database connection closed.");
@@ -397,7 +406,8 @@ public class DBRoles : DBConnectorBase
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
-			Parameters = {
+			Parameters =
+			{
 				new NpgsqlParameter() { Value = roleId },
 				new NpgsqlParameter() { Value = roleDiscordId },
 				new NpgsqlParameter() { Value = roleName },
@@ -408,7 +418,7 @@ public class DBRoles : DBConnectorBase
 
 		int affectedRows = await command.ExecuteNonQueryAsync();
 
-		if(affectedRows != 1)
+		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
 			await Log.WriteVerbose("InsertRole", "Database connection closed.");
@@ -424,7 +434,7 @@ public class DBRoles : DBConnectorBase
 
 	public async Task UpdateRole(int roleId, string? roleName = null, int? minPoints = null)
 	{
-		if(string.IsNullOrEmpty(roleName) && minPoints < 0)
+		if (string.IsNullOrEmpty(roleName) && minPoints < 0)
 		{
 			await Log.WriteVerbose("UpdateRole", "Invalid argument(s). Throwing argument exception.");
 			throw new ArgumentException("Either or both roleName or minPoints must be specified and valid.");
@@ -434,10 +444,10 @@ public class DBRoles : DBConnectorBase
 		string query = $@"
 			UPDATE roles
 			SET
-				{ (!string.IsNullOrEmpty(roleName) ? $"rolename = ($1){ (minPoints >= 0 ? "," : "") }" : "") }
-				{ (minPoints >= 0 ? $"minpoints = ({ (!string.IsNullOrEmpty(roleName) ? "$2" : "$1") })" : "") }
+				{(!string.IsNullOrEmpty(roleName) ? $"rolename = ($1){(minPoints >= 0 ? "," : string.Empty)}" : string.Empty)}
+				{(minPoints >= 0 ? $"minpoints = ({(!string.IsNullOrEmpty(roleName) ? "$2" : "$1")})" : string.Empty)}
 			WHERE
-				roleid = ({ (!string.IsNullOrEmpty(roleName) && minPoints >= 0 ? "$3" : "$2") })
+				roleid = ({(!string.IsNullOrEmpty(roleName) && minPoints >= 0 ? "$3" : "$2")})
 		";
 
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
@@ -447,11 +457,12 @@ public class DBRoles : DBConnectorBase
 
 		NpgsqlCommand command;
 
-		if(!string.IsNullOrEmpty(roleName) && minPoints >= 0)
+		if (!string.IsNullOrEmpty(roleName) && minPoints >= 0)
 		{
 			command = new NpgsqlCommand(query, tempConnection)
 			{
-				Parameters = {
+				Parameters =
+				{
 					new NpgsqlParameter() { Value = roleName },
 					new NpgsqlParameter() { Value = minPoints },
 					new NpgsqlParameter() { Value = roleId }
@@ -460,21 +471,23 @@ public class DBRoles : DBConnectorBase
 		}
 		else
 		{
-			if(!string.IsNullOrEmpty(roleName))
+			if (!string.IsNullOrEmpty(roleName))
 			{
 				command = new NpgsqlCommand(query, tempConnection)
 				{
-					Parameters = {
+					Parameters =
+					{
 						new NpgsqlParameter() { Value = roleName },
 						new NpgsqlParameter() { Value = roleId }
 					}
 				};
 			}
-			else if(minPoints >= 0)
+			else if (minPoints >= 0)
 			{
 				command = new NpgsqlCommand(query, tempConnection)
 				{
-					Parameters = {
+					Parameters =
+					{
 						new NpgsqlParameter() { Value = minPoints },
 						new NpgsqlParameter() { Value = roleId }
 					}
@@ -486,7 +499,8 @@ public class DBRoles : DBConnectorBase
 
 				command = new NpgsqlCommand(query, tempConnection)
 				{
-					Parameters = {
+					Parameters =
+					{
 						new NpgsqlParameter() { Value = roleId }
 					}
 				};
@@ -495,7 +509,7 @@ public class DBRoles : DBConnectorBase
 
 		int affectedRows = await command.ExecuteNonQueryAsync();
 
-		if(affectedRows != 1)
+		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
 			await Log.WriteVerbose("UpdateRole", "Database connection closed.");
@@ -523,14 +537,15 @@ public class DBRoles : DBConnectorBase
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
-			Parameters = {
+			Parameters =
+			{
 				new NpgsqlParameter() { Value = roleId }
 			}
 		};
 
 		int affectedRows = await command.ExecuteNonQueryAsync();
 
-		if(affectedRows != 1)
+		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
 			await Log.WriteVerbose("DeleteRoleByRoleID", "Database connection closed.");
@@ -558,14 +573,15 @@ public class DBRoles : DBConnectorBase
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
-			Parameters = {
+			Parameters =
+			{
 				new NpgsqlParameter() { Value = discordId }
 			}
 		};
 
 		int affectedRows = await command.ExecuteNonQueryAsync();
 
-		if(affectedRows != 1)
+		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
 			await Log.WriteVerbose("DeleteRoleByDiscordID", "Database connection closed.");
@@ -593,14 +609,15 @@ public class DBRoles : DBConnectorBase
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
-			Parameters = {
+			Parameters =
+			{
 				new NpgsqlParameter() { Value = guildId }
 			}
 		};
 
 		int affectedRows = await command.ExecuteNonQueryAsync();
 
-		if(affectedRows != 1)
+		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
 			await Log.WriteVerbose("DeleteServerRoles", "Database connection closed.");

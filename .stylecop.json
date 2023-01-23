@@ -1,0 +1,25 @@
+{
+	"$schema": "https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/master/StyleCop.Analyzers/StyleCop.Analyzers/Settings/stylecop.schema.json",
+	"settings": {
+		"indentation": {
+			"useTabs": true,
+			"tabSize": 4,
+			"indentationSize": 4
+		},
+		"orderingRules": {
+			"systemUsingDirectivesFirst": true,
+			"usingDirectivesPlacement": "outsideNamespace",
+			"blankLinesBetweenUsingGroups": "omit"
+		},
+		"documentationRules": {
+			"companyName": "shigeru22",
+			"copyrightText": "Copyright (c) {companyName}, concept by {conceptorName}.\nLicensed under the {licenseName} license. See {licenseFile} in the repository root for details.",
+			"xmlHeader": false,
+			"variables": {
+				"conceptorName": "Akshiro28",
+				"licenseName": "MIT",
+				"licenseFile" : "LICENSE"
+			}
+		}
+	}
+}

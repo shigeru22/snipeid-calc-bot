@@ -1,15 +1,18 @@
-﻿using Npgsql;
-using LeaderpointsBot.Database.Tables;
+﻿// Copyright (c) shigeru22, concept by Akshiro28.
+// Licensed under the MIT license. See LICENSE in the repository root for details.
+
+using System.Diagnostics.CodeAnalysis;
 using LeaderpointsBot.Database.Exceptions;
+using LeaderpointsBot.Database.Tables;
 using LeaderpointsBot.Utils;
+using Npgsql;
 
 namespace LeaderpointsBot.Database;
 
 public class DatabaseFactory
 {
-	private static readonly DatabaseFactory instance = new();
-
-	public static DatabaseFactory Instance { get => instance; }
+	[SuppressMessage("csharp", "SA1311", Justification = "Private static readonly instance names should be lowercased (styling not yet configurable).")]
+	private static readonly DatabaseFactory instance = new DatabaseFactory();
 
 	private NpgsqlDataSource? dataSource;
 
@@ -18,11 +21,18 @@ public class DatabaseFactory
 	private DBServers? dbServers;
 	private DBAssignments? dbAssignments;
 
+	private DatabaseFactory()
+	{
+		Log.WriteVerbose("DatabaseFactory", "DatabaseFactory instance created.");
+	}
+
+	public static DatabaseFactory Instance { get => instance; }
+
 	public DBUsers UsersInstance
 	{
 		get
 		{
-			if(dbUsers == null)
+			if (dbUsers == null)
 			{
 				throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
 			}
@@ -35,7 +45,7 @@ public class DatabaseFactory
 	{
 		get
 		{
-			if(dbRoles == null)
+			if (dbRoles == null)
 			{
 				throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
 			}
@@ -48,7 +58,7 @@ public class DatabaseFactory
 	{
 		get
 		{
-			if(dbServers == null)
+			if (dbServers == null)
 			{
 				throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
 			}
@@ -61,18 +71,13 @@ public class DatabaseFactory
 	{
 		get
 		{
-			if(dbAssignments == null)
+			if (dbAssignments == null)
 			{
 				throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
 			}
 
 			return dbAssignments;
 		}
-	}
-
-	private DatabaseFactory()
-	{
-		Log.WriteVerbose("DatabaseFactory", "DatabaseFactory instance created.");
 	}
 
 	public void SetConfig(DatabaseConfig config)

@@ -1,28 +1,33 @@
+// Copyright (c) shigeru22, concept by Akshiro28.
+// Licensed under the MIT license. See LICENSE in the repository root for details.
+
 using System.Net;
 
 namespace LeaderpointsBot.Api.Exceptions;
 
 public class ApiResponseException : ApiException
 {
-	public HttpStatusCode Code { get; }
+	private readonly HttpStatusCode code;
 
-	public ApiResponseException(int statusCode): base($"API client returned status code { statusCode }.")
+	public ApiResponseException(int statusCode) : base($"API client returned status code {statusCode}.")
 	{
-		Code = (HttpStatusCode)statusCode;
+		code = (HttpStatusCode)statusCode;
 	}
 
-	public ApiResponseException(HttpStatusCode statusCode): base($"API client returned status code { (int)statusCode }.")
+	public ApiResponseException(HttpStatusCode statusCode) : base($"API client returned status code {(int)statusCode}.")
 	{
-		Code = statusCode;
+		code = statusCode;
 	}
 
-	public ApiResponseException(int statusCode, string message): base($"API client returned status code { statusCode }: { message }")
+	public ApiResponseException(int statusCode, string message) : base($"API client returned status code {statusCode}: {message}")
 	{
-		Code = (HttpStatusCode)statusCode;
+		code = (HttpStatusCode)statusCode;
 	}
 
-	public ApiResponseException(HttpStatusCode statusCode, string message): base($"API client returned status code { (int)statusCode }: { message }")
+	public ApiResponseException(HttpStatusCode statusCode, string message) : base($"API client returned status code {(int)statusCode}: {message}")
 	{
-		Code = statusCode;
+		code = statusCode;
 	}
+
+	public HttpStatusCode Code { get => code; }
 }

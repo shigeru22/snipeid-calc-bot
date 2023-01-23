@@ -1,10 +1,15 @@
+// Copyright (c) shigeru22, concept by Akshiro28.
+// Licensed under the MIT license. See LICENSE in the repository root for details.
+
 using System.Diagnostics.CodeAnalysis;
 
 namespace LeaderpointsBot.Api.OsuStats;
 
 public static class OsuStatsDataTypes
 {
-	[SuppressMessage("ReSharper", "InconsistentNaming")]
+	[SuppressMessage("csharp", "IDE1006", Justification = "osu!stats raw data used these field names.")]
+	[SuppressMessage("csharp", "SA1300", Justification = "osu!stats raw data used these field names.")]
+	[SuppressMessage("ReSharper", "InconsistentNaming", Justification = "osu!stats raw data used these field names.")]
 	public readonly struct OsuStatsRequestRawData
 	{
 		public double accMin { get; init; } // set to 0.0
@@ -66,7 +71,9 @@ public static class OsuStatsDataTypes
 		public int Count { get; init; }
 	}
 
-	[SuppressMessage("ReSharper", "InconsistentNaming")]
+	[SuppressMessage("csharp", "IDE1006", Justification = "osu!stats raw data used these field names.")]
+	[SuppressMessage("csharp", "SA1300", Justification = "osu!stats raw data used these field names.")]
+	[SuppressMessage("ReSharper", "InconsistentNaming", Justification = "osu!stats raw data used these field names.")]
 	public readonly struct OsuStatsRespektiveResponseRawData
 	{
 		public string? username { get; init; }

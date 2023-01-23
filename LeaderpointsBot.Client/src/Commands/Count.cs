@@ -1,3 +1,6 @@
+// Copyright (c) shigeru22, concept by Akshiro28.
+// Licensed under the MIT license. See LICENSE in the repository root for details.
+
 using Discord;
 using Discord.WebSocket;
 using LeaderpointsBot.Api;
@@ -18,9 +21,9 @@ namespace LeaderpointsBot.Client.Commands;
 
 public static class CountModule
 {
-	public static async Task<Structures.Commands.CountModule.UserLeaderboardsCountMessages[]> UserLeaderboardsCountBathbotAsync(Embed topsCount, DiscordSocketClient client, SocketGuild guild)
+	public static async Task<Structures.Commands.CountModule.UserLeaderboardsCountMessages[]> UserLeaderboardsCountBathbotAsync(Embed topsCount, SocketGuild guild)
 	{
-		if(!topsCount.Author.HasValue)
+		if (!topsCount.Author.HasValue)
 		{
 			throw new ClientException("Invalid embed passed to method.");
 		}
@@ -29,7 +32,7 @@ public static class CountModule
 		int embedOsuId = Parser.ParseOsuIDFromBathbotEmbedLink(topsCount.Author.Value.Url);
 		int[,] embedTopCounts; // assume non-respektive
 
-		await Log.WriteInfo("UserLeaderboardsCountBathbotAsync", $"Calculating points for osu! username: { embedUsername }");
+		await Log.WriteInfo("UserLeaderboardsCountBathbotAsync", $"Calculating points for osu! username: {embedUsername}");
 
 		try
 		{
@@ -38,7 +41,7 @@ public static class CountModule
 		}
 		catch (Exception e)
 		{
-			await Log.WriteError("UserLeaderboardsCountBathbotAsync", $"An unhandled client exception occurred.{ (Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{ e }" : "") }");
+			await Log.WriteError("UserLeaderboardsCountBathbotAsync", $"An unhandled client exception occurred.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
 			throw new SendMessageException("Unhandled client error occurred.");
 		}
 
@@ -55,7 +58,7 @@ public static class CountModule
 			await Log.WriteVerbose("UserLeaderboardsCountBathbotAsync", "No updateMessages set.");
 		}
 
-		List<Structures.Commands.CountModule.UserLeaderboardsCountMessages> responses = new()
+		List<Structures.Commands.CountModule.UserLeaderboardsCountMessages> responses = new List<Structures.Commands.CountModule.UserLeaderboardsCountMessages>()
 		{
 			new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
 			{
@@ -64,7 +67,7 @@ public static class CountModule
 			}
 		};
 
-		if(updateMessages.HasValue)
+		if (updateMessages.HasValue)
 		{
 			responses.Add(new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
 			{
@@ -72,7 +75,7 @@ public static class CountModule
 				Contents = updateMessages.Value.PointsMessage
 			});
 
-			if(!string.IsNullOrWhiteSpace(updateMessages.Value.RoleMessage))
+			if (!string.IsNullOrWhiteSpace(updateMessages.Value.RoleMessage))
 			{
 				responses.Add(new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
 				{
@@ -90,7 +93,7 @@ public static class CountModule
 		// TODO: [2023-01-21] extract reused procedures as methods
 
 		ServersQuerySchema.ServersTableData? dbServer = null;
-		if(guild != null)
+		if (guild != null)
 		{
 			try
 			{
@@ -102,57 +105,57 @@ public static class CountModule
 			}
 			catch (Exception e)
 			{
-				await Log.WriteError("CountLeaderboardPointsByDiscordUserAsync", $"An unhandled exception occurred while fetching server.{ (Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{ e }" : "") }");
+				await Log.WriteError("CountLeaderboardPointsByDiscordUserAsync", $"An unhandled exception occurred while fetching server.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
 				throw new SendMessageException("Unhandled client error occurred.", true);
 			}
 		}
-		
+
 		int osuId;
 		string osuUsername;
 
 		try
 		{
-			await Log.WriteVerbose("CountLeaderboardPointsByDiscordUserAsync", $"Fetching user data from database (Discord ID { userDiscordId }).");
+			await Log.WriteVerbose("CountLeaderboardPointsByDiscordUserAsync", $"Fetching user data from database (Discord ID {userDiscordId}).");
 
 			UsersQuerySchema.UsersTableData dbUser = await DatabaseFactory.Instance.UsersInstance.GetUserByDiscordID(userDiscordId);
 			osuId = dbUser.OsuID;
 		}
 		catch (DataNotFoundException)
 		{
-			await Log.WriteVerbose("CountLeaderboardPointsByDiscordUserAsync", $"User not found in database (Discord ID { userDiscordId }). Sending link message.");
-			throw new SendMessageException($"Not yet linked to osu! user. Link using <@{ clientDiscordId }>` link [osu! user ID]`{ (dbServer != null && dbServer.Value.CommandsChannelID != null ? $" at <#{ dbServer.Value.CommandsChannelID }>" : "") }.", true);
+			await Log.WriteVerbose("CountLeaderboardPointsByDiscordUserAsync", $"User not found in database (Discord ID {userDiscordId}). Sending link message.");
+			throw new SendMessageException($"Not yet linked to osu! user. Link using <@{clientDiscordId}>` link [osu! user ID]`{(dbServer != null && dbServer.Value.CommandsChannelID != null ? $" at <#{dbServer.Value.CommandsChannelID}>" : string.Empty)}.", true);
 		}
 		catch (Exception e)
 		{
-			await Log.WriteError("CountLeaderboardPointsByDiscordUserAsync", $"An unhandled exception occurred while fetching user.{ (Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{ e }" : "") }");
+			await Log.WriteError("CountLeaderboardPointsByDiscordUserAsync", $"An unhandled exception occurred while fetching user.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
 			throw new SendMessageException("Unhandled client error occurred.", true);
 		}
 
 		try
 		{
-			await Log.WriteVerbose("CountLeaderboardPointsByDiscordUserAsync", $"Fetching osu! user data from osu!api (osu! ID { osuId }).");
+			await Log.WriteVerbose("CountLeaderboardPointsByDiscordUserAsync", $"Fetching osu! user data from osu!api (osu! ID {osuId}).");
 
 			OsuDataTypes.OsuApiUserResponseData osuUser = await ApiFactory.Instance.OsuApiInstance.GetUserByOsuID(osuId);
 			osuUsername = osuUser.Username;
 		}
 		catch (Exception e)
 		{
-			await Log.WriteError("CountLeaderboardPointsByDiscordUserAsync", $"An unhandled exception occurred while fetching osu! user.{ (Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{ e }" : "") }");
+			await Log.WriteError("CountLeaderboardPointsByDiscordUserAsync", $"An unhandled exception occurred while fetching osu! user.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
 			throw new SendMessageException("Unhandled client error occurred.", true);
 		}
 
-		List<int[]> topCounts = new();
+		List<int[]> topCounts = new List<int[]>();
 		int points;
 
-		if(!Settings.Instance.OsuApi.UseRespektiveStats)
+		if (!Settings.Instance.OsuApi.UseRespektiveStats)
 		{
 			await Log.WriteVerbose("CountLeaderboardPointsByDiscordUserAsync", "Fetching osu!stats data (top 1, 8, 15, 25, and 50).");
 
 			int[] ranks = new int[] { 1, 8, 15, 25, 50 };
 			int ranksLength = ranks.Length;
 
-			List<Task<OsuStatsDataTypes.OsuStatsResponseData>> osuStatsRequests = new();
-			foreach(int rank in ranks)
+			List<Task<OsuStatsDataTypes.OsuStatsResponseData>> osuStatsRequests = new List<Task<OsuStatsDataTypes.OsuStatsResponseData>>();
+			foreach (int rank in ranks)
 			{
 				osuStatsRequests.Add(ApiFactory.Instance.OsuStatsInstance.GetTopCounts(osuUsername, rank));
 			}
@@ -165,11 +168,11 @@ public static class CountModule
 			}
 			catch (Exception e)
 			{
-				await Log.WriteError("CountLeaderboardPointsByDiscordUserAsync", $"An unhandled exception occurred while fetching osu!stats data.{ (Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{ e }" : "") }");
+				await Log.WriteError("CountLeaderboardPointsByDiscordUserAsync", $"An unhandled exception occurred while fetching osu!stats data.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
 				throw new SendMessageException("Unhandled client error occurred.", true);
 			}
 
-			foreach(OsuStatsDataTypes.OsuStatsResponseData response in osuStatsResponses)
+			foreach (OsuStatsDataTypes.OsuStatsResponseData response in osuStatsResponses)
 			{
 				topCounts.Add(new int[] { response.MaxRank, response.Count });
 			}
@@ -189,25 +192,25 @@ public static class CountModule
 			}
 			catch (Exception e)
 			{
-				await Log.WriteError("CountLeaderboardPointsByDiscordUserAsync", $"An unhandled exception occurred while fetching respektive osu!stats data.{ (Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{ e }" : "") }");
+				await Log.WriteError("CountLeaderboardPointsByDiscordUserAsync", $"An unhandled exception occurred while fetching respektive osu!stats data.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
 				throw new SendMessageException("Unhandled client error occurred.", true);
 			}
 
-			topCounts.Add(new int[] { 1, (osuStatsResponse.Top1.HasValue ? osuStatsResponse.Top1.Value : 0) });
-			topCounts.Add(new int[] { 8, (osuStatsResponse.Top8.HasValue ? osuStatsResponse.Top8.Value : 0) });
-			topCounts.Add(new int[] { 25, (osuStatsResponse.Top25.HasValue ? osuStatsResponse.Top25.Value : 0) });
-			topCounts.Add(new int[] { 50, (osuStatsResponse.Top50.HasValue ? osuStatsResponse.Top50.Value : 0) });
+			topCounts.Add(new int[] { 1, osuStatsResponse.Top1 ?? 0 });
+			topCounts.Add(new int[] { 8, osuStatsResponse.Top8 ?? 0 });
+			topCounts.Add(new int[] { 25, osuStatsResponse.Top25 ?? 0 });
+			topCounts.Add(new int[] { 50, osuStatsResponse.Top50 ?? 0 });
 
 			points = Counter.CalculateTopPoints(topCounts);
 		}
 
 		Structures.Actions.Counter.UpdateUserDataMessages? updateMessages = null;
-		if(guild != null && dbServer != null)
+		if (guild != null && dbServer != null)
 		{
 			updateMessages = await CounterActions.UpdateUserDataAsync(guild, osuId, points);
 		}
 
-		List<Structures.Commands.CountModule.UserLeaderboardsCountMessages> responses = new()
+		List<Structures.Commands.CountModule.UserLeaderboardsCountMessages> responses = new List<Structures.Commands.CountModule.UserLeaderboardsCountMessages>()
 		{
 			new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
 			{
@@ -216,7 +219,7 @@ public static class CountModule
 			}
 		};
 
-		if(updateMessages.HasValue)
+		if (updateMessages.HasValue)
 		{
 			responses.Add(new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
 			{
@@ -224,7 +227,7 @@ public static class CountModule
 				Contents = updateMessages.Value.PointsMessage
 			});
 
-			if(!string.IsNullOrWhiteSpace(updateMessages.Value.RoleMessage))
+			if (!string.IsNullOrWhiteSpace(updateMessages.Value.RoleMessage))
 			{
 				responses.Add(new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
 				{
@@ -245,7 +248,7 @@ public static class CountModule
 		int osuId;
 
 		ServersQuerySchema.ServersTableData? dbServer = null;
-		if(guild != null)
+		if (guild != null)
 		{
 			try
 			{
@@ -257,14 +260,14 @@ public static class CountModule
 			}
 			catch (Exception e)
 			{
-				await Log.WriteError("CountLeaderboardPointsByDiscordUserAsync", $"An unhandled exception occurred while fetching server.{ (Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{ e }" : "") }");
+				await Log.WriteError("CountLeaderboardPointsByDiscordUserAsync", $"An unhandled exception occurred while fetching server.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
 				throw new SendMessageException("Unhandled client error occurred.", true);
 			}
 		}
 
 		try
 		{
-			await Log.WriteVerbose("CountLeaderboardPointsByDiscordUserAsync", $"Fetching osu! user data from osu!api (osu! username { osuUsername }).");
+			await Log.WriteVerbose("CountLeaderboardPointsByDiscordUserAsync", $"Fetching osu! user data from osu!api (osu! username {osuUsername}).");
 
 			OsuDataTypes.OsuApiUserResponseData osuUser = await ApiFactory.Instance.OsuApiInstance.GetUserByOsuUsername(osuUsername);
 			tempOsuUsername = osuUser.Username;
@@ -272,22 +275,22 @@ public static class CountModule
 		}
 		catch (Exception e)
 		{
-			await Log.WriteError("CountLeaderboardPointsByDiscordUserAsync", $"An unhandled exception occurred while fetching osu! user.{ (Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{ e }" : "") }");
+			await Log.WriteError("CountLeaderboardPointsByDiscordUserAsync", $"An unhandled exception occurred while fetching osu! user.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
 			throw new SendMessageException("Unhandled client error occurred.", true);
 		}
 
-		List<int[]> topCounts = new();
+		List<int[]> topCounts = new List<int[]>();
 		int points;
 
-		if(!Settings.Instance.OsuApi.UseRespektiveStats)
+		if (!Settings.Instance.OsuApi.UseRespektiveStats)
 		{
 			await Log.WriteVerbose("CountLeaderboardPointsByDiscordUserAsync", "Fetching osu!stats data (top 1, 8, 15, 25, and 50).");
 
 			int[] ranks = new int[] { 1, 8, 15, 25, 50 };
 			int ranksLength = ranks.Length;
 
-			List<Task<OsuStatsDataTypes.OsuStatsResponseData>> osuStatsRequests = new();
-			foreach(int rank in ranks)
+			List<Task<OsuStatsDataTypes.OsuStatsResponseData>> osuStatsRequests = new List<Task<OsuStatsDataTypes.OsuStatsResponseData>>();
+			foreach (int rank in ranks)
 			{
 				osuStatsRequests.Add(ApiFactory.Instance.OsuStatsInstance.GetTopCounts(osuUsername, rank));
 			}
@@ -300,11 +303,11 @@ public static class CountModule
 			}
 			catch (Exception e)
 			{
-				await Log.WriteError("CountLeaderboardPointsByDiscordUserAsync", $"An unhandled exception occurred while fetching osu!stats data.{ (Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{ e }" : "") }");
+				await Log.WriteError("CountLeaderboardPointsByDiscordUserAsync", $"An unhandled exception occurred while fetching osu!stats data.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
 				throw new SendMessageException("Unhandled client error occurred.", true);
 			}
 
-			foreach(OsuStatsDataTypes.OsuStatsResponseData response in osuStatsResponses)
+			foreach (OsuStatsDataTypes.OsuStatsResponseData response in osuStatsResponses)
 			{
 				topCounts.Add(new int[] { response.MaxRank, response.Count });
 			}
@@ -324,20 +327,20 @@ public static class CountModule
 			}
 			catch (Exception e)
 			{
-				await Log.WriteError("CountLeaderboardPointsByDiscordUserAsync", $"An unhandled exception occurred while fetching respektive osu!stats data.{ (Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{ e }" : "") }");
+				await Log.WriteError("CountLeaderboardPointsByDiscordUserAsync", $"An unhandled exception occurred while fetching respektive osu!stats data.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
 				throw new SendMessageException("Unhandled client error occurred.", true);
 			}
 
-			topCounts.Add(new int[] { 1, (osuStatsResponse.Top1.HasValue ? osuStatsResponse.Top1.Value : 0) });
-			topCounts.Add(new int[] { 8, (osuStatsResponse.Top8.HasValue ? osuStatsResponse.Top8.Value : 0) });
-			topCounts.Add(new int[] { 25, (osuStatsResponse.Top25.HasValue ? osuStatsResponse.Top25.Value : 0) });
-			topCounts.Add(new int[] { 50, (osuStatsResponse.Top50.HasValue ? osuStatsResponse.Top50.Value : 0) });
+			topCounts.Add(new int[] { 1, osuStatsResponse.Top1 ?? 0 });
+			topCounts.Add(new int[] { 8, osuStatsResponse.Top8 ?? 0 });
+			topCounts.Add(new int[] { 25, osuStatsResponse.Top25 ?? 0 });
+			topCounts.Add(new int[] { 50, osuStatsResponse.Top50 ?? 0 });
 
 			points = Counter.CalculateTopPoints(topCounts);
 		}
 
 		Structures.Actions.Counter.UpdateUserDataMessages? updateMessages = null;
-		if(guild != null && dbServer != null)
+		if (guild != null && dbServer != null)
 		{
 			try
 			{
@@ -349,7 +352,7 @@ public static class CountModule
 			}
 		}
 
-		List<Structures.Commands.CountModule.UserLeaderboardsCountMessages> responses = new()
+		List<Structures.Commands.CountModule.UserLeaderboardsCountMessages> responses = new List<Structures.Commands.CountModule.UserLeaderboardsCountMessages>()
 		{
 			new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
 			{
@@ -358,7 +361,7 @@ public static class CountModule
 			}
 		};
 
-		if(updateMessages.HasValue)
+		if (updateMessages.HasValue)
 		{
 			responses.Add(new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
 			{
@@ -366,7 +369,7 @@ public static class CountModule
 				Contents = updateMessages.Value.PointsMessage
 			});
 
-			if(!string.IsNullOrWhiteSpace(updateMessages.Value.RoleMessage))
+			if (!string.IsNullOrWhiteSpace(updateMessages.Value.RoleMessage))
 			{
 				responses.Add(new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
 				{

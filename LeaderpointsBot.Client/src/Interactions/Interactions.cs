@@ -1,3 +1,6 @@
+// Copyright (c) shigeru22, concept by Akshiro28.
+// Licensed under the MIT license. See LICENSE in the repository root for details.
+
 using Discord.WebSocket;
 using LeaderpointsBot.Client.Exceptions.Commands;
 using LeaderpointsBot.Utils;
@@ -21,12 +24,13 @@ public class InteractionsFactory
 	{
 		// await Log.WriteDebug("OnInvokeSlashInteraction", $"Slash interaction from { cmd.User.Username }#{ cmd.User.Discriminator }: { cmd.Data.Name } ({ cmd.Data.Id })");
 
-		Task.Run(async () => {
+		Task.Run(async () =>
+		{
 			try
 			{
 				SocketGuildChannel? guildChannel = cmd.Channel as SocketGuildChannel;
 
-				switch(cmd.Data.Name)
+				switch (cmd.Data.Name)
 				{
 					case "link":
 						// TODO: link user
@@ -35,7 +39,7 @@ public class InteractionsFactory
 						break;
 					case "ping":
 						// TODO: send ping
-						await Log.WriteDebug("OnInvokeSlashInteraction", $"Send ping command received{ (guildChannel != null ? $" (guild ID { guildChannel.Guild.Id })" : "") }.");
+						await Log.WriteDebug("OnInvokeSlashInteraction", $"Send ping command received{(guildChannel != null ? $" (guild ID {guildChannel.Guild.Id})" : string.Empty)}.");
 						await InteractionModules.PingSlashModule.SendPingCommand(client, cmd);
 						break;
 					case "count":
@@ -69,20 +73,20 @@ public class InteractionsFactory
 			{
 				await Log.WriteVerbose("OnInvokeSlashInteraction", "Send message signal received. Sending message and cancelling process.");
 
-				if(cmd.HasResponded)
+				if (cmd.HasResponded)
 				{
-					await cmd.ModifyOriginalResponseAsync(msg => msg.Content = e.IsError ? $"**Error:** { e.Draft }" : e.Draft);
+					await cmd.ModifyOriginalResponseAsync(msg => msg.Content = e.IsError ? $"**Error:** {e.Draft}" : e.Draft);
 				}
 				else
 				{
-					await cmd.RespondAsync(e.IsError ? $"**Error:** { e.Draft }" : e.Draft);
+					await cmd.RespondAsync(e.IsError ? $"**Error:** {e.Draft}" : e.Draft);
 				}
 			}
 			catch (Exception e)
 			{
-				await Log.WriteError("OnInvokeSlashInteraction", $"Unhandled client error occurred.{ (Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{ e }" : "") }");
+				await Log.WriteError("OnInvokeSlashInteraction", $"Unhandled client error occurred.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
 
-				if(cmd.HasResponded)
+				if (cmd.HasResponded)
 				{
 					await cmd.ModifyOriginalResponseAsync(msg => msg.Content = "**Error:** Unhandled client error occurred.");
 				}
@@ -96,33 +100,59 @@ public class InteractionsFactory
 		return Task.CompletedTask;
 	}
 
-	public async Task OnInvokeUserContextInteraction(SocketUserCommand cmd)
+	public Task OnInvokeUserContextInteraction(SocketUserCommand cmd)
 	{
 		// await Log.WriteDebug("OnInvokeContextInteraction", $"Context interaction from { cmd.User.Username }#{ cmd.User.Discriminator }: { cmd.Data.Name } ({ cmd.Data.Id })");
 
-		switch(cmd.Data.Name)
+		Task.Run(async () =>
 		{
-			case "Calculate points":
-				// TODO: count points
-				await Log.WriteDebug("OnInvokeUserContextInteraction", "Count points command received.");
-				try
+			try
+			{
+				switch (cmd.Data.Name)
 				{
-					await InteractionModules.CountContextModule.CountPointsCommand(client, cmd);
+					case "Calculate points":
+						// TODO: count points
+						await Log.WriteDebug("OnInvokeUserContextInteraction", "Count points command received.");
+						await InteractionModules.CountContextModule.CountPointsCommand(client, cmd);
+						break;
 				}
-				catch (Exception e)
+			}
+			catch (SendMessageException e)
+			{
+				await Log.WriteVerbose("OnInvokeSlashInteraction", "Send message signal received. Sending message and cancelling process.");
+
+				if (cmd.HasResponded)
 				{
-					Console.WriteLine(e);
-					throw;
+					await cmd.ModifyOriginalResponseAsync(msg => msg.Content = e.IsError ? $"**Error:** {e.Draft}" : e.Draft);
 				}
-				break;
-		}
+				else
+				{
+					await cmd.RespondAsync(e.IsError ? $"**Error:** {e.Draft}" : e.Draft);
+				}
+			}
+			catch (Exception e)
+			{
+				await Log.WriteError("OnInvokeSlashInteraction", $"Unhandled client error occurred.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
+
+				if (cmd.HasResponded)
+				{
+					await cmd.ModifyOriginalResponseAsync(msg => msg.Content = "**Error:** Unhandled client error occurred.");
+				}
+				else
+				{
+					await cmd.RespondAsync("**Error:** Unhandled client error occurred.");
+				}
+			}
+		});
+
+		return Task.CompletedTask;
 	}
 
 	private async Task HandleConfigurationSlashCommand(SocketSlashCommand cmd)
 	{
 		string subcommandName = cmd.Data.Options.First().Name;
 
-		switch(subcommandName)
+		switch (subcommandName)
 		{
 			case "show":
 				await Log.WriteDebug("HandleConfigurationSlashCommand", "Show server configuration subcommand received.");
@@ -131,7 +161,7 @@ public class InteractionsFactory
 			case "help":
 				await Log.WriteDebug("HandleConfigurationSlashCommand", "Server configuration setter command received.");
 				await InteractionModules.ConfigurationSlashModule.SendHelpConfigurationCommand(client, cmd);
-				break;	
+				break;
 			case "set":
 				await Log.WriteDebug("HandleConfigurationSlashCommand", "Server configuration setter command received. Handling subcommand.");
 				await HandleConfigurationSetterSlashCommand(cmd);
@@ -142,21 +172,21 @@ public class InteractionsFactory
 	private async Task HandleConfigurationSetterSlashCommand(SocketSlashCommand cmd)
 	{
 		string subcommandName;
-		
+
 		try
 		{
 			await Log.WriteDebug("HandleConfigurationSetterSlashCommand", "Retrieving second subcommand name.");
 			subcommandName = (string)cmd.Data.Options.First().Options.First().Name;
-			await Log.WriteDebug("HandleConfigurationSetterSlashCommand", $"Second subcommand name retrieved: { subcommandName }.");
+			await Log.WriteDebug("HandleConfigurationSetterSlashCommand", $"Second subcommand name retrieved: {subcommandName}.");
 		}
 		catch (Exception e)
 		{
-			await Log.WriteDebug("HandleConfigurationSetterSlashCommand", $"Unhandled exception occurred while retrieving second subcommand. Exception details below.\n{ e }");
+			await Log.WriteDebug("HandleConfigurationSetterSlashCommand", $"Unhandled exception occurred while retrieving second subcommand. Exception details below.\n{e}");
 			await cmd.RespondAsync("An error occurred while processing your command.", ephemeral: true);
 			return;
 		}
 
-		switch(subcommandName)
+		switch (subcommandName)
 		{
 			case "country":
 				await Log.WriteDebug("HandleConfigurationSetterSlashCommand", "Set server country restriction command received.");

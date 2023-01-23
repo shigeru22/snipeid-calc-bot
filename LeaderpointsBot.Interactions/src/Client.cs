@@ -1,3 +1,6 @@
+// Copyright (c) shigeru22, concept by Akshiro28.
+// Licensed under the MIT license. See LICENSE in the repository root for details.
+
 using Discord.WebSocket;
 using LeaderpointsBot.Utils;
 
@@ -50,7 +53,7 @@ public class Client
 		{
 			// TODO: determine application command creation errors
 
-			await Log.WriteCritical("OnReady", $"Unhandled error occurred while creating command. Exception details below.\n{ e }");
+			await Log.WriteCritical("OnReady", $"Unhandled error occurred while creating command. Exception details below.\n{e}");
 
 			await Log.WriteVerbose("OnReady", "Exiting with code 1.");
 			Environment.Exit(1);
@@ -58,7 +61,7 @@ public class Client
 
 		DateTime endTime = DateTime.Now;
 
-		await Log.WriteInfo("OnReady", $"Operation completed in { Math.Round((endTime - startTime).TotalSeconds, 3) } seconds.");
+		await Log.WriteInfo("OnReady", $"Operation completed in {Math.Round((endTime - startTime).TotalSeconds, 3)} seconds.");
 
 		await Log.WriteVerbose("OnReady", "Exiting with code 0.");
 		Environment.Exit(0);
