@@ -12,8 +12,8 @@ public static class OsuDataTypes
 		public string Authorization { get; set; }
 	}
 
-	[SuppressMessage("csharp", "IDE1006", Justification = "osu!api raw data used these field names.")]
-	[SuppressMessage("csharp", "SA1300", Justification = "osu!api raw data used these field names.")]
+	[SuppressMessage("Microsoft.CSharp.NamingRules", "IDE1006", Justification = "osu!api raw data used these field names.")]
+	[SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter", Justification = "osu!api raw data used these field names.")]
 	[SuppressMessage("ReSharper", "InconsistentNaming", Justification = "osu!api raw data used these field names.")]
 	public readonly struct OsuApiTokenRequestRawData
 	{
@@ -53,8 +53,8 @@ public static class OsuDataTypes
 		}
 	}
 
-	[SuppressMessage("csharp", "IDE1006", Justification = "osu!api raw data used these field names.")]
-	[SuppressMessage("csharp", "SA1300", Justification = "osu!api raw data used these field names.")]
+	[SuppressMessage("Microsoft.CSharp.NamingRules", "IDE1006", Justification = "osu!api raw data used these field names.")]
+	[SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter", Justification = "osu!api raw data used these field names.")]
 	[SuppressMessage("ReSharper", "InconsistentNaming", Justification = "osu!api raw data used these field names.")]
 	public struct OsuApiTokenResponseRawData
 	{
@@ -90,8 +90,8 @@ public static class OsuDataTypes
 		}
 	}
 
-	[SuppressMessage("csharp", "IDE1006", Justification = "osu!api raw data used these field names.")]
-	[SuppressMessage("csharp", "SA1300", Justification = "osu!api raw data used these field names.")]
+	[SuppressMessage("Microsoft.CSharp.NamingRules", "IDE1006", Justification = "osu!api raw data used these field names.")]
+	[SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter", Justification = "osu!api raw data used these field names.")]
 	[SuppressMessage("ReSharper", "InconsistentNaming", Justification = "osu!api raw data used these field names.")]
 	public struct OsuApiUserResponseRawData
 	{

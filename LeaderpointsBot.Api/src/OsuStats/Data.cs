@@ -7,8 +7,8 @@ namespace LeaderpointsBot.Api.OsuStats;
 
 public static class OsuStatsDataTypes
 {
-	[SuppressMessage("csharp", "IDE1006", Justification = "osu!stats raw data used these field names.")]
-	[SuppressMessage("csharp", "SA1300", Justification = "osu!stats raw data used these field names.")]
+	[SuppressMessage("Microsoft.CSharp.NamingRules", "IDE1006", Justification = "osu!api raw data used these field names.")]
+	[SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter", Justification = "osu!stats raw data used these field names.")]
 	[SuppressMessage("ReSharper", "InconsistentNaming", Justification = "osu!stats raw data used these field names.")]
 	public readonly struct OsuStatsRequestRawData
 	{
@@ -71,8 +71,8 @@ public static class OsuStatsDataTypes
 		public int Count { get; init; }
 	}
 
-	[SuppressMessage("csharp", "IDE1006", Justification = "osu!stats raw data used these field names.")]
-	[SuppressMessage("csharp", "SA1300", Justification = "osu!stats raw data used these field names.")]
+	[SuppressMessage("Microsoft.CSharp.NamingRules", "IDE1006", Justification = "osu!api raw data used these field names.")]
+	[SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter", Justification = "osu!stats raw data used these field names.")]
 	[SuppressMessage("ReSharper", "InconsistentNaming", Justification = "osu!stats raw data used these field names.")]
 	public readonly struct OsuStatsRespektiveResponseRawData
 	{

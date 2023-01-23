@@ -10,7 +10,7 @@ public class Settings
 {
 	private const string DefaultSettingsPath = "appsettings.json";
 
-	[SuppressMessage("csharp", "SA1311", Justification = "Private static readonly instance names should be lowercased (styling not yet configurable).")]
+	[SuppressMessage("StyleCop.CSharp.NamingRules", "SA1311:StaticReadonlyFieldsMustBeginWithUpperCaseLetter", Justification = "Private static readonly instance names should be lowercased (styling not yet configurable).")]
 	private static readonly Settings instance = new Settings(DefaultSettingsPath);
 
 	private SettingsTypes.JsonClientSettings client;

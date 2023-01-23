@@ -11,7 +11,7 @@ namespace LeaderpointsBot.Database;
 
 public class DatabaseFactory
 {
-	[SuppressMessage("csharp", "SA1311", Justification = "Private static readonly instance names should be lowercased (styling not yet configurable).")]
+	[SuppressMessage("StyleCop.CSharp.NamingRules", "SA1311:StaticReadonlyFieldsMustBeginWithUpperCaseLetter", Justification = "Private static readonly instance names should be lowercased (styling not yet configurable).")]
 	private static readonly DatabaseFactory instance = new DatabaseFactory();
 
 	private NpgsqlDataSource? dataSource;

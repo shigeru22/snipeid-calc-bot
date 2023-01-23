@@ -1,7 +1,6 @@
 // Copyright (c) shigeru22, concept by Akshiro28.
 // Licensed under the MIT license. See LICENSE in the repository root for details.
 
-using System.Diagnostics.CodeAnalysis;
 using LeaderpointsBot.Api;
 using LeaderpointsBot.Database;
 using LeaderpointsBot.Utils;
@@ -10,7 +9,6 @@ namespace LeaderpointsBot.Client;
 
 public static class Program
 {
-	[SuppressMessage("csharp", "IDE0060", Justification = "Reviewed: Will unify interaction creation project as client argument.")]
 	public static async Task Main(string[] args)
 	{
 		await Log.WriteInfo("Main", "Program started."); // test
