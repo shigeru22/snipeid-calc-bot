@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<RuleSet Name="StyleCop.Analyzers rules with default action" Description="StyleCop.Analyzers with default action. Rules with IsEnabledByDefault = false are disabled." ToolsVersion="14.0">
+<RuleSet Name="Leaderpoints Bot CA Rules"
+	Description="Leaderpoints Bot project code analysis rules. Used in multiple projects from the directory containing this file."
+	ToolsVersion="14.0">
 	<Rules AnalyzerId="Microsoft.Analyzers.ManagedCodeAnalysis" RuleNamespace="Microsoft.Rules.Managed">
 		<!-- note: if SA spacing is configurable, switch this to info -->
 		<Rule Id="IDE0090"  Action="None" />         <!-- Simplify new expression -->
