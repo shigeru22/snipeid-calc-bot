@@ -11,9 +11,11 @@ namespace LeaderpointsBot.Api.Osu;
 
 public class OsuApi
 {
-	public const string OsuApiEndpoint = "https://osu.ppy.sh/api/v2";
+	public const string OSU_API_ENDPOINT = "https://osu.ppy.sh/api/v2";
 
 	private readonly OsuToken osuTokenInstance;
+
+	public OsuToken Token => osuTokenInstance;
 
 	public OsuApi()
 	{
@@ -36,8 +38,6 @@ public class OsuApi
 		osuTokenInstance = new OsuToken(clientId, clientSecret);
 	}
 
-	public OsuToken Token { get => osuTokenInstance; }
-
 	public async Task<OsuDataTypes.OsuApiUserResponseData> GetUserByOsuID(int osuId)
 	{
 		await Log.WriteVerbose("GetUserByOsuID", $"Requesting osu! user with ID {osuId}.");
@@ -52,7 +52,7 @@ public class OsuApi
 			client.DefaultRequestHeaders.Add("Authorization", $"Bearer {await Token.GetTokenAsync()}");
 
 			await Log.WriteVerbose("GetUserByOsuID", "Requesting osu!api user endpoint.");
-			response = await client.GetAsync($"{OsuApi.OsuApiEndpoint}/users/{osuId}?type=id");
+			response = await client.GetAsync($"{OsuApi.OSU_API_ENDPOINT}/users/{osuId}?type=id");
 		}
 		catch (Exception e)
 		{
@@ -87,7 +87,7 @@ public class OsuApi
 			client.DefaultRequestHeaders.Add("Authorization", $"Bearer {await Token.GetTokenAsync()}");
 
 			await Log.WriteVerbose("GetUserByOsuID", "Requesting osu!api user endpoint.");
-			response = await client.GetAsync($"{OsuApi.OsuApiEndpoint}/users/{osuUsername}?key=username");
+			response = await client.GetAsync($"{OsuApi.OSU_API_ENDPOINT}/users/{osuUsername}?key=username");
 		}
 		catch (Exception e)
 		{

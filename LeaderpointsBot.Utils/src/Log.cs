@@ -7,7 +7,7 @@ namespace LeaderpointsBot.Utils;
 
 public static class Log
 {
-	private static readonly string[] LogSeverity =
+	public static readonly string[] LogSeverity =
 	{
 		"CRITICAL",
 		"ERROR",

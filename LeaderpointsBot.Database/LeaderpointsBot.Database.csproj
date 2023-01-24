@@ -1,29 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Npgsql" Version="7.0.1" />
-		<PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		  <PrivateAssets>all</PrivateAssets>
-		</PackageReference>
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Npgsql" Version="7.0.1" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\LeaderpointsBot.Utils\LeaderpointsBot.Utils.csproj" />
-	</ItemGroup>
-
-	<PropertyGroup>
-		<CodeAnalysisRuleSet>..\.stylecop.ruleset</CodeAnalysisRuleSet>
-	</PropertyGroup>
-
-	<ItemGroup>
-		<AdditionalFiles Include="..\.stylecop.json"></AdditionalFiles>
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LeaderpointsBot.Utils\LeaderpointsBot.Utils.csproj" />
+  </ItemGroup>
 
 </Project>

@@ -12,7 +12,7 @@ namespace LeaderpointsBot.Api.Osu;
 
 public class OsuToken
 {
-	public const string OsuTokenEndpoint = "https://osu.ppy.sh/oauth/token";
+	public const string OSU_TOKEN_ENDPOINT = "https://osu.ppy.sh/oauth/token";
 
 	private int clientId = 0;
 	private string clientSecret = string.Empty;
@@ -79,7 +79,7 @@ public class OsuToken
 			StringContent data = new StringContent(JsonSerializer.Serialize(requestData.ToRawData()), Encoding.UTF8, "application/json");
 
 			await Log.WriteVerbose("GetTokenAsync", "Requesting osu!api token endpoint.");
-			response = await client.PostAsync(OsuTokenEndpoint, data);
+			response = await client.PostAsync(OSU_TOKEN_ENDPOINT, data);
 		}
 		catch (Exception e)
 		{
@@ -123,7 +123,7 @@ public class OsuToken
 			client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
 			await Log.WriteVerbose("RevokeTokenAsync", "Requesting osu!api revoke token endpoint.");
-			response = await client.DeleteAsync($"{OsuApi.OsuApiEndpoint}/oauth/tokens/current");
+			response = await client.DeleteAsync($"{OsuApi.OSU_API_ENDPOINT}/oauth/tokens/current");
 		}
 		catch (Exception e)
 		{

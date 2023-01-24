@@ -1,23 +1,23 @@
 {
-	"client": {
-		"botToken": "A1b2c3D4.e5F6...",
-		"useReply": false,
-		"logging": {
-			"useUtc": false,
-			"logSeverity": 3
-		}
-	},
-	"database": {
-		"hostname": "localhost",
-		"port": 5432,
-		"username": "username",
-		"password": "12345678",
-		"databaseName": "database",
-		"caFilePath": ""
-	},
-	"osuApi": {
-		"clientId": 1234,
-		"clientSecret": "a1b2c3d4e5...",
-		"useRespektiveStats": false
-	}
+  "client": {
+    "botToken": "A1b2c3D4.e5F6...",
+    "useReply": false,
+    "logging": {
+      "useUtc": false,
+      "logSeverity": 3
+    }
+  },
+  "database": {
+    "hostname": "localhost",
+    "port": 5432,
+    "username": "username",
+    "password": "12345678",
+    "databaseName": "database",
+    "caFilePath": ""
+  },
+  "osuApi": {
+    "clientId": 1234,
+    "clientSecret": "a1b2c3d4e5...",
+    "useRespektiveStats": false
+  }
 }

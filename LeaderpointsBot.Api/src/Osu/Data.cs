@@ -1,8 +1,6 @@
 // Copyright (c) shigeru22, concept by Akshiro28.
 // Licensed under the MIT license. See LICENSE in the repository root for details.
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace LeaderpointsBot.Api.Osu;
 
 public static class OsuDataTypes
@@ -12,15 +10,14 @@ public static class OsuDataTypes
 		public string Authorization { get; set; }
 	}
 
-	[SuppressMessage("Microsoft.CSharp.NamingRules", "IDE1006", Justification = "osu!api raw data used these field names.")]
-	[SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter", Justification = "osu!api raw data used these field names.")]
-	[SuppressMessage("ReSharper", "InconsistentNaming", Justification = "osu!api raw data used these field names.")]
 	public readonly struct OsuApiTokenRequestRawData
 	{
+#pragma warning disable IDE1006 // Naming Styles
 		public int client_id { get; init; }
 		public string client_secret { get; init; }
 		public string grant_type { get; init; }
 		public string scope { get; init; }
+#pragma warning restore IDE1006 // Naming Styles
 
 		public OsuApiTokenRequestData ToStandardData()
 		{
@@ -53,14 +50,13 @@ public static class OsuDataTypes
 		}
 	}
 
-	[SuppressMessage("Microsoft.CSharp.NamingRules", "IDE1006", Justification = "osu!api raw data used these field names.")]
-	[SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter", Justification = "osu!api raw data used these field names.")]
-	[SuppressMessage("ReSharper", "InconsistentNaming", Justification = "osu!api raw data used these field names.")]
 	public struct OsuApiTokenResponseRawData
 	{
+#pragma warning disable IDE1006 // Naming Styles
 		public string token_type { get; set; }
 		public int expires_in { get; set; }
 		public string access_token { get; set; }
+#pragma warning restore IDE1006 // Naming Styles
 
 		public OsuApiTokenResponseData ToStandardData()
 		{
@@ -90,11 +86,9 @@ public static class OsuDataTypes
 		}
 	}
 
-	[SuppressMessage("Microsoft.CSharp.NamingRules", "IDE1006", Justification = "osu!api raw data used these field names.")]
-	[SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter", Justification = "osu!api raw data used these field names.")]
-	[SuppressMessage("ReSharper", "InconsistentNaming", Justification = "osu!api raw data used these field names.")]
 	public struct OsuApiUserResponseRawData
 	{
+#pragma warning disable IDE1006 // Naming Styles
 		public string avatar_url { get; set; }
 		public string country_code { get; set; }
 		public string cover_url { get; set; }
@@ -126,6 +120,7 @@ public static class OsuDataTypes
 		public string? twitter { get; set; }
 		public string username { get; set; }
 		public string? website { get; set; }
+#pragma warning restore IDE1006 // Naming Styles
 
 		public OsuApiUserResponseData ToStandardData()
 		{

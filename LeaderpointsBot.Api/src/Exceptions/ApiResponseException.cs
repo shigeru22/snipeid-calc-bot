@@ -29,5 +29,5 @@ public class ApiResponseException : ApiException
 		code = statusCode;
 	}
 
-	public HttpStatusCode Code { get => code; }
+	public HttpStatusCode Code => code;
 }

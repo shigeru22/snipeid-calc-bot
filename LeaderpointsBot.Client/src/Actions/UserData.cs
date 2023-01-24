@@ -24,7 +24,7 @@ public static class UserData
 		// check if server exists
 		try
 		{
-			await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(serverDiscordId);
+			_ = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(serverDiscordId);
 		}
 		catch (DataNotFoundException)
 		{

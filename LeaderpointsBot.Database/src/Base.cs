@@ -14,5 +14,5 @@ public abstract class DBConnectorBase
 		this.dataSource = dataSource;
 	}
 
-	protected NpgsqlDataSource DataSource { get => dataSource; }
+	protected NpgsqlDataSource DataSource => dataSource;
 }

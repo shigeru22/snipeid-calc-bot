@@ -1,17 +1,13 @@
 // Copyright (c) shigeru22, concept by Akshiro28.
 // Licensed under the MIT license. See LICENSE in the repository root for details.
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace LeaderpointsBot.Api.OsuStats;
 
 public static class OsuStatsDataTypes
 {
-	[SuppressMessage("Microsoft.CSharp.NamingRules", "IDE1006", Justification = "osu!api raw data used these field names.")]
-	[SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter", Justification = "osu!stats raw data used these field names.")]
-	[SuppressMessage("ReSharper", "InconsistentNaming", Justification = "osu!stats raw data used these field names.")]
 	public readonly struct OsuStatsRequestRawData
 	{
+#pragma warning disable IDE1006 // Naming Styles
 		public double accMin { get; init; } // set to 0.0
 		public double accMax { get; init; } // set to 100.0
 		public int rankMin { get; init; } // set to 1
@@ -20,6 +16,7 @@ public static class OsuStatsDataTypes
 		public int sortOrder { get; init; } // defaults to 0 (ascending), find out others as enum
 		public int page { get; init; } // set to 1, not sure what happens if changed
 		public string u1 { get; init; } // username
+#pragma warning restore IDE1006 // Naming Styles
 
 		public OsuStatsRequestData ToStandardData()
 		{
@@ -71,16 +68,15 @@ public static class OsuStatsDataTypes
 		public int Count { get; init; }
 	}
 
-	[SuppressMessage("Microsoft.CSharp.NamingRules", "IDE1006", Justification = "osu!api raw data used these field names.")]
-	[SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter", Justification = "osu!stats raw data used these field names.")]
-	[SuppressMessage("ReSharper", "InconsistentNaming", Justification = "osu!stats raw data used these field names.")]
 	public readonly struct OsuStatsRespektiveResponseRawData
 	{
+#pragma warning disable IDE1006 // Naming Styles
 		public string? username { get; init; }
 		public int? top1s { get; init; }
 		public int? top8s { get; init; }
 		public int? top25s { get; init; }
 		public int? top50s { get; init; }
+#pragma warning restore IDE1006 // Naming Styles
 
 		public OsuStatsRespektiveResponseData ToStandardData()
 		{

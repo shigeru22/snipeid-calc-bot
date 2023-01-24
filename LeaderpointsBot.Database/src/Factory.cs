@@ -1,18 +1,18 @@
 ﻿// Copyright (c) shigeru22, concept by Akshiro28.
 // Licensed under the MIT license. See LICENSE in the repository root for details.
 
-using System.Diagnostics.CodeAnalysis;
+using Npgsql;
 using LeaderpointsBot.Database.Exceptions;
 using LeaderpointsBot.Database.Tables;
 using LeaderpointsBot.Utils;
-using Npgsql;
 
 namespace LeaderpointsBot.Database;
 
 public class DatabaseFactory
 {
-	[SuppressMessage("StyleCop.CSharp.NamingRules", "SA1311:StaticReadonlyFieldsMustBeginWithUpperCaseLetter", Justification = "Private static readonly instance names should be lowercased (styling not yet configurable).")]
 	private static readonly DatabaseFactory instance = new DatabaseFactory();
+
+	public static DatabaseFactory Instance => instance;
 
 	private NpgsqlDataSource? dataSource;
 
@@ -21,63 +21,14 @@ public class DatabaseFactory
 	private DBServers? dbServers;
 	private DBAssignments? dbAssignments;
 
+	public DBUsers UsersInstance => dbUsers ?? throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
+	public DBRoles RolesInstance => dbRoles ?? throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
+	public DBServers ServersInstance => dbServers ?? throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
+	public DBAssignments AssignmentsInstance => dbAssignments ?? throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
+
 	private DatabaseFactory()
 	{
 		Log.WriteVerbose("DatabaseFactory", "DatabaseFactory instance created.");
-	}
-
-	public static DatabaseFactory Instance { get => instance; }
-
-	public DBUsers UsersInstance
-	{
-		get
-		{
-			if (dbUsers == null)
-			{
-				throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
-			}
-
-			return dbUsers;
-		}
-	}
-
-	public DBRoles RolesInstance
-	{
-		get
-		{
-			if (dbRoles == null)
-			{
-				throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
-			}
-
-			return dbRoles;
-		}
-	}
-
-	public DBServers ServersInstance
-	{
-		get
-		{
-			if (dbServers == null)
-			{
-				throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
-			}
-
-			return dbServers;
-		}
-	}
-
-	public DBAssignments AssignmentsInstance
-	{
-		get
-		{
-			if (dbAssignments == null)
-			{
-				throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
-			}
-
-			return dbAssignments;
-		}
 	}
 
 	public void SetConfig(DatabaseConfig config)

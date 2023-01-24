@@ -93,7 +93,7 @@ public static class InteractionModules
 			RestInteractionMessage? replyMsg = null;
 			foreach (Structures.Commands.CountModule.UserLeaderboardsCountMessages response in responses)
 			{
-				if (response.MessageType == Common.ResponseMessageType.EMBED)
+				if (response.MessageType == Common.ResponseMessageType.Embed)
 				{
 					if (replyMsg == null)
 					{
@@ -108,7 +108,7 @@ public static class InteractionModules
 						await replyMsg.Channel.SendMessageAsync(embed: response.GetEmbed());
 					}
 				}
-				else if (response.MessageType == Common.ResponseMessageType.TEXT)
+				else if (response.MessageType == Common.ResponseMessageType.Text)
 				{
 					if (replyMsg == null)
 					{
@@ -119,7 +119,7 @@ public static class InteractionModules
 						await replyMsg.Channel.SendMessageAsync(response.GetString());
 					}
 				}
-				else if (response.MessageType == Common.ResponseMessageType.ERROR)
+				else if (response.MessageType == Common.ResponseMessageType.Error)
 				{
 					if (replyMsg == null)
 					{

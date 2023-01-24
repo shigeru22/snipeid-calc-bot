@@ -62,7 +62,7 @@ public static class CountModule
 		{
 			new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
 			{
-				MessageType = Common.ResponseMessageType.EMBED,
+				MessageType = Common.ResponseMessageType.Embed,
 				Contents = Counter.CreateCountEmbed(embedUsername, embedTopCounts)
 			}
 		};
@@ -71,7 +71,7 @@ public static class CountModule
 		{
 			responses.Add(new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
 			{
-				MessageType = Common.ResponseMessageType.TEXT,
+				MessageType = Common.ResponseMessageType.Text,
 				Contents = updateMessages.Value.PointsMessage
 			});
 
@@ -79,7 +79,7 @@ public static class CountModule
 			{
 				responses.Add(new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
 				{
-					MessageType = Common.ResponseMessageType.TEXT,
+					MessageType = Common.ResponseMessageType.Text,
 					Contents = updateMessages.Value.RoleMessage
 				});
 			}
@@ -214,7 +214,7 @@ public static class CountModule
 		{
 			new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
 			{
-				MessageType = Common.ResponseMessageType.EMBED,
+				MessageType = Common.ResponseMessageType.Embed,
 				Contents = Counter.CreateCountEmbed(osuUsername, topCounts)
 			}
 		};
@@ -223,7 +223,7 @@ public static class CountModule
 		{
 			responses.Add(new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
 			{
-				MessageType = Common.ResponseMessageType.TEXT,
+				MessageType = Common.ResponseMessageType.Text,
 				Contents = updateMessages.Value.PointsMessage
 			});
 
@@ -231,7 +231,7 @@ public static class CountModule
 			{
 				responses.Add(new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
 				{
-					MessageType = Common.ResponseMessageType.TEXT,
+					MessageType = Common.ResponseMessageType.Text,
 					Contents = updateMessages.Value.RoleMessage
 				});
 			}
@@ -356,7 +356,7 @@ public static class CountModule
 		{
 			new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
 			{
-				MessageType = Common.ResponseMessageType.EMBED,
+				MessageType = Common.ResponseMessageType.Embed,
 				Contents = Counter.CreateCountEmbed(osuUsername, topCounts)
 			}
 		};
@@ -365,7 +365,7 @@ public static class CountModule
 		{
 			responses.Add(new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
 			{
-				MessageType = Common.ResponseMessageType.TEXT,
+				MessageType = Common.ResponseMessageType.Text,
 				Contents = updateMessages.Value.PointsMessage
 			});
 
@@ -373,7 +373,7 @@ public static class CountModule
 			{
 				responses.Add(new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
 				{
-					MessageType = Common.ResponseMessageType.TEXT,
+					MessageType = Common.ResponseMessageType.Text,
 					Contents = updateMessages.Value.RoleMessage
 				});
 			}

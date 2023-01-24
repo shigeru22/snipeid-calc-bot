@@ -7,9 +7,9 @@ namespace LeaderpointsBot.Client.Structures
 	{
 		public enum ResponseMessageType
 		{
-			ERROR,
-			TEXT,
-			EMBED
+			Error,
+			Text,
+			Embed
 		}
 	}
 }

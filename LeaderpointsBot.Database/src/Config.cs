@@ -12,6 +12,13 @@ public struct DatabaseConfig
 	private string databaseName;
 	private string? caFilePath;
 
+	public string HostName { get => hostName; set => hostName = value; }
+	public int Port { get => port; set => port = value; }
+	public string Username { get => username; set => username = value; }
+	public string Password { get => password; set => password = value; }
+	public string DatabaseName { get => databaseName; set => databaseName = value; }
+	public string? CAFilePath { get => caFilePath; set => caFilePath = value; }
+
 	public DatabaseConfig(string hostName, int port, string username, string password, string databaseName, string? caFilePath)
 	{
 		this.hostName = hostName;
@@ -22,16 +29,10 @@ public struct DatabaseConfig
 		this.caFilePath = caFilePath;
 	}
 
-	public string HostName { get => hostName; set => hostName = value; }
-	public int Port { get => port; set => port = value; }
-	public string Username { get => username; set => username = value; }
-	public string Password { get => password; set => password = value; }
-	public string DatabaseName { get => databaseName; set => databaseName = value; }
-	public string? CAFilePath { get => caFilePath; set => caFilePath = value; }
-
 	public string ToConnectionString()
 	{
 		string connectionString = $"Host={hostName};Port={port};Username={username};Password={password};Database={databaseName}";
+
 		if (!string.IsNullOrEmpty(caFilePath))
 		{
 			connectionString += $";SSL Certificate={Path.GetFullPath(caFilePath)}";

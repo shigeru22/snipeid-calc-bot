@@ -14,7 +14,7 @@ namespace LeaderpointsBot.Client.Messages;
 
 public class MessagesFactory
 {
-	private const string BathbotDiscordID = "297073686916366336";
+	private const string BATHBOT_DISCORD_ID = "297073686916366336";
 
 	private readonly DiscordSocketClient client;
 	private readonly CommandService commandService;
@@ -58,7 +58,7 @@ public class MessagesFactory
 		}
 
 		// determine if Bathbot's leaderboard count embed is received
-		if (msg.Author.Id.ToString().Equals(BathbotDiscordID))
+		if (msg.Author.Id.ToString().Equals(BATHBOT_DISCORD_ID))
 		{
 			await Log.WriteDebug("OnNewMessage", "Message is from Bathbot. Handling message.");
 			await HandleBathbotMessageAsync(userMsg);
@@ -123,13 +123,13 @@ public class MessagesFactory
 		{
 			switch (response.MessageType)
 			{
-				case Common.ResponseMessageType.EMBED:
+				case Common.ResponseMessageType.Embed:
 					await context.Channel.SendMessageAsync(embed: response.GetEmbed());
 					break;
-				case Common.ResponseMessageType.TEXT:
+				case Common.ResponseMessageType.Text:
 					await context.Channel.SendMessageAsync(response.GetString());
 					break;
-				case Common.ResponseMessageType.ERROR:
+				case Common.ResponseMessageType.Error:
 					await context.Channel.SendMessageAsync($"**Error:** {response.GetString()}");
 					break;
 				default:

@@ -5,9 +5,9 @@
       "label": "build-all",
       "command": "dotnet",
       "type": "process",
-	  "options": {
-		"cwd": "${workspaceFolder}"
-	  },
+    "options": {
+    "cwd": "${workspaceFolder}"
+    },
       "args": [
         "build",
         "/property:GenerateFullPaths=true",
@@ -19,9 +19,9 @@
       "label": "build-client",
       "command": "dotnet",
       "type": "process",
-	  "options": {
-		"cwd": "${workspaceFolder}"
-	  },
+    "options": {
+    "cwd": "${workspaceFolder}"
+    },
       "args": [
         "build",
         "${workspaceFolder}/LeaderpointsBot.Client/LeaderpointsBot.Client.csproj",
@@ -34,9 +34,9 @@
       "label": "build-interactions",
       "command": "dotnet",
       "type": "process",
-	  "options": {
-		"cwd": "${workspaceFolder}"
-	  },
+    "options": {
+    "cwd": "${workspaceFolder}"
+    },
       "args": [
         "build",
         "${workspaceFolder}/LeaderpointsBot.Interactions/LeaderpointsBot.Interactions.csproj",
@@ -49,9 +49,9 @@
       "label": "publish-all",
       "command": "dotnet",
       "type": "process",
-	  "options": {
-		"cwd": "${workspaceFolder}"
-	  },
+    "options": {
+    "cwd": "${workspaceFolder}"
+    },
       "args": [
         "publish",
         "/property:GenerateFullPaths=true",
@@ -63,9 +63,9 @@
       "label": "watch-client",
       "command": "dotnet",
       "type": "process",
-	  "options": {
-		"cwd": "${workspaceFolder}"
-	  },
+    "options": {
+    "cwd": "${workspaceFolder}"
+    },
       "args": [
         "watch",
         "run",

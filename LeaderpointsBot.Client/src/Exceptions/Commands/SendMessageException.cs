@@ -20,6 +20,6 @@ public class SendMessageException : ClientException
 		draft = message;
 	}
 
-	public bool IsError { get => isError; }
-	public string Draft { get => draft; }
+	public bool IsError => isError;
+	public string Draft => draft;
 }

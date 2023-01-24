@@ -2,10 +2,10 @@
 // Licensed under the MIT license. See LICENSE in the repository root for details.
 
 using System.Data;
+using Npgsql;
 using LeaderpointsBot.Database.Exceptions;
 using LeaderpointsBot.Database.Schemas;
 using LeaderpointsBot.Utils;
-using Npgsql;
 
 namespace LeaderpointsBot.Database.Tables;
 

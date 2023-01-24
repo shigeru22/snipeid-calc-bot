@@ -60,7 +60,7 @@ public static class MessageModules
 
 			foreach (Structures.Commands.CountModule.UserLeaderboardsCountMessages response in responses)
 			{
-				if (response.MessageType == Common.ResponseMessageType.EMBED)
+				if (response.MessageType == Common.ResponseMessageType.Embed)
 				{
 					if (Settings.Instance.Client.UseReply)
 					{
@@ -71,7 +71,7 @@ public static class MessageModules
 						await Context.Channel.SendMessageAsync(embed: response.GetEmbed());
 					}
 				}
-				else if (response.MessageType == Common.ResponseMessageType.TEXT)
+				else if (response.MessageType == Common.ResponseMessageType.Text)
 				{
 					if (Settings.Instance.Client.UseReply)
 					{
@@ -82,7 +82,7 @@ public static class MessageModules
 						await Context.Channel.SendMessageAsync(response.GetString());
 					}
 				}
-				else if (response.MessageType == Common.ResponseMessageType.ERROR)
+				else if (response.MessageType == Common.ResponseMessageType.Error)
 				{
 					if (Settings.Instance.Client.UseReply)
 					{
@@ -109,7 +109,7 @@ public static class MessageModules
 
 			foreach (Structures.Commands.CountModule.UserLeaderboardsCountMessages response in responses)
 			{
-				if (response.MessageType == Common.ResponseMessageType.EMBED)
+				if (response.MessageType == Common.ResponseMessageType.Embed)
 				{
 					if (Settings.Instance.Client.UseReply)
 					{
@@ -120,7 +120,7 @@ public static class MessageModules
 						await Context.Channel.SendMessageAsync(embed: response.GetEmbed());
 					}
 				}
-				else if (response.MessageType == Common.ResponseMessageType.TEXT)
+				else if (response.MessageType == Common.ResponseMessageType.Text)
 				{
 					if (Settings.Instance.Client.UseReply)
 					{
@@ -131,7 +131,7 @@ public static class MessageModules
 						await Context.Channel.SendMessageAsync(response.GetString());
 					}
 				}
-				else if (response.MessageType == Common.ResponseMessageType.ERROR)
+				else if (response.MessageType == Common.ResponseMessageType.Error)
 				{
 					if (Settings.Instance.Client.UseReply)
 					{
