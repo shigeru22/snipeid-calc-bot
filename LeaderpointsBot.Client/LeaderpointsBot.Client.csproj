@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -12,7 +12,7 @@
     <PackageReference Include="Discord.Net" Version="3.9.0" />
   </ItemGroup>
 
-    <ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\LeaderpointsBot.Utils\LeaderpointsBot.Utils.csproj" />
     <ProjectReference Include="..\LeaderpointsBot.Database\LeaderpointsBot.Database.csproj" />
     <ProjectReference Include="..\LeaderpointsBot.Api\LeaderpointsBot.Api.csproj" />
