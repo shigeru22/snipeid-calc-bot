@@ -19,7 +19,22 @@ public static class MessageModules
 		[Summary("Links your Discord user to an osu! user.")]
 		public async Task LinkUserCommand([Summary("osu! user ID.")] int osuId)
 		{
-			Log.WriteInfo("LinkUserCommand", $"Linking user {Context.User.Username}#{Context.User.Discriminator} ({Context.User.Id}) to osu! user ID {osuId}.");
+			Log.WriteInfo(nameof(LinkUserCommand), $"Linking user {Context.User.Username}#{Context.User.Discriminator} ({Context.User.Id}) to osu! user ID {osuId}.");
+
+			await Context.Channel.TriggerTypingAsync();
+
+			Embed replyEmbed = await UserModule.LinkUser(Context.User, osuId, Context.Guild);
+
+			Log.WriteInfo(nameof(LinkUserCommand), "Link success. Sending embed response.");
+
+			if (Settings.Instance.Client.UseReply)
+			{
+				_ = await Context.Message.ReplyAsync(embed: replyEmbed);
+			}
+			else
+			{
+				_ = await Context.Channel.SendMessageAsync(embed: replyEmbed);
+			}
 		}
 	}
 

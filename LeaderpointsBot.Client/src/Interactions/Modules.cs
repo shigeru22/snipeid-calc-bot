@@ -19,8 +19,25 @@ public static class InteractionModules
 		{
 			long osuId = (long)cmd.Data.Options.First().Value;
 
-			Log.WriteInfo("LinkUserCommand", $"Linking user {cmd.User.Username}#{cmd.User.Discriminator} ({cmd.User.Id}) to osu! user ID {osuId}.");
+			Log.WriteInfo(nameof(LinkUserCommand), $"Linking user {cmd.User.Username}#{cmd.User.Discriminator} ({cmd.User.Id}) to osu! user ID {osuId}.");
 			await cmd.DeferAsync();
+
+			Embed replyEmbed;
+
+			if (cmd.Channel is SocketGuildChannel guildChannel)
+			{
+				Log.WriteVerbose(nameof(LinkUserCommand), "Interaction sent from server.");
+				replyEmbed = await UserModule.LinkUser(cmd.User, (int)osuId, guildChannel.Guild);
+			}
+			else
+			{
+				Log.WriteVerbose(nameof(LinkUserCommand), "Interaction sent from direct message.");
+				replyEmbed = await UserModule.LinkUser(cmd.User, (int)osuId);
+			}
+
+			Log.WriteInfo(nameof(LinkUserCommand), "Link success. Sending embed response.");
+
+			_ = await cmd.ModifyOriginalResponseAsync(msg => msg.Embed = replyEmbed);
 		}
 	}
 
