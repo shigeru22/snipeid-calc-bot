@@ -33,7 +33,7 @@ public static class InteractionModules
 			await cmd.DeferAsync();
 
 			string replyMsg = CommandsFactory.GetPingMessage(client);
-			await cmd.ModifyOriginalResponseAsync(msg => msg.Content = replyMsg);
+			_ = await cmd.ModifyOriginalResponseAsync(msg => msg.Content = replyMsg);
 		}
 	}
 
@@ -105,7 +105,7 @@ public static class InteractionModules
 					}
 					else
 					{
-						await replyMsg.Channel.SendMessageAsync(embed: response.GetEmbed());
+						_ = await replyMsg.Channel.SendMessageAsync(embed: response.GetEmbed());
 					}
 				}
 				else if (response.MessageType == Common.ResponseMessageType.Text)
@@ -116,7 +116,7 @@ public static class InteractionModules
 					}
 					else
 					{
-						await replyMsg.Channel.SendMessageAsync(response.GetString());
+						_ = await replyMsg.Channel.SendMessageAsync(response.GetString());
 					}
 				}
 				else if (response.MessageType == Common.ResponseMessageType.Error)
@@ -127,7 +127,7 @@ public static class InteractionModules
 					}
 					else
 					{
-						await replyMsg.Channel.SendMessageAsync(response.GetString());
+						_ = await replyMsg.Channel.SendMessageAsync(response.GetString());
 					}
 				}
 			}
@@ -180,7 +180,7 @@ public static class InteractionModules
 
 			Embed replyEmbed = CommandsFactory.GetBotHelpMessage(client, true);
 
-			await cmd.ModifyOriginalResponseAsync(msg => msg.Embed = replyEmbed);
+			_ = await cmd.ModifyOriginalResponseAsync(msg => msg.Embed = replyEmbed);
 		}
 	}
 
@@ -211,7 +211,7 @@ public static class InteractionModules
 
 			Embed replyEmbed = CommandsFactory.GetConfigHelpMessage(client, true);
 
-			await cmd.ModifyOriginalResponseAsync(msg => msg.Embed = replyEmbed);
+			_ = await cmd.ModifyOriginalResponseAsync(msg => msg.Embed = replyEmbed);
 		}
 
 		public static class ConfigurationSetterSlashModule

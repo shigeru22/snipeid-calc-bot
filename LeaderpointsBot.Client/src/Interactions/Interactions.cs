@@ -24,7 +24,7 @@ public class InteractionsFactory
 	{
 		// Log.WriteDebug("OnInvokeSlashInteraction", $"Slash interaction from { cmd.User.Username }#{ cmd.User.Discriminator }: { cmd.Data.Name } ({ cmd.Data.Id })");
 
-		Task.Run(async () =>
+		_ = Task.Run(async () =>
 		{
 			try
 			{
@@ -75,7 +75,7 @@ public class InteractionsFactory
 
 				if (cmd.HasResponded)
 				{
-					await cmd.ModifyOriginalResponseAsync(msg => msg.Content = e.IsError ? $"**Error:** {e.Draft}" : e.Draft);
+					_ = await cmd.ModifyOriginalResponseAsync(msg => msg.Content = e.IsError ? $"**Error:** {e.Draft}" : e.Draft);
 				}
 				else
 				{
@@ -88,7 +88,7 @@ public class InteractionsFactory
 
 				if (cmd.HasResponded)
 				{
-					await cmd.ModifyOriginalResponseAsync(msg => msg.Content = "**Error:** Unhandled client error occurred.");
+					_ = await cmd.ModifyOriginalResponseAsync(msg => msg.Content = "**Error:** Unhandled client error occurred.");
 				}
 				else
 				{
@@ -123,7 +123,7 @@ public class InteractionsFactory
 
 				if (cmd.HasResponded)
 				{
-					await cmd.ModifyOriginalResponseAsync(msg => msg.Content = e.IsError ? $"**Error:** {e.Draft}" : e.Draft);
+					_ = await cmd.ModifyOriginalResponseAsync(msg => msg.Content = e.IsError ? $"**Error:** {e.Draft}" : e.Draft);
 				}
 				else
 				{
@@ -136,7 +136,7 @@ public class InteractionsFactory
 
 				if (cmd.HasResponded)
 				{
-					await cmd.ModifyOriginalResponseAsync(msg => msg.Content = "**Error:** Unhandled client error occurred.");
+					_ = await cmd.ModifyOriginalResponseAsync(msg => msg.Content = "**Error:** Unhandled client error occurred.");
 				}
 				else
 				{

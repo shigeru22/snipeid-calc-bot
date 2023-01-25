@@ -24,7 +24,7 @@ public static class CounterActions
 
 		try
 		{
-			await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+			_ = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
 		}
 		catch (DataNotFoundException)
 		{

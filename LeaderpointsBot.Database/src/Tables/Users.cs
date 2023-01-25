@@ -107,7 +107,7 @@ public class DBUsers : DBConnectorBase
 			throw new DuplicateRecordException("users", "osuid");
 		}
 
-		await reader.ReadAsync();
+		_ = await reader.ReadAsync();
 
 		UsersQuerySchema.UsersTableData ret = new UsersQuerySchema.UsersTableData()
 		{
@@ -174,7 +174,7 @@ public class DBUsers : DBConnectorBase
 			throw new DuplicateRecordException("users", "osuid");
 		}
 
-		await reader.ReadAsync();
+		_ = await reader.ReadAsync();
 
 		UsersQuerySchema.UsersTableData ret = new UsersQuerySchema.UsersTableData()
 		{
@@ -241,7 +241,7 @@ public class DBUsers : DBConnectorBase
 			throw new DuplicateRecordException("users", "discordid");
 		}
 
-		await reader.ReadAsync();
+		_ = await reader.ReadAsync();
 
 		UsersQuerySchema.UsersTableData ret = new UsersQuerySchema.UsersTableData()
 		{
@@ -422,7 +422,7 @@ public class DBUsers : DBConnectorBase
 			throw new DataNotFoundException();
 		}
 
-		await reader.ReadAsync();
+		_ = await reader.ReadAsync();
 
 		DateTime ret = reader.GetDateTime(0);
 

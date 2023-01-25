@@ -163,7 +163,7 @@ public class DBServers : DBConnectorBase
 			throw new DuplicateRecordException("servers", "serverid");
 		}
 
-		await reader.ReadAsync();
+		_ = await reader.ReadAsync();
 
 		ServersQuerySchema.ServersTableData ret = new ServersQuerySchema.ServersTableData()
 		{
@@ -226,7 +226,7 @@ public class DBServers : DBConnectorBase
 			throw new DuplicateRecordException("servers", "discordid");
 		}
 
-		await reader.ReadAsync();
+		_ = await reader.ReadAsync();
 
 		ServersQuerySchema.ServersTableData ret;
 		{

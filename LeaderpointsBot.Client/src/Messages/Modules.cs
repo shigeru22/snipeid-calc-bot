@@ -36,11 +36,11 @@ public static class MessageModules
 
 			if (Settings.Instance.Client.UseReply)
 			{
-				await Context.Message.ReplyAsync(replyMsg);
+				_ = await Context.Message.ReplyAsync(replyMsg);
 			}
 			else
 			{
-				await Context.Channel.SendMessageAsync(replyMsg);
+				_ = await Context.Channel.SendMessageAsync(replyMsg);
 			}
 		}
 	}
@@ -64,33 +64,33 @@ public static class MessageModules
 				{
 					if (Settings.Instance.Client.UseReply)
 					{
-						await Context.Message.ReplyAsync(embed: response.GetEmbed());
+						_ = await Context.Message.ReplyAsync(embed: response.GetEmbed());
 					}
 					else
 					{
-						await Context.Channel.SendMessageAsync(embed: response.GetEmbed());
+						_ = await Context.Channel.SendMessageAsync(embed: response.GetEmbed());
 					}
 				}
 				else if (response.MessageType == Common.ResponseMessageType.Text)
 				{
 					if (Settings.Instance.Client.UseReply)
 					{
-						await Context.Message.ReplyAsync(response.GetString());
+						_ = await Context.Message.ReplyAsync(response.GetString());
 					}
 					else
 					{
-						await Context.Channel.SendMessageAsync(response.GetString());
+						_ = await Context.Channel.SendMessageAsync(response.GetString());
 					}
 				}
 				else if (response.MessageType == Common.ResponseMessageType.Error)
 				{
 					if (Settings.Instance.Client.UseReply)
 					{
-						await Context.Message.ReplyAsync($"**Error:** {response.GetString()}");
+						_ = await Context.Message.ReplyAsync($"**Error:** {response.GetString()}");
 					}
 					else
 					{
-						await Context.Channel.SendMessageAsync($"**Error:** {response.GetString()}");
+						_ = await Context.Channel.SendMessageAsync($"**Error:** {response.GetString()}");
 					}
 				}
 			}
@@ -113,33 +113,33 @@ public static class MessageModules
 				{
 					if (Settings.Instance.Client.UseReply)
 					{
-						await Context.Message.ReplyAsync(embed: response.GetEmbed());
+						_ = await Context.Message.ReplyAsync(embed: response.GetEmbed());
 					}
 					else
 					{
-						await Context.Channel.SendMessageAsync(embed: response.GetEmbed());
+						_ = await Context.Channel.SendMessageAsync(embed: response.GetEmbed());
 					}
 				}
 				else if (response.MessageType == Common.ResponseMessageType.Text)
 				{
 					if (Settings.Instance.Client.UseReply)
 					{
-						await Context.Message.ReplyAsync(response.GetString());
+						_ = await Context.Message.ReplyAsync(response.GetString());
 					}
 					else
 					{
-						await Context.Channel.SendMessageAsync(response.GetString());
+						_ = await Context.Channel.SendMessageAsync(response.GetString());
 					}
 				}
 				else if (response.MessageType == Common.ResponseMessageType.Error)
 				{
 					if (Settings.Instance.Client.UseReply)
 					{
-						await Context.Message.ReplyAsync($"**Error:** {response.GetString()}");
+						_ = await Context.Message.ReplyAsync($"**Error:** {response.GetString()}");
 					}
 					else
 					{
-						await Context.Channel.SendMessageAsync($"**Error:** {response.GetString()}");
+						_ = await Context.Channel.SendMessageAsync($"**Error:** {response.GetString()}");
 					}
 				}
 			}
@@ -179,11 +179,11 @@ public static class MessageModules
 
 			if (Settings.Instance.Client.UseReply)
 			{
-				await Context.Message.ReplyAsync(embed: replyEmbed);
+				_ = await Context.Message.ReplyAsync(embed: replyEmbed);
 			}
 			else
 			{
-				await Context.Channel.SendMessageAsync(embed: replyEmbed);
+				_ = await Context.Channel.SendMessageAsync(embed: replyEmbed);
 			}
 		}
 	}
@@ -211,11 +211,11 @@ public static class MessageModules
 
 			if (Settings.Instance.Client.UseReply)
 			{
-				await Context.Message.ReplyAsync(embed: replyEmbed);
+				_ = await Context.Message.ReplyAsync(embed: replyEmbed);
 			}
 			else
 			{
-				await Context.Channel.SendMessageAsync(embed: replyEmbed);
+				_ = await Context.Channel.SendMessageAsync(embed: replyEmbed);
 			}
 		}
 

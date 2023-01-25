@@ -167,7 +167,7 @@ public class DBAssignments : DBConnectorBase
 			throw new DuplicateRecordException("assignments", "assignmentid");
 		}
 
-		await reader.ReadAsync();
+		_ = await reader.ReadAsync();
 
 		AssignmentsQuerySchema.AssignmentsTableData ret = new AssignmentsQuerySchema.AssignmentsTableData()
 		{
@@ -226,7 +226,7 @@ public class DBAssignments : DBConnectorBase
 			throw new DuplicateRecordException("assignments", "osuid");
 		}
 
-		await reader.ReadAsync();
+		_ = await reader.ReadAsync();
 
 		AssignmentsQuerySchema.AssignmentsTableData ret = new AssignmentsQuerySchema.AssignmentsTableData()
 		{
@@ -288,7 +288,7 @@ public class DBAssignments : DBConnectorBase
 			throw new DuplicateRecordException("assignments", "osuid");
 		}
 
-		await reader.ReadAsync();
+		_ = await reader.ReadAsync();
 
 		AssignmentsQuerySchema.AssignmentsTableData ret = new AssignmentsQuerySchema.AssignmentsTableData()
 		{
@@ -347,7 +347,7 @@ public class DBAssignments : DBConnectorBase
 			throw new DuplicateRecordException("assignments", "osuid");
 		}
 
-		await reader.ReadAsync();
+		_ = await reader.ReadAsync();
 
 		AssignmentsQuerySchema.AssignmentsTableData ret = new AssignmentsQuerySchema.AssignmentsTableData()
 		{
@@ -409,7 +409,7 @@ public class DBAssignments : DBConnectorBase
 			throw new DuplicateRecordException("assignments", "osuid");
 		}
 
-		await reader.ReadAsync();
+		_ = await reader.ReadAsync();
 
 		AssignmentsQuerySchema.AssignmentsTableData ret = new AssignmentsQuerySchema.AssignmentsTableData()
 		{
@@ -471,7 +471,7 @@ public class DBAssignments : DBConnectorBase
 			throw new DuplicateRecordException("assignments", "osuid");
 		}
 
-		await reader.ReadAsync();
+		_ = await reader.ReadAsync();
 
 		AssignmentsQuerySchema.AssignmentsTableData ret = new AssignmentsQuerySchema.AssignmentsTableData()
 		{

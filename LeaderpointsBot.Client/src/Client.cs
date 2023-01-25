@@ -83,8 +83,11 @@ public class Client
 		{
 			Log.WriteVerbose("OnProcessExit", "Method called. Logging out client.");
 
-			client.StopAsync();
-			client.LogoutAsync();
+			_ = Task.Run(async () =>
+			{
+				await client.StopAsync();
+				await client.LogoutAsync();
+			});
 
 			Log.WriteVerbose("OnProcessExit", "Client logged out. Exiting process.");
 

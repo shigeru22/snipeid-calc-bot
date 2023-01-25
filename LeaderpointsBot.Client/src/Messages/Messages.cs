@@ -32,7 +32,7 @@ public class MessagesFactory
 	public async Task InitializeServiceAsync()
 	{
 		Log.WriteVerbose("InitializeServiceAsync", "Registering entry assembly as command service module.");
-		await commandService.AddModulesAsync(assembly: Assembly.GetEntryAssembly(), services: null);
+		_ = await commandService.AddModulesAsync(assembly: Assembly.GetEntryAssembly(), services: null);
 	}
 
 	public async Task OnNewMessage(SocketMessage msg)
@@ -108,13 +108,13 @@ public class MessagesFactory
 		catch (SendMessageException e)
 		{
 			Log.WriteVerbose("HandleBathbotMessageAsync", "Send message signal received. Sending message and cancelling process.");
-			await context.Channel.SendMessageAsync(e.IsError ? $"**Error:** {e.Draft}" : e.Draft);
+			_ = await context.Channel.SendMessageAsync(e.IsError ? $"**Error:** {e.Draft}" : e.Draft);
 			return;
 		}
 		catch (Exception e)
 		{
 			Log.WriteError("HandleBathbotMessageAsync", $"Unhandled client error occurred.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
-			await context.Channel.SendMessageAsync("**Error:** Unhandled client error occurred.");
+			_ = await context.Channel.SendMessageAsync("**Error:** Unhandled client error occurred.");
 			return;
 		}
 
@@ -124,13 +124,13 @@ public class MessagesFactory
 			switch (response.MessageType)
 			{
 				case Common.ResponseMessageType.Embed:
-					await context.Channel.SendMessageAsync(embed: response.GetEmbed());
+					_ = await context.Channel.SendMessageAsync(embed: response.GetEmbed());
 					break;
 				case Common.ResponseMessageType.Text:
-					await context.Channel.SendMessageAsync(response.GetString());
+					_ = await context.Channel.SendMessageAsync(response.GetString());
 					break;
 				case Common.ResponseMessageType.Error:
-					await context.Channel.SendMessageAsync($"**Error:** {response.GetString()}");
+					_ = await context.Channel.SendMessageAsync($"**Error:** {response.GetString()}");
 					break;
 				default:
 					continue;
@@ -151,6 +151,6 @@ public class MessagesFactory
 		Log.WriteVerbose("HandleCommands", "Creating context and executing command.");
 
 		SocketCommandContext context = new SocketCommandContext(client, msg);
-		await commandService.ExecuteAsync(context: context, argPos: argPos, services: null);
+		_ = await commandService.ExecuteAsync(context: context, argPos: argPos, services: null);
 	}
 }

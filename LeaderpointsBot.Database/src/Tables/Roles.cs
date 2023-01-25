@@ -152,7 +152,7 @@ public class DBRoles : DBConnectorBase
 			throw new DuplicateRecordException("roles", "roleid");
 		}
 
-		await reader.ReadAsync();
+		_ = await reader.ReadAsync();
 
 		RolesQuerySchema.RolesTableData ret = new RolesQuerySchema.RolesTableData()
 		{
@@ -209,7 +209,7 @@ public class DBRoles : DBConnectorBase
 			throw new DuplicateRecordException("roles", "discordid");
 		}
 
-		await reader.ReadAsync();
+		_ = await reader.ReadAsync();
 
 		RolesQuerySchema.RolesTableData ret = new RolesQuerySchema.RolesTableData()
 		{
@@ -273,7 +273,7 @@ public class DBRoles : DBConnectorBase
 			throw new DuplicateRecordException("roles", "osuid or discordid");
 		}
 
-		await reader.ReadAsync();
+		_ = await reader.ReadAsync();
 
 		RolesQuerySchema.RolesTableData ret = new RolesQuerySchema.RolesTableData()
 		{
@@ -336,7 +336,7 @@ public class DBRoles : DBConnectorBase
 			throw new DuplicateRecordException("roles", "osuid or discordid");
 		}
 
-		await reader.ReadAsync();
+		_ = await reader.ReadAsync();
 
 		RolesQuerySchema.RolesTableData ret = new RolesQuerySchema.RolesTableData()
 		{

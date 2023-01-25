@@ -63,7 +63,7 @@ public static class SlashCommandsFactory
 			Log.WriteInfo("CreateSlashCommands", $"Creating slash commands ({i + 1}/{slashCommandsCount})...");
 
 			Log.WriteVerbose("CreateSlashCommands", $"Creating command (index {i}) on client.");
-			await client.CreateGlobalApplicationCommandAsync(SlashCommands[i].Build());
+			_ = await client.CreateGlobalApplicationCommandAsync(SlashCommands[i].Build());
 
 			if (i < slashCommandsCount - 1)
 			{
