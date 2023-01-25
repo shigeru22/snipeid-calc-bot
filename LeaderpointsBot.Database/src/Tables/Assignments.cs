@@ -36,7 +36,7 @@ public class DBAssignments : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("GetAssignmentsByServerID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("GetAssignmentsByServerID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -49,7 +49,7 @@ public class DBAssignments : DBConnectorBase
 
 		if (!reader.HasRows)
 		{
-			await Log.WriteVerbose("GetAssignmentsByServerID", "servers: Returned 0 rows. Throwing not found exception.");
+			Log.WriteVerbose("GetAssignmentsByServerID", "servers: Returned 0 rows. Throwing not found exception.");
 			throw new DataNotFoundException();
 		}
 
@@ -65,7 +65,7 @@ public class DBAssignments : DBConnectorBase
 			});
 		}
 
-		await Log.WriteInfo("GetAssignmentsByServerID", $"assignments: Returned {reader.Rows} row{(reader.Rows != 1 ? "s" : string.Empty)}.");
+		Log.WriteInfo("GetAssignmentsByServerID", $"assignments: Returned {reader.Rows} row{(reader.Rows != 1 ? "s" : string.Empty)}.");
 		return ret.ToArray();
 	}
 
@@ -91,7 +91,7 @@ public class DBAssignments : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("GetAssignmentsByServerDiscordID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("GetAssignmentsByServerDiscordID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -104,7 +104,7 @@ public class DBAssignments : DBConnectorBase
 
 		if (!reader.HasRows)
 		{
-			await Log.WriteVerbose("GetAssignmentsByServerDiscordID", "servers: Returned 0 rows. Throwing not found exception.");
+			Log.WriteVerbose("GetAssignmentsByServerDiscordID", "servers: Returned 0 rows. Throwing not found exception.");
 			throw new DataNotFoundException();
 		}
 
@@ -120,7 +120,7 @@ public class DBAssignments : DBConnectorBase
 			});
 		}
 
-		await Log.WriteInfo("GetAssignmentsByServerDiscordID", $"assignments: Returned {reader.Rows} row{(reader.Rows != 1 ? "s" : string.Empty)}.");
+		Log.WriteInfo("GetAssignmentsByServerDiscordID", $"assignments: Returned {reader.Rows} row{(reader.Rows != 1 ? "s" : string.Empty)}.");
 		return ret.ToArray();
 	}
 
@@ -144,7 +144,7 @@ public class DBAssignments : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("GetAssignmentByAssignmentID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("GetAssignmentByAssignmentID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -157,13 +157,13 @@ public class DBAssignments : DBConnectorBase
 
 		if (!reader.HasRows)
 		{
-			await Log.WriteVerbose("GetAssignmentByAssignmentID", "servers: Returned 0 rows. Throwing not found exception.");
+			Log.WriteVerbose("GetAssignmentByAssignmentID", "servers: Returned 0 rows. Throwing not found exception.");
 			throw new DataNotFoundException();
 		}
 
 		if (reader.Rows > 1)
 		{
-			await Log.WriteInfo("GetAssignmentByAssignmentID", $"servers: Returned {reader.Rows} rows. Throwing duplicate record exception.");
+			Log.WriteInfo("GetAssignmentByAssignmentID", $"servers: Returned {reader.Rows} rows. Throwing duplicate record exception.");
 			throw new DuplicateRecordException("assignments", "assignmentid");
 		}
 
@@ -177,9 +177,9 @@ public class DBAssignments : DBConnectorBase
 		};
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("GetServerByServerID", "Database connection closed.");
+		Log.WriteVerbose("GetServerByServerID", "Database connection closed.");
 
-		await Log.WriteInfo("GetServerByServerID", "servers: Returned 1 row.");
+		Log.WriteInfo("GetServerByServerID", "servers: Returned 1 row.");
 		return ret;
 	}
 
@@ -203,7 +203,7 @@ public class DBAssignments : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("GetAssignmentByUserID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("GetAssignmentByUserID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -216,13 +216,13 @@ public class DBAssignments : DBConnectorBase
 
 		if (!reader.HasRows)
 		{
-			await Log.WriteVerbose("GetAssignmentByUserID", "servers: Returned 0 rows. Throwing not found exception.");
+			Log.WriteVerbose("GetAssignmentByUserID", "servers: Returned 0 rows. Throwing not found exception.");
 			throw new DataNotFoundException();
 		}
 
 		if (reader.Rows > 1)
 		{
-			await Log.WriteInfo("GetAssignmentByUserID", $"servers: Returned {reader.Rows} rows. Throwing duplicate record exception.");
+			Log.WriteInfo("GetAssignmentByUserID", $"servers: Returned {reader.Rows} rows. Throwing duplicate record exception.");
 			throw new DuplicateRecordException("assignments", "osuid");
 		}
 
@@ -236,9 +236,9 @@ public class DBAssignments : DBConnectorBase
 		};
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("GetAssignmentByUserID", "Database connection closed.");
+		Log.WriteVerbose("GetAssignmentByUserID", "Database connection closed.");
 
-		await Log.WriteInfo("GetAssignmentByUserID", "servers: Returned 1 row.");
+		Log.WriteInfo("GetAssignmentByUserID", "servers: Returned 1 row.");
 		return ret;
 	}
 
@@ -264,7 +264,7 @@ public class DBAssignments : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("GetAssignmentByUserID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("GetAssignmentByUserID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -278,13 +278,13 @@ public class DBAssignments : DBConnectorBase
 
 		if (!reader.HasRows)
 		{
-			await Log.WriteVerbose("GetAssignmentByUserID", "servers: Returned 0 rows. Throwing not found exception.");
+			Log.WriteVerbose("GetAssignmentByUserID", "servers: Returned 0 rows. Throwing not found exception.");
 			throw new DataNotFoundException();
 		}
 
 		if (reader.Rows > 1)
 		{
-			await Log.WriteInfo("GetAssignmentByUserID", $"servers: Returned {reader.Rows} rows. Throwing duplicate record exception.");
+			Log.WriteInfo("GetAssignmentByUserID", $"servers: Returned {reader.Rows} rows. Throwing duplicate record exception.");
 			throw new DuplicateRecordException("assignments", "osuid");
 		}
 
@@ -298,9 +298,9 @@ public class DBAssignments : DBConnectorBase
 		};
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("GetAssignmentByUserID", "Database connection closed.");
+		Log.WriteVerbose("GetAssignmentByUserID", "Database connection closed.");
 
-		await Log.WriteInfo("GetAssignmentByUserID", "servers: Returned 1 row.");
+		Log.WriteInfo("GetAssignmentByUserID", "servers: Returned 1 row.");
 		return ret;
 	}
 
@@ -324,7 +324,7 @@ public class DBAssignments : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("GetAssignmentByUserDiscordID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("GetAssignmentByUserDiscordID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -337,13 +337,13 @@ public class DBAssignments : DBConnectorBase
 
 		if (!reader.HasRows)
 		{
-			await Log.WriteVerbose("GetAssignmentByUserDiscordID", "servers: Returned 0 rows. Throwing not found exception.");
+			Log.WriteVerbose("GetAssignmentByUserDiscordID", "servers: Returned 0 rows. Throwing not found exception.");
 			throw new DataNotFoundException();
 		}
 
 		if (reader.Rows > 1)
 		{
-			await Log.WriteInfo("GetAssignmentByUserDiscordID", $"servers: Returned {reader.Rows} rows. Throwing duplicate record exception.");
+			Log.WriteInfo("GetAssignmentByUserDiscordID", $"servers: Returned {reader.Rows} rows. Throwing duplicate record exception.");
 			throw new DuplicateRecordException("assignments", "osuid");
 		}
 
@@ -357,9 +357,9 @@ public class DBAssignments : DBConnectorBase
 		};
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("GetAssignmentByUserDiscordID", "Database connection closed.");
+		Log.WriteVerbose("GetAssignmentByUserDiscordID", "Database connection closed.");
 
-		await Log.WriteInfo("GetAssignmentByUserDiscordID", "servers: Returned 1 row.");
+		Log.WriteInfo("GetAssignmentByUserDiscordID", "servers: Returned 1 row.");
 		return ret;
 	}
 
@@ -385,7 +385,7 @@ public class DBAssignments : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("GetAssignmentByUserDiscordID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("GetAssignmentByUserDiscordID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -399,13 +399,13 @@ public class DBAssignments : DBConnectorBase
 
 		if (!reader.HasRows)
 		{
-			await Log.WriteVerbose("GetAssignmentByUserDiscordID", "servers: Returned 0 rows. Throwing not found exception.");
+			Log.WriteVerbose("GetAssignmentByUserDiscordID", "servers: Returned 0 rows. Throwing not found exception.");
 			throw new DataNotFoundException();
 		}
 
 		if (reader.Rows > 1)
 		{
-			await Log.WriteInfo("GetAssignmentByUserDiscordID", $"servers: Returned {reader.Rows} rows. Throwing duplicate record exception.");
+			Log.WriteInfo("GetAssignmentByUserDiscordID", $"servers: Returned {reader.Rows} rows. Throwing duplicate record exception.");
 			throw new DuplicateRecordException("assignments", "osuid");
 		}
 
@@ -419,9 +419,9 @@ public class DBAssignments : DBConnectorBase
 		};
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("GetAssignmentByUserDiscordID", "Database connection closed.");
+		Log.WriteVerbose("GetAssignmentByUserDiscordID", "Database connection closed.");
 
-		await Log.WriteInfo("GetAssignmentByUserDiscordID", "servers: Returned 1 row.");
+		Log.WriteInfo("GetAssignmentByUserDiscordID", "servers: Returned 1 row.");
 		return ret;
 	}
 
@@ -447,7 +447,7 @@ public class DBAssignments : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("GetAssignmentByOsuID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("GetAssignmentByOsuID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -461,13 +461,13 @@ public class DBAssignments : DBConnectorBase
 
 		if (!reader.HasRows)
 		{
-			await Log.WriteVerbose("GetAssignmentByOsuID", "servers: Returned 0 rows. Throwing not found exception.");
+			Log.WriteVerbose("GetAssignmentByOsuID", "servers: Returned 0 rows. Throwing not found exception.");
 			throw new DataNotFoundException();
 		}
 
 		if (reader.Rows > 1)
 		{
-			await Log.WriteInfo("GetAssignmentByOsuID", $"servers: Returned {reader.Rows} rows. Throwing duplicate record exception.");
+			Log.WriteInfo("GetAssignmentByOsuID", $"servers: Returned {reader.Rows} rows. Throwing duplicate record exception.");
 			throw new DuplicateRecordException("assignments", "osuid");
 		}
 
@@ -481,9 +481,9 @@ public class DBAssignments : DBConnectorBase
 		};
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("GetAssignmentByOsuID", "Database connection closed.");
+		Log.WriteVerbose("GetAssignmentByOsuID", "Database connection closed.");
 
-		await Log.WriteInfo("GetAssignmentByOsuID", "servers: Returned 1 row.");
+		Log.WriteInfo("GetAssignmentByOsuID", "servers: Returned 1 row.");
 		return ret;
 	}
 
@@ -497,7 +497,7 @@ public class DBAssignments : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("InsertAssignmentByUserID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("InsertAssignmentByUserID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -514,15 +514,15 @@ public class DBAssignments : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			await Log.WriteVerbose("InsertAssignmentByUserID", "Database connection closed.");
-			await Log.WriteVerbose("InsertAssignmentByUserID", "Insertion query failed. Throwing instance exception.");
+			Log.WriteVerbose("InsertAssignmentByUserID", "Database connection closed.");
+			Log.WriteVerbose("InsertAssignmentByUserID", "Insertion query failed. Throwing instance exception.");
 			throw new DatabaseInstanceException("Insertion query failed.");
 		}
 
-		await Log.WriteInfo("InsertAssignmentByUserID", "assignments: Inserted 1 row.");
+		Log.WriteInfo("InsertAssignmentByUserID", "assignments: Inserted 1 row.");
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("InsertAssignmentByUserID", "Database connection closed.");
+		Log.WriteVerbose("InsertAssignmentByUserID", "Database connection closed.");
 	}
 
 	public async Task InsertAssignment(int assignmentId, string guildDiscordId, int userId, int roleId)
@@ -535,7 +535,7 @@ public class DBAssignments : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("InsertAssignmentByUserID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("InsertAssignmentByUserID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -553,15 +553,15 @@ public class DBAssignments : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			await Log.WriteVerbose("InsertAssignmentByUserID", "Database connection closed.");
-			await Log.WriteVerbose("InsertAssignmentByUserID", "Insertion query failed. Throwing instance exception.");
+			Log.WriteVerbose("InsertAssignmentByUserID", "Database connection closed.");
+			Log.WriteVerbose("InsertAssignmentByUserID", "Insertion query failed. Throwing instance exception.");
 			throw new DatabaseInstanceException("Insertion query failed.");
 		}
 
-		await Log.WriteInfo("InsertAssignmentByUserID", "assignments: Inserted 1 row.");
+		Log.WriteInfo("InsertAssignmentByUserID", "assignments: Inserted 1 row.");
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("InsertAssignmentByUserID", "Database connection closed.");
+		Log.WriteVerbose("InsertAssignmentByUserID", "Database connection closed.");
 	}
 
 	public async Task UpdateAssignmentByAssignmentID(int assignmentId, int roleId)
@@ -577,7 +577,7 @@ public class DBAssignments : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("UpdateAssignmentByAssignmentID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("UpdateAssignmentByAssignmentID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -593,15 +593,15 @@ public class DBAssignments : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			await Log.WriteVerbose("UpdateAssignmentByAssignmentID", "Database connection closed.");
-			await Log.WriteVerbose("UpdateAssignmentByAssignmentID", "Update query failed. Throwing instance exception.");
+			Log.WriteVerbose("UpdateAssignmentByAssignmentID", "Database connection closed.");
+			Log.WriteVerbose("UpdateAssignmentByAssignmentID", "Update query failed. Throwing instance exception.");
 			throw new DatabaseInstanceException("Update query failed.");
 		}
 
-		await Log.WriteInfo("UpdateAssignmentByAssignmentID", "assignments: Updated 1 row.");
+		Log.WriteInfo("UpdateAssignmentByAssignmentID", "assignments: Updated 1 row.");
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("UpdateAssignmentByAssignmentID", "Database connection closed.");
+		Log.WriteVerbose("UpdateAssignmentByAssignmentID", "Database connection closed.");
 	}
 
 	public async Task UpdateAssignmentByUserDatabaseID(int serverId, int userId, int roleId)
@@ -617,7 +617,7 @@ public class DBAssignments : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("UpdateAssignmentByUserDatabaseID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("UpdateAssignmentByUserDatabaseID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -634,15 +634,15 @@ public class DBAssignments : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			await Log.WriteVerbose("UpdateAssignmentByUserDatabaseID", "Database connection closed.");
-			await Log.WriteVerbose("UpdateAssignmentByUserDatabaseID", "Update query failed. Throwing instance exception.");
+			Log.WriteVerbose("UpdateAssignmentByUserDatabaseID", "Database connection closed.");
+			Log.WriteVerbose("UpdateAssignmentByUserDatabaseID", "Update query failed. Throwing instance exception.");
 			throw new DatabaseInstanceException("Update query failed.");
 		}
 
-		await Log.WriteInfo("UpdateAssignmentByUserDatabaseID", "assignments: Updated 1 row.");
+		Log.WriteInfo("UpdateAssignmentByUserDatabaseID", "assignments: Updated 1 row.");
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("UpdateAssignmentByUserDatabaseID", "Database connection closed.");
+		Log.WriteVerbose("UpdateAssignmentByUserDatabaseID", "Database connection closed.");
 	}
 
 	public async Task DeleteAssignmentByAssignmentID(int assignmentId)
@@ -655,7 +655,7 @@ public class DBAssignments : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("DeleteAssignmentByAssignmentID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("DeleteAssignmentByAssignmentID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -670,15 +670,15 @@ public class DBAssignments : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			await Log.WriteVerbose("DeleteAssignmentByAssignmentID", "Database connection closed.");
-			await Log.WriteVerbose("DeleteAssignmentByAssignmentID", "Deletion query failed. Throwing instance exception.");
+			Log.WriteVerbose("DeleteAssignmentByAssignmentID", "Database connection closed.");
+			Log.WriteVerbose("DeleteAssignmentByAssignmentID", "Deletion query failed. Throwing instance exception.");
 			throw new DatabaseInstanceException("Deletion query failed.");
 		}
 
-		await Log.WriteInfo("DeleteAssignmentByAssignmentID", "assignments: Deleted 1 row.");
+		Log.WriteInfo("DeleteAssignmentByAssignmentID", "assignments: Deleted 1 row.");
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("DeleteAssignmentByAssignmentID", "Database connection closed.");
+		Log.WriteVerbose("DeleteAssignmentByAssignmentID", "Database connection closed.");
 	}
 
 	public async Task DeleteAssignmentByUserDatabaseID(int userId)
@@ -691,7 +691,7 @@ public class DBAssignments : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("DeleteAssignmentByUserDatabaseID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("DeleteAssignmentByUserDatabaseID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -706,15 +706,15 @@ public class DBAssignments : DBConnectorBase
 		if (affectedRows <= 0)
 		{
 			await tempConnection.CloseAsync();
-			await Log.WriteVerbose("DeleteAssignmentByUserDatabaseID", "Database connection closed.");
-			await Log.WriteVerbose("DeleteAssignmentByUserDatabaseID", "Deletion query failed. Throwing instance exception.");
+			Log.WriteVerbose("DeleteAssignmentByUserDatabaseID", "Database connection closed.");
+			Log.WriteVerbose("DeleteAssignmentByUserDatabaseID", "Deletion query failed. Throwing instance exception.");
 			throw new DatabaseInstanceException("Deletion query failed.");
 		}
 
-		await Log.WriteInfo("DeleteAssignmentByUserDatabaseID", $"assignments: Deleted {affectedRows} row{(affectedRows != 1 ? "s" : string.Empty)}.");
+		Log.WriteInfo("DeleteAssignmentByUserDatabaseID", $"assignments: Deleted {affectedRows} row{(affectedRows != 1 ? "s" : string.Empty)}.");
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("DeleteAssignmentByUserDatabaseID", "Database connection closed.");
+		Log.WriteVerbose("DeleteAssignmentByUserDatabaseID", "Database connection closed.");
 	}
 
 	public async Task DeleteAssignmentByUserDatabaseID(int userId, int serverId)
@@ -727,7 +727,7 @@ public class DBAssignments : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("DeleteAssignmentByUserDatabaseID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("DeleteAssignmentByUserDatabaseID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -743,15 +743,15 @@ public class DBAssignments : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			await Log.WriteVerbose("DeleteAssignmentByUserDatabaseID", "Database connection closed.");
-			await Log.WriteVerbose("DeleteAssignmentByUserDatabaseID", "Deletion query failed. Throwing instance exception.");
+			Log.WriteVerbose("DeleteAssignmentByUserDatabaseID", "Database connection closed.");
+			Log.WriteVerbose("DeleteAssignmentByUserDatabaseID", "Deletion query failed. Throwing instance exception.");
 			throw new DatabaseInstanceException("Deletion query failed.");
 		}
 
-		await Log.WriteInfo("DeleteAssignmentByUserDatabaseID", "assignments: Deleted 1 row.");
+		Log.WriteInfo("DeleteAssignmentByUserDatabaseID", "assignments: Deleted 1 row.");
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("DeleteAssignmentByUserDatabaseID", "Database connection closed.");
+		Log.WriteVerbose("DeleteAssignmentByUserDatabaseID", "Database connection closed.");
 	}
 
 	public async Task DeleteAssignmentByServerID(int serverId)
@@ -764,7 +764,7 @@ public class DBAssignments : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("DeleteAssignmentByServerID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("DeleteAssignmentByServerID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -779,14 +779,14 @@ public class DBAssignments : DBConnectorBase
 		if (affectedRows <= 0)
 		{
 			await tempConnection.CloseAsync();
-			await Log.WriteVerbose("DeleteAssignmentByServerID", "Database connection closed.");
-			await Log.WriteVerbose("DeleteAssignmentByServerDatabaseID", "Deletion query failed. Throwing instance exception.");
+			Log.WriteVerbose("DeleteAssignmentByServerID", "Database connection closed.");
+			Log.WriteVerbose("DeleteAssignmentByServerDatabaseID", "Deletion query failed. Throwing instance exception.");
 			throw new DatabaseInstanceException("Deletion query failed.");
 		}
 
-		await Log.WriteInfo("DeleteAssignmentByServerID", $"assignments: Deleted {affectedRows} row{(affectedRows != 1 ? "s" : string.Empty)}.");
+		Log.WriteInfo("DeleteAssignmentByServerID", $"assignments: Deleted {affectedRows} row{(affectedRows != 1 ? "s" : string.Empty)}.");
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("DeleteAssignmentByServerDatabaseID", "Database connection closed.");
+		Log.WriteVerbose("DeleteAssignmentByServerDatabaseID", "Database connection closed.");
 	}
 }

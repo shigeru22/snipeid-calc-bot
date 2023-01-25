@@ -33,7 +33,7 @@ public class DBRoles : DBConnectorBase
 
 		if (!reader.HasRows)
 		{
-			await Log.WriteVerbose("GetRoles", "roles: Returned 0 rows.");
+			Log.WriteVerbose("GetRoles", "roles: Returned 0 rows.");
 			return Array.Empty<RolesQuerySchema.RolesTableData>();
 		}
 
@@ -50,7 +50,7 @@ public class DBRoles : DBConnectorBase
 			});
 		}
 
-		await Log.WriteInfo("GetRoles", $"roles: Returned {reader.Rows} row{(reader.Rows != 1 ? "s" : string.Empty)}.");
+		Log.WriteInfo("GetRoles", $"roles: Returned {reader.Rows} row{(reader.Rows != 1 ? "s" : string.Empty)}.");
 		return ret.ToArray();
 	}
 
@@ -75,7 +75,7 @@ public class DBRoles : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("GetServerRoles", "Database connection created and opened from data source.");
+		Log.WriteVerbose("GetServerRoles", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -88,7 +88,7 @@ public class DBRoles : DBConnectorBase
 
 		if (!reader.HasRows)
 		{
-			await Log.WriteVerbose("GetServerRoles", "roles: Returned 0 rows.");
+			Log.WriteVerbose("GetServerRoles", "roles: Returned 0 rows.");
 			return Array.Empty<RolesQuerySchema.RolesTableData>();
 		}
 
@@ -106,9 +106,9 @@ public class DBRoles : DBConnectorBase
 		}
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("GetServerRoles", "Database connection closed.");
+		Log.WriteVerbose("GetServerRoles", "Database connection closed.");
 
-		await Log.WriteInfo("GetServerRoles", $"roles: Returned {reader.Rows} row{(reader.Rows != 1 ? "s" : string.Empty)}.");
+		Log.WriteInfo("GetServerRoles", $"roles: Returned {reader.Rows} row{(reader.Rows != 1 ? "s" : string.Empty)}.");
 		return ret.ToArray();
 	}
 
@@ -129,7 +129,7 @@ public class DBRoles : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("GetRoleByRoleID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("GetRoleByRoleID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -142,13 +142,13 @@ public class DBRoles : DBConnectorBase
 
 		if (!reader.HasRows)
 		{
-			await Log.WriteVerbose("GetRoleByRoleID", "roles: Returned 0 rows. Throwing not found exception.");
+			Log.WriteVerbose("GetRoleByRoleID", "roles: Returned 0 rows. Throwing not found exception.");
 			throw new DataNotFoundException();
 		}
 
 		if (reader.Rows > 1)
 		{
-			await Log.WriteInfo("GetRoleByRoleID", $"roles: Returned {reader.Rows} rows. Throwing duplicate record exception.");
+			Log.WriteInfo("GetRoleByRoleID", $"roles: Returned {reader.Rows} rows. Throwing duplicate record exception.");
 			throw new DuplicateRecordException("roles", "roleid");
 		}
 
@@ -163,9 +163,9 @@ public class DBRoles : DBConnectorBase
 		};
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("GetRoleByRoleID", "Database connection closed.");
+		Log.WriteVerbose("GetRoleByRoleID", "Database connection closed.");
 
-		await Log.WriteInfo("GetRoleByRoleID", "roles: Returned 1 row.");
+		Log.WriteInfo("GetRoleByRoleID", "roles: Returned 1 row.");
 		return ret;
 	}
 
@@ -186,7 +186,7 @@ public class DBRoles : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("GetRoleByDiscordID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("GetRoleByDiscordID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -199,13 +199,13 @@ public class DBRoles : DBConnectorBase
 
 		if (!reader.HasRows)
 		{
-			await Log.WriteVerbose("GetRoleByDiscordID", "roles: Returned 0 rows. Throwing not found exception.");
+			Log.WriteVerbose("GetRoleByDiscordID", "roles: Returned 0 rows. Throwing not found exception.");
 			throw new DataNotFoundException();
 		}
 
 		if (reader.Rows > 1)
 		{
-			await Log.WriteInfo("GetRoleByDiscordID", $"roles: Returned {reader.Rows} rows. Throwing duplicate record exception.");
+			Log.WriteInfo("GetRoleByDiscordID", $"roles: Returned {reader.Rows} rows. Throwing duplicate record exception.");
 			throw new DuplicateRecordException("roles", "discordid");
 		}
 
@@ -220,9 +220,9 @@ public class DBRoles : DBConnectorBase
 		};
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("GetRoleByDiscordID", "Database connection closed.");
+		Log.WriteVerbose("GetRoleByDiscordID", "Database connection closed.");
 
-		await Log.WriteInfo("GetRoleByDiscordID", "roles: Returned 1 row.");
+		Log.WriteInfo("GetRoleByDiscordID", "roles: Returned 1 row.");
 		return ret;
 	}
 
@@ -249,7 +249,7 @@ public class DBRoles : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("GetServerRoleByOsuID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("GetServerRoleByOsuID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -263,13 +263,13 @@ public class DBRoles : DBConnectorBase
 
 		if (!reader.HasRows)
 		{
-			await Log.WriteVerbose("GetServerRoleByOsuID", "roles: Returned 0 rows. Throwing not found exception.");
+			Log.WriteVerbose("GetServerRoleByOsuID", "roles: Returned 0 rows. Throwing not found exception.");
 			throw new DataNotFoundException();
 		}
 
 		if (reader.Rows > 1)
 		{
-			await Log.WriteInfo("GetServerRoleByOsuID", $"roles: Returned {reader.Rows} rows. Throwing duplicate record exception.");
+			Log.WriteInfo("GetServerRoleByOsuID", $"roles: Returned {reader.Rows} rows. Throwing duplicate record exception.");
 			throw new DuplicateRecordException("roles", "osuid or discordid");
 		}
 
@@ -284,9 +284,9 @@ public class DBRoles : DBConnectorBase
 		};
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("GetServerRoleByOsuID", "Database connection closed.");
+		Log.WriteVerbose("GetServerRoleByOsuID", "Database connection closed.");
 
-		await Log.WriteInfo("GetServerRoleByOsuID", "roles: Returned 1 row.");
+		Log.WriteInfo("GetServerRoleByOsuID", "roles: Returned 1 row.");
 		return ret;
 	}
 
@@ -312,7 +312,7 @@ public class DBRoles : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("GetTargetServerRoleByPoints", "Database connection created and opened from data source.");
+		Log.WriteVerbose("GetTargetServerRoleByPoints", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -326,13 +326,13 @@ public class DBRoles : DBConnectorBase
 
 		if (!reader.HasRows)
 		{
-			await Log.WriteVerbose("GetTargetServerRoleByPoints", "roles: Returned 0 rows. Throwing not found exception.");
+			Log.WriteVerbose("GetTargetServerRoleByPoints", "roles: Returned 0 rows. Throwing not found exception.");
 			throw new DataNotFoundException();
 		}
 
 		if (reader.Rows > 1)
 		{
-			await Log.WriteInfo("GetTargetServerRoleByPoints", $"roles: Returned {reader.Rows} rows. Throwing duplicate record exception.");
+			Log.WriteInfo("GetTargetServerRoleByPoints", $"roles: Returned {reader.Rows} rows. Throwing duplicate record exception.");
 			throw new DuplicateRecordException("roles", "osuid or discordid");
 		}
 
@@ -347,9 +347,9 @@ public class DBRoles : DBConnectorBase
 		};
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("GetTargetServerRoleByPoints", "Database connection closed.");
+		Log.WriteVerbose("GetTargetServerRoleByPoints", "Database connection closed.");
 
-		await Log.WriteInfo("GetTargetServerRoleByPoints", "roles: Returned 1 row.");
+		Log.WriteInfo("GetTargetServerRoleByPoints", "roles: Returned 1 row.");
 		return ret;
 	}
 
@@ -363,7 +363,7 @@ public class DBRoles : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("InsertRole", "Database connection created and opened from data source.");
+		Log.WriteVerbose("InsertRole", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -381,15 +381,15 @@ public class DBRoles : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			await Log.WriteVerbose("InsertRole", "Database connection closed.");
-			await Log.WriteVerbose("InsertRole", "Insertion query failed. Throwing instance exception.");
+			Log.WriteVerbose("InsertRole", "Database connection closed.");
+			Log.WriteVerbose("InsertRole", "Insertion query failed. Throwing instance exception.");
 			throw new DatabaseInstanceException("Insertion query failed.");
 		}
 
-		await Log.WriteInfo("InsertRole", "roles: Inserted 1 row.");
+		Log.WriteInfo("InsertRole", "roles: Inserted 1 row.");
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("InsertRole", "Database connection closed.");
+		Log.WriteVerbose("InsertRole", "Database connection closed.");
 	}
 
 	public async Task InsertRole(int roleId, string roleDiscordId, string roleName, int minPoints, int serverId)
@@ -402,7 +402,7 @@ public class DBRoles : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("InsertRole", "Database connection created and opened from data source.");
+		Log.WriteVerbose("InsertRole", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -421,22 +421,22 @@ public class DBRoles : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			await Log.WriteVerbose("InsertRole", "Database connection closed.");
-			await Log.WriteVerbose("InsertRole", "Insertion query failed. Throwing instance exception.");
+			Log.WriteVerbose("InsertRole", "Database connection closed.");
+			Log.WriteVerbose("InsertRole", "Insertion query failed. Throwing instance exception.");
 			throw new DatabaseInstanceException("Insertion query failed.");
 		}
 
-		await Log.WriteInfo("InsertRole", "roles: Inserted 1 row.");
+		Log.WriteInfo("InsertRole", "roles: Inserted 1 row.");
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("InsertRole", "Database connection closed.");
+		Log.WriteVerbose("InsertRole", "Database connection closed.");
 	}
 
 	public async Task UpdateRole(int roleId, string? roleName = null, int? minPoints = null)
 	{
 		if (string.IsNullOrEmpty(roleName) && minPoints < 0)
 		{
-			await Log.WriteVerbose("UpdateRole", "Invalid argument(s). Throwing argument exception.");
+			Log.WriteVerbose("UpdateRole", "Invalid argument(s). Throwing argument exception.");
 			throw new ArgumentException("Either or both roleName or minPoints must be specified and valid.");
 		}
 
@@ -453,7 +453,7 @@ public class DBRoles : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("UpdateRole", "Database connection created and opened from data source.");
+		Log.WriteVerbose("UpdateRole", "Database connection created and opened from data source.");
 
 		NpgsqlCommand command;
 
@@ -512,15 +512,15 @@ public class DBRoles : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			await Log.WriteVerbose("UpdateRole", "Database connection closed.");
-			await Log.WriteVerbose("UpdateRole", "Update query failed. Throwing instance exception.");
+			Log.WriteVerbose("UpdateRole", "Database connection closed.");
+			Log.WriteVerbose("UpdateRole", "Update query failed. Throwing instance exception.");
 			throw new DatabaseInstanceException("Update query failed.");
 		}
 
-		await Log.WriteInfo("UpdateRole", "roles: Updated 1 row.");
+		Log.WriteInfo("UpdateRole", "roles: Updated 1 row.");
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("UpdateRole", "Database connection closed.");
+		Log.WriteVerbose("UpdateRole", "Database connection closed.");
 	}
 
 	public async Task DeleteRoleByRoleID(int roleId)
@@ -533,7 +533,7 @@ public class DBRoles : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("DeleteRoleByRoleID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("DeleteRoleByRoleID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -548,15 +548,15 @@ public class DBRoles : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			await Log.WriteVerbose("DeleteRoleByRoleID", "Database connection closed.");
-			await Log.WriteVerbose("DeleteRoleByRoleID", "Deletion query failed. Throwing instance exception.");
+			Log.WriteVerbose("DeleteRoleByRoleID", "Database connection closed.");
+			Log.WriteVerbose("DeleteRoleByRoleID", "Deletion query failed. Throwing instance exception.");
 			throw new DatabaseInstanceException("Deletion query failed.");
 		}
 
-		await Log.WriteInfo("DeleteRoleByRoleID", "roles: Deleted 1 row.");
+		Log.WriteInfo("DeleteRoleByRoleID", "roles: Deleted 1 row.");
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("DeleteRoleByRoleID", "Database connection closed.");
+		Log.WriteVerbose("DeleteRoleByRoleID", "Database connection closed.");
 	}
 
 	public async Task DeleteRoleByDiscordID(int discordId)
@@ -569,7 +569,7 @@ public class DBRoles : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("DeleteRoleByDiscordID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("DeleteRoleByDiscordID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -584,15 +584,15 @@ public class DBRoles : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			await Log.WriteVerbose("DeleteRoleByDiscordID", "Database connection closed.");
-			await Log.WriteVerbose("DeleteRoleByDiscordID", "Deletion query failed. Throwing instance exception.");
+			Log.WriteVerbose("DeleteRoleByDiscordID", "Database connection closed.");
+			Log.WriteVerbose("DeleteRoleByDiscordID", "Deletion query failed. Throwing instance exception.");
 			throw new DatabaseInstanceException("Deletion query failed.");
 		}
 
-		await Log.WriteInfo("DeleteRoleByDiscordID", "roles: Deleted 1 row.");
+		Log.WriteInfo("DeleteRoleByDiscordID", "roles: Deleted 1 row.");
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("DeleteRoleByDiscordID", "Database connection closed.");
+		Log.WriteVerbose("DeleteRoleByDiscordID", "Database connection closed.");
 	}
 
 	public async Task DeleteServerRoles(int guildId)
@@ -605,7 +605,7 @@ public class DBRoles : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("DeleteServerRoles", "Database connection created and opened from data source.");
+		Log.WriteVerbose("DeleteServerRoles", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -620,14 +620,14 @@ public class DBRoles : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			await Log.WriteVerbose("DeleteServerRoles", "Database connection closed.");
-			await Log.WriteVerbose("DeleteServerRoles", "Deletion query failed. Throwing instance exception.");
+			Log.WriteVerbose("DeleteServerRoles", "Database connection closed.");
+			Log.WriteVerbose("DeleteServerRoles", "Deletion query failed. Throwing instance exception.");
 			throw new DatabaseInstanceException("Deletion query failed.");
 		}
 
-		await Log.WriteInfo("DeleteServerRoles", "roles: Deleted 1 row.");
+		Log.WriteInfo("DeleteServerRoles", "roles: Deleted 1 row.");
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("DeleteServerRoles", "Database connection closed.");
+		Log.WriteVerbose("DeleteServerRoles", "Database connection closed.");
 	}
 }

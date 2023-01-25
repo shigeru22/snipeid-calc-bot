@@ -17,7 +17,7 @@ public static class Log
 		"DEBUG"
 	};
 
-	public static Task Write(LogMessage msg)
+	public static void Write(LogMessage msg)
 	{
 		if (Settings.Instance.Client.Logging.LogSeverity >= (int)msg.Severity)
 		{
@@ -45,43 +45,51 @@ public static class Log
 					throw new ArgumentOutOfRangeException(nameof(msg));
 			}
 		}
-
-		return Task.CompletedTask;
 	}
 
-	public static Task Write(LogSeverity severity, string source, string message)
+	public static void Write(LogSeverity severity, string source, string message)
 	{
 		if (Settings.Instance.Client.Logging.LogSeverity >= (int)severity)
 		{
 			switch (severity)
 			{
 				case Discord.LogSeverity.Critical:
-					Log.WriteCritical(source, message);
+					WriteCritical(source, message);
 					break;
 				case Discord.LogSeverity.Error:
-					Log.WriteError(source, message);
+					WriteError(source, message);
 					break;
 				case Discord.LogSeverity.Warning:
-					Log.WriteWarning(source, message);
+					WriteWarning(source, message);
 					break;
 				case Discord.LogSeverity.Info:
-					Log.WriteInfo(source, message);
+					WriteInfo(source, message);
 					break;
 				case Discord.LogSeverity.Verbose:
-					Log.WriteVerbose(source, message);
+					WriteVerbose(source, message);
 					break;
 				case Discord.LogSeverity.Debug:
-					Log.WriteDebug(source, message);
+					WriteDebug(source, message);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(severity), severity, null);
 			}
 		}
+	}
 
+	public static Task WriteAsync(LogMessage msg)
+	{
+		Write(msg);
 		return Task.CompletedTask;
 	}
 
-	public static Task WriteCritical(string source, string message)
+	public static Task WriteAsync(LogSeverity severity, string source, string message)
+	{
+		Write(severity, source, message);
+		return Task.CompletedTask;
+	}
+
+	public static void WriteCritical(string source, string message)
 	{
 		ConsoleColor currentColor = Console.ForegroundColor;
 		Console.ForegroundColor = ConsoleColor.Red;
@@ -92,11 +100,9 @@ public static class Log
 		}
 
 		Console.ForegroundColor = currentColor;
-
-		return Task.CompletedTask;
 	}
 
-	public static Task WriteError(string source, string message)
+	public static void WriteError(string source, string message)
 	{
 		ConsoleColor currentColor = Console.ForegroundColor;
 		Console.ForegroundColor = ConsoleColor.Red;
@@ -107,11 +113,9 @@ public static class Log
 		}
 
 		Console.ForegroundColor = currentColor;
-
-		return Task.CompletedTask;
 	}
 
-	public static Task WriteWarning(string source, string message)
+	public static void WriteWarning(string source, string message)
 	{
 		ConsoleColor currentColor = Console.ForegroundColor;
 		Console.ForegroundColor = ConsoleColor.Yellow;
@@ -122,21 +126,17 @@ public static class Log
 		}
 
 		Console.ForegroundColor = currentColor;
-
-		return Task.CompletedTask;
 	}
 
-	public static Task WriteInfo(string source, string message)
+	public static void WriteInfo(string source, string message)
 	{
 		if (Settings.Instance.Client.Logging.LogSeverity >= 3)
 		{
 			Console.WriteLine($"{Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC)} :: {LogSeverity[3][0]} :: {source} :: {message}");
 		}
-
-		return Task.CompletedTask;
 	}
 
-	public static Task WriteVerbose(string source, string message)
+	public static void WriteVerbose(string source, string message)
 	{
 		ConsoleColor currentColor = Console.ForegroundColor;
 		Console.ForegroundColor = ConsoleColor.DarkGray;
@@ -147,11 +147,9 @@ public static class Log
 		}
 
 		Console.ForegroundColor = currentColor;
-
-		return Task.CompletedTask;
 	}
 
-	public static Task WriteDebug(string source, string message)
+	public static void WriteDebug(string source, string message)
 	{
 		ConsoleColor currentColor = Console.ForegroundColor;
 		Console.ForegroundColor = ConsoleColor.DarkGray;
@@ -162,11 +160,9 @@ public static class Log
 		}
 
 		Console.ForegroundColor = currentColor;
-
-		return Task.CompletedTask;
 	}
 
-	public static Task DeletePreviousLine(bool keepCurrentLine = false)
+	public static void DeletePreviousLine(bool keepCurrentLine = false)
 	{
 		int currentCursorLine = Console.CursorTop;
 		Console.SetCursorPosition(0, currentCursorLine - 1);
@@ -176,7 +172,5 @@ public static class Log
 		{
 			Console.SetCursorPosition(0, currentCursorLine - 1);
 		}
-
-		return Task.CompletedTask;
 	}
 }

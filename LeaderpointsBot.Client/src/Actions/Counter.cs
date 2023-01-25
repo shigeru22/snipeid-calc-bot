@@ -28,16 +28,16 @@ public static class CounterActions
 		}
 		catch (DataNotFoundException)
 		{
-			await Log.WriteError("UpdateUserDataAsync", $"Server with Discord ID {guild.Id} not found in database.");
+			Log.WriteError("UpdateUserDataAsync", $"Server with Discord ID {guild.Id} not found in database.");
 			throw new SendMessageException("Server not found.", true);
 		}
 		catch (Exception e)
 		{
-			await Log.WriteError("UpdateUserDataAsync", $"An unhandled error occurred while querying server.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
+			Log.WriteError("UpdateUserDataAsync", $"An unhandled error occurred while querying server.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
 			throw new SendMessageException("Unhandled client error occurred.", true);
 		}
 
-		await Log.WriteVerbose("UpdateUserDataAsync", $"Updating user data for osu! ID {osuId}.");
+		Log.WriteVerbose("UpdateUserDataAsync", $"Updating user data for osu! ID {osuId}.");
 
 		try
 		{
@@ -54,7 +54,7 @@ public static class CounterActions
 		}
 		catch (Exception)
 		{
-			await Log.WriteError("UpdateUserDataAsync", $"An unhandled error occurred while retrieving osu! user.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? " See above errors for details." : string.Empty)}");
+			Log.WriteError("UpdateUserDataAsync", $"An unhandled error occurred while retrieving osu! user.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? " See above errors for details." : string.Empty)}");
 			throw new SendMessageException("Unhandled client error occurred.", true);
 		}
 
@@ -76,7 +76,7 @@ public static class CounterActions
 		}
 		catch (SkipUpdateException)
 		{
-			await Log.WriteVerbose("UpdateUserDataAsync", "Data update skipped. Returning update messages as null.");
+			Log.WriteVerbose("UpdateUserDataAsync", "Data update skipped. Returning update messages as null.");
 			return null;
 		}
 		catch (Exception)
@@ -93,7 +93,7 @@ public static class CounterActions
 			throw new SendMessageException("Unhandled client error occurred.", true);
 		}
 
-		await Log.WriteDebug("UpdateUserDataAsync", $"assignmentResult.LastUpdate = {assignmentResult.LastUpdate}");
+		Log.WriteDebug("UpdateUserDataAsync", $"assignmentResult.LastUpdate = {assignmentResult.LastUpdate}");
 
 		return new Counter.UpdateUserDataMessages()
 		{

@@ -36,7 +36,7 @@ public class DBUsers : DBConnectorBase
 
 		if (!reader.HasRows)
 		{
-			await Log.WriteInfo("GetUsers", "users: Returned 0 rows.");
+			Log.WriteInfo("GetUsers", "users: Returned 0 rows.");
 			return Array.Empty<UsersQuerySchema.UsersTableData>();
 		}
 
@@ -56,7 +56,7 @@ public class DBUsers : DBConnectorBase
 			});
 		}
 
-		await Log.WriteInfo("GetUsers", $"users: Returned {reader.Rows} row{(reader.Rows != 1 ? "s" : string.Empty)}.");
+		Log.WriteInfo("GetUsers", $"users: Returned {reader.Rows} row{(reader.Rows != 1 ? "s" : string.Empty)}.");
 		return ret.ToArray();
 	}
 
@@ -80,7 +80,7 @@ public class DBUsers : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("GetUserByUserID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("GetUserByUserID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -94,16 +94,16 @@ public class DBUsers : DBConnectorBase
 		if (!reader.HasRows)
 		{
 			await reader.CloseAsync();
-			await Log.WriteVerbose("GetUserByUserID", "Database connection closed.");
-			await Log.WriteInfo("GetUserByUserID", "users: Returned 0 rows. Throwing not found exception.");
+			Log.WriteVerbose("GetUserByUserID", "Database connection closed.");
+			Log.WriteInfo("GetUserByUserID", "users: Returned 0 rows. Throwing not found exception.");
 			throw new DataNotFoundException();
 		}
 
 		if (reader.Rows > 1)
 		{
 			await reader.CloseAsync();
-			await Log.WriteVerbose("GetUserByUserID", "Database connection closed.");
-			await Log.WriteInfo("GetUserByUserID", $"users: Returned {reader.Rows} rows. Throwing duplicate record exception.");
+			Log.WriteVerbose("GetUserByUserID", "Database connection closed.");
+			Log.WriteInfo("GetUserByUserID", $"users: Returned {reader.Rows} rows. Throwing duplicate record exception.");
 			throw new DuplicateRecordException("users", "osuid");
 		}
 
@@ -121,9 +121,9 @@ public class DBUsers : DBConnectorBase
 		};
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("GetUserByUserID", "Database connection closed.");
+		Log.WriteVerbose("GetUserByUserID", "Database connection closed.");
 
-		await Log.WriteInfo("GetUserByUserID", "users: Returned 1 row.");
+		Log.WriteInfo("GetUserByUserID", "users: Returned 1 row.");
 		return ret;
 	}
 
@@ -147,7 +147,7 @@ public class DBUsers : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("GetUserByOsuID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("GetUserByOsuID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -161,16 +161,16 @@ public class DBUsers : DBConnectorBase
 		if (!reader.HasRows)
 		{
 			await tempConnection.CloseAsync();
-			await Log.WriteVerbose("GetUserByOsuID", "Database connection closed.");
-			await Log.WriteInfo("GetUserByOsuID", "users: Returned 0 rows. Throwing not found exception.");
+			Log.WriteVerbose("GetUserByOsuID", "Database connection closed.");
+			Log.WriteInfo("GetUserByOsuID", "users: Returned 0 rows. Throwing not found exception.");
 			throw new DataNotFoundException();
 		}
 
 		if (reader.Rows > 1)
 		{
 			await tempConnection.CloseAsync();
-			await Log.WriteVerbose("GetUserByOsuID", "Database connection closed.");
-			await Log.WriteInfo("GetUserByOsuID", $"users: Returned {reader.Rows} rows. Throwing duplicate record exception.");
+			Log.WriteVerbose("GetUserByOsuID", "Database connection closed.");
+			Log.WriteInfo("GetUserByOsuID", $"users: Returned {reader.Rows} rows. Throwing duplicate record exception.");
 			throw new DuplicateRecordException("users", "osuid");
 		}
 
@@ -188,9 +188,9 @@ public class DBUsers : DBConnectorBase
 		};
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("GetUserByOsuID", "Database connection closed.");
+		Log.WriteVerbose("GetUserByOsuID", "Database connection closed.");
 
-		await Log.WriteInfo("GetUserByOsuID", "users: Returned 1 row.");
+		Log.WriteInfo("GetUserByOsuID", "users: Returned 1 row.");
 		return ret;
 	}
 
@@ -214,7 +214,7 @@ public class DBUsers : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("GetUserByDiscordID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("GetUserByDiscordID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -228,16 +228,16 @@ public class DBUsers : DBConnectorBase
 		if (!reader.HasRows)
 		{
 			await tempConnection.CloseAsync();
-			await Log.WriteVerbose("GetUserByDiscordID", "Database connection closed.");
-			await Log.WriteInfo("GetUserByDiscordID", "users: Returned 0 rows. Throwing not found exception.");
+			Log.WriteVerbose("GetUserByDiscordID", "Database connection closed.");
+			Log.WriteInfo("GetUserByDiscordID", "users: Returned 0 rows. Throwing not found exception.");
 			throw new DataNotFoundException();
 		}
 
 		if (reader.Rows > 1)
 		{
 			await tempConnection.CloseAsync();
-			await Log.WriteVerbose("GetUserByDiscordID", "Database connection closed.");
-			await Log.WriteInfo("GetUserByDiscordID", $"users: Returned {reader.Rows} rows. Throwing duplicate record exception.");
+			Log.WriteVerbose("GetUserByDiscordID", "Database connection closed.");
+			Log.WriteInfo("GetUserByDiscordID", $"users: Returned {reader.Rows} rows. Throwing duplicate record exception.");
 			throw new DuplicateRecordException("users", "discordid");
 		}
 
@@ -255,9 +255,9 @@ public class DBUsers : DBConnectorBase
 		};
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("GetUserByDiscordID", "Database connection closed.");
+		Log.WriteVerbose("GetUserByDiscordID", "Database connection closed.");
 
-		await Log.WriteInfo("GetUserByDiscordID", "users: Returned 1 row.");
+		Log.WriteInfo("GetUserByDiscordID", "users: Returned 1 row.");
 		return ret;
 	}
 
@@ -283,7 +283,7 @@ public class DBUsers : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("GetServerPointsLeaderboard", "Database connection created and opened from data source.");
+		Log.WriteVerbose("GetServerPointsLeaderboard", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -297,8 +297,8 @@ public class DBUsers : DBConnectorBase
 		if (!reader.HasRows)
 		{
 			await reader.CloseAsync();
-			await Log.WriteVerbose("GetServerPointsLeaderboard", "Database connection closed.");
-			await Log.WriteInfo("GetServerPointsLeaderboard", "users: Returned 0 rows.");
+			Log.WriteVerbose("GetServerPointsLeaderboard", "Database connection closed.");
+			Log.WriteInfo("GetServerPointsLeaderboard", "users: Returned 0 rows.");
 			return Array.Empty<UsersQuerySchema.UsersLeaderboardData>();
 		}
 
@@ -315,9 +315,9 @@ public class DBUsers : DBConnectorBase
 		}
 
 		await reader.CloseAsync();
-		await Log.WriteVerbose("GetServerPointsLeaderboard", "Database connection closed.");
+		Log.WriteVerbose("GetServerPointsLeaderboard", "Database connection closed.");
 
-		await Log.WriteInfo("GetServerPointsLeaderboard", $"users: Returned {reader.Rows} row{(reader.Rows != 1 ? "s" : string.Empty)}.");
+		Log.WriteInfo("GetServerPointsLeaderboard", $"users: Returned {reader.Rows} row{(reader.Rows != 1 ? "s" : string.Empty)}.");
 		return ret.ToArray();
 	}
 
@@ -343,7 +343,7 @@ public class DBUsers : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("GetServerPointsLeaderboardByCountry", "Database connection created and opened from data source.");
+		Log.WriteVerbose("GetServerPointsLeaderboardByCountry", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -358,8 +358,8 @@ public class DBUsers : DBConnectorBase
 		if (!reader.HasRows)
 		{
 			await reader.CloseAsync();
-			await Log.WriteVerbose("GetServerPointsLeaderboardByCountry", "Database connection closed.");
-			await Log.WriteInfo("GetServerPointsLeaderboardByCountry", "users: Returned 0 rows.");
+			Log.WriteVerbose("GetServerPointsLeaderboardByCountry", "Database connection closed.");
+			Log.WriteInfo("GetServerPointsLeaderboardByCountry", "users: Returned 0 rows.");
 			return Array.Empty<UsersQuerySchema.UsersLeaderboardData>();
 		}
 
@@ -376,9 +376,9 @@ public class DBUsers : DBConnectorBase
 		}
 
 		await reader.CloseAsync();
-		await Log.WriteVerbose("GetServerPointsLeaderboardByCountry", "Database connection closed.");
+		Log.WriteVerbose("GetServerPointsLeaderboardByCountry", "Database connection closed.");
 
-		await Log.WriteInfo("GetServerPointsLeaderboardByCountry", $"users: Returned {reader.Rows} row{(reader.Rows != 1 ? "s" : string.Empty)}.");
+		Log.WriteInfo("GetServerPointsLeaderboardByCountry", $"users: Returned {reader.Rows} row{(reader.Rows != 1 ? "s" : string.Empty)}.");
 		return ret.ToArray();
 	}
 
@@ -403,7 +403,7 @@ public class DBUsers : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("GetServerLastPointUpdate", "Database connection created and opened from data source.");
+		Log.WriteVerbose("GetServerLastPointUpdate", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -417,8 +417,8 @@ public class DBUsers : DBConnectorBase
 		if (!reader.HasRows)
 		{
 			await tempConnection.CloseAsync();
-			await Log.WriteVerbose("GetServerLastPointUpdate", "Database connection closed.");
-			await Log.WriteInfo("GetServerLastPointUpdate", "users: Returned 0 rows. Throwing not found exception.");
+			Log.WriteVerbose("GetServerLastPointUpdate", "Database connection closed.");
+			Log.WriteInfo("GetServerLastPointUpdate", "users: Returned 0 rows. Throwing not found exception.");
 			throw new DataNotFoundException();
 		}
 
@@ -427,9 +427,9 @@ public class DBUsers : DBConnectorBase
 		DateTime ret = reader.GetDateTime(0);
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("GetServerLastPointUpdate", "Database connection closed.");
+		Log.WriteVerbose("GetServerLastPointUpdate", "Database connection closed.");
 
-		await Log.WriteInfo("GetServerLastPointUpdate", "users: Returned 1 row.");
+		Log.WriteInfo("GetServerLastPointUpdate", "users: Returned 1 row.");
 		return ret;
 	}
 
@@ -443,7 +443,7 @@ public class DBUsers : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("InsertUser", "Database connection created and opened from data source.");
+		Log.WriteVerbose("InsertUser", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -461,15 +461,15 @@ public class DBUsers : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			await Log.WriteVerbose("InsertUser", "Database connection closed.");
-			await Log.WriteVerbose("InsertUser", "Insertion query failed. Throwing instance exception.");
+			Log.WriteVerbose("InsertUser", "Database connection closed.");
+			Log.WriteVerbose("InsertUser", "Insertion query failed. Throwing instance exception.");
 			throw new DatabaseInstanceException("Insertion query failed.");
 		}
 
-		await Log.WriteInfo("InsertUser", "users: Inserted 1 row.");
+		Log.WriteInfo("InsertUser", "users: Inserted 1 row.");
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("InsertUser", "Database connection closed.");
+		Log.WriteVerbose("InsertUser", "Database connection closed.");
 	}
 
 	public async Task InsertUser(int userId, string userDiscordId, int osuId, string username, string countryCode)
@@ -482,7 +482,7 @@ public class DBUsers : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("InsertUser", "Database connection created and opened from data source.");
+		Log.WriteVerbose("InsertUser", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -501,15 +501,15 @@ public class DBUsers : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			await Log.WriteVerbose("InsertUser", "Database connection closed.");
-			await Log.WriteVerbose("InsertUser", "Insertion query failed. Throwing instance exception.");
+			Log.WriteVerbose("InsertUser", "Database connection closed.");
+			Log.WriteVerbose("InsertUser", "Insertion query failed. Throwing instance exception.");
 			throw new DatabaseInstanceException("Insertion query failed.");
 		}
 
-		await Log.WriteInfo("InsertUser", "users: Inserted 1 row.");
+		Log.WriteInfo("InsertUser", "users: Inserted 1 row.");
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("InsertUser", "Database connection closed.");
+		Log.WriteVerbose("InsertUser", "Database connection closed.");
 	}
 
 	public async Task UpdateUser(int osuId, int points, string? username = null, string? countryCode = null)
@@ -531,7 +531,7 @@ public class DBUsers : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("InsertUser", "Database connection created and opened from data source.");
+		Log.WriteVerbose("InsertUser", "Database connection created and opened from data source.");
 
 		NpgsqlCommand command;
 
@@ -610,15 +610,15 @@ public class DBUsers : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			await Log.WriteVerbose("UpdateUser", "Database connection closed.");
-			await Log.WriteVerbose("UpdateUser", "Update query failed. Throwing instance exception.");
+			Log.WriteVerbose("UpdateUser", "Database connection closed.");
+			Log.WriteVerbose("UpdateUser", "Update query failed. Throwing instance exception.");
 			throw new DatabaseInstanceException("Update query failed.");
 		}
 
-		await Log.WriteInfo("UpdateUser", "users: Updated 1 row.");
+		Log.WriteInfo("UpdateUser", "users: Updated 1 row.");
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("UpdateUser", "Database connection closed.");
+		Log.WriteVerbose("UpdateUser", "Database connection closed.");
 	}
 
 	public async Task DeleteUserByUserID(int userId)
@@ -631,7 +631,7 @@ public class DBUsers : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("DeleteUserByUserID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("DeleteUserByUserID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -646,15 +646,15 @@ public class DBUsers : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			await Log.WriteVerbose("DeleteUserByUserID", "Database connection closed.");
-			await Log.WriteVerbose("DeleteUserByUserID", "Deletion query failed. Throwing instance exception.");
+			Log.WriteVerbose("DeleteUserByUserID", "Database connection closed.");
+			Log.WriteVerbose("DeleteUserByUserID", "Deletion query failed. Throwing instance exception.");
 			throw new DatabaseInstanceException("Deletion query failed.");
 		}
 
-		await Log.WriteInfo("DeleteUserByUserID", "users: Deleted 1 row.");
+		Log.WriteInfo("DeleteUserByUserID", "users: Deleted 1 row.");
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("DeleteUserByUserID", "Database connection closed.");
+		Log.WriteVerbose("DeleteUserByUserID", "Database connection closed.");
 	}
 
 	public async Task DeleteUserByDiscordID(string userDiscordId)
@@ -667,7 +667,7 @@ public class DBUsers : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("DeleteUserByDiscordID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("DeleteUserByDiscordID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -682,15 +682,15 @@ public class DBUsers : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			await Log.WriteVerbose("DeleteUserByDiscordID", "Database connection closed.");
-			await Log.WriteVerbose("DeleteUserByDiscordID", "Deletion query failed. Throwing instance exception.");
+			Log.WriteVerbose("DeleteUserByDiscordID", "Database connection closed.");
+			Log.WriteVerbose("DeleteUserByDiscordID", "Deletion query failed. Throwing instance exception.");
 			throw new DatabaseInstanceException("Deletion query failed.");
 		}
 
-		await Log.WriteInfo("DeleteUserByDiscordID", "users: Deleted 1 row.");
+		Log.WriteInfo("DeleteUserByDiscordID", "users: Deleted 1 row.");
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("DeleteUserByDiscordID", "Database connection closed.");
+		Log.WriteVerbose("DeleteUserByDiscordID", "Database connection closed.");
 	}
 
 	public async Task DeleteUserByOsuID(int osuId)
@@ -703,7 +703,7 @@ public class DBUsers : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		await Log.WriteVerbose("DeleteUserByOsuID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("DeleteUserByOsuID", "Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -718,14 +718,14 @@ public class DBUsers : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			await Log.WriteVerbose("DeleteUserByOsuID", "Database connection closed.");
-			await Log.WriteVerbose("DeleteUserByOsuID", "Deletion query failed. Throwing instance exception.");
+			Log.WriteVerbose("DeleteUserByOsuID", "Database connection closed.");
+			Log.WriteVerbose("DeleteUserByOsuID", "Deletion query failed. Throwing instance exception.");
 			throw new DatabaseInstanceException("Deletion query failed.");
 		}
 
-		await Log.WriteInfo("DeleteUserByOsuID", "users: Deleted 1 row.");
+		Log.WriteInfo("DeleteUserByOsuID", "users: Deleted 1 row.");
 
 		await tempConnection.CloseAsync();
-		await Log.WriteVerbose("DeleteUserByOsuID", "Database connection closed.");
+		Log.WriteVerbose("DeleteUserByOsuID", "Database connection closed.");
 	}
 }

@@ -15,7 +15,7 @@ public static class Roles
 	{
 		if (assignmentResult.OldRole.HasValue && assignmentResult.NewRole.RoleDiscordID.Equals(assignmentResult.OldRole.Value.RoleDiscordID))
 		{
-			await Log.WriteVerbose("SetAssignmentRolesAsync", "Role is currently equal. Skipping role assignment.");
+			Log.WriteVerbose("SetAssignmentRolesAsync", "Role is currently equal. Skipping role assignment.");
 			return;
 		}
 
@@ -23,11 +23,11 @@ public static class Roles
 
 		if (assignmentResult.OldRole.HasValue)
 		{
-			await Log.WriteVerbose("SetAssignmentRolesAsync", $"Old role found. Removing role from user ({userDiscordId}).");
+			Log.WriteVerbose("SetAssignmentRolesAsync", $"Old role found. Removing role from user ({userDiscordId}).");
 			await user.RemoveRoleAsync(ulong.Parse(assignmentResult.OldRole.Value.RoleDiscordID));
 		}
 
-		await Log.WriteVerbose("SetAssignmentRolesAsync", $"Adding role to user ({userDiscordId}).");
+		Log.WriteVerbose("SetAssignmentRolesAsync", $"Adding role to user ({userDiscordId}).");
 		await user.AddRoleAsync(ulong.Parse(assignmentResult.NewRole.RoleDiscordID));
 	}
 
@@ -35,7 +35,7 @@ public static class Roles
 	{
 		if (assignmentResult.OldRole.HasValue && assignmentResult.NewRole.RoleDiscordID.Equals(assignmentResult.OldRole.Value.RoleDiscordID))
 		{
-			await Log.WriteVerbose("SetAssignmentRolesAsync", "Role is currently equal. Skipping role assignment.");
+			Log.WriteVerbose("SetAssignmentRolesAsync", "Role is currently equal. Skipping role assignment.");
 			return;
 		}
 
@@ -47,7 +47,7 @@ public static class Roles
 		}
 		catch (Exception e)
 		{
-			await Log.WriteVerbose("SetAssignmentRolesAsync", $"Unhandled exception occurred while querying user in database.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
+			Log.WriteVerbose("SetAssignmentRolesAsync", $"Unhandled exception occurred while querying user in database.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
 			throw new SendMessageException("An error occurred while querying user.");
 		}
 
@@ -55,11 +55,11 @@ public static class Roles
 
 		if (assignmentResult.OldRole.HasValue)
 		{
-			await Log.WriteVerbose("SetAssignmentRolesAsync", $"Old role found. Removing role from user ({dbUser.DiscordID}).");
+			Log.WriteVerbose("SetAssignmentRolesAsync", $"Old role found. Removing role from user ({dbUser.DiscordID}).");
 			await user.RemoveRoleAsync(ulong.Parse(assignmentResult.OldRole.Value.RoleDiscordID));
 		}
 
-		await Log.WriteVerbose("SetAssignmentRolesAsync", $"Adding role to user ({dbUser.DiscordID}).");
+		Log.WriteVerbose("SetAssignmentRolesAsync", $"Adding role to user ({dbUser.DiscordID}).");
 		await user.AddRoleAsync(ulong.Parse(assignmentResult.NewRole.RoleDiscordID));
 	}
 }

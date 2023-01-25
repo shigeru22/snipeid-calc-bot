@@ -17,7 +17,7 @@ public class Client
 		client = new DiscordSocketClient();
 		this.botToken = botToken;
 
-		client.Log += Log.Write;
+		client.Log += Log.WriteAsync;
 		client.Ready += OnReady;
 
 		Log.WriteVerbose("Client", "Client initialized using botToken parameter.");
@@ -25,7 +25,7 @@ public class Client
 
 	public async Task Run()
 	{
-		await Log.WriteVerbose("Run", "Start client using specified botToken.");
+		Log.WriteVerbose("Run", "Start client using specified botToken.");
 
 		await client.LoginAsync(Discord.TokenType.Bot, botToken);
 		await client.StartAsync();
@@ -35,35 +35,35 @@ public class Client
 
 	private async Task OnReady()
 	{
-		await Log.WriteVerbose("OnReady", "Client entered ready state.");
+		Log.WriteVerbose("OnReady", "Client entered ready state.");
 
 		DateTime startTime = DateTime.Now;
 
-		await Log.WriteInfo("Main", "Start initializing bot interaction commands.");
+		Log.WriteInfo("Main", "Start initializing bot interaction commands.");
 
 		try
 		{
-			await Log.WriteVerbose("OnReady", "Executing slash commands creation.");
+			Log.WriteVerbose("OnReady", "Executing slash commands creation.");
 			await SlashCommandsFactory.CreateSlashCommands(client);
 
-			await Log.WriteVerbose("OnReady", "Executing context commands creation.");
+			Log.WriteVerbose("OnReady", "Executing context commands creation.");
 			await ContextCommandsFactory.CreateUserContextCommands(client);
 		}
 		catch (Exception e)
 		{
 			// TODO: determine application command creation errors
 
-			await Log.WriteCritical("OnReady", $"Unhandled error occurred while creating command. Exception details below.\n{e}");
+			Log.WriteCritical("OnReady", $"Unhandled error occurred while creating command. Exception details below.\n{e}");
 
-			await Log.WriteVerbose("OnReady", "Exiting with code 1.");
+			Log.WriteVerbose("OnReady", "Exiting with code 1.");
 			Environment.Exit(1);
 		}
 
 		DateTime endTime = DateTime.Now;
 
-		await Log.WriteInfo("OnReady", $"Operation completed in {Math.Round((endTime - startTime).TotalSeconds, 3)} seconds.");
+		Log.WriteInfo("OnReady", $"Operation completed in {Math.Round((endTime - startTime).TotalSeconds, 3)} seconds.");
 
-		await Log.WriteVerbose("OnReady", "Exiting with code 0.");
+		Log.WriteVerbose("OnReady", "Exiting with code 0.");
 		Environment.Exit(0);
 	}
 }

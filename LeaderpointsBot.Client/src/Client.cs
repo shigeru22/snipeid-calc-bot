@@ -56,7 +56,7 @@ public class Client
 
 		Log.WriteVerbose("Client", "Registering client events.");
 
-		client.Log += Log.Write;
+		client.Log += Log.WriteAsync;
 		client.MessageReceived += messagesFactory.OnNewMessage;
 		client.SlashCommandExecuted += interactionsFactory.OnInvokeSlashInteraction;
 		client.UserCommandExecuted += interactionsFactory.OnInvokeUserContextInteraction;
@@ -68,12 +68,12 @@ public class Client
 	{
 		await messagesFactory.InitializeServiceAsync();
 
-		await Log.WriteVerbose("Run", "Start client using specified botToken.");
+		Log.WriteVerbose("Run", "Start client using specified botToken.");
 
 		await client.LoginAsync(Discord.TokenType.Bot, botToken);
 		await client.StartAsync();
 
-		await Log.WriteVerbose("Run", "Client started. Awaiting process indefinitely.");
+		Log.WriteVerbose("Run", "Client started. Awaiting process indefinitely.");
 		await Task.Delay(-1, delayToken.Token);
 	}
 
