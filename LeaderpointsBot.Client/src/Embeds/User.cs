@@ -16,7 +16,7 @@ public static class User
 			.WithDescription($"Linked <@{userDiscordId}> to osu! user **[{osuUsername}]({osuUserLink})**.\n" +
 				"Welcome to osu!leaderpoints!")
 			.WithThumbnailUrl(osuUserImageLink)
-			.WithColor(238, 229, 229)
+			.WithColor(Colors.Success)
 			.Build();
 	}
 }

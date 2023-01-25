@@ -44,7 +44,7 @@ public static class Counter
 
 		return new EmbedBuilder().WithTitle($"Points for {osuUsername}:")
 			.WithDescription(description)
-			.WithColor(238, 229, 229)
+			.WithColor(Colors.Normal)
 			.Build();
 	}
 

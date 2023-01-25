@@ -3,6 +3,7 @@
 
 using Discord;
 using Discord.WebSocket;
+using LeaderpointsBot.Client.Embeds;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client.Commands;
@@ -22,7 +23,7 @@ public static class CommandsFactory
 		return new EmbedBuilder().WithTitle("Help: Commands")
 			.WithDescription(HelpMessages.GenerateCommandsHelpMessage(commandPrefix))
 			.WithUrl("https://leaderpoints.kyutorius.com/help")
-			.WithColor(238, 229, 229)
+			.WithColor(Colors.Normal)
 			.Build();
 	}
 
@@ -33,7 +34,7 @@ public static class CommandsFactory
 		return new EmbedBuilder().WithTitle("Help: Server Configuration")
 			.WithDescription(HelpMessages.GenerateConfigurationHelpMessage(commandPrefix, useInteraction))
 			.WithUrl("https://leaderpoints.kyutorius.com/help")
-			.WithColor(238, 229, 229)
+			.WithColor(Colors.Normal)
 			.Build();
 	}
 
