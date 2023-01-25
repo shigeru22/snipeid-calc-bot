@@ -140,6 +140,18 @@ public class MessagesFactory
 
 	private async Task HandleCommandsAsync(SocketUserMessage msg)
 	{
+		static async Task SendMessage(SocketCommandContext context, string message)
+		{
+			if (Settings.Instance.Client.UseReply)
+			{
+				_ = await context.Message.ReplyAsync(message);
+			}
+			else
+			{
+				_ = await context.Channel.SendMessageAsync(message);
+			}
+		}
+
 		int argPos = 0; // TODO: create per-server prefix setting
 
 		if (!msg.HasMentionPrefix(client.CurrentUser, ref argPos))
@@ -151,6 +163,27 @@ public class MessagesFactory
 		Log.WriteVerbose("HandleCommands", "Creating context and executing command.");
 
 		SocketCommandContext context = new SocketCommandContext(client, msg);
-		_ = await commandService.ExecuteAsync(context: context, argPos: argPos, services: null);
+
+		IResult result = await commandService.ExecuteAsync(context: context, argPos: argPos, services: null);
+
+		if (result.Error != CommandError.Exception)
+		{
+			// command processing complete
+			return;
+		}
+
+		if (result is ExecuteResult execResult)
+		{
+			Exception e = execResult.Exception;
+
+			if (e is SendMessageException ex)
+			{
+				await SendMessage(context, $"{(ex.IsError ? "**Error:** " : string.Empty)}{ex.Draft}");
+				return;
+			}
+
+			Log.WriteError(nameof(HandleCommandsAsync), $"Unhandled client error occurred.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
+			await SendMessage(context, $"**Error:** Unhandled client error occurred.");
+		}
 	}
 }
