@@ -9,9 +9,9 @@ using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Database.Tables;
 
-public class DBServers : DBConnectorBase
+public class Servers : DBConnectorBase
 {
-	public DBServers(NpgsqlDataSource dataSource) : base(dataSource)
+	public Servers(NpgsqlDataSource dataSource) : base(dataSource)
 	{
 		Log.WriteVerbose("DBServers", "Servers table class instance created.");
 	}

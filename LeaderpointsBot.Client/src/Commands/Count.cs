@@ -7,7 +7,6 @@ using LeaderpointsBot.Api;
 using LeaderpointsBot.Api.Osu;
 using LeaderpointsBot.Api.OsuStats;
 using LeaderpointsBot.Client.Actions;
-using LeaderpointsBot.Client.Embeds;
 using LeaderpointsBot.Client.Exceptions;
 using LeaderpointsBot.Client.Exceptions.Actions;
 using LeaderpointsBot.Client.Exceptions.Commands;
@@ -19,7 +18,7 @@ using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client.Commands;
 
-public static class CountModule
+public static class Counter
 {
 	public static async Task<Structures.Commands.CountModule.UserLeaderboardsCountMessages[]> UserLeaderboardsCountBathbotAsync(Embed topsCount, SocketGuild guild)
 	{
@@ -46,12 +45,12 @@ public static class CountModule
 		}
 
 		// Bathbot doesn't use respektive's API at the moment
-		int points = Counter.CalculateTopPoints(embedTopCounts);
+		int points = Embeds.Counter.CalculateTopPoints(embedTopCounts);
 		Structures.Actions.Counter.UpdateUserDataMessages? updateMessages = null;
 
 		try
 		{
-			updateMessages = await CounterActions.UpdateUserDataAsync(guild, embedOsuId, points);
+			updateMessages = await Actions.Counter.UpdateUserDataAsync(guild, embedOsuId, points);
 		}
 		catch (SkipUpdateException)
 		{
@@ -63,7 +62,7 @@ public static class CountModule
 			new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
 			{
 				MessageType = Common.ResponseMessageType.Embed,
-				Contents = Counter.CreateCountEmbed(embedUsername, embedTopCounts)
+				Contents = Embeds.Counter.CreateCountEmbed(embedUsername, embedTopCounts)
 			}
 		};
 
@@ -178,7 +177,7 @@ public static class CountModule
 			}
 
 			topCounts = osuStatsResponses.Select(response => new int[] { response.MaxRank, response.Count }).ToList();
-			points = Counter.CalculateTopPoints(topCounts);
+			points = Embeds.Counter.CalculateTopPoints(topCounts);
 		}
 		else
 		{
@@ -201,13 +200,13 @@ public static class CountModule
 			topCounts.Add(new int[] { 25, osuStatsResponse.Top25 ?? 0 });
 			topCounts.Add(new int[] { 50, osuStatsResponse.Top50 ?? 0 });
 
-			points = Counter.CalculateTopPoints(topCounts);
+			points = Embeds.Counter.CalculateTopPoints(topCounts);
 		}
 
 		Structures.Actions.Counter.UpdateUserDataMessages? updateMessages = null;
 		if (guild != null && dbServer != null)
 		{
-			updateMessages = await CounterActions.UpdateUserDataAsync(guild, osuId, points);
+			updateMessages = await Actions.Counter.UpdateUserDataAsync(guild, osuId, points);
 		}
 
 		List<Structures.Commands.CountModule.UserLeaderboardsCountMessages> responses = new List<Structures.Commands.CountModule.UserLeaderboardsCountMessages>()
@@ -215,7 +214,7 @@ public static class CountModule
 			new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
 			{
 				MessageType = Common.ResponseMessageType.Embed,
-				Contents = Counter.CreateCountEmbed(osuUsername, topCounts)
+				Contents = Embeds.Counter.CreateCountEmbed(osuUsername, topCounts)
 			}
 		};
 
@@ -313,7 +312,7 @@ public static class CountModule
 			}
 
 			topCounts = osuStatsResponses.Select(response => new int[] { response.MaxRank, response.Count }).ToList();
-			points = Counter.CalculateTopPoints(topCounts);
+			points = Embeds.Counter.CalculateTopPoints(topCounts);
 		}
 		else
 		{
@@ -336,7 +335,7 @@ public static class CountModule
 			topCounts.Add(new int[] { 25, osuStatsResponse.Top25 ?? 0 });
 			topCounts.Add(new int[] { 50, osuStatsResponse.Top50 ?? 0 });
 
-			points = Counter.CalculateTopPoints(topCounts);
+			points = Embeds.Counter.CalculateTopPoints(topCounts);
 		}
 
 		Structures.Actions.Counter.UpdateUserDataMessages? updateMessages = null;
@@ -344,7 +343,7 @@ public static class CountModule
 		{
 			try
 			{
-				updateMessages = await CounterActions.UpdateUserDataAsync(guild, osuId, points);
+				updateMessages = await Actions.Counter.UpdateUserDataAsync(guild, osuId, points);
 			}
 			catch (SkipUpdateException)
 			{
@@ -357,7 +356,7 @@ public static class CountModule
 			new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
 			{
 				MessageType = Common.ResponseMessageType.Embed,
-				Contents = Counter.CreateCountEmbed(osuUsername, topCounts)
+				Contents = Embeds.Counter.CreateCountEmbed(osuUsername, topCounts)
 			}
 		};
 

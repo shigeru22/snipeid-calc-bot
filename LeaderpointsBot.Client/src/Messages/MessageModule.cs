@@ -10,7 +10,7 @@ using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client.Messages;
 
-public static class MessageModules
+public static class MessageModule
 {
 	public class LinkModule : ModuleBase<SocketCommandContext>
 	{
@@ -23,7 +23,7 @@ public static class MessageModules
 
 			await Context.Channel.TriggerTypingAsync();
 
-			Embed replyEmbed = await UserModule.LinkUser(Context.User, osuId, Context.Guild);
+			Embed replyEmbed = await User.LinkUser(Context.User, osuId, Context.Guild);
 
 			Log.WriteInfo(nameof(LinkUserCommand), "Link success. Sending embed response.");
 
@@ -47,7 +47,7 @@ public static class MessageModules
 		{
 			Log.WriteInfo("SendPingCommand", $"Sending ping message (guild ID {Context.Guild.Id}).");
 
-			string replyMsg = CommandsFactory.GetPingMessage(Context.Client);
+			string replyMsg = Help.GetPingMessage(Context.Client);
 
 			if (Settings.Instance.Client.UseReply)
 			{
@@ -71,7 +71,7 @@ public static class MessageModules
 
 			await Context.Channel.TriggerTypingAsync();
 
-			Structures.Commands.CountModule.UserLeaderboardsCountMessages[] responses = await Commands.CountModule.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString(), Context.Guild);
+			Structures.Commands.CountModule.UserLeaderboardsCountMessages[] responses = await Commands.Counter.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString(), Context.Guild);
 
 			foreach (Structures.Commands.CountModule.UserLeaderboardsCountMessages response in responses)
 			{
@@ -120,7 +120,7 @@ public static class MessageModules
 
 			await Context.Channel.TriggerTypingAsync();
 
-			Structures.Commands.CountModule.UserLeaderboardsCountMessages[] responses = await Commands.CountModule.CountLeaderboardPointsByOsuUsernameAsync(osuUsername);
+			Structures.Commands.CountModule.UserLeaderboardsCountMessages[] responses = await Commands.Counter.CountLeaderboardPointsByOsuUsernameAsync(osuUsername);
 
 			foreach (Structures.Commands.CountModule.UserLeaderboardsCountMessages response in responses)
 			{
@@ -190,7 +190,7 @@ public static class MessageModules
 		{
 			Log.WriteInfo("SendHelpCommand", $"Sending commands usage help message.");
 
-			Embed replyEmbed = CommandsFactory.GetBotHelpMessage(Context.Client);
+			Embed replyEmbed = Help.GetBotHelpMessage(Context.Client);
 
 			if (Settings.Instance.Client.UseReply)
 			{
@@ -222,7 +222,7 @@ public static class MessageModules
 		{
 			Log.WriteInfo("SendHelpConfigurationCommand", $"Sending server configuration commands help message (guild ID {Context.Guild.Id}).");
 
-			Embed replyEmbed = CommandsFactory.GetConfigHelpMessage(Context.Client);
+			Embed replyEmbed = Help.GetConfigHelpMessage(Context.Client);
 
 			if (Settings.Instance.Client.UseReply)
 			{

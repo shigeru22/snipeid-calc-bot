@@ -16,15 +16,15 @@ public class DatabaseFactory
 
 	private NpgsqlDataSource? dataSource;
 
-	private DBUsers? dbUsers;
-	private DBRoles? dbRoles;
-	private DBServers? dbServers;
-	private DBAssignments? dbAssignments;
+	private Users? dbUsers;
+	private Roles? dbRoles;
+	private Servers? dbServers;
+	private Assignments? dbAssignments;
 
-	public DBUsers UsersInstance => dbUsers ?? throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
-	public DBRoles RolesInstance => dbRoles ?? throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
-	public DBServers ServersInstance => dbServers ?? throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
-	public DBAssignments AssignmentsInstance => dbAssignments ?? throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
+	public Users UsersInstance => dbUsers ?? throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
+	public Roles RolesInstance => dbRoles ?? throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
+	public Servers ServersInstance => dbServers ?? throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
+	public Assignments AssignmentsInstance => dbAssignments ?? throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
 
 	private DatabaseFactory()
 	{
@@ -39,10 +39,10 @@ public class DatabaseFactory
 
 		Log.WriteVerbose("SetConfig", "Database data source created. Initializing per table instance.");
 
-		dbUsers = new DBUsers(dataSource);
-		dbRoles = new DBRoles(dataSource);
-		dbServers = new DBServers(dataSource);
-		dbAssignments = new DBAssignments(dataSource);
+		dbUsers = new Users(dataSource);
+		dbRoles = new Roles(dataSource);
+		dbServers = new Servers(dataSource);
+		dbAssignments = new Assignments(dataSource);
 
 		Log.WriteVerbose("SetConfig", "Database table wrapper instances created.");
 	}

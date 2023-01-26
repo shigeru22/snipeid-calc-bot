@@ -9,9 +9,9 @@ using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Database.Tables;
 
-public class DBAssignments : DBConnectorBase
+public class Assignments : DBConnectorBase
 {
-	public DBAssignments(NpgsqlDataSource dataSource) : base(dataSource)
+	public Assignments(NpgsqlDataSource dataSource) : base(dataSource)
 	{
 		Log.WriteVerbose("DBAssignments", "Servers table class instance created.");
 	}

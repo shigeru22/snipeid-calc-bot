@@ -10,7 +10,7 @@ using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client.Interactions;
 
-public static class InteractionModules
+public static class InteractionModule
 {
 	public static class LinkSlashModule
 	{
@@ -27,12 +27,12 @@ public static class InteractionModules
 			if (cmd.Channel is SocketGuildChannel guildChannel)
 			{
 				Log.WriteVerbose(nameof(LinkUserCommand), "Interaction sent from server.");
-				replyEmbed = await UserModule.LinkUser(cmd.User, (int)osuId, guildChannel.Guild);
+				replyEmbed = await User.LinkUser(cmd.User, (int)osuId, guildChannel.Guild);
 			}
 			else
 			{
 				Log.WriteVerbose(nameof(LinkUserCommand), "Interaction sent from direct message.");
-				replyEmbed = await UserModule.LinkUser(cmd.User, (int)osuId);
+				replyEmbed = await User.LinkUser(cmd.User, (int)osuId);
 			}
 
 			Log.WriteInfo(nameof(LinkUserCommand), "Link success. Sending embed response.");
@@ -49,7 +49,7 @@ public static class InteractionModules
 			Log.WriteInfo("SendPingCommand", "Sending ping message.");
 			await cmd.DeferAsync();
 
-			string replyMsg = CommandsFactory.GetPingMessage(client);
+			string replyMsg = Help.GetPingMessage(client);
 			_ = await cmd.ModifyOriginalResponseAsync(msg => msg.Content = replyMsg);
 		}
 	}
@@ -86,11 +86,11 @@ public static class InteractionModules
 			{
 				if (!string.IsNullOrWhiteSpace(osuUsername))
 				{
-					responses = await Commands.CountModule.CountLeaderboardPointsByOsuUsernameAsync(osuUsername, guildChannel.Guild);
+					responses = await Commands.Counter.CountLeaderboardPointsByOsuUsernameAsync(osuUsername, guildChannel.Guild);
 				}
 				else
 				{
-					responses = await Commands.CountModule.CountLeaderboardPointsByDiscordUserAsync(cmd.User.Id.ToString(), client.CurrentUser.Id.ToString(), guildChannel.Guild);
+					responses = await Commands.Counter.CountLeaderboardPointsByDiscordUserAsync(cmd.User.Id.ToString(), client.CurrentUser.Id.ToString(), guildChannel.Guild);
 				}
 			}
 			else
@@ -99,11 +99,11 @@ public static class InteractionModules
 
 				if (!string.IsNullOrWhiteSpace(osuUsername))
 				{
-					responses = await Commands.CountModule.CountLeaderboardPointsByOsuUsernameAsync(osuUsername);
+					responses = await Commands.Counter.CountLeaderboardPointsByOsuUsernameAsync(osuUsername);
 				}
 				else
 				{
-					responses = await Commands.CountModule.CountLeaderboardPointsByDiscordUserAsync(cmd.User.Id.ToString(), client.CurrentUser.Id.ToString());
+					responses = await Commands.Counter.CountLeaderboardPointsByDiscordUserAsync(cmd.User.Id.ToString(), client.CurrentUser.Id.ToString());
 				}
 			}
 
@@ -195,7 +195,7 @@ public static class InteractionModules
 			Log.WriteInfo("SendHelpCommand", $"Sending commands usage help message.");
 			await cmd.DeferAsync();
 
-			Embed replyEmbed = CommandsFactory.GetBotHelpMessage(client, true);
+			Embed replyEmbed = Help.GetBotHelpMessage(client, true);
 
 			_ = await cmd.ModifyOriginalResponseAsync(msg => msg.Embed = replyEmbed);
 		}
@@ -226,7 +226,7 @@ public static class InteractionModules
 			Log.WriteInfo("SendHelpConfigurationCommand", $"Sending server configuration commands help message (guild ID {guildChannel.Guild.Id}).");
 			await cmd.DeferAsync();
 
-			Embed replyEmbed = CommandsFactory.GetConfigHelpMessage(client, true);
+			Embed replyEmbed = Help.GetConfigHelpMessage(client, true);
 
 			_ = await cmd.ModifyOriginalResponseAsync(msg => msg.Embed = replyEmbed);
 		}

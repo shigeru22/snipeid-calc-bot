@@ -8,16 +8,15 @@ using LeaderpointsBot.Api.Exceptions;
 using LeaderpointsBot.Api.Osu;
 using LeaderpointsBot.Client.Exceptions.Actions;
 using LeaderpointsBot.Client.Exceptions.Commands;
-using LeaderpointsBot.Client.Structures.Actions;
 using LeaderpointsBot.Database;
 using LeaderpointsBot.Database.Exceptions;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client.Actions;
 
-public static class CounterActions
+public static class Counter
 {
-	public static async Task<Counter.UpdateUserDataMessages?> UpdateUserDataAsync(SocketGuild guild, int osuId, int points)
+	public static async Task<Structures.Actions.Counter.UpdateUserDataMessages?> UpdateUserDataAsync(SocketGuild guild, int osuId, int points)
 	{
 		OsuDataTypes.OsuApiUserResponseData osuUser;
 		Structures.Actions.UserData.AssignmentResult assignmentResult;
@@ -95,7 +94,7 @@ public static class CounterActions
 
 		Log.WriteDebug("UpdateUserDataAsync", $"assignmentResult.LastUpdate = {assignmentResult.LastUpdate}");
 
-		return new Counter.UpdateUserDataMessages()
+		return new Structures.Actions.Counter.UpdateUserDataMessages()
 		{
 			PointsMessage = assignmentResult.LastUpdate.HasValue switch
 			{

@@ -12,14 +12,14 @@ using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client.Messages;
 
-public class MessagesFactory
+public class MessageHandler
 {
 	private const string BATHBOT_DISCORD_ID = "297073686916366336";
 
 	private readonly DiscordSocketClient client;
 	private readonly CommandService commandService;
 
-	public MessagesFactory(DiscordSocketClient client, CommandService commandService)
+	public MessageHandler(DiscordSocketClient client, CommandService commandService)
 	{
 		Log.WriteVerbose("MessagesFactory", "MessagesFactory instance created.");
 
@@ -103,7 +103,7 @@ public class MessagesFactory
 		try
 		{
 			Log.WriteVerbose("HandleBathbotMessageAsync", "Calculating leaderboards count from first embed.");
-			responses = await CountModule.UserLeaderboardsCountBathbotAsync(msg.Embeds.First(), guildChannel.Guild);
+			responses = await Counter.UserLeaderboardsCountBathbotAsync(msg.Embeds.First(), guildChannel.Guild);
 		}
 		catch (SendMessageException e)
 		{

@@ -3,7 +3,7 @@
 
 namespace LeaderpointsBot.Utils;
 
-public static class ArrayOperations
+public static class Arrays
 {
 	public static int[] SearchRankAtTopsArray(int[,] topsCount, IReadOnlyList<int> ranks)
 	{

@@ -13,7 +13,7 @@ using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client.Commands;
 
-public static class UserModule
+public static class User
 {
 	public static async Task<Embed> LinkUser(SocketUser user, int osuId, SocketGuild? guild = null)
 	{

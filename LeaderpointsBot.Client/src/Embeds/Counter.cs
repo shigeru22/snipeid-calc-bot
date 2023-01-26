@@ -17,7 +17,7 @@ public static class Counter
 		// since CalculateTopPoints() throw exception on invalid data,
 		// these arrays could be assured without rechecking
 		int[] ranks = !useRespektive ? new[] { 1, 8, 15, 25, 50 } : new[] { 1, 8, 25, 50 };
-		int[] tops = ArrayOperations.SearchRankAtTopsArray(topsCount, ranks);
+		int[] tops = Arrays.SearchRankAtTopsArray(topsCount, ranks);
 
 		if (!useRespektive)
 		{
@@ -44,7 +44,7 @@ public static class Counter
 
 		return new EmbedBuilder().WithTitle($"Points for {osuUsername}:")
 			.WithDescription(description)
-			.WithColor(Colors.Normal)
+			.WithColor(BorderColor.Normal)
 			.Build();
 	}
 
@@ -56,7 +56,7 @@ public static class Counter
 		// since CalculateTopPoints() throw exception on invalid data,
 		// these arrays could be assured without rechecking
 		int[] ranks = !useRespektive ? new[] { 1, 8, 15, 25, 50 } : new[] { 1, 8, 25, 50 };
-		int[] tops = ArrayOperations.SearchRankAtTopsArray(topsCount, ranks);
+		int[] tops = Arrays.SearchRankAtTopsArray(topsCount, ranks);
 
 		if (!useRespektive)
 		{
@@ -90,7 +90,7 @@ public static class Counter
 	public static int CalculateTopPoints(int[,] topsCount, bool useRespektive = false)
 	{
 		int[] ranks = !useRespektive ? new[] { 1, 8, 15, 25, 50 } : new[] { 1, 8, 25, 50 };
-		int[] tops = ArrayOperations.SearchRankAtTopsArray(topsCount, ranks);
+		int[] tops = Arrays.SearchRankAtTopsArray(topsCount, ranks);
 
 		switch (useRespektive)
 		{
@@ -107,7 +107,7 @@ public static class Counter
 	public static int CalculateTopPoints(List<int[]> topsCount, bool useRespektive = false)
 	{
 		int[] ranks = !useRespektive ? new[] { 1, 8, 15, 25, 50 } : new[] { 1, 8, 25, 50 };
-		int[] tops = ArrayOperations.SearchRankAtTopsArray(topsCount, ranks);
+		int[] tops = Arrays.SearchRankAtTopsArray(topsCount, ranks);
 
 		switch (useRespektive)
 		{

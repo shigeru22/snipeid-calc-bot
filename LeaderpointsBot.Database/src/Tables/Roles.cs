@@ -9,9 +9,9 @@ using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Database.Tables;
 
-public class DBRoles : DBConnectorBase
+public class Roles : DBConnectorBase
 {
-	public DBRoles(NpgsqlDataSource dataSource) : base(dataSource)
+	public Roles(NpgsqlDataSource dataSource) : base(dataSource)
 	{
 		Log.WriteVerbose("DBRoles", "Roles table class instance created.");
 	}

@@ -22,8 +22,8 @@ public class Client
 	private readonly object exitMutex = new object();
 	private readonly CancellationTokenSource delayToken = new CancellationTokenSource();
 
-	private readonly MessagesFactory messagesFactory;
-	private readonly InteractionsFactory interactionsFactory;
+	private readonly MessageHandler messagesFactory;
+	private readonly InteractionHandler interactionsFactory;
 
 	public Client(string botToken)
 	{
@@ -46,8 +46,8 @@ public class Client
 
 		Log.WriteVerbose("Client", "Instantiating event factories.");
 
-		messagesFactory = new MessagesFactory(client, commandService);
-		interactionsFactory = new InteractionsFactory(client);
+		messagesFactory = new MessageHandler(client, commandService);
+		interactionsFactory = new InteractionHandler(client);
 
 		Log.WriteVerbose("Client", "Registering process events.");
 
@@ -70,7 +70,7 @@ public class Client
 
 		Log.WriteVerbose("Run", "Start client using specified botToken.");
 
-		await client.LoginAsync(Discord.TokenType.Bot, botToken);
+		await client.LoginAsync(TokenType.Bot, botToken);
 		await client.StartAsync();
 
 		Log.WriteVerbose("Run", "Client started. Awaiting process indefinitely.");

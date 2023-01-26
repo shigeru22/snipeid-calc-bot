@@ -7,11 +7,11 @@ using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client.Interactions;
 
-public class InteractionsFactory
+public class InteractionHandler
 {
 	private readonly DiscordSocketClient client;
 
-	public InteractionsFactory(DiscordSocketClient client)
+	public InteractionHandler(DiscordSocketClient client)
 	{
 		Log.WriteVerbose("InteractionsFactory", "InteractionsFactory instance created.");
 
@@ -35,27 +35,27 @@ public class InteractionsFactory
 					case "link":
 						// TODO: link user
 						Log.WriteDebug("OnInvokeSlashInteraction", "Link user command received.");
-						await InteractionModules.LinkSlashModule.LinkUserCommand(client, cmd);
+						await InteractionModule.LinkSlashModule.LinkUserCommand(client, cmd);
 						break;
 					case "ping":
 						// TODO: send ping
 						Log.WriteDebug("OnInvokeSlashInteraction", $"Send ping command received{(guildChannel != null ? $" (guild ID {guildChannel.Guild.Id})" : string.Empty)}.");
-						await InteractionModules.PingSlashModule.SendPingCommand(client, cmd);
+						await InteractionModule.PingSlashModule.SendPingCommand(client, cmd);
 						break;
 					case "count":
 						// TODO: count points
 						Log.WriteDebug("OnInvokeSlashInteraction", "Count points command received.");
-						await InteractionModules.CountSlashModule.CountPointsCommand(client, cmd);
+						await InteractionModule.CountSlashModule.CountPointsCommand(client, cmd);
 						break;
 					case "whatif":
 						// TODO: count what-if points
 						Log.WriteDebug("OnInvokeSlashInteraction", "Count what-if points command received.");
-						await InteractionModules.CountSlashModule.WhatIfPointsCommand(client, cmd);
+						await InteractionModule.CountSlashModule.WhatIfPointsCommand(client, cmd);
 						break;
 					case "serverleaderboard":
 						// TODO: send server leaderboard
 						Log.WriteDebug("OnInvokeSlashInteraction", "Get server leaderboard command received.");
-						await InteractionModules.LeaderboardSlashModule.SendServerLeaderboardCommand(client, cmd);
+						await InteractionModule.LeaderboardSlashModule.SendServerLeaderboardCommand(client, cmd);
 						break;
 					case "config":
 						// TODO: configure server settings
@@ -65,7 +65,7 @@ public class InteractionsFactory
 					case "help":
 						// TODO: send help message
 						Log.WriteDebug("OnInvokeSlashInteraction", "Send help message command received.");
-						await InteractionModules.HelpModule.SendHelpCommand(client, cmd);
+						await InteractionModule.HelpModule.SendHelpCommand(client, cmd);
 						break;
 				}
 			}
@@ -113,7 +113,7 @@ public class InteractionsFactory
 					case "Calculate points":
 						// TODO: count points
 						Log.WriteDebug("OnInvokeUserContextInteraction", "Count points command received.");
-						await InteractionModules.CountContextModule.CountPointsCommand(client, cmd);
+						await InteractionModule.CountContextModule.CountPointsCommand(client, cmd);
 						break;
 				}
 			}
@@ -156,11 +156,11 @@ public class InteractionsFactory
 		{
 			case "show":
 				Log.WriteDebug("HandleConfigurationSlashCommand", "Show server configuration subcommand received.");
-				await InteractionModules.ConfigurationSlashModule.ShowConfigurationCommand(client, cmd);
+				await InteractionModule.ConfigurationSlashModule.ShowConfigurationCommand(client, cmd);
 				break;
 			case "help":
 				Log.WriteDebug("HandleConfigurationSlashCommand", "Server configuration setter command received.");
-				await InteractionModules.ConfigurationSlashModule.SendHelpConfigurationCommand(client, cmd);
+				await InteractionModule.ConfigurationSlashModule.SendHelpConfigurationCommand(client, cmd);
 				break;
 			case "set":
 				Log.WriteDebug("HandleConfigurationSlashCommand", "Server configuration setter command received. Handling subcommand.");
@@ -190,19 +190,19 @@ public class InteractionsFactory
 		{
 			case "country":
 				Log.WriteDebug("HandleConfigurationSetterSlashCommand", "Set server country restriction command received.");
-				await InteractionModules.ConfigurationSlashModule.ConfigurationSetterSlashModule.SetServerCountryCommand(client, cmd);
+				await InteractionModule.ConfigurationSlashModule.ConfigurationSetterSlashModule.SetServerCountryCommand(client, cmd);
 				break;
 			case "verifiedrole":
 				Log.WriteDebug("HandleConfigurationSetterSlashCommand", "Set server verified role command received.");
-				await InteractionModules.ConfigurationSlashModule.ConfigurationSetterSlashModule.SetServerVerifiedRoleCommand(client, cmd);
+				await InteractionModule.ConfigurationSlashModule.ConfigurationSetterSlashModule.SetServerVerifiedRoleCommand(client, cmd);
 				break;
 			case "commandschannel":
 				Log.WriteDebug("HandleConfigurationSetterSlashCommand", "Set server commands channel restriction command received.");
-				await InteractionModules.ConfigurationSlashModule.ConfigurationSetterSlashModule.SetServerCommandsChannelCommand(client, cmd);
+				await InteractionModule.ConfigurationSlashModule.ConfigurationSetterSlashModule.SetServerCommandsChannelCommand(client, cmd);
 				break;
 			case "leaderboardschannel":
 				Log.WriteDebug("HandleConfigurationSetterSlashCommand", "Set server leaderboard commands channel restriction command received.");
-				await InteractionModules.ConfigurationSlashModule.ConfigurationSetterSlashModule.SetServerLeaderboardsChannelCommand(client, cmd);
+				await InteractionModule.ConfigurationSlashModule.ConfigurationSetterSlashModule.SetServerLeaderboardsChannelCommand(client, cmd);
 				break;
 		}
 	}

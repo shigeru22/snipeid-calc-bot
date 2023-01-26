@@ -8,7 +8,7 @@ using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client.Commands;
 
-public static class CommandsFactory
+public static class Help
 {
 	public static string GetPingMessage(DiscordSocketClient client)
 	{
@@ -23,7 +23,7 @@ public static class CommandsFactory
 		return new EmbedBuilder().WithTitle("Help: Commands")
 			.WithDescription(HelpMessages.GenerateCommandsHelpMessage(commandPrefix))
 			.WithUrl("https://leaderpoints.kyutorius.com/help")
-			.WithColor(Colors.Normal)
+			.WithColor(BorderColor.Normal)
 			.Build();
 	}
 
@@ -34,7 +34,7 @@ public static class CommandsFactory
 		return new EmbedBuilder().WithTitle("Help: Server Configuration")
 			.WithDescription(HelpMessages.GenerateConfigurationHelpMessage(commandPrefix, useInteraction))
 			.WithUrl("https://leaderpoints.kyutorius.com/help")
-			.WithColor(Colors.Normal)
+			.WithColor(BorderColor.Normal)
 			.Build();
 	}
 
