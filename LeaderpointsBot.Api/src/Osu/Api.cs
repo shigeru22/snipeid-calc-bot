@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using LeaderpointsBot.Api.Exceptions;
 using LeaderpointsBot.Utils;
+using LeaderpointsBot.Utils.Process;
 
 namespace LeaderpointsBot.Api.Osu;
 
@@ -19,28 +20,28 @@ public class OsuApi
 
 	public OsuApi()
 	{
-		Log.WriteVerbose("OsuApi", "osu!api wrapper class instantiated.");
+		Log.WriteVerbose("osu!api wrapper class instantiated.");
 
 		osuTokenInstance = new OsuToken();
 	}
 
 	public OsuApi(OsuToken token)
 	{
-		Log.WriteVerbose("OsuApi", "osu!api wrapper class instantiated.");
+		Log.WriteVerbose("osu!api wrapper class instantiated.");
 
 		osuTokenInstance = token;
 	}
 
 	public OsuApi(int clientId, string clientSecret)
 	{
-		Log.WriteVerbose("OsuApi", "osu!api wrapper class instantiated.");
+		Log.WriteVerbose("osu!api wrapper class instantiated.");
 
 		osuTokenInstance = new OsuToken(clientId, clientSecret);
 	}
 
 	public async Task<OsuDataTypes.OsuApiUserResponseData> GetUserByOsuID(int osuId)
 	{
-		Log.WriteVerbose("GetUserByOsuID", $"Requesting osu! user with ID {osuId}.");
+		Log.WriteVerbose($"Requesting osu! user with ID {osuId}.");
 
 		HttpResponseMessage response;
 
@@ -51,31 +52,31 @@ public class OsuApi
 			client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 			client.DefaultRequestHeaders.Add("Authorization", $"Bearer {await Token.GetTokenAsync()}");
 
-			Log.WriteVerbose("GetUserByOsuID", "Requesting osu!api user endpoint.");
+			Log.WriteVerbose("Requesting osu!api user endpoint.");
 			response = await client.GetAsync($"{OsuApi.OSU_API_ENDPOINT}/users/{osuId}?type=id");
 		}
 		catch (Exception e)
 		{
-			Log.WriteError("GetUserByOsuID", $"An unhandled error occurred while revoking token. Exception details below.\n{e}");
-			throw new ApiInstanceException("Unhandled exception.");
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.OsuApiDataRequestError.Message));
+			throw new ApiInstanceException(ErrorMessages.OsuApiDataRequestError.Message);
 		}
 
 		// if not 200
 		if (response.StatusCode != HttpStatusCode.OK)
 		{
-			Log.WriteWarning("GetUserByOsuID", $"osu!api returned status code {(int)response.StatusCode}");
+			Log.WriteWarning($"osu!api returned status code {(int)response.StatusCode}");
 			throw new ApiResponseException(response.StatusCode);
 		}
 
 		OsuDataTypes.OsuApiUserResponseData ret = JsonSerializer.Deserialize<OsuDataTypes.OsuApiUserResponseRawData>(await response.Content.ReadAsStringAsync()).ToStandardData();
 
-		Log.WriteVerbose("GetUserByOsuID", "osu! user retrieved successfully. Returning data as OsuApiUserResponseData object.");
+		Log.WriteVerbose("osu! user retrieved successfully. Returning data as OsuApiUserResponseData object.");
 		return ret;
 	}
 
 	public async Task<OsuDataTypes.OsuApiUserResponseData> GetUserByOsuUsername(string osuUsername)
 	{
-		Log.WriteVerbose("GetUserByOsuID", $"Requesting osu! user with username {osuUsername}.");
+		Log.WriteVerbose($"Requesting osu! user with username {osuUsername}.");
 
 		HttpResponseMessage response;
 
@@ -86,25 +87,25 @@ public class OsuApi
 			client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 			client.DefaultRequestHeaders.Add("Authorization", $"Bearer {await Token.GetTokenAsync()}");
 
-			Log.WriteVerbose("GetUserByOsuID", "Requesting osu!api user endpoint.");
+			Log.WriteVerbose("Requesting osu!api user endpoint.");
 			response = await client.GetAsync($"{OsuApi.OSU_API_ENDPOINT}/users/{osuUsername}?key=username");
 		}
 		catch (Exception e)
 		{
-			Log.WriteError("GetUserByOsuID", $"An unhandled error occurred while revoking token. Exception details below.\n{e}");
-			throw new ApiInstanceException("Unhandled exception.");
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.OsuApiDataRequestError.Message));
+			throw new ApiInstanceException(ErrorMessages.OsuApiDataRequestError.Message);
 		}
 
 		// if not 200
 		if (response.StatusCode != HttpStatusCode.OK)
 		{
-			Log.WriteWarning("GetUserByOsuID", $"osu!api returned status code {(int)response.StatusCode}");
+			Log.WriteWarning($"osu!api returned status code {(int)response.StatusCode}");
 			throw new ApiResponseException(response.StatusCode);
 		}
 
 		OsuDataTypes.OsuApiUserResponseData ret = JsonSerializer.Deserialize<OsuDataTypes.OsuApiUserResponseRawData>(await response.Content.ReadAsStringAsync()).ToStandardData();
 
-		Log.WriteVerbose("GetUserByOsuID", "osu! user retrieved successfully. Returning data as OsuApiUserResponseData object.");
+		Log.WriteVerbose("osu! user retrieved successfully. Returning data as OsuApiUserResponseData object.");
 		return ret;
 	}
 }

@@ -7,6 +7,7 @@ using LeaderpointsBot.Database;
 using LeaderpointsBot.Database.Exceptions;
 using LeaderpointsBot.Database.Schemas;
 using LeaderpointsBot.Utils;
+using LeaderpointsBot.Utils.Process;
 
 namespace LeaderpointsBot.Client.Actions;
 
@@ -28,12 +29,12 @@ public static class UserData
 		}
 		catch (DataNotFoundException)
 		{
-			Log.WriteError("InsertOrUpdateAssignment", $"Server with Discord ID {serverDiscordId} not found in database.");
+			Log.WriteError($"Server with Discord ID {serverDiscordId} not found in database.");
 			throw new SendMessageException("Server not found.", true);
 		}
-		catch (Exception)
+		catch (Exception e)
 		{
-			Log.WriteError("InsertOrUpdateAssignment", $"An unhandled error occurred while querying server.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? " See above errors for details." : string.Empty)}");
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
 			throw new SendMessageException("Unhandled client error occurred.", true);
 		}
 
@@ -44,12 +45,12 @@ public static class UserData
 		}
 		catch (DataNotFoundException)
 		{
-			Log.WriteVerbose("InsertOrUpdateAssignment", $"User with osu! ID {osuId} not found in database. Skipping data update.");
+			Log.WriteVerbose($"User with osu! ID {osuId} not found in database. Skipping data update.");
 			throw new SkipUpdateException();
 		}
-		catch (Exception)
+		catch (Exception e)
 		{
-			Log.WriteError("InsertOrUpdateAssignment", $"An unhandled error occurred while querying user.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? " See above errors for details." : string.Empty)}");
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
 			throw new SendMessageException("Unhandled client error occurred.", true);
 		}
 
@@ -63,9 +64,9 @@ public static class UserData
 			// user found but current role not found in database, continue with null
 			currentRole = null;
 		}
-		catch (Exception)
+		catch (Exception e)
 		{
-			Log.WriteError("InsertOrUpdateAssignment", $"An unhandled error occurred while querying current server role.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? " See above errors for details." : string.Empty)}");
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
 			throw new SendMessageException("Unhandled client error occurred.", true);
 		}
 
@@ -76,12 +77,12 @@ public static class UserData
 		}
 		catch (DataNotFoundException)
 		{
-			Log.WriteError("InsertOrUpdateAssignment", $"Role for {points} points (server ID {serverDiscordId} not found in database. Make sure 0 points role exists.");
+			Log.WriteError($"Role for {points} points (server ID {serverDiscordId} not found in database. Make sure 0 points role exists.");
 			throw new SendMessageException("Role error. Contact server administrator for configuration.", true);
 		}
-		catch (Exception)
+		catch (Exception e)
 		{
-			Log.WriteError("InsertOrUpdateAssignment", $"An unhandled error occurred while querying target server role.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? " See above errors for details." : string.Empty)}");
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
 			throw new SendMessageException("Unhandled client error occurred.", true);
 		}
 
@@ -95,9 +96,9 @@ public static class UserData
 			// current server assignment not found, continue with null
 			currentServerAssignment = null;
 		}
-		catch (Exception)
+		catch (Exception e)
 		{
-			Log.WriteError("InsertOrUpdateAssignment", $"An unhandled error occurred while querying user assignment.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? " See above errors for details." : string.Empty)}");
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
 			throw new SendMessageException("Unhandled client error occurred.", true);
 		}
 
@@ -118,15 +119,15 @@ public static class UserData
 			// no server user data (will be created), continue with null
 			lastServerUserUpdate = null;
 		}
-		catch (Exception)
+		catch (Exception e)
 		{
-			Log.WriteError("InsertOrUpdateAssignment", $"An unhandled error occurred while querying user assignment.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? " See above errors for details." : string.Empty)}");
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
 			throw new SendMessageException("Unhandled client error occurred.", true);
 		}
 
 		{
 			// update user data
-			Log.WriteVerbose("InsertOrUpdateAssignment", $"Updating user data from osu!api with ID {osuId}");
+			Log.WriteVerbose($"Updating user data from osu!api with ID {osuId}");
 
 			// determine which data to update if any
 			string? argOsuUsername = !currentUser.Username.Equals(osuUsername) ? osuUsername : null;
@@ -135,7 +136,7 @@ public static class UserData
 			await DatabaseFactory.Instance.UsersInstance.UpdateUser(osuId, points, argOsuUsername, argOsuCountryCode);
 		}
 
-		Log.WriteDebug("InsertOrUpdateAssignment", $"points = {points}, rolename = {targetRole.RoleName}, minpoints = {targetRole.MinPoints}");
+		Log.WriteDebug($"points = {points}, rolename = {targetRole.RoleName}, minpoints = {targetRole.MinPoints}");
 
 		if (currentServerAssignment.HasValue)
 		{
@@ -152,10 +153,12 @@ public static class UserData
 			}
 			catch (Exception e)
 			{
-				Log.WriteError("InsertOrUpdateAssignment", $"Error inserting assignment:\n{e}");
+				Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
 				throw new SendMessageException("Error while inserting assignment.");
 			}
 		}
+
+		Log.WriteVerbose("Returning assignment result message data.");
 
 		return new Structures.Actions.UserData.AssignmentResult()
 		{

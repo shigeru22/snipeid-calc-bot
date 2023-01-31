@@ -9,10 +9,10 @@ public abstract class DBConnectorBase
 {
 	private readonly NpgsqlDataSource dataSource;
 
+	protected NpgsqlDataSource DataSource => dataSource;
+
 	protected DBConnectorBase(NpgsqlDataSource dataSource)
 	{
 		this.dataSource = dataSource;
 	}
-
-	protected NpgsqlDataSource DataSource => dataSource;
 }

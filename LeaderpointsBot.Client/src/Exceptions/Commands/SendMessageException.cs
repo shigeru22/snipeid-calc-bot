@@ -1,25 +1,24 @@
 // Copyright (c) shigeru22, concept by Akshiro28.
 // Licensed under the MIT license. See LICENSE in the repository root for details.
 
+using LeaderpointsBot.Utils.Process;
+
 namespace LeaderpointsBot.Client.Exceptions.Commands;
 
 public class SendMessageException : ClientException
 {
-	private readonly bool isError;
-	private readonly string draft;
+	public bool IsError { get; init; }
+	public string Draft { get; init; }
 
-	public SendMessageException() : base("Client interrupted, but no message needed to be sent.")
+	public SendMessageException() : base(ErrorMessages.ClientCommandInterruptError.Message)
 	{
-		isError = false;
-		draft = string.Empty;
+		IsError = false;
+		Draft = string.Empty;
 	}
 
-	public SendMessageException(string message, bool isError = false) : base("Client interrupted and needs to send message to sender.")
+	public SendMessageException(string message, bool isError = false) : base(ErrorMessages.ClientCommandSendMessageError.Message)
 	{
-		this.isError = isError;
-		draft = message;
+		IsError = isError;
+		Draft = message;
 	}
-
-	public bool IsError => isError;
-	public string Draft => draft;
 }

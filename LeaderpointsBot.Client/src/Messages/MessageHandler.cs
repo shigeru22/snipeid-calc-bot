@@ -9,6 +9,7 @@ using LeaderpointsBot.Client.Commands;
 using LeaderpointsBot.Client.Exceptions.Commands;
 using LeaderpointsBot.Client.Structures;
 using LeaderpointsBot.Utils;
+using LeaderpointsBot.Utils.Process;
 
 namespace LeaderpointsBot.Client.Messages;
 
@@ -21,17 +22,17 @@ public class MessageHandler
 
 	public MessageHandler(DiscordSocketClient client, CommandService commandService)
 	{
-		Log.WriteVerbose("MessagesFactory", "MessagesFactory instance created.");
+		Log.WriteVerbose("MessagesFactory instance created.");
 
 		this.client = client;
 		this.commandService = commandService;
 
-		Log.WriteVerbose("MessagesFactory", "Instance parameters set.");
+		Log.WriteVerbose("Instance parameters set.");
 	}
 
 	public async Task InitializeServiceAsync()
 	{
-		Log.WriteVerbose("InitializeServiceAsync", "Registering entry assembly as command service module.");
+		Log.WriteVerbose("Registering entry assembly as command service module.");
 		_ = await commandService.AddModulesAsync(assembly: Assembly.GetEntryAssembly(), services: null);
 	}
 
@@ -43,29 +44,29 @@ public class MessageHandler
 			return;
 		}
 
-		Log.WriteDebug("OnNewMessage", $"Message from {msg.Author.Username}#{msg.Author.Discriminator}: {msg.Content}");
+		Log.WriteDebug($"Message from {msg.Author.Username}#{msg.Author.Discriminator}: {msg.Content}");
 
 		if (msg is not SocketUserMessage userMsg)
 		{
-			Log.WriteDebug("OnNewMessage", "Message is not from user.");
+			Log.WriteDebug("Message is not from user.");
 			return;
 		}
 
 		if (msg.Channel.GetChannelType() != ChannelType.Text)
 		{
-			Log.WriteDebug("OnNewMessage", "Message is not from text-based channel.");
+			Log.WriteDebug("Message is not from text-based channel.");
 			return;
 		}
 
 		// determine if Bathbot's leaderboard count embed is received
 		if (msg.Author.Id.ToString().Equals(BATHBOT_DISCORD_ID))
 		{
-			Log.WriteDebug("OnNewMessage", "Message is from Bathbot. Handling message.");
+			Log.WriteDebug("Message is from Bathbot. Handling message.");
 			await HandleBathbotMessageAsync(userMsg);
 			return;
 		}
 
-		Log.WriteDebug("OnNewMessage", "Message is from user and text-based channel. Handling command.");
+		Log.WriteDebug("Message is from user and text-based channel. Handling command.");
 		await HandleCommandsAsync(userMsg);
 	}
 
@@ -74,26 +75,26 @@ public class MessageHandler
 		Embed botEmbed;
 		try
 		{
-			Log.WriteVerbose("HandleBathbotMessageAsync", "Fetching first embed from Bathbot message.");
+			Log.WriteVerbose("Fetching first embed from Bathbot message.");
 			botEmbed = msg.Embeds.First();
 		}
 		catch (Exception)
 		{
-			Log.WriteVerbose("HandleBathbotMessageAsync", "No embeds found from Bathbot message. Cancelling process.");
+			Log.WriteVerbose("No embeds found from Bathbot message. Cancelling process.");
 			return;
 		}
 
 		// filter embed by title
 		if (string.IsNullOrWhiteSpace(botEmbed.Title) || !botEmbed.Title.StartsWith("In how many top X map leaderboards is"))
 		{
-			Log.WriteVerbose("HandleBathbotMessageAsync", "Embed is not leaderboards count. Cancelling process.");
+			Log.WriteVerbose("Embed is not leaderboards count. Cancelling process.");
 			return;
 		}
 
 		if (msg.Channel is not SocketGuildChannel guildChannel)
 		{
 			// TODO: handle direct message response
-			Log.WriteVerbose("HandleBathbotMessageAsync", "Direct messages method not yet implemented.");
+			Log.WriteVerbose("Direct messages method not yet implemented.");
 			return;
 		}
 
@@ -102,23 +103,23 @@ public class MessageHandler
 
 		try
 		{
-			Log.WriteVerbose("HandleBathbotMessageAsync", "Calculating leaderboards count from first embed.");
+			Log.WriteVerbose("Calculating leaderboards count from first embed.");
 			responses = await Counter.UserLeaderboardsCountBathbotAsync(msg.Embeds.First(), guildChannel.Guild);
 		}
 		catch (SendMessageException e)
 		{
-			Log.WriteVerbose("HandleBathbotMessageAsync", "Send message signal received. Sending message and cancelling process.");
+			Log.WriteVerbose("Send message signal received. Sending message and cancelling process.");
 			_ = await context.Channel.SendMessageAsync(e.IsError ? $"**Error:** {e.Draft}" : e.Draft);
 			return;
 		}
 		catch (Exception e)
 		{
-			Log.WriteError("HandleBathbotMessageAsync", $"Unhandled client error occurred.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
 			_ = await context.Channel.SendMessageAsync("**Error:** Unhandled client error occurred.");
 			return;
 		}
 
-		Log.WriteVerbose("HandleBathbotMessageAsync", "Sending responses.");
+		Log.WriteVerbose("Sending responses.");
 		foreach (Structures.Commands.CountModule.UserLeaderboardsCountMessages response in responses)
 		{
 			switch (response.MessageType)
@@ -156,11 +157,11 @@ public class MessageHandler
 
 		if (!msg.HasMentionPrefix(client.CurrentUser, ref argPos))
 		{
-			Log.WriteDebug("HandleCommands", "Bot is not mentioned.");
+			Log.WriteDebug("Bot is not mentioned.");
 			return;
 		}
 
-		Log.WriteVerbose("HandleCommands", "Creating context and executing command.");
+		Log.WriteVerbose("Creating context and executing command.");
 
 		SocketCommandContext context = new SocketCommandContext(client, msg);
 
@@ -182,7 +183,7 @@ public class MessageHandler
 				return;
 			}
 
-			Log.WriteError(nameof(HandleCommandsAsync), $"Unhandled client error occurred.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
 			await SendMessage(context, $"**Error:** Unhandled client error occurred.");
 		}
 	}

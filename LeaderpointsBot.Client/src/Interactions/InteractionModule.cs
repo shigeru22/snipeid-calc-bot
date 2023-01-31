@@ -19,23 +19,23 @@ public static class InteractionModule
 		{
 			long osuId = (long)cmd.Data.Options.First().Value;
 
-			Log.WriteInfo(nameof(LinkUserCommand), $"Linking user {cmd.User.Username}#{cmd.User.Discriminator} ({cmd.User.Id}) to osu! user ID {osuId}.");
+			Log.WriteInfo($"Linking user {cmd.User.Username}#{cmd.User.Discriminator} ({cmd.User.Id}) to osu! user ID {osuId}.");
 			await cmd.DeferAsync();
 
 			Embed replyEmbed;
 
 			if (cmd.Channel is SocketGuildChannel guildChannel)
 			{
-				Log.WriteVerbose(nameof(LinkUserCommand), "Interaction sent from server.");
+				Log.WriteVerbose("Interaction sent from server.");
 				replyEmbed = await User.LinkUser(cmd.User, (int)osuId, guildChannel.Guild);
 			}
 			else
 			{
-				Log.WriteVerbose(nameof(LinkUserCommand), "Interaction sent from direct message.");
+				Log.WriteVerbose("Interaction sent from direct message.");
 				replyEmbed = await User.LinkUser(cmd.User, (int)osuId);
 			}
 
-			Log.WriteInfo(nameof(LinkUserCommand), "Link success. Sending embed response.");
+			Log.WriteInfo("Link success. Sending embed response.");
 
 			_ = await cmd.ModifyOriginalResponseAsync(msg => msg.Embed = replyEmbed);
 		}
@@ -46,7 +46,7 @@ public static class InteractionModule
 		// /ping
 		public static async Task SendPingCommand(DiscordSocketClient client, SocketSlashCommand cmd)
 		{
-			Log.WriteInfo("SendPingCommand", "Sending ping message.");
+			Log.WriteInfo("Sending ping message.");
 			await cmd.DeferAsync();
 
 			string replyMsg = Help.GetPingMessage(client);
@@ -64,16 +64,16 @@ public static class InteractionModule
 			try
 			{
 				osuUsername = (string)cmd.Data.Options.First().Value;
-				Log.WriteInfo("CountPointsCommand", $"Calculating points for osu! user {osuUsername}.");
+				Log.WriteInfo($"Calculating points for osu! user {osuUsername}.");
 			}
 			catch (InvalidOperationException)
 			{
-				Log.WriteDebug("CountPointsCommand", $"cmd.Data.Options.First() contains no element. Calculating user's points instead.");
-				Log.WriteInfo("CountPointsCommand", $"Calculating points for {cmd.User.Username}#{cmd.User.Discriminator}.");
+				Log.WriteDebug($"cmd.Data.Options.First() contains no element. Calculating user's points instead.");
+				Log.WriteInfo($"Calculating points for {cmd.User.Username}#{cmd.User.Discriminator}.");
 			}
 			catch (Exception e)
 			{
-				Log.WriteError("CountPointsCommand", $"Unhandled exception occurred while retrieving options value.{(Settings.Instance.Client.Logging.LogSeverity >= (int)LogSeverity.Verbose ? $" Exception details below.\n{e}" : string.Empty)}");
+				Log.WriteError($"Unhandled exception occurred while retrieving options value.{(Settings.Instance.Client.Logging.LogSeverity >= (int)LogSeverity.Verbose ? $" Exception details below.\n{e}" : string.Empty)}");
 				await cmd.RespondAsync("An error occurred while processing your command.", ephemeral: true);
 				return;
 			}
@@ -95,7 +95,7 @@ public static class InteractionModule
 			}
 			else
 			{
-				Log.WriteInfo("CountPointsCommand", "Command invoked from direct message. This will ignore update actions.");
+				Log.WriteInfo("Command invoked from direct message. This will ignore update actions.");
 
 				if (!string.IsNullOrWhiteSpace(osuUsername))
 				{
@@ -155,7 +155,7 @@ public static class InteractionModule
 		{
 			string pointsArgs = (string)cmd.Data.Options.First().Value;
 
-			Log.WriteInfo("WhatIfPointsCommand", $"Calculating what-if points for {cmd.User.Username}#{cmd.User.Discriminator} ({pointsArgs}).");
+			Log.WriteInfo($"Calculating what-if points for {cmd.User.Username}#{cmd.User.Discriminator} ({pointsArgs}).");
 			await cmd.DeferAsync();
 		}
 	}
@@ -167,7 +167,7 @@ public static class InteractionModule
 		{
 			SocketUser user = cmd.Data.Member;
 
-			Log.WriteInfo("CountPointsCommand", $"Calculating points for {user.Username}#{user.Discriminator}.");
+			Log.WriteInfo($"Calculating points for {user.Username}#{user.Discriminator}.");
 			await cmd.DeferAsync();
 		}
 	}
@@ -182,7 +182,7 @@ public static class InteractionModule
 				return;
 			}
 
-			Log.WriteInfo("SendServerLeaderboardCommand", $"Retrieving server points leaderboard (guild ID {guildChannel.Guild.Id}).");
+			Log.WriteInfo($"Retrieving server points leaderboard (guild ID {guildChannel.Guild.Id}).");
 			await cmd.DeferAsync();
 		}
 	}
@@ -192,7 +192,7 @@ public static class InteractionModule
 		// /help
 		public static async Task SendHelpCommand(DiscordSocketClient client, SocketSlashCommand cmd)
 		{
-			Log.WriteInfo("SendHelpCommand", $"Sending commands usage help message.");
+			Log.WriteInfo($"Sending commands usage help message.");
 			await cmd.DeferAsync();
 
 			Embed replyEmbed = Help.GetBotHelpMessage(client, true);
@@ -211,7 +211,7 @@ public static class InteractionModule
 				return;
 			}
 
-			Log.WriteInfo("ShowConfigurationCommand", $"Retrieving server configuration data (guild ID {guildChannel.Guild.Id}).");
+			Log.WriteInfo($"Retrieving server configuration data (guild ID {guildChannel.Guild.Id}).");
 			await cmd.DeferAsync();
 		}
 
@@ -223,7 +223,7 @@ public static class InteractionModule
 				return;
 			}
 
-			Log.WriteInfo("SendHelpConfigurationCommand", $"Sending server configuration commands help message (guild ID {guildChannel.Guild.Id}).");
+			Log.WriteInfo($"Sending server configuration commands help message (guild ID {guildChannel.Guild.Id}).");
 			await cmd.DeferAsync();
 
 			Embed replyEmbed = Help.GetConfigHelpMessage(client, true);
@@ -263,16 +263,16 @@ public static class InteractionModule
 				try
 				{
 					countryCode = (string)cmd.Data.Options.First().Options.First().Options.First().Value;
-					Log.WriteInfo("SetServerCountryCommand", $"Setting server country restriction to {countryCode} (guild ID {guildChannel.Guild.Id}).");
+					Log.WriteInfo($"Setting server country restriction to {countryCode} (guild ID {guildChannel.Guild.Id}).");
 				}
 				catch (InvalidOperationException)
 				{
-					Log.WriteDebug("SetServerCountryCommand", $"cmd.Data.Options.First() contains no element. Disabling server country restriction.");
-					Log.WriteInfo("SetServerCountryCommand", $"Disabling server country restriction (guild ID {guildChannel.Guild.Id}).");
+					Log.WriteDebug($"cmd.Data.Options.First() contains no element. Disabling server country restriction.");
+					Log.WriteInfo($"Disabling server country restriction (guild ID {guildChannel.Guild.Id}).");
 				}
 				catch (Exception e)
 				{
-					Log.WriteError("CountPointsCommand", $"Unhandled exception occurred while retrieving options value.{(Settings.Instance.Client.Logging.LogSeverity >= (int)LogSeverity.Verbose ? $" Exception details below.\n{e}" : string.Empty)}");
+					Log.WriteError($"Unhandled exception occurred while retrieving options value.{(Settings.Instance.Client.Logging.LogSeverity >= (int)LogSeverity.Verbose ? $" Exception details below.\n{e}" : string.Empty)}");
 					await cmd.RespondAsync("An error occurred while processing your command.", ephemeral: true);
 					return;
 				}
@@ -293,16 +293,16 @@ public static class InteractionModule
 				try
 				{
 					role = (SocketRole)cmd.Data.Options.First().Options.First().Options.First().Value;
-					Log.WriteInfo("SetServerVerifiedRoleCommand", $"Setting verified user role to {role.Id} (guild ID {guildChannel.Guild.Id}).");
+					Log.WriteInfo($"Setting verified user role to {role.Id} (guild ID {guildChannel.Guild.Id}).");
 				}
 				catch (InvalidOperationException)
 				{
-					Log.WriteDebug("SetServerVerifiedRoleCommand", $"cmd.Data.Options.First() contains no element. Disabling verified user role.");
-					Log.WriteInfo("SetServerVerifiedRoleCommand", $"Disabling verified user role (guild ID {guildChannel.Guild.Id}).");
+					Log.WriteDebug($"cmd.Data.Options.First() contains no element. Disabling verified user role.");
+					Log.WriteInfo($"Disabling verified user role (guild ID {guildChannel.Guild.Id}).");
 				}
 				catch (Exception e)
 				{
-					Log.WriteError("SetServerVerifiedRoleCommand", $"Unhandled exception occurred while retrieving options value.{(Settings.Instance.Client.Logging.LogSeverity >= (int)LogSeverity.Verbose ? $"Exception details below.\n{e}" : string.Empty)}");
+					Log.WriteError($"Unhandled exception occurred while retrieving options value.{(Settings.Instance.Client.Logging.LogSeverity >= (int)LogSeverity.Verbose ? $"Exception details below.\n{e}" : string.Empty)}");
 					await cmd.RespondAsync("An error occurred while processing your command.", ephemeral: true);
 					return;
 				}
@@ -323,16 +323,16 @@ public static class InteractionModule
 				try
 				{
 					channel = (SocketChannel)cmd.Data.Options.First().Options.First().Options.First().Value;
-					Log.WriteInfo("SetServerCommandsChannelCommand", $"Setting commands channel to {channel.Id} (guild ID {guildChannel.Guild.Id}).");
+					Log.WriteInfo($"Setting commands channel to {channel.Id} (guild ID {guildChannel.Guild.Id}).");
 				}
 				catch (InvalidOperationException)
 				{
-					Log.WriteDebug("SetServerCommandsChannelCommand", $"cmd.Data.Options.First() contains no element. Disabling command channel restriction.");
-					Log.WriteInfo("SetServerCommandsChannelCommand", $"Disabling command channel restriction (guild ID {guildChannel.Guild.Id}).");
+					Log.WriteDebug($"cmd.Data.Options.First() contains no element. Disabling command channel restriction.");
+					Log.WriteInfo($"Disabling command channel restriction (guild ID {guildChannel.Guild.Id}).");
 				}
 				catch (Exception e)
 				{
-					Log.WriteError("SetServerCommandsChannelCommand", $"Unhandled exception occurred while retrieving options value.{(Settings.Instance.Client.Logging.LogSeverity >= (int)LogSeverity.Verbose ? $" Exception details below.\n{e}" : string.Empty)}");
+					Log.WriteError($"Unhandled exception occurred while retrieving options value.{(Settings.Instance.Client.Logging.LogSeverity >= (int)LogSeverity.Verbose ? $" Exception details below.\n{e}" : string.Empty)}");
 					await cmd.RespondAsync("An error occurred while processing your command.", ephemeral: true);
 					return;
 				}
@@ -353,16 +353,16 @@ public static class InteractionModule
 				try
 				{
 					channel = (SocketChannel)cmd.Data.Options.First().Options.First().Options.First().Value;
-					Log.WriteInfo("SetServerLeaderboardsChannelCommand", $"Setting leaderboard commands channel to {channel.Id} (guild ID {guildChannel.Guild.Id}).");
+					Log.WriteInfo($"Setting leaderboard commands channel to {channel.Id} (guild ID {guildChannel.Guild.Id}).");
 				}
 				catch (InvalidOperationException)
 				{
-					Log.WriteDebug("SetServerLeaderboardsChannelCommand", $"cmd.Data.Options.First() contains no element. Disabling leaderboards command channel restriction.");
-					Log.WriteInfo("SetServerLeaderboardsChannelCommand", $"Disabling leaderboard commands channel restriction (guild ID {guildChannel.Guild.Id}).");
+					Log.WriteDebug($"cmd.Data.Options.First() contains no element. Disabling leaderboards command channel restriction.");
+					Log.WriteInfo($"Disabling leaderboard commands channel restriction (guild ID {guildChannel.Guild.Id}).");
 				}
 				catch (Exception e)
 				{
-					Log.WriteError("SetServerLeaderboardsChannelCommand", $"Unhandled exception occurred while retrieving options value.{(Settings.Instance.Client.Logging.LogSeverity >= (int)LogSeverity.Verbose ? $" Exception details below.\n{e}" : string.Empty)}");
+					Log.WriteError($"Unhandled exception occurred while retrieving options value.{(Settings.Instance.Client.Logging.LogSeverity >= (int)LogSeverity.Verbose ? $" Exception details below.\n{e}" : string.Empty)}");
 					await cmd.RespondAsync("An error occurred while processing your command.", ephemeral: true);
 					return;
 				}

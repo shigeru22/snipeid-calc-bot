@@ -4,6 +4,7 @@
 using Discord.WebSocket;
 using LeaderpointsBot.Client.Exceptions.Commands;
 using LeaderpointsBot.Utils;
+using LeaderpointsBot.Utils.Process;
 
 namespace LeaderpointsBot.Client.Interactions;
 
@@ -13,11 +14,11 @@ public class InteractionHandler
 
 	public InteractionHandler(DiscordSocketClient client)
 	{
-		Log.WriteVerbose("InteractionsFactory", "InteractionsFactory instance created.");
+		Log.WriteVerbose("InteractionsFactory instance created.");
 
 		this.client = client;
 
-		Log.WriteVerbose("InteractionsFactory", "Instance client set with client parameter.");
+		Log.WriteVerbose("Instance client set with client parameter.");
 	}
 
 	public Task OnInvokeSlashInteraction(SocketSlashCommand cmd)
@@ -34,44 +35,44 @@ public class InteractionHandler
 				{
 					case "link":
 						// TODO: link user
-						Log.WriteDebug("OnInvokeSlashInteraction", "Link user command received.");
+						Log.WriteDebug("Link user command received.");
 						await InteractionModule.LinkSlashModule.LinkUserCommand(client, cmd);
 						break;
 					case "ping":
 						// TODO: send ping
-						Log.WriteDebug("OnInvokeSlashInteraction", $"Send ping command received{(guildChannel != null ? $" (guild ID {guildChannel.Guild.Id})" : string.Empty)}.");
+						Log.WriteDebug($"Send ping command received{(guildChannel != null ? $" (guild ID {guildChannel.Guild.Id})" : string.Empty)}.");
 						await InteractionModule.PingSlashModule.SendPingCommand(client, cmd);
 						break;
 					case "count":
 						// TODO: count points
-						Log.WriteDebug("OnInvokeSlashInteraction", "Count points command received.");
+						Log.WriteDebug("Count points command received.");
 						await InteractionModule.CountSlashModule.CountPointsCommand(client, cmd);
 						break;
 					case "whatif":
 						// TODO: count what-if points
-						Log.WriteDebug("OnInvokeSlashInteraction", "Count what-if points command received.");
+						Log.WriteDebug("Count what-if points command received.");
 						await InteractionModule.CountSlashModule.WhatIfPointsCommand(client, cmd);
 						break;
 					case "serverleaderboard":
 						// TODO: send server leaderboard
-						Log.WriteDebug("OnInvokeSlashInteraction", "Get server leaderboard command received.");
+						Log.WriteDebug("Get server leaderboard command received.");
 						await InteractionModule.LeaderboardSlashModule.SendServerLeaderboardCommand(client, cmd);
 						break;
 					case "config":
 						// TODO: configure server settings
-						Log.WriteDebug("OnInvokeSlashInteraction", "Server configuration command received. Handling subcommand.");
+						Log.WriteDebug("Server configuration command received. Handling subcommand.");
 						await HandleConfigurationSlashCommand(cmd);
 						break;
 					case "help":
 						// TODO: send help message
-						Log.WriteDebug("OnInvokeSlashInteraction", "Send help message command received.");
+						Log.WriteDebug("Send help message command received.");
 						await InteractionModule.HelpModule.SendHelpCommand(client, cmd);
 						break;
 				}
 			}
 			catch (SendMessageException e)
 			{
-				Log.WriteVerbose("OnInvokeSlashInteraction", "Send message signal received. Sending message and cancelling process.");
+				Log.WriteVerbose("Send message signal received. Sending message and cancelling process.");
 
 				if (cmd.HasResponded)
 				{
@@ -84,7 +85,7 @@ public class InteractionHandler
 			}
 			catch (Exception e)
 			{
-				Log.WriteError("OnInvokeSlashInteraction", $"Unhandled client error occurred.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
+				Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
 
 				if (cmd.HasResponded)
 				{
@@ -112,14 +113,14 @@ public class InteractionHandler
 				{
 					case "Calculate points":
 						// TODO: count points
-						Log.WriteDebug("OnInvokeUserContextInteraction", "Count points command received.");
+						Log.WriteDebug("Count points command received.");
 						await InteractionModule.CountContextModule.CountPointsCommand(client, cmd);
 						break;
 				}
 			}
 			catch (SendMessageException e)
 			{
-				Log.WriteVerbose("OnInvokeSlashInteraction", "Send message signal received. Sending message and cancelling process.");
+				Log.WriteVerbose("Send message signal received. Sending message and cancelling process.");
 
 				if (cmd.HasResponded)
 				{
@@ -132,7 +133,7 @@ public class InteractionHandler
 			}
 			catch (Exception e)
 			{
-				Log.WriteError("OnInvokeSlashInteraction", $"Unhandled client error occurred.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
+				Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
 
 				if (cmd.HasResponded)
 				{
@@ -155,15 +156,15 @@ public class InteractionHandler
 		switch (subcommandName)
 		{
 			case "show":
-				Log.WriteDebug("HandleConfigurationSlashCommand", "Show server configuration subcommand received.");
+				Log.WriteDebug("Show server configuration subcommand received.");
 				await InteractionModule.ConfigurationSlashModule.ShowConfigurationCommand(client, cmd);
 				break;
 			case "help":
-				Log.WriteDebug("HandleConfigurationSlashCommand", "Server configuration setter command received.");
+				Log.WriteDebug("Server configuration setter command received.");
 				await InteractionModule.ConfigurationSlashModule.SendHelpConfigurationCommand(client, cmd);
 				break;
 			case "set":
-				Log.WriteDebug("HandleConfigurationSlashCommand", "Server configuration setter command received. Handling subcommand.");
+				Log.WriteDebug("Server configuration setter command received. Handling subcommand.");
 				await HandleConfigurationSetterSlashCommand(cmd);
 				break;
 		}
@@ -175,13 +176,13 @@ public class InteractionHandler
 
 		try
 		{
-			Log.WriteDebug("HandleConfigurationSetterSlashCommand", "Retrieving second subcommand name.");
+			Log.WriteDebug("Retrieving second subcommand name.");
 			subcommandName = (string)cmd.Data.Options.First().Options.First().Name;
-			Log.WriteDebug("HandleConfigurationSetterSlashCommand", $"Second subcommand name retrieved: {subcommandName}.");
+			Log.WriteDebug($"Second subcommand name retrieved: {subcommandName}.");
 		}
 		catch (Exception e)
 		{
-			Log.WriteDebug("HandleConfigurationSetterSlashCommand", $"Unhandled exception occurred while retrieving second subcommand. Exception details below.\n{e}");
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
 			await cmd.RespondAsync("An error occurred while processing your command.", ephemeral: true);
 			return;
 		}
@@ -189,19 +190,19 @@ public class InteractionHandler
 		switch (subcommandName)
 		{
 			case "country":
-				Log.WriteDebug("HandleConfigurationSetterSlashCommand", "Set server country restriction command received.");
+				Log.WriteDebug("Set server country restriction command received.");
 				await InteractionModule.ConfigurationSlashModule.ConfigurationSetterSlashModule.SetServerCountryCommand(client, cmd);
 				break;
 			case "verifiedrole":
-				Log.WriteDebug("HandleConfigurationSetterSlashCommand", "Set server verified role command received.");
+				Log.WriteDebug("Set server verified role command received.");
 				await InteractionModule.ConfigurationSlashModule.ConfigurationSetterSlashModule.SetServerVerifiedRoleCommand(client, cmd);
 				break;
 			case "commandschannel":
-				Log.WriteDebug("HandleConfigurationSetterSlashCommand", "Set server commands channel restriction command received.");
+				Log.WriteDebug("Set server commands channel restriction command received.");
 				await InteractionModule.ConfigurationSlashModule.ConfigurationSetterSlashModule.SetServerCommandsChannelCommand(client, cmd);
 				break;
 			case "leaderboardschannel":
-				Log.WriteDebug("HandleConfigurationSetterSlashCommand", "Set server leaderboard commands channel restriction command received.");
+				Log.WriteDebug("Set server leaderboard commands channel restriction command received.");
 				await InteractionModule.ConfigurationSlashModule.ConfigurationSetterSlashModule.SetServerLeaderboardsChannelCommand(client, cmd);
 				break;
 		}

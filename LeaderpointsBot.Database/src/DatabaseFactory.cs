@@ -28,22 +28,22 @@ public class DatabaseFactory
 
 	private DatabaseFactory()
 	{
-		Log.WriteVerbose("DatabaseFactory", "DatabaseFactory instance created.");
+		Log.WriteVerbose("DatabaseFactory instance created.");
 	}
 
 	public void SetConfig(DatabaseConfig config)
 	{
-		Log.WriteVerbose("SetConfig", "Setting configuration based on config parameter.");
+		Log.WriteVerbose("Setting configuration based on config parameter.");
 
 		dataSource = NpgsqlDataSource.Create(config.ToConnectionString());
 
-		Log.WriteVerbose("SetConfig", "Database data source created. Initializing per table instance.");
+		Log.WriteVerbose("Database data source created. Initializing per table instance.");
 
 		dbUsers = new Users(dataSource);
 		dbRoles = new Roles(dataSource);
 		dbServers = new Servers(dataSource);
 		dbAssignments = new Assignments(dataSource);
 
-		Log.WriteVerbose("SetConfig", "Database table wrapper instances created.");
+		Log.WriteVerbose("Database table wrapper instances created.");
 	}
 }

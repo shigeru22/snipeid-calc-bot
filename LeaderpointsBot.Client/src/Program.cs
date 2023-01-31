@@ -11,14 +11,14 @@ public static class Program
 {
 	public static async Task Main(string[] args)
 	{
-		Log.WriteInfo("Main", "Program started."); // test
+		Log.WriteInfo("Program started.");
 
-		Log.WriteVerbose("Main", "Setting up ApiFactory.");
+		Log.WriteVerbose("Setting up ApiFactory.");
 
 		ApiFactory.Instance.OsuApiInstance.Token.ClientID = Settings.Instance.OsuApi.ClientID;
 		ApiFactory.Instance.OsuApiInstance.Token.ClientSecret = Settings.Instance.OsuApi.ClientSecret;
 
-		Log.WriteVerbose("Main", "Setting up DatabaseFactory.");
+		Log.WriteVerbose("Setting up DatabaseFactory.");
 
 		DatabaseFactory.Instance.SetConfig(new DatabaseConfig()
 		{
@@ -30,7 +30,7 @@ public static class Program
 			CAFilePath = Settings.Instance.Database.CAFilePath,
 		});
 
-		Log.WriteVerbose("Main", "Starting up client.");
+		Log.WriteVerbose("Starting up client.");
 
 		Client client = new Client(Settings.Instance.Client.BotToken);
 		await client.Run();

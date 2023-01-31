@@ -10,6 +10,7 @@ using LeaderpointsBot.Client.Exceptions.Commands;
 using LeaderpointsBot.Database;
 using LeaderpointsBot.Database.Exceptions;
 using LeaderpointsBot.Utils;
+using LeaderpointsBot.Utils.Process;
 
 namespace LeaderpointsBot.Client.Commands;
 
@@ -19,37 +20,47 @@ public static class User
 	{
 		// TODO: [2023-01-26] use OAuth?
 
-		Log.WriteVerbose(nameof(LinkUser), $"Checking user in database (user ID {user.Id}).");
+		Log.WriteVerbose($"Checking user in database (user ID {user.Id}).");
 
 		try
 		{
 			_ = await DatabaseFactory.Instance.UsersInstance.GetUserByDiscordID(user.Id.ToString());
 
-			Log.WriteInfo(nameof(LinkUser), $"User with ID {user.Id} already linked (in database). Sending error message.");
+			Log.WriteInfo($"User with ID {user.Id} already linked (in database). Sending error message.");
 			throw new SendMessageException("You've already linked your osu! account.", true);
 		}
 		catch (DataNotFoundException)
 		{
 			// continue
-			Log.WriteVerbose(nameof(LinkUser), $"User with ID {user.Id} not found in database.");
+			Log.WriteVerbose($"User with ID {user.Id} not found in database.");
+		}
+		catch (Exception e)
+		{
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
+			throw new SendMessageException("Unhandled client error occurred.");
 		}
 
-		Log.WriteVerbose(nameof(LinkUser), $"Checking user in database (osu! ID {osuId}).");
+		Log.WriteVerbose($"Checking user in database (osu! ID {osuId}).");
 
 		try
 		{
 			_ = await DatabaseFactory.Instance.UsersInstance.GetUserByOsuID(osuId);
 
-			Log.WriteInfo(nameof(LinkUser), $"osu! ID {osuId} already linked by someone (in database). Sending error message.");
+			Log.WriteInfo($"osu! ID {osuId} already linked by someone (in database). Sending error message.");
 			throw new SendMessageException("osu! account already linked.", true);
 		}
 		catch (DataNotFoundException)
 		{
 			// continue
-			Log.WriteVerbose(nameof(LinkUser), $"User with osu! ID {osuId} not found in database.");
+			Log.WriteVerbose($"User with osu! ID {osuId} not found in database.");
+		}
+		catch (Exception e)
+		{
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
+			throw new SendMessageException("Unhandled client error occurred.");
 		}
 
-		Log.WriteVerbose(nameof(LinkUser), $"Fetching osu! user from osu!api (osu! ID {osuId}).");
+		Log.WriteVerbose($"Fetching osu! user from osu!api (osu! ID {osuId}).");
 
 		OsuDataTypes.OsuApiUserResponseData osuUser;
 
@@ -59,17 +70,22 @@ public static class User
 		}
 		catch (ApiResponseException)
 		{
-			Log.WriteError(nameof(LinkUser), "osu!api error occurred. Sending error message.");
+			Log.WriteError("osu!api error occurred. Sending error message.");
 			throw new SendMessageException("osu!api error occurred. Check status?", true);
 		}
+		catch (Exception e)
+		{
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
+			throw new SendMessageException("Unhandled client error occurred.");
+		}
 
-		Log.WriteVerbose(nameof(LinkUser), $"Inserting Discord user to database (user ID {user.Id}).");
+		Log.WriteVerbose($"Inserting Discord user to database (user ID {user.Id}).");
 
 		await DatabaseFactory.Instance.UsersInstance.InsertUser(user.Id.ToString(), osuId, osuUser.Username, osuUser.CountryCode);
 
 		if (guild != null)
 		{
-			Log.WriteVerbose(nameof(LinkUser), "Message sent from server. Granting server verified role (if set).");
+			Log.WriteVerbose("Message sent from server. Granting server verified role (if set).");
 			await Actions.Roles.SetVerifiedRoleAsync(guild, user);
 		}
 

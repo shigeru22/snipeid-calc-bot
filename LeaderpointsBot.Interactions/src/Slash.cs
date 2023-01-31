@@ -55,14 +55,14 @@ public static class SlashCommandsFactory
 
 	public static async Task CreateSlashCommands(DiscordSocketClient client)
 	{
-		Log.WriteVerbose("CreateSlashCommands", "Iterating slash commands array.");
+		Log.WriteVerbose("Iterating slash commands array.");
 
 		int slashCommandsCount = SlashCommands.Length;
 		for (int i = 0; i < slashCommandsCount; i++)
 		{
-			Log.WriteInfo("CreateSlashCommands", $"Creating slash commands ({i + 1}/{slashCommandsCount})...");
+			Log.WriteInfo($"Creating slash commands ({i + 1}/{slashCommandsCount})...");
 
-			Log.WriteVerbose("CreateSlashCommands", $"Creating command (index {i}) on client.");
+			Log.WriteVerbose($"Creating command (index {i}) on client.");
 			_ = await client.CreateGlobalApplicationCommandAsync(SlashCommands[i].Build());
 
 			if (i < slashCommandsCount - 1)
@@ -75,7 +75,7 @@ public static class SlashCommandsFactory
 			}
 			else
 			{
-				Log.WriteInfo("CreateSlashCommands", "Slash commands created.");
+				Log.WriteInfo("Slash commands created.");
 			}
 		}
 	}

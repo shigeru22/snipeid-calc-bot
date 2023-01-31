@@ -20,11 +20,11 @@ public class ApiFactory
 
 	private ApiFactory()
 	{
-		Log.WriteVerbose("ApiFactory", "ApiFactory instance created. Initializing wrapper instances.");
+		Log.WriteVerbose("ApiFactory instance created. Initializing wrapper instances.");
 
 		apiOsu = new OsuApi();
 		apiOsuStats = new OsuStatsApi();
 
-		Log.WriteVerbose("ApiFactory", "API client wrapper instances created.");
+		Log.WriteVerbose("API client wrapper instances created.");
 	}
 }

@@ -1,6 +1,7 @@
 // Copyright (c) shigeru22, concept by Akshiro28.
 // Licensed under the MIT license. See LICENSE in the repository root for details.
 
+using System.Runtime.CompilerServices;
 using Discord;
 
 namespace LeaderpointsBot.Utils;
@@ -24,22 +25,22 @@ public static class Log
 			switch (msg.Severity)
 			{
 				case Discord.LogSeverity.Critical:
-					WriteCritical(msg.Source, msg.Message);
+					WriteCritical(msg.Message, msg.Source);
 					break;
 				case Discord.LogSeverity.Error:
-					WriteError(msg.Source, msg.Message);
+					WriteError(msg.Message);
 					break;
 				case Discord.LogSeverity.Warning:
-					WriteWarning(msg.Source, msg.Message);
+					WriteWarning(msg.Message);
 					break;
 				case Discord.LogSeverity.Info:
-					WriteInfo(msg.Source, msg.Message);
+					WriteInfo(msg.Message);
 					break;
 				case Discord.LogSeverity.Verbose:
-					WriteVerbose(msg.Source, msg.Message);
+					WriteVerbose(msg.Message);
 					break;
 				case Discord.LogSeverity.Debug:
-					WriteDebug(msg.Source, msg.Message);
+					WriteDebug(msg.Message);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(msg));
@@ -54,22 +55,22 @@ public static class Log
 			switch (severity)
 			{
 				case Discord.LogSeverity.Critical:
-					WriteCritical(source, message);
+					WriteCritical(message, source);
 					break;
 				case Discord.LogSeverity.Error:
-					WriteError(source, message);
+					WriteError(message);
 					break;
 				case Discord.LogSeverity.Warning:
-					WriteWarning(source, message);
+					WriteWarning(message);
 					break;
 				case Discord.LogSeverity.Info:
-					WriteInfo(source, message);
+					WriteInfo(message);
 					break;
 				case Discord.LogSeverity.Verbose:
-					WriteVerbose(source, message);
+					WriteVerbose(message);
 					break;
 				case Discord.LogSeverity.Debug:
-					WriteDebug(source, message);
+					WriteDebug(message);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(severity), severity, null);
@@ -102,7 +103,7 @@ public static class Log
 		Console.ForegroundColor = currentColor;
 	}
 
-	public static void WriteError(string source, string message)
+	public static void WriteError(string message, [CallerMemberName] string source = "")
 	{
 		ConsoleColor currentColor = Console.ForegroundColor;
 		Console.ForegroundColor = ConsoleColor.Red;
@@ -115,7 +116,7 @@ public static class Log
 		Console.ForegroundColor = currentColor;
 	}
 
-	public static void WriteWarning(string source, string message)
+	public static void WriteWarning(string message, [CallerMemberName] string source = "")
 	{
 		ConsoleColor currentColor = Console.ForegroundColor;
 		Console.ForegroundColor = ConsoleColor.Yellow;
@@ -128,7 +129,7 @@ public static class Log
 		Console.ForegroundColor = currentColor;
 	}
 
-	public static void WriteInfo(string source, string message)
+	public static void WriteInfo(string message, [CallerMemberName] string source = "")
 	{
 		if (Settings.Instance.Client.Logging.LogSeverity >= 3)
 		{
@@ -136,12 +137,12 @@ public static class Log
 		}
 	}
 
-	public static void WriteVerbose(string source, string message)
+	public static void WriteVerbose(string message, [CallerMemberName] string source = "")
 	{
 		ConsoleColor currentColor = Console.ForegroundColor;
 		Console.ForegroundColor = ConsoleColor.DarkGray;
 
-		if (Settings.Instance.Client.Logging.LogSeverity >= 4)
+		if (Settings.Instance.Client.Logging.IsVerboseOrDebug())
 		{
 			Console.WriteLine($"{Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC)} :: {LogSeverity[4][0]} :: {source} :: {message}");
 		}
@@ -149,7 +150,7 @@ public static class Log
 		Console.ForegroundColor = currentColor;
 	}
 
-	public static void WriteDebug(string source, string message)
+	public static void WriteDebug(string message, [CallerMemberName] string source = "")
 	{
 		ConsoleColor currentColor = Console.ForegroundColor;
 		Console.ForegroundColor = ConsoleColor.DarkGray;
@@ -172,5 +173,10 @@ public static class Log
 		{
 			Console.SetCursorPosition(0, currentCursorLine - 1);
 		}
+	}
+
+	public static string GenerateExceptionMessage(Exception e, string errorMessage)
+	{
+		return $"{errorMessage}{(Settings.Instance.Client.Logging.IsVerboseOrDebug() ? $". Exception details below.\n{e}" : string.Empty)}";
 	}
 }

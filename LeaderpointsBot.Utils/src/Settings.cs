@@ -20,6 +20,8 @@ public class Settings
 		{
 			public bool UseUTC { get; set; }
 			public int LogSeverity { get; set; }
+
+			public bool IsVerboseOrDebug() => LogSeverity >= 4; // follows Discord.LogSeverity
 		}
 
 		public struct JsonDatabaseSettings

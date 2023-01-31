@@ -7,6 +7,7 @@ using LeaderpointsBot.Database;
 using LeaderpointsBot.Database.Exceptions;
 using LeaderpointsBot.Database.Schemas;
 using LeaderpointsBot.Utils;
+using LeaderpointsBot.Utils.Process;
 
 namespace LeaderpointsBot.Client.Actions;
 
@@ -19,18 +20,18 @@ public static class Roles
 			ServersQuerySchema.ServersTableData dbGuild;
 			try
 			{
-				Log.WriteVerbose(nameof(SetVerifiedRoleAsync), $"Fetching server data from database (server ID {guild.Id}).");
+				Log.WriteVerbose($"Fetching server data from database (server ID {guild.Id}).");
 				dbGuild = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
 			}
 			catch (DataNotFoundException)
 			{
-				Log.WriteError(nameof(SetVerifiedRoleAsync), "No server found in database. Sending error message.");
+				Log.WriteError("No server found in database. Sending error message.");
 				throw new SendMessageException("Server not found in our end!", true);
 			}
 
 			if (string.IsNullOrWhiteSpace(dbGuild.VerifiedRoleID))
 			{
-				Log.WriteVerbose(nameof(SetVerifiedRoleAsync), $"Server verified role not set. Skipping verified role grant.");
+				Log.WriteVerbose($"Server verified role not set. Skipping verified role grant.");
 				return;
 			}
 
@@ -41,9 +42,9 @@ public static class Roles
 					.Where(guildRole => guildRole.Id.ToString() == dbGuild.VerifiedRoleID)
 					.First();
 			}
-			catch(InvalidOperationException)
+			catch (InvalidOperationException)
 			{
-				Log.WriteInfo(nameof(SetVerifiedRoleAsync), "Server verified role is set, but not found in server roles list. Sending error message.");
+				Log.WriteInfo("Server verified role is set, but not found in server roles list. Sending error message.");
 				throw new SendMessageException("Verified role for this server is missing.", true);
 			}
 
@@ -52,13 +53,13 @@ public static class Roles
 				.Where(guildUser => guildUser.Id == user.Id)
 				.First();
 
-			Log.WriteError(nameof(SetVerifiedRoleAsync), $"Granting server verified role (server ID {guild.Id}, user ID {user.Id}).");
+			Log.WriteInfo($"Granting server verified role (server ID {guild.Id}, user ID {user.Id}).");
 
 			await targetGuildUser.AddRoleAsync(targetRole);
 		}
 		catch (Exception e)
 		{
-			Log.WriteVerbose(nameof(SetVerifiedRoleAsync), $"An unhandled exception occurred.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
 			throw new SendMessageException("An error occurred while checking or granting user verified role.");
 		}
 	}
@@ -67,7 +68,7 @@ public static class Roles
 	{
 		if (assignmentResult.OldRole.HasValue && assignmentResult.NewRole.RoleDiscordID.Equals(assignmentResult.OldRole.Value.RoleDiscordID))
 		{
-			Log.WriteVerbose("SetAssignmentRolesAsync", "Role is currently equal. Skipping role assignment.");
+			Log.WriteVerbose("Role is currently equal. Skipping role assignment.");
 			return;
 		}
 
@@ -75,11 +76,11 @@ public static class Roles
 
 		if (assignmentResult.OldRole.HasValue)
 		{
-			Log.WriteVerbose("SetAssignmentRolesAsync", $"Old role found. Removing role from user ({userDiscordId}).");
+			Log.WriteVerbose($"Old role found. Removing role from user ({userDiscordId}).");
 			await user.RemoveRoleAsync(ulong.Parse(assignmentResult.OldRole.Value.RoleDiscordID));
 		}
 
-		Log.WriteVerbose("SetAssignmentRolesAsync", $"Adding role to user ({userDiscordId}).");
+		Log.WriteVerbose($"Adding role to user ({userDiscordId}).");
 		await user.AddRoleAsync(ulong.Parse(assignmentResult.NewRole.RoleDiscordID));
 	}
 
@@ -87,7 +88,7 @@ public static class Roles
 	{
 		if (assignmentResult.OldRole.HasValue && assignmentResult.NewRole.RoleDiscordID.Equals(assignmentResult.OldRole.Value.RoleDiscordID))
 		{
-			Log.WriteVerbose("SetAssignmentRolesAsync", "Role is currently equal. Skipping role assignment.");
+			Log.WriteVerbose("Role is currently equal. Skipping role assignment.");
 			return;
 		}
 
@@ -99,19 +100,19 @@ public static class Roles
 		}
 		catch (Exception e)
 		{
-			Log.WriteVerbose("SetAssignmentRolesAsync", $"Unhandled exception occurred while querying user in database.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
-			throw new SendMessageException("An error occurred while querying user.");
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
+			throw new SendMessageException("Failed to grant role.", true);
 		}
 
 		SocketGuildUser user = guild.Users.First(guildUser => guildUser.Id.ToString().Equals(dbUser.DiscordID));
 
 		if (assignmentResult.OldRole.HasValue)
 		{
-			Log.WriteVerbose("SetAssignmentRolesAsync", $"Old role found. Removing role from user ({dbUser.DiscordID}).");
+			Log.WriteVerbose($"Old role found. Removing role from user ({dbUser.DiscordID}).");
 			await user.RemoveRoleAsync(ulong.Parse(assignmentResult.OldRole.Value.RoleDiscordID));
 		}
 
-		Log.WriteVerbose("SetAssignmentRolesAsync", $"Adding role to user ({dbUser.DiscordID}).");
+		Log.WriteVerbose($"Adding role to user ({dbUser.DiscordID}).");
 		await user.AddRoleAsync(ulong.Parse(assignmentResult.NewRole.RoleDiscordID));
 	}
 }

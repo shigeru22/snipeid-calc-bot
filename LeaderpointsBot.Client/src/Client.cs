@@ -27,7 +27,7 @@ public class Client
 
 	public Client(string botToken)
 	{
-		Log.WriteVerbose("Client", "Client instantiated. Setting client config.");
+		Log.WriteVerbose("Client instantiated. Setting client config.");
 
 		client = new DiscordSocketClient(new DiscordSocketConfig()
 		{
@@ -36,7 +36,7 @@ public class Client
 		});
 		this.botToken = botToken;
 
-		Log.WriteVerbose("Client", "Instantiating command service instance.");
+		Log.WriteVerbose("Instantiating command service instance.");
 
 		commandService = new CommandService(new CommandServiceConfig()
 		{
@@ -44,36 +44,36 @@ public class Client
 			CaseSensitiveCommands = false
 		});
 
-		Log.WriteVerbose("Client", "Instantiating event factories.");
+		Log.WriteVerbose("Instantiating event factories.");
 
 		messagesFactory = new MessageHandler(client, commandService);
 		interactionsFactory = new InteractionHandler(client);
 
-		Log.WriteVerbose("Client", "Registering process events.");
+		Log.WriteVerbose("Registering process events.");
 
 		Console.CancelKeyPress += OnProcessExit;
 		AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
 
-		Log.WriteVerbose("Client", "Registering client events.");
+		Log.WriteVerbose("Registering client events.");
 
 		client.Log += Log.WriteAsync;
 		client.MessageReceived += messagesFactory.OnNewMessage;
 		client.SlashCommandExecuted += interactionsFactory.OnInvokeSlashInteraction;
 		client.UserCommandExecuted += interactionsFactory.OnInvokeUserContextInteraction;
 
-		Log.WriteVerbose("Client", "Client initialized.");
+		Log.WriteVerbose("Client initialized.");
 	}
 
 	public async Task Run()
 	{
 		await messagesFactory.InitializeServiceAsync();
 
-		Log.WriteVerbose("Run", "Start client using specified botToken.");
+		Log.WriteVerbose("Start client using specified botToken.");
 
 		await client.LoginAsync(TokenType.Bot, botToken);
 		await client.StartAsync();
 
-		Log.WriteVerbose("Run", "Client started. Awaiting process indefinitely.");
+		Log.WriteVerbose("Client started. Awaiting process indefinitely.");
 		await Task.Delay(-1, delayToken.Token);
 	}
 
@@ -81,7 +81,7 @@ public class Client
 	{
 		lock (exitMutex)
 		{
-			Log.WriteVerbose("OnProcessExit", "Method called. Logging out client.");
+			Log.WriteVerbose("Method called. Logging out client.");
 
 			_ = Task.Run(async () =>
 			{
@@ -89,7 +89,7 @@ public class Client
 				await client.LogoutAsync();
 			});
 
-			Log.WriteVerbose("OnProcessExit", "Client logged out. Exiting process.");
+			Log.WriteVerbose("Client logged out. Exiting process.");
 
 			delayToken.Cancel();
 		}

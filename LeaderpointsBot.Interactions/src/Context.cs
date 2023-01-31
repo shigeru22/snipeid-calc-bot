@@ -17,14 +17,14 @@ public static class ContextCommandsFactory
 
 	public static async Task CreateUserContextCommands(DiscordSocketClient client)
 	{
-		Log.WriteVerbose("CreateUserContextCommands", "Iterating user context commands array.");
+		Log.WriteVerbose("Iterating user context commands array.");
 
 		int userContextCommandsCount = UserContextCommands.Length;
 		for (int i = 0; i < userContextCommandsCount; i++)
 		{
-			Log.WriteInfo("CreateUserContextCommands", $"Creating user context commands ({i + 1}/{userContextCommandsCount})...");
+			Log.WriteInfo($"Creating user context commands ({i + 1}/{userContextCommandsCount})...");
 
-			Log.WriteVerbose("CreateUserContextCommands", $"Creating command (index {i}) on client.");
+			Log.WriteVerbose($"Creating command (index {i}) on client.");
 			await client.CreateGlobalApplicationCommandAsync(UserContextCommands[i].Build());
 
 			if (i < userContextCommandsCount - 1)
@@ -37,7 +37,7 @@ public static class ContextCommandsFactory
 			}
 			else
 			{
-				Log.WriteInfo("CreateUserContextCommands", "Context commands created.");
+				Log.WriteInfo("Context commands created.");
 			}
 		}
 	}

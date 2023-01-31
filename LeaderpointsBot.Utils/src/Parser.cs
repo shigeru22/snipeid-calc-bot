@@ -3,6 +3,7 @@
 
 using System.Text.RegularExpressions;
 using LeaderpointsBot.Utils.Exceptions.Parser;
+using LeaderpointsBot.Utils.Process;
 
 namespace LeaderpointsBot.Utils;
 
@@ -14,9 +15,10 @@ public static class Parser
 		{
 			return embedTitle.Replace("In how many top X map leaderboards is ", string.Empty).Replace("?", string.Empty);
 		}
-		catch (NullReferenceException)
+		catch (NullReferenceException e)
 		{
-			throw new InvalidEmbedTitleException();
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.UtilParserEmbedTitleError.Message));
+			throw new InvalidEmbedTitleException(); // U0101
 		}
 	}
 
@@ -26,7 +28,7 @@ public static class Parser
 
 		if (temp.Length < 1 || string.IsNullOrWhiteSpace(temp[0]) || !int.TryParse(temp[0], out int ret))
 		{
-			throw new InvalidDataException("Invalid embedLink to be parsed.");
+			throw new InvalidDataException("Invalid embedLink to be parsed."); // U0102
 		}
 
 		return ret;

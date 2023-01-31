@@ -19,13 +19,13 @@ public static class MessageModule
 		[Summary("Links your Discord user to an osu! user.")]
 		public async Task LinkUserCommand([Summary("osu! user ID.")] int osuId)
 		{
-			Log.WriteInfo(nameof(LinkUserCommand), $"Linking user {Context.User.Username}#{Context.User.Discriminator} ({Context.User.Id}) to osu! user ID {osuId}.");
+			Log.WriteInfo($"Linking user {Context.User.Username}#{Context.User.Discriminator} ({Context.User.Id}) to osu! user ID {osuId}.");
 
 			await Context.Channel.TriggerTypingAsync();
 
 			Embed replyEmbed = await User.LinkUser(Context.User, osuId, Context.Guild);
 
-			Log.WriteInfo(nameof(LinkUserCommand), "Link success. Sending embed response.");
+			Log.WriteInfo("Link success. Sending embed response.");
 
 			if (Settings.Instance.Client.UseReply)
 			{
@@ -45,7 +45,7 @@ public static class MessageModule
 		[Summary("Pings the bot.")]
 		public async Task PingCommand()
 		{
-			Log.WriteInfo("SendPingCommand", $"Sending ping message (guild ID {Context.Guild.Id}).");
+			Log.WriteInfo($"Sending ping message (guild ID {Context.Guild.Id}).");
 
 			string replyMsg = Help.GetPingMessage(Context.Client);
 
@@ -67,7 +67,7 @@ public static class MessageModule
 		[Summary("Calculates points based on leaderboard count.")]
 		public async Task CountPointsCommand()
 		{
-			Log.WriteInfo("CountPointsCommand", $"Calculating points for {Context.User.Username}#{Context.User.Discriminator}.");
+			Log.WriteInfo($"Calculating points for {Context.User.Username}#{Context.User.Discriminator}.");
 
 			await Context.Channel.TriggerTypingAsync();
 
@@ -116,7 +116,7 @@ public static class MessageModule
 		[Summary("Calculates points based on leaderboard count.")]
 		public async Task CountPointsCommand([Summary("osu! username.")] string osuUsername)
 		{
-			Log.WriteInfo("CountPointsCommand", $"Calculating points for osu! user {osuUsername}.");
+			Log.WriteInfo($"Calculating points for osu! user {osuUsername}.");
 
 			await Context.Channel.TriggerTypingAsync();
 
@@ -165,7 +165,7 @@ public static class MessageModule
 		[Summary("Calculates what-if points based on leaderboard count.")]
 		public async Task WhatIfPointsCommand([Summary("Comma-delimited arguments representing what-if count.")] string pointsArgs)
 		{
-			Log.WriteInfo("WhatIfPointsCommand", $"Calculating what-if points for {Context.User.Username}#{Context.User.Discriminator} ({pointsArgs}).");
+			Log.WriteInfo($"Calculating what-if points for {Context.User.Username}#{Context.User.Discriminator} ({pointsArgs}).");
 		}
 	}
 
@@ -177,7 +177,7 @@ public static class MessageModule
 		[Summary("Returns server points leaderboard.")]
 		public async Task SendServerLeaderboardCommand()
 		{
-			Log.WriteInfo("SendServerLeaderboardCommand", $"Retrieving server points leaderboard (guild ID {Context.Guild.Id}).");
+			Log.WriteInfo($"Retrieving server points leaderboard (guild ID {Context.Guild.Id}).");
 		}
 	}
 
@@ -188,7 +188,7 @@ public static class MessageModule
 		[Summary("Returns commands usage help message.")]
 		public async Task SendHelpCommand()
 		{
-			Log.WriteInfo("SendHelpCommand", $"Sending commands usage help message.");
+			Log.WriteInfo($"Sending commands usage help message.");
 
 			Embed replyEmbed = Help.GetBotHelpMessage(Context.Client);
 
@@ -212,7 +212,7 @@ public static class MessageModule
 		[Summary("Returns current server configuration. Only available for server administrators.")]
 		public async Task ShowConfigurationCommand()
 		{
-			Log.WriteInfo("ShowConfigurationCommand", $"Retrieving server configuration data (guild ID {Context.Guild.Id}).");
+			Log.WriteInfo($"Retrieving server configuration data (guild ID {Context.Guild.Id}).");
 		}
 
 		// @bot config help
@@ -220,7 +220,7 @@ public static class MessageModule
 		[Summary("Returns server configuration commands help message. Only available for server administrators.")]
 		public async Task SendHelpConfigurationCommand()
 		{
-			Log.WriteInfo("SendHelpConfigurationCommand", $"Sending server configuration commands help message (guild ID {Context.Guild.Id}).");
+			Log.WriteInfo($"Sending server configuration commands help message (guild ID {Context.Guild.Id}).");
 
 			Embed replyEmbed = Help.GetConfigHelpMessage(Context.Client);
 
@@ -243,7 +243,7 @@ public static class MessageModule
 			[Summary("Sets country restriction for this server. Leave empty to disable.")]
 			public async Task SetServerCountryCommand()
 			{
-				Log.WriteInfo("SetServerCountryCommand", $"Disabling server country restriction (guild ID {Context.Guild.Id}).");
+				Log.WriteInfo($"Disabling server country restriction (guild ID {Context.Guild.Id}).");
 			}
 
 			// @bot config set country [2-letter country code]
@@ -251,7 +251,7 @@ public static class MessageModule
 			[Summary("Sets country restriction for this server. Leave empty to disable.")]
 			public async Task SetServerCountryCommand([Summary("2-letter country code. Leave empty to disable.")] string countryCode)
 			{
-				Log.WriteInfo("SetServerCountryCommand", $"Setting server country restriction to {countryCode} (guild ID {Context.Guild.Id}).");
+				Log.WriteInfo($"Setting server country restriction to {countryCode} (guild ID {Context.Guild.Id}).");
 			}
 
 			// @bot config set verifiedrole
@@ -259,7 +259,7 @@ public static class MessageModule
 			[Summary("Sets verified user role, see commands help for details. Leave empty to disable.")]
 			public async Task SetServerVerifiedRoleCommand()
 			{
-				Log.WriteInfo("SetServerVerifiedRoleCommand", $"Disabling verified user role (guild ID {Context.Guild.Id}).");
+				Log.WriteInfo($"Disabling verified user role (guild ID {Context.Guild.Id}).");
 			}
 
 			// @bot config set verifiedrole [mentioned role]
@@ -267,7 +267,7 @@ public static class MessageModule
 			[Summary("Sets verified user role, see commands help for details. Leave empty to disable.")]
 			public async Task SetServerVerifiedRoleCommand([Summary("Role for verified users. Leave empty to disable.")] SocketRole role)
 			{
-				Log.WriteInfo("SetServerVerifiedRoleCommand", $"Setting verified user role to {role.Id} (guild ID {Context.Guild.Id}).");
+				Log.WriteInfo($"Setting verified user role to {role.Id} (guild ID {Context.Guild.Id}).");
 			}
 
 			// @bot config set verifiedrole [role ID]
@@ -275,7 +275,7 @@ public static class MessageModule
 			[Summary("Sets verified user role, see commands help for details. Leave empty to disable.")]
 			public async Task SetServerVerifiedRoleCommand([Summary("Role for verified users. Leave empty to disable.")] string roleDiscordId)
 			{
-				Log.WriteInfo("SetServerVerifiedRoleCommand", $"Setting verified user role to {roleDiscordId} (guild ID {Context.Guild.Id}).");
+				Log.WriteInfo($"Setting verified user role to {roleDiscordId} (guild ID {Context.Guild.Id}).");
 			}
 
 			// @bot config set commandschannel
@@ -283,7 +283,7 @@ public static class MessageModule
 			[Summary("Sets server commands channel restriction. Leave channel option empty to disable.")]
 			public async Task SetServerCommandsChannelCommand()
 			{
-				Log.WriteInfo("SetServerCommandsChannelCommand", $"Disabling command channel restriction (guild ID {Context.Guild.Id}).");
+				Log.WriteInfo($"Disabling command channel restriction (guild ID {Context.Guild.Id}).");
 			}
 
 			// @bot config set commandschannel [mentioned channel]
@@ -291,7 +291,7 @@ public static class MessageModule
 			[Summary("Sets server commands channel restriction. Leave channel option empty to disable.")]
 			public async Task SetServerCommandsChannelCommand([Summary("Channel for commands restriction. Leave empty to disable.")] SocketGuildChannel channel)
 			{
-				Log.WriteInfo("SetServerCommandsChannelCommand", $"Setting commands channel to {channel.Id} (guild ID {Context.Guild.Id}).");
+				Log.WriteInfo($"Setting commands channel to {channel.Id} (guild ID {Context.Guild.Id}).");
 			}
 
 			// @bot config set commandschannel [channel ID]
@@ -299,7 +299,7 @@ public static class MessageModule
 			[Summary("Sets server commands channel restriction. Leave channel option empty to disable.")]
 			public async Task SetServerCommandsChannelCommand([Summary("Channel for commands restriction. Leave empty to disable.")] string channelDiscordId)
 			{
-				Log.WriteInfo("SetServerCommandsChannelCommand", $"Setting commands channel to {channelDiscordId} (guild ID {Context.Guild.Id}).");
+				Log.WriteInfo($"Setting commands channel to {channelDiscordId} (guild ID {Context.Guild.Id}).");
 			}
 
 			// @bot config set leaderboardschannel
@@ -307,7 +307,7 @@ public static class MessageModule
 			[Summary("Sets server leaderboard commands channel restriction. Leave channel option empty to disable.")]
 			public async Task SetServerLeaderboardsChannelCommand()
 			{
-				Log.WriteInfo("SetServerLeaderboardsChannelCommand", $"Disabling leaderboard commands channel restriction (guild ID {Context.Guild.Id}).");
+				Log.WriteInfo($"Disabling leaderboard commands channel restriction (guild ID {Context.Guild.Id}).");
 			}
 
 			// @bot config set leaderboardschannel [mentioned channel]
@@ -315,7 +315,7 @@ public static class MessageModule
 			[Summary("Sets server leaderboard commands channel restriction. Leave channel option empty to disable.")]
 			public async Task SetServerLeaderboardsChannelCommand([Summary("Channel for leaderboard command restriction. Leave empty to disable.")] SocketGuildChannel channel)
 			{
-				Log.WriteInfo("SetServerLeaderboardsChannelCommand", $"Setting leaderboard commands channel to {channel.Id} (guild ID {Context.Guild.Id}).");
+				Log.WriteInfo($"Setting leaderboard commands channel to {channel.Id} (guild ID {Context.Guild.Id}).");
 			}
 
 			// @bot config set leaderboardschannel [channel ID]
@@ -323,7 +323,7 @@ public static class MessageModule
 			[Summary("Sets server leaderboard commands channel restriction. Leave channel option empty to disable.")]
 			public async Task SetServerLeaderboardsChannelCommand([Summary("Channel for leaderboard command restriction. Leave empty to disable.")] string channelDiscordId)
 			{
-				Log.WriteInfo("SetServerLeaderboardsChannelCommand", $"Setting leaderboard commands channel to {channelDiscordId} (guild ID {Context.Guild.Id}).");
+				Log.WriteInfo($"Setting leaderboard commands channel to {channelDiscordId} (guild ID {Context.Guild.Id}).");
 			}
 		}
 	}

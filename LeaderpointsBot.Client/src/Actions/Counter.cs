@@ -11,6 +11,7 @@ using LeaderpointsBot.Client.Exceptions.Commands;
 using LeaderpointsBot.Database;
 using LeaderpointsBot.Database.Exceptions;
 using LeaderpointsBot.Utils;
+using LeaderpointsBot.Utils.Process;
 
 namespace LeaderpointsBot.Client.Actions;
 
@@ -27,16 +28,16 @@ public static class Counter
 		}
 		catch (DataNotFoundException)
 		{
-			Log.WriteError("UpdateUserDataAsync", $"Server with Discord ID {guild.Id} not found in database.");
+			Log.WriteError($"Server with Discord ID {guild.Id} not found in database.");
 			throw new SendMessageException("Server not found.", true);
 		}
 		catch (Exception e)
 		{
-			Log.WriteError("UpdateUserDataAsync", $"An unhandled error occurred while querying server.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? $" Exception details below.\n{e}" : string.Empty)}");
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
 			throw new SendMessageException("Unhandled client error occurred.", true);
 		}
 
-		Log.WriteVerbose("UpdateUserDataAsync", $"Updating user data for osu! ID {osuId}.");
+		Log.WriteVerbose($"Updating user data for osu! ID {osuId}.");
 
 		try
 		{
@@ -51,9 +52,9 @@ public static class Counter
 
 			throw new SendMessageException("osu!api error occurred.", true);
 		}
-		catch (Exception)
+		catch (Exception e)
 		{
-			Log.WriteError("UpdateUserDataAsync", $"An unhandled error occurred while retrieving osu! user.{(Settings.Instance.Client.Logging.LogSeverity >= 4 ? " See above errors for details." : string.Empty)}");
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
 			throw new SendMessageException("Unhandled client error occurred.", true);
 		}
 
@@ -75,11 +76,12 @@ public static class Counter
 		}
 		catch (SkipUpdateException)
 		{
-			Log.WriteVerbose("UpdateUserDataAsync", "Data update skipped. Returning update messages as null.");
+			Log.WriteVerbose("Data update skipped. Returning update messages as null.");
 			return null;
 		}
-		catch (Exception)
+		catch (Exception e)
 		{
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
 			throw new SendMessageException("Unhandled client error occurred.", true);
 		}
 
@@ -87,12 +89,13 @@ public static class Counter
 		{
 			await Roles.SetAssignmentRolesAsync(guild, osuId, assignmentResult);
 		}
-		catch (Exception)
+		catch (Exception e)
 		{
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
 			throw new SendMessageException("Unhandled client error occurred.", true);
 		}
 
-		Log.WriteDebug("UpdateUserDataAsync", $"assignmentResult.LastUpdate = {assignmentResult.LastUpdate}");
+		Log.WriteVerbose("Returning user update result message data.");
 
 		return new Structures.Actions.Counter.UpdateUserDataMessages()
 		{

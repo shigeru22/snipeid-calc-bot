@@ -13,7 +13,7 @@ public class Servers : DBConnectorBase
 {
 	public Servers(NpgsqlDataSource dataSource) : base(dataSource)
 	{
-		Log.WriteVerbose("DBServers", "Servers table class instance created.");
+		Log.WriteVerbose("Servers table class instance created.");
 	}
 
 	public async Task<ServersQuerySchema.ServersTableData[]> GetServers()
@@ -36,7 +36,7 @@ public class Servers : DBConnectorBase
 
 		if (!reader.HasRows)
 		{
-			Log.WriteVerbose("GetServers", "servers: Returned 0 rows.");
+			Log.WriteVerbose("servers: Returned 0 rows.");
 			return Array.Empty<ServersQuerySchema.ServersTableData>();
 		}
 
@@ -56,7 +56,7 @@ public class Servers : DBConnectorBase
 			});
 		}
 
-		Log.WriteInfo("GetServers", $"servers: Returned {reader.Rows} row{(reader.Rows != 1 ? "s" : string.Empty)}.");
+		Log.WriteInfo($"servers: Returned {reader.Rows} row{(reader.Rows != 1 ? "s" : string.Empty)}.");
 		return ret.ToArray();
 	}
 
@@ -80,7 +80,7 @@ public class Servers : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		Log.WriteVerbose("GetServersByCountry", "Database connection created and opened from data source.");
+		Log.WriteVerbose("Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -93,7 +93,7 @@ public class Servers : DBConnectorBase
 
 		if (!reader.HasRows)
 		{
-			Log.WriteVerbose("GetServersByCountry", "servers: Returned 0 rows.");
+			Log.WriteVerbose("servers: Returned 0 rows.");
 			return Array.Empty<ServersQuerySchema.ServersTableData>();
 		}
 
@@ -114,9 +114,9 @@ public class Servers : DBConnectorBase
 		}
 
 		await tempConnection.CloseAsync();
-		Log.WriteVerbose("GetServersByCountry", "Database connection closed.");
+		Log.WriteVerbose("Database connection closed.");
 
-		Log.WriteInfo("GetServersByCountry", $"servers: Returned {reader.Rows} row{(reader.Rows != 1 ? "s" : string.Empty)}.");
+		Log.WriteInfo($"servers: Returned {reader.Rows} row{(reader.Rows != 1 ? "s" : string.Empty)}.");
 		return ret.ToArray();
 	}
 
@@ -140,7 +140,7 @@ public class Servers : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		Log.WriteVerbose("GetServerByServerID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -153,14 +153,16 @@ public class Servers : DBConnectorBase
 
 		if (!reader.HasRows)
 		{
-			Log.WriteVerbose("GetServerByServerID", "servers: Returned 0 rows. Throwing not found exception.");
-			throw new DataNotFoundException();
+			Log.WriteVerbose("servers: Returned 0 rows.");
+			Log.WriteError($"Server with serverId = {serverId} not found.");
+			throw new DataNotFoundException(); // D0301
 		}
 
 		if (reader.Rows > 1)
 		{
-			Log.WriteInfo("GetServerByServerID", $"servers: Returned {reader.Rows} rows. Throwing duplicate record exception.");
-			throw new DuplicateRecordException("servers", "serverid");
+			Log.WriteInfo($"servers: Returned {reader.Rows} rows.");
+			Log.WriteError($"Duplicated record found in servers table (serverId = {serverId}).");
+			throw new DuplicateRecordException("servers", "serverid"); // D0302
 		}
 
 		_ = await reader.ReadAsync();
@@ -177,9 +179,9 @@ public class Servers : DBConnectorBase
 		};
 
 		await tempConnection.CloseAsync();
-		Log.WriteVerbose("GetServerByServerID", "Database connection closed.");
+		Log.WriteVerbose("Database connection closed.");
 
-		Log.WriteInfo("GetServerByServerID", "servers: Returned 1 row.");
+		Log.WriteInfo("servers: Returned 1 row.");
 		return ret;
 	}
 
@@ -203,7 +205,7 @@ public class Servers : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		Log.WriteVerbose("GetServerByDiscordID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -216,14 +218,16 @@ public class Servers : DBConnectorBase
 
 		if (!reader.HasRows)
 		{
-			Log.WriteVerbose("GetServerByDiscordID", "servers: Returned 0 rows. Throwing not found exception.");
-			throw new DataNotFoundException();
+			Log.WriteVerbose("servers: Returned 0 rows.");
+			Log.WriteError($"Server with discordId = {guildDiscordId} not found.");
+			throw new DataNotFoundException(); // D0301
 		}
 
 		if (reader.Rows > 1)
 		{
-			Log.WriteInfo("GetServerByDiscordID", $"servers: Returned {reader.Rows} rows. Throwing duplicate record exception.");
-			throw new DuplicateRecordException("servers", "discordid");
+			Log.WriteInfo($"servers: Returned {reader.Rows} rows.");
+			Log.WriteError($"Duplicated record found in servers table (discordId = ${guildDiscordId}).");
+			throw new DuplicateRecordException("servers", "discordid"); // D0302
 		}
 
 		_ = await reader.ReadAsync();
@@ -296,9 +300,9 @@ public class Servers : DBConnectorBase
 		}
 
 		await tempConnection.CloseAsync();
-		Log.WriteVerbose("GetServerByDiscordID", "Database connection closed.");
+		Log.WriteVerbose("Database connection closed.");
 
-		Log.WriteInfo("GetServerByDiscordID", "servers: Returned 1 row.");
+		Log.WriteInfo("servers: Returned 1 row.");
 		return ret;
 	}
 
@@ -312,7 +316,7 @@ public class Servers : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		Log.WriteVerbose("InsertServer", "Database connection created and opened from data source.");
+		Log.WriteVerbose("Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -327,15 +331,15 @@ public class Servers : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			Log.WriteVerbose("InsertServer", "Database connection closed.");
-			Log.WriteVerbose("InsertServer", "Insertion query failed. Throwing instance exception.");
-			throw new DatabaseInstanceException("Insertion query failed.");
+			Log.WriteVerbose("Database connection closed.");
+			Log.WriteVerbose($"Insert query execution failed (discordId = {guildDiscordId}).");
+			throw new DatabaseInstanceException("Insertion query failed."); // D0201
 		}
 
-		Log.WriteInfo("InsertServer", "servers: Inserted 1 row.");
+		Log.WriteInfo("servers: Inserted 1 row.");
 
 		await tempConnection.CloseAsync();
-		Log.WriteVerbose("InsertRole", "Database connection closed.");
+		Log.WriteVerbose("Database connection closed.");
 	}
 
 	public async Task InsertServer(int serverId, string guildDiscordId)
@@ -348,7 +352,7 @@ public class Servers : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		Log.WriteVerbose("InsertServer", "Database connection created and opened from data source.");
+		Log.WriteVerbose("Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -364,22 +368,22 @@ public class Servers : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			Log.WriteVerbose("InsertServer", "Database connection closed.");
-			Log.WriteVerbose("InsertServer", "Insertion query failed. Throwing instance exception.");
-			throw new DatabaseInstanceException("Insertion query failed.");
+			Log.WriteVerbose("Database connection closed.");
+			Log.WriteVerbose($"Insert query execution failed (serverId = {serverId}, discordId = {guildDiscordId}).");
+			throw new DatabaseInstanceException("Insertion query failed."); // D0201
 		}
 
-		Log.WriteInfo("InsertServer", "servers: Inserted 1 row.");
+		Log.WriteInfo("servers: Inserted 1 row.");
 
 		await tempConnection.CloseAsync();
-		Log.WriteVerbose("InsertRole", "Database connection closed.");
+		Log.WriteVerbose("Database connection closed.");
 	}
 
 	public async Task UpdateServerCountry(string guildDiscordId, string? countryCode)
 	{
 		if (countryCode != null && ((countryCode == string.Empty) || (countryCode != string.Empty && countryCode.Length != 2)))
 		{
-			Log.WriteVerbose("UpdateRole", "Invalid argument. Throwing argument exception.");
+			Log.WriteVerbose("Invalid argument. Throwing argument exception.");
 			throw new ArgumentException("countryCode must be a valid 2-country code.");
 		}
 
@@ -394,7 +398,7 @@ public class Servers : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		Log.WriteVerbose("UpdateServerCountry", "Database connection created and opened from data source.");
+		Log.WriteVerbose("Database connection created and opened from data source.");
 
 		NpgsqlCommand command;
 
@@ -425,47 +429,47 @@ public class Servers : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			Log.WriteVerbose("InsertServer", "Database connection closed.");
-			Log.WriteVerbose("InsertServer", "Update query failed. Throwing instance exception.");
-			throw new DatabaseInstanceException("Update query failed.");
+			Log.WriteVerbose("Database connection closed.");
+			Log.WriteVerbose($"Update query execution failed (discordId = {guildDiscordId}, country = {countryCode ?? "null"}).");
+			throw new DatabaseInstanceException("Update query failed."); // D0201
 		}
 
-		Log.WriteInfo("InsertServer", "servers: Updated 1 row.");
+		Log.WriteInfo("servers: Updated 1 row.");
 
 		await tempConnection.CloseAsync();
-		Log.WriteVerbose("InsertServer", "Database connection closed.");
+		Log.WriteVerbose("Database connection closed.");
 	}
 
-	public async Task UpdateServerVerifiedRoleID(string guildDiscordId, string? roleId)
+	public async Task UpdateServerVerifiedRoleID(string guildDiscordId, string? roleDiscordId)
 	{
-		if (!string.IsNullOrEmpty(roleId))
+		if (!string.IsNullOrEmpty(roleDiscordId))
 		{
-			Log.WriteVerbose("UpdateServerVerifiedRoleID", "Invalid argument. Throwing argument exception.");
+			Log.WriteVerbose("Invalid argument. Throwing argument exception.");
 			throw new ArgumentException("roleId must be null or not empty.");
 		}
 
 		string query = $@"
 			UPDATE servers
 			SET
-				verifiedroleid = {(roleId != null ? "$1" : "NULL")}
+				verifiedroleid = {(roleDiscordId != null ? "$1" : "NULL")}
 			WHERE
-				discordid = {(roleId != null ? "$2" : "$1")}
+				discordid = {(roleDiscordId != null ? "$2" : "$1")}
 		";
 
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		Log.WriteVerbose("UpdateServerVerifiedRoleID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("Database connection created and opened from data source.");
 
 		NpgsqlCommand command;
 
-		if (roleId != null)
+		if (roleDiscordId != null)
 		{
 			command = new NpgsqlCommand(query, tempConnection)
 			{
 				Parameters =
 				{
-					new NpgsqlParameter() { Value = roleId },
+					new NpgsqlParameter() { Value = roleDiscordId },
 					new NpgsqlParameter() { Value = guildDiscordId }
 				}
 			};
@@ -486,22 +490,22 @@ public class Servers : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			Log.WriteVerbose("UpdateServerVerifiedRoleID", "Database connection closed.");
-			Log.WriteVerbose("UpdateServerVerifiedRoleID", "Update query failed. Throwing instance exception.");
-			throw new DatabaseInstanceException("Update query failed.");
+			Log.WriteVerbose("Database connection closed.");
+			Log.WriteVerbose($"Update query execution failed (discordId = {guildDiscordId}, country = {roleDiscordId ?? "null"}).");
+			throw new DatabaseInstanceException("Update query failed."); // D0201
 		}
 
-		Log.WriteInfo("UpdateServerVerifiedRoleID", "servers: Updated 1 row.");
+		Log.WriteInfo("servers: Updated 1 row.");
 
 		await tempConnection.CloseAsync();
-		Log.WriteVerbose("UpdateServerVerifiedRoleID", "Database connection closed.");
+		Log.WriteVerbose("Database connection closed.");
 	}
 
 	public async Task UpdateServerCommandsChannelID(string guildDiscordId, string? channelDiscordId)
 	{
 		if (!string.IsNullOrEmpty(channelDiscordId))
 		{
-			Log.WriteVerbose("UpdateServerCommandsChannelID", "Invalid argument. Throwing argument exception.");
+			Log.WriteVerbose("Invalid argument. Throwing argument exception.");
 			throw new ArgumentException("channelId must be null or not empty.");
 		}
 
@@ -516,7 +520,7 @@ public class Servers : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		Log.WriteVerbose("UpdateServerCommandsChannelID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("Database connection created and opened from data source.");
 
 		NpgsqlCommand command;
 
@@ -547,22 +551,22 @@ public class Servers : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			Log.WriteVerbose("UpdateServerCommandsChannelID", "Database connection closed.");
-			Log.WriteVerbose("UpdateServerCommandsChannelID", "Update query failed. Throwing instance exception.");
-			throw new DatabaseInstanceException("Update query failed.");
+			Log.WriteVerbose("Database connection closed.");
+			Log.WriteVerbose($"Update query execution failed (discordId = {guildDiscordId}, commandsChannelId = {channelDiscordId ?? "null"}).");
+			throw new DatabaseInstanceException("Update query failed."); // D0201
 		}
 
-		Log.WriteInfo("UpdateServerCommandsChannelID", "servers: Updated 1 row.");
+		Log.WriteInfo("servers: Updated 1 row.");
 
 		await tempConnection.CloseAsync();
-		Log.WriteVerbose("UpdateServerCommandsChannelID", "Database connection closed.");
+		Log.WriteVerbose("Database connection closed.");
 	}
 
 	public async Task UpdateServerLeaderboardsChannelID(string guildDiscordId, string? channelDiscordId)
 	{
 		if (!string.IsNullOrEmpty(channelDiscordId))
 		{
-			Log.WriteVerbose("UpdateServerLeaderboardsChannelID", "Invalid argument. Throwing argument exception.");
+			Log.WriteVerbose("Invalid argument. Throwing argument exception.");
 			throw new ArgumentException("channelId must be null or not empty.");
 		}
 
@@ -577,7 +581,7 @@ public class Servers : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		Log.WriteVerbose("UpdateServerLeaderboardsChannelID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("Database connection created and opened from data source.");
 
 		NpgsqlCommand command;
 
@@ -608,15 +612,15 @@ public class Servers : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			Log.WriteVerbose("UpdateServerLeaderboardsChannelID", "Database connection closed.");
-			Log.WriteVerbose("UpdateServerLeaderboardsChannelID", "Update query failed. Throwing instance exception.");
-			throw new DatabaseInstanceException("Update query failed.");
+			Log.WriteVerbose("Database connection closed.");
+			Log.WriteVerbose($"Update query execution failed (discordId = {guildDiscordId}, country = {channelDiscordId ?? "null"}).");
+			throw new DatabaseInstanceException("Update query failed."); // D0201
 		}
 
-		Log.WriteInfo("UpdateServerLeaderboardsChannelID", "servers: Updated 1 row.");
+		Log.WriteInfo("servers: Updated 1 row.");
 
 		await tempConnection.CloseAsync();
-		Log.WriteVerbose("UpdateServerLeaderboardsChannelID", "Database connection closed.");
+		Log.WriteVerbose("Database connection closed.");
 	}
 
 	public async Task DeleteServerByServerID(int serverId)
@@ -629,7 +633,7 @@ public class Servers : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		Log.WriteVerbose("DeleteServerByServerID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -644,15 +648,15 @@ public class Servers : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			Log.WriteVerbose("DeleteServerByServerID", "Database connection closed.");
-			Log.WriteVerbose("DeleteServerByServerID", "Deletion query failed. Throwing instance exception.");
-			throw new DatabaseInstanceException("Deletion query failed.");
+			Log.WriteVerbose("Database connection closed.");
+			Log.WriteVerbose($"Delete query execution failed (serverId = {serverId}).");
+			throw new DatabaseInstanceException("Deletion query failed."); // D0201
 		}
 
-		Log.WriteInfo("DeleteServerByServerID", "servers: Deleted 1 row.");
+		Log.WriteInfo("servers: Deleted 1 row.");
 
 		await tempConnection.CloseAsync();
-		Log.WriteVerbose("DeleteServerByServerID", "Database connection closed.");
+		Log.WriteVerbose("Database connection closed.");
 	}
 
 	public async Task DeleteServerByDiscordID(string guildDiscordId)
@@ -665,7 +669,7 @@ public class Servers : DBConnectorBase
 		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
 		await tempConnection.OpenAsync();
 
-		Log.WriteVerbose("DeleteServerByDiscordID", "Database connection created and opened from data source.");
+		Log.WriteVerbose("Database connection created and opened from data source.");
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
 		{
@@ -680,15 +684,15 @@ public class Servers : DBConnectorBase
 		if (affectedRows != 1)
 		{
 			await tempConnection.CloseAsync();
-			Log.WriteVerbose("DeleteServerByDiscordID", "Database connection closed.");
-			Log.WriteVerbose("DeleteServerByDiscordID", "Deletion query failed. Throwing instance exception.");
-			throw new DatabaseInstanceException("Deletion query failed.");
+			Log.WriteVerbose("Database connection closed.");
+			Log.WriteVerbose($"Delete query execution failed (discordId = {guildDiscordId}).");
+			throw new DatabaseInstanceException("Deletion query failed."); // D0201
 		}
 
-		Log.WriteInfo("DeleteServerByDiscordID", "servers: Deleted 1 row.");
+		Log.WriteInfo("servers: Deleted 1 row.");
 
 		await tempConnection.CloseAsync();
-		Log.WriteVerbose("DeleteServerByDiscordID", "Database connection closed.");
+		Log.WriteVerbose("Database connection closed.");
 	}
 
 	public async Task<bool> IsCommandsChannel(string guildDiscordId, string channelDiscordId)

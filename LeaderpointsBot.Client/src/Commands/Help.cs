@@ -12,7 +12,7 @@ public static class Help
 {
 	public static string GetPingMessage(DiscordSocketClient client)
 	{
-		Log.WriteVerbose("GetPingMessage", "Returning latency from client as ping message.");
+		Log.WriteVerbose("Returning latency from client as ping message.");
 		return $"Pong! ({client.Latency} ms)";
 	}
 
