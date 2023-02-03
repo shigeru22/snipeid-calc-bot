@@ -1,6 +1,8 @@
 // Copyright (c) shigeru22, concept by Akshiro28.
 // Licensed under the MIT license. See LICENSE in the repository root for details.
 
+using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Discord;
 
@@ -28,19 +30,19 @@ public static class Log
 					WriteCritical(msg.Message, msg.Source);
 					break;
 				case Discord.LogSeverity.Error:
-					WriteError(msg.Message);
+					WriteError(msg.Message, msg.Source);
 					break;
 				case Discord.LogSeverity.Warning:
-					WriteWarning(msg.Message);
+					WriteWarning(msg.Message, msg.Source);
 					break;
 				case Discord.LogSeverity.Info:
-					WriteInfo(msg.Message);
+					WriteInfo(msg.Message, msg.Source);
 					break;
 				case Discord.LogSeverity.Verbose:
-					WriteVerbose(msg.Message);
+					WriteVerbose(msg.Message, msg.Source);
 					break;
 				case Discord.LogSeverity.Debug:
-					WriteDebug(msg.Message);
+					WriteDebug(msg.Message, msg.Source);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(msg));
@@ -48,7 +50,7 @@ public static class Log
 		}
 	}
 
-	public static void Write(LogSeverity severity, string source, string message)
+	public static void Write(LogSeverity severity, string message, [CallerMemberName] string source = "")
 	{
 		if (Settings.Instance.Client.Logging.LogSeverity >= (int)severity)
 		{
@@ -84,83 +86,83 @@ public static class Log
 		return Task.CompletedTask;
 	}
 
-	public static Task WriteAsync(LogSeverity severity, string source, string message)
+	public static Task WriteAsync(LogSeverity severity, string message, [CallerMemberName] string source = "")
 	{
 		Write(severity, source, message);
 		return Task.CompletedTask;
 	}
 
-	public static void WriteCritical(string source, string message)
+	public static void WriteCritical(string message, [CallerMemberName] string source = "")
 	{
-		ConsoleColor currentColor = Console.ForegroundColor;
-		Console.ForegroundColor = ConsoleColor.Red;
-
 		if (Settings.Instance.Client.Logging.LogSeverity >= 0)
 		{
-			Console.Error.WriteLine($"{Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC)} :: {LogSeverity[0][0]} :: {source} :: {message}");
-		}
+			ConsoleColor currentColor = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.Red;
 
-		Console.ForegroundColor = currentColor;
+			Console.WriteLine(GenerateLogMessage(Discord.LogSeverity.Critical, message, source));
+
+			Console.ForegroundColor = currentColor;
+		}
 	}
 
 	public static void WriteError(string message, [CallerMemberName] string source = "")
 	{
-		ConsoleColor currentColor = Console.ForegroundColor;
-		Console.ForegroundColor = ConsoleColor.Red;
-
 		if (Settings.Instance.Client.Logging.LogSeverity >= 1)
 		{
-			Console.Error.WriteLine($"{Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC)} :: {LogSeverity[1][0]} :: {source} :: {message}");
-		}
+			ConsoleColor currentColor = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.Red;
 
-		Console.ForegroundColor = currentColor;
+			Console.WriteLine(GenerateLogMessage(Discord.LogSeverity.Error, message, source));
+
+			Console.ForegroundColor = currentColor;
+		}
 	}
 
 	public static void WriteWarning(string message, [CallerMemberName] string source = "")
 	{
-		ConsoleColor currentColor = Console.ForegroundColor;
-		Console.ForegroundColor = ConsoleColor.Yellow;
-
 		if (Settings.Instance.Client.Logging.LogSeverity >= 2)
 		{
-			Console.WriteLine($"{Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC)} :: {LogSeverity[2][0]} :: {source} :: {message}");
-		}
+			ConsoleColor currentColor = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.Yellow;
 
-		Console.ForegroundColor = currentColor;
+			Console.WriteLine(GenerateLogMessage(Discord.LogSeverity.Warning, message, source));
+
+			Console.ForegroundColor = currentColor;
+		}
 	}
 
 	public static void WriteInfo(string message, [CallerMemberName] string source = "")
 	{
 		if (Settings.Instance.Client.Logging.LogSeverity >= 3)
 		{
-			Console.WriteLine($"{Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC)} :: {LogSeverity[3][0]} :: {source} :: {message}");
+			Console.WriteLine(GenerateLogMessage(Discord.LogSeverity.Info, message, source));
 		}
 	}
 
 	public static void WriteVerbose(string message, [CallerMemberName] string source = "")
 	{
-		ConsoleColor currentColor = Console.ForegroundColor;
-		Console.ForegroundColor = ConsoleColor.DarkGray;
-
 		if (Settings.Instance.Client.Logging.IsVerboseOrDebug())
 		{
-			Console.WriteLine($"{Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC)} :: {LogSeverity[4][0]} :: {source} :: {message}");
-		}
+			ConsoleColor currentColor = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.DarkGray;
 
-		Console.ForegroundColor = currentColor;
+			Console.WriteLine(GenerateLogMessage(Discord.LogSeverity.Verbose, message, source));
+
+			Console.ForegroundColor = currentColor;
+		}
 	}
 
 	public static void WriteDebug(string message, [CallerMemberName] string source = "")
 	{
-		ConsoleColor currentColor = Console.ForegroundColor;
-		Console.ForegroundColor = ConsoleColor.DarkGray;
-
 		if (Settings.Instance.Client.Logging.LogSeverity >= 5)
 		{
-			Console.WriteLine($"{Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC)} :: {LogSeverity[5][0]} :: {source} :: {message}");
-		}
+			ConsoleColor currentColor = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.DarkGray;
 
-		Console.ForegroundColor = currentColor;
+			Console.WriteLine(GenerateLogMessage(Discord.LogSeverity.Debug, message, source));
+
+			Console.ForegroundColor = currentColor;
+		}
 	}
 
 	public static void DeletePreviousLine(bool keepCurrentLine = false)
@@ -175,8 +177,27 @@ public static class Log
 		}
 	}
 
+	public static string GenerateLogMessage(LogSeverity severity, string message, string source)
+	{
+		string tempSource = source.Equals(".ctor") || source.Equals(".cctor") ? GetParentTypeName() : source;
+		return $"{Date.GetCurrentDateTime(Settings.Instance.Client.Logging.UseUTC)} :: {LogSeverity[(int)severity][0]} :: {tempSource} :: {message}";
+	}
+
 	public static string GenerateExceptionMessage(Exception e, string errorMessage)
 	{
 		return $"{errorMessage}{(Settings.Instance.Client.Logging.IsVerboseOrDebug() ? $". Exception details below.\n{e}" : string.Empty)}";
+	}
+
+	private static string GetParentTypeName()
+	{
+		StackFrame stackFrame = new StackFrame(3);
+		MethodBase? methodBase = stackFrame.GetMethod();
+
+		if (methodBase != null && methodBase.DeclaringType != null)
+		{
+			return methodBase.DeclaringType.Name;
+		}
+
+		return "(unknown)";
 	}
 }
