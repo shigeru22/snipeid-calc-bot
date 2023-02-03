@@ -44,7 +44,7 @@ public class MessageHandler
 			return;
 		}
 
-		Log.WriteDebug($"Message from {msg.Author.Username}#{msg.Author.Discriminator}: {msg.Content}");
+		// Log.WriteDebug($"Message from {msg.Author.Username}#{msg.Author.Discriminator}: {msg.Content}");
 
 		if (msg is not SocketUserMessage userMsg)
 		{

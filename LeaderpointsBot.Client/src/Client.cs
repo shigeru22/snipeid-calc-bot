@@ -5,6 +5,7 @@
 
 using Discord;
 using Discord.Commands;
+using Discord.Interactions;
 using Discord.WebSocket;
 using LeaderpointsBot.Client.Interactions;
 using LeaderpointsBot.Client.Messages;
@@ -16,14 +17,15 @@ public class Client
 {
 	private readonly DiscordSocketClient client;
 	private readonly CommandService commandService;
+	private readonly InteractionService interactionService;
 
 	private readonly string botToken;
 
 	private readonly object exitMutex = new object();
 	private readonly CancellationTokenSource delayToken = new CancellationTokenSource();
 
-	private readonly MessageHandler messagesFactory;
-	private readonly InteractionHandler interactionsFactory;
+	private readonly MessageHandler? messagesFactory;
+	private readonly InteractionHandler? interactionsFactory;
 
 	public Client(string botToken)
 	{
@@ -43,30 +45,44 @@ public class Client
 			LogLevel = LogSeverity.Info,
 			CaseSensitiveCommands = false
 		});
+		interactionService = new InteractionService(client.Rest, new InteractionServiceConfig()
+		{
+			LogLevel = LogSeverity.Info
+		});
 
 		Log.WriteVerbose("Instantiating event factories.");
 
 		messagesFactory = new MessageHandler(client, commandService);
-		interactionsFactory = new InteractionHandler(client);
+		interactionsFactory = new InteractionHandler(client, interactionService);
+
+		Log.WriteVerbose("Registering client events.");
+
+		client.MessageReceived += messagesFactory.OnNewMessage;
+		client.SlashCommandExecuted += interactionsFactory.OnInvokeInteraction;
+		client.UserCommandExecuted += interactionsFactory.OnInvokeInteraction;
+		client.Log += Log.WriteAsync;
 
 		Log.WriteVerbose("Registering process events.");
 
 		Console.CancelKeyPress += OnProcessExit;
 		AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
 
-		Log.WriteVerbose("Registering client events.");
-
-		client.Log += Log.WriteAsync;
-		client.MessageReceived += messagesFactory.OnNewMessage;
-		client.SlashCommandExecuted += interactionsFactory.OnInvokeSlashInteraction;
-		client.UserCommandExecuted += interactionsFactory.OnInvokeUserContextInteraction;
-
 		Log.WriteVerbose("Client initialized.");
 	}
 
 	public async Task Run()
 	{
-		await messagesFactory.InitializeServiceAsync();
+		if (messagesFactory != null)
+		{
+			Log.WriteVerbose("Initializing messaging service.");
+			await messagesFactory.InitializeServiceAsync();
+		}
+
+		if (interactionsFactory != null)
+		{
+			Log.WriteVerbose("Initializing interactions service.");
+			await interactionsFactory.InitializeServiceAsync();
+		}
 
 		Log.WriteVerbose("Start client using specified botToken.");
 
@@ -77,7 +93,7 @@ public class Client
 		await Task.Delay(-1, delayToken.Token);
 	}
 
-	private void OnProcessExit(object? o, EventArgs e)
+	private void OnProcessExit()
 	{
 		lock (exitMutex)
 		{
@@ -94,4 +110,6 @@ public class Client
 			delayToken.Cancel();
 		}
 	}
+
+	private void OnProcessExit(object? o, EventArgs e) => OnProcessExit();
 }
