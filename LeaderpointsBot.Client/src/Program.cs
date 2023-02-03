@@ -11,6 +11,12 @@ public static class Program
 {
 	public static async Task Main(string[] args)
 	{
+		if (args.Length > 0)
+		{
+			Log.WriteVerbose("Updating settings from command line arguments.");
+			Settings.Instance.AddArguments(args);
+		}
+
 		Log.WriteInfo("Program started.");
 
 		Log.WriteVerbose("Setting up ApiFactory.");

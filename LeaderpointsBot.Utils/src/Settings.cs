@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace LeaderpointsBot.Utils;
 
-public class Settings
+public partial class Settings
 {
 	public static class SettingsTypes
 	{
@@ -58,10 +58,15 @@ public class Settings
 	private SettingsTypes.JsonClientSettings client;
 	private SettingsTypes.JsonDatabaseSettings database;
 	private SettingsTypes.JsonOsuClientSettings osuApi;
+	private bool shouldPromptPassword;
+	private bool shouldInitializeInteractions;
+	private bool shouldInitializeDatabase;
 
 	public SettingsTypes.JsonClientSettings Client => client;
 	public SettingsTypes.JsonDatabaseSettings Database => database;
 	public SettingsTypes.JsonOsuClientSettings OsuApi => osuApi;
+	public bool ShouldInitializeInteractions => shouldInitializeInteractions;
+	public bool ShouldInitializeDatabase => shouldInitializeDatabase;
 
 	private Settings(string settingsPath)
 	{
