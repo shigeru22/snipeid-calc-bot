@@ -61,7 +61,7 @@ public static class InteractionModule
 	{
 		// /count [osuusername?]
 		[EnabledInDm(true)]
-		[SlashCommand("count", "Calculated points based on leaderboard count.", runMode: RunMode.Async)]
+		[SlashCommand("count", "Calculates points based on leaderboard count.", runMode: RunMode.Async)]
 		public async Task CountPointsCommand([Summary("osuuser", "osu! username to be calculated.")] string? osuUsername = null)
 		{
 			if (string.IsNullOrEmpty(osuUsername))
@@ -147,7 +147,7 @@ public static class InteractionModule
 
 		// /whatif [pointsargs]
 		[EnabledInDm(true)]
-		[SlashCommand("whatif", "Calculated what-if points.", runMode: RunMode.Async)]
+		[SlashCommand("whatif", "Calculates what-if points.", runMode: RunMode.Async)]
 		public async Task WhatIfPointsCommand([Summary("parameters", "Arguments for what-if count. See help for details.")] string pointsArgs)
 		{
 			Log.WriteInfo($"Calculating what-if points for {Context.User.Username}#{Context.User.Discriminator} ({pointsArgs}).");
