@@ -39,6 +39,14 @@ public static class Program
 		Log.WriteVerbose("Starting up client.");
 
 		Client client = new Client(Settings.Instance.Client.BotToken);
-		await client.Run();
+
+		if (Settings.Instance.ShouldInitializeInteractions || Settings.Instance.ShouldInitializeDatabase)
+		{
+			await client.Initializer();
+		}
+		else
+		{
+			await client.Run();
+		}
 	}
 }

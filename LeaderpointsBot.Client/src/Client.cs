@@ -20,9 +20,11 @@ public class Client
 	private readonly InteractionService interactionService;
 
 	private readonly string botToken;
+	private bool isClientReady = false;
 
 	private readonly object exitMutex = new object();
 	private readonly CancellationTokenSource delayToken = new CancellationTokenSource();
+	private readonly CancellationTokenSource initDelayToken = new CancellationTokenSource();
 
 	private readonly MessageHandler? messagesFactory;
 	private readonly InteractionHandler? interactionsFactory;
@@ -38,7 +40,7 @@ public class Client
 		});
 		this.botToken = botToken;
 
-		Log.WriteVerbose("Instantiating command service instance.");
+		Log.WriteVerbose("Instantiating service instances.");
 
 		commandService = new CommandService(new CommandServiceConfig()
 		{
@@ -52,14 +54,22 @@ public class Client
 
 		Log.WriteVerbose("Instantiating event factories.");
 
-		messagesFactory = new MessageHandler(client, commandService);
 		interactionsFactory = new InteractionHandler(client, interactionService);
 
-		Log.WriteVerbose("Registering client events.");
+		if (!(Settings.Instance.ShouldInitializeInteractions || Settings.Instance.ShouldInitializeDatabase))
+		{
+			messagesFactory = new MessageHandler(client, commandService);
 
-		client.MessageReceived += messagesFactory.OnNewMessage;
-		client.SlashCommandExecuted += interactionsFactory.OnInvokeInteraction;
-		client.UserCommandExecuted += interactionsFactory.OnInvokeInteraction;
+			Log.WriteVerbose("Registering client events.");
+
+			client.MessageReceived += messagesFactory.OnNewMessage;
+			client.SlashCommandExecuted += interactionsFactory.OnInvokeInteraction;
+			client.UserCommandExecuted += interactionsFactory.OnInvokeInteraction;
+		}
+		else
+		{
+			client.Ready += OnInitializerReady;
+		}
 		client.Log += Log.WriteAsync;
 
 		Log.WriteVerbose("Registering process events.");
@@ -93,6 +103,48 @@ public class Client
 		await Task.Delay(-1, delayToken.Token);
 	}
 
+	public async Task Initializer()
+	{
+		if (Settings.Instance.ShouldInitializeInteractions)
+		{
+			if (interactionsFactory != null)
+			{
+				Log.WriteVerbose("Initializing interactions service.");
+				await interactionsFactory.InitializeServiceAsync();
+			}
+
+			Log.WriteVerbose("Start client using specified botToken.");
+
+			await client.LoginAsync(TokenType.Bot, botToken);
+			await client.StartAsync();
+
+			if (client.ConnectionState != ConnectionState.Connected)
+			{
+				SpinWait.SpinUntil(() => client.ConnectionState == ConnectionState.Connected);
+			}
+
+			await Initialize.CreateInteractionsAsync(interactionService);
+		}
+
+		if (Settings.Instance.ShouldInitializeDatabase)
+		{
+			await Initialize.CreateDatabaseAsync();
+		}
+
+		Environment.Exit(0);
+	}
+
+	private Task OnInitializerReady()
+	{
+		lock (exitMutex)
+		{
+			isClientReady = true;
+			initDelayToken.Cancel();
+		}
+
+		return Task.CompletedTask;
+	}
+
 	private void OnProcessExit()
 	{
 		lock (exitMutex)
@@ -105,7 +157,7 @@ public class Client
 				await client.LogoutAsync();
 			});
 
-			Log.WriteVerbose("Client logged out. Exiting process.");
+			Log.WriteVerbose("Client logged out.");
 
 			delayToken.Cancel();
 		}
