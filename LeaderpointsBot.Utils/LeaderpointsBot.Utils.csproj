@@ -10,8 +10,14 @@
     <PackageReference Include="Discord.Net" Version="3.9.0" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
     <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+    <None Update="appsettings.json.template">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
