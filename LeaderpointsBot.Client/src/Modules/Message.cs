@@ -8,9 +8,9 @@ using LeaderpointsBot.Client.Commands;
 using LeaderpointsBot.Client.Structures;
 using LeaderpointsBot.Utils;
 
-namespace LeaderpointsBot.Client.Messages;
+namespace LeaderpointsBot.Client.Modules;
 
-public static class MessageModule
+public static class Message
 {
 	public class LinkModule : ModuleBase<SocketCommandContext>
 	{
@@ -43,9 +43,9 @@ public static class MessageModule
 		// @bot ping
 		[Command("ping")]
 		[Summary("Pings the bot.")]
-		public async Task PingCommand()
+		public async Task SendPingCommand()
 		{
-			Log.WriteInfo($"Sending ping message (guild ID {Context.Guild.Id}).");
+			Log.WriteInfo($"Sending ping message.");
 
 			string replyMsg = Help.GetPingMessage(Context.Client);
 

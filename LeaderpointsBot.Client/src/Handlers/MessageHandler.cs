@@ -11,7 +11,7 @@ using LeaderpointsBot.Client.Structures;
 using LeaderpointsBot.Utils;
 using LeaderpointsBot.Utils.Process;
 
-namespace LeaderpointsBot.Client.Messages;
+namespace LeaderpointsBot.Client.Handlers;
 
 public class MessageHandler
 {

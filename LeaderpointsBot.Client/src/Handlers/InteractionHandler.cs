@@ -8,7 +8,7 @@ using LeaderpointsBot.Client.Exceptions.Commands;
 using LeaderpointsBot.Utils;
 using LeaderpointsBot.Utils.Process;
 
-namespace LeaderpointsBot.Client.Interactions;
+namespace LeaderpointsBot.Client.Handlers;
 
 public class InteractionHandler
 {

@@ -7,8 +7,7 @@ using Discord;
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
-using LeaderpointsBot.Client.Interactions;
-using LeaderpointsBot.Client.Messages;
+using LeaderpointsBot.Client.Handlers;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client;
@@ -20,7 +19,6 @@ public class Client
 	private readonly InteractionService interactionService;
 
 	private readonly string botToken;
-	private bool isClientReady = false;
 
 	private readonly object exitMutex = new object();
 	private readonly CancellationTokenSource delayToken = new CancellationTokenSource();
@@ -138,7 +136,6 @@ public class Client
 	{
 		lock (exitMutex)
 		{
-			isClientReady = true;
 			initDelayToken.Cancel();
 		}
 

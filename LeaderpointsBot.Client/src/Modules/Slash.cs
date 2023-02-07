@@ -9,9 +9,9 @@ using LeaderpointsBot.Client.Commands;
 using LeaderpointsBot.Client.Structures;
 using LeaderpointsBot.Utils;
 
-namespace LeaderpointsBot.Client.Interactions;
+namespace LeaderpointsBot.Client.Modules;
 
-public static class InteractionModule
+public static class Interactions
 {
 	public class LinkSlashModule : InteractionModuleBase<SocketInteractionContext>
 	{
@@ -155,63 +155,6 @@ public static class InteractionModule
 			await Context.Interaction.DeferAsync();
 
 			Structures.Commands.CountModule.UserLeaderboardsCountMessages[] responses = await Counter.WhatIfUserCount(Context.User.Id.ToString(), pointsArgs);
-
-			RestInteractionMessage? replyMsg = null;
-			foreach (Structures.Commands.CountModule.UserLeaderboardsCountMessages response in responses)
-			{
-				if (response.MessageType == Common.ResponseMessageType.Embed)
-				{
-					if (replyMsg == null)
-					{
-						replyMsg = await Context.Interaction.ModifyOriginalResponseAsync(msg =>
-						{
-							msg.Content = string.Empty;
-							msg.Embed = response.GetEmbed();
-						});
-					}
-					else
-					{
-						_ = await replyMsg.Channel.SendMessageAsync(embed: response.GetEmbed());
-					}
-				}
-				else if (response.MessageType == Common.ResponseMessageType.Text)
-				{
-					if (replyMsg == null)
-					{
-						replyMsg = await Context.Interaction.ModifyOriginalResponseAsync(msg => msg.Content = response.GetString());
-					}
-					else
-					{
-						_ = await replyMsg.Channel.SendMessageAsync(response.GetString());
-					}
-				}
-				else if (response.MessageType == Common.ResponseMessageType.Error)
-				{
-					if (replyMsg == null)
-					{
-						replyMsg = await Context.Interaction.ModifyOriginalResponseAsync(msg => msg.Content = $"**Error:** {response.GetString()}");
-					}
-					else
-					{
-						_ = await replyMsg.Channel.SendMessageAsync(response.GetString());
-					}
-				}
-			}
-		}
-	}
-
-	public class CountContextModule : InteractionModuleBase<SocketInteractionContext>
-	{
-		// user context -> Calculate points
-		[EnabledInDm(true)]
-		[UserCommand("Calculate points")]
-		public async Task CountPointsCommand(IUser user)
-		{
-			Log.WriteInfo($"Calculating points for {user.Username}#{user.Discriminator}.");
-
-			await Context.Interaction.DeferAsync();
-
-			Structures.Commands.CountModule.UserLeaderboardsCountMessages[] responses = await Counter.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString());
 
 			RestInteractionMessage? replyMsg = null;
 			foreach (Structures.Commands.CountModule.UserLeaderboardsCountMessages response in responses)
