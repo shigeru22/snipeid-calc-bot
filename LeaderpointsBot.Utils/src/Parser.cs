@@ -55,4 +55,30 @@ public static class Parser
 
 		return ret;
 	}
+
+	public static int[,] ParseWhatIfArguments(string args)
+	{
+		string[] strArgsList = args.Split(',');
+		List<int[]> arrWhatIfs;
+		try
+		{
+			arrWhatIfs = strArgsList.Select(strArg => strArg.Split('='))
+				.Select(temp => new[] { int.Parse(temp[0]), int.Parse(temp[1]) })
+				.ToList();
+		}
+		catch (FormatException)
+		{
+			throw new InvalidDataException("Invalid argument(s).");
+		}
+
+		int arrWhatIfsLength = arrWhatIfs.Count;
+		int[,] ret = new int[arrWhatIfsLength, 2];
+		for (int i = 0; i < arrWhatIfsLength; i++)
+		{
+			ret[i, 0] = arrWhatIfs[i][0];
+			ret[i, 1] = arrWhatIfs[i][1];
+		}
+
+		return ret;
+	}
 }

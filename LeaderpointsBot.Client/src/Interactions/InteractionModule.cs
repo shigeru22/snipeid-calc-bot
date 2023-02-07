@@ -151,7 +151,52 @@ public static class InteractionModule
 		public async Task WhatIfPointsCommand([Summary("parameters", "Arguments for what-if count. See help for details.")] string pointsArgs)
 		{
 			Log.WriteInfo($"Calculating what-if points for {Context.User.Username}#{Context.User.Discriminator} ({pointsArgs}).");
+
 			await Context.Interaction.DeferAsync();
+
+			Structures.Commands.CountModule.UserLeaderboardsCountMessages[] responses = await Counter.WhatIfUserCount(Context.User.Id.ToString(), pointsArgs);
+
+			RestInteractionMessage? replyMsg = null;
+			foreach (Structures.Commands.CountModule.UserLeaderboardsCountMessages response in responses)
+			{
+				if (response.MessageType == Common.ResponseMessageType.Embed)
+				{
+					if (replyMsg == null)
+					{
+						replyMsg = await Context.Interaction.ModifyOriginalResponseAsync(msg =>
+						{
+							msg.Content = string.Empty;
+							msg.Embed = response.GetEmbed();
+						});
+					}
+					else
+					{
+						_ = await replyMsg.Channel.SendMessageAsync(embed: response.GetEmbed());
+					}
+				}
+				else if (response.MessageType == Common.ResponseMessageType.Text)
+				{
+					if (replyMsg == null)
+					{
+						replyMsg = await Context.Interaction.ModifyOriginalResponseAsync(msg => msg.Content = response.GetString());
+					}
+					else
+					{
+						_ = await replyMsg.Channel.SendMessageAsync(response.GetString());
+					}
+				}
+				else if (response.MessageType == Common.ResponseMessageType.Error)
+				{
+					if (replyMsg == null)
+					{
+						replyMsg = await Context.Interaction.ModifyOriginalResponseAsync(msg => msg.Content = $"**Error:** {response.GetString()}");
+					}
+					else
+					{
+						_ = await replyMsg.Channel.SendMessageAsync(response.GetString());
+					}
+				}
+			}
 		}
 	}
 

@@ -166,6 +166,47 @@ public static class MessageModule
 		public async Task WhatIfPointsCommand([Summary("Comma-delimited arguments representing what-if count.")] string pointsArgs)
 		{
 			Log.WriteInfo($"Calculating what-if points for {Context.User.Username}#{Context.User.Discriminator} ({pointsArgs}).");
+
+			await Context.Channel.TriggerTypingAsync();
+
+			Structures.Commands.CountModule.UserLeaderboardsCountMessages[] responses = await Commands.Counter.WhatIfUserCount(Context.User.Id.ToString(), pointsArgs);
+
+			foreach (Structures.Commands.CountModule.UserLeaderboardsCountMessages response in responses)
+			{
+				if (response.MessageType == Common.ResponseMessageType.Embed)
+				{
+					if (Settings.Instance.Client.UseReply)
+					{
+						_ = await Context.Message.ReplyAsync(embed: response.GetEmbed());
+					}
+					else
+					{
+						_ = await Context.Channel.SendMessageAsync(embed: response.GetEmbed());
+					}
+				}
+				else if (response.MessageType == Common.ResponseMessageType.Text)
+				{
+					if (Settings.Instance.Client.UseReply)
+					{
+						_ = await Context.Message.ReplyAsync(response.GetString());
+					}
+					else
+					{
+						_ = await Context.Channel.SendMessageAsync(response.GetString());
+					}
+				}
+				else if (response.MessageType == Common.ResponseMessageType.Error)
+				{
+					if (Settings.Instance.Client.UseReply)
+					{
+						_ = await Context.Message.ReplyAsync($"**Error:** {response.GetString()}");
+					}
+					else
+					{
+						_ = await Context.Channel.SendMessageAsync($"**Error:** {response.GetString()}");
+					}
+				}
+			}
 		}
 	}
 

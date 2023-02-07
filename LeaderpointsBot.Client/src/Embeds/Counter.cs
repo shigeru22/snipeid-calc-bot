@@ -48,9 +48,10 @@ public static class Counter
 			.Build();
 	}
 
-	public static Embed CreateCountEmbed(string osuUsername, List<int[]> topsCount, bool useRespektive = false)
+	public static Embed CreateCountEmbed(string osuUsername, List<int[]> topsCount, bool isWhatIf = false, bool useRespektive = false)
 	{
 		int points = CalculateTopPoints(topsCount, useRespektive);
+		string title = !isWhatIf ? $"Points for {osuUsername}:" : $"What-if results for {osuUsername}:";
 		string description;
 
 		// since CalculateTopPoints() throw exception on invalid data,
@@ -81,7 +82,7 @@ public static class Counter
 				$"= **{points}** points.";
 		}
 
-		return new EmbedBuilder().WithTitle($"Points for {osuUsername}:")
+		return new EmbedBuilder().WithTitle(title)
 			.WithDescription(description)
 			.WithColor(238, 229, 229)
 			.Build();
