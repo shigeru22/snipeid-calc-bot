@@ -71,9 +71,9 @@ public static class Message
 
 			await Context.Channel.TriggerTypingAsync();
 
-			Structures.Commands.CountModule.UserLeaderboardsCountMessages[] responses = await Commands.Counter.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString(), Context.Guild);
+			ReturnMessages[] responses = await Counter.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString(), Context.Guild);
 
-			foreach (Structures.Commands.CountModule.UserLeaderboardsCountMessages response in responses)
+			foreach (ReturnMessages response in responses)
 			{
 				if (response.MessageType == Common.ResponseMessageType.Embed)
 				{
@@ -120,9 +120,9 @@ public static class Message
 
 			await Context.Channel.TriggerTypingAsync();
 
-			Structures.Commands.CountModule.UserLeaderboardsCountMessages[] responses = await Commands.Counter.CountLeaderboardPointsByOsuUsernameAsync(osuUsername);
+			ReturnMessages[] responses = await Counter.CountLeaderboardPointsByOsuUsernameAsync(osuUsername);
 
-			foreach (Structures.Commands.CountModule.UserLeaderboardsCountMessages response in responses)
+			foreach (ReturnMessages response in responses)
 			{
 				if (response.MessageType == Common.ResponseMessageType.Embed)
 				{
@@ -169,9 +169,9 @@ public static class Message
 
 			await Context.Channel.TriggerTypingAsync();
 
-			Structures.Commands.CountModule.UserLeaderboardsCountMessages[] responses = await Commands.Counter.WhatIfUserCount(Context.User.Id.ToString(), pointsArgs);
+			ReturnMessages[] responses = await Counter.WhatIfUserCount(Context.User.Id.ToString(), pointsArgs);
 
-			foreach (Structures.Commands.CountModule.UserLeaderboardsCountMessages response in responses)
+			foreach (ReturnMessages response in responses)
 			{
 				if (response.MessageType == Common.ResponseMessageType.Embed)
 				{

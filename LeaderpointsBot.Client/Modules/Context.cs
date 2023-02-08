@@ -23,10 +23,10 @@ public static class Context
 
 			await Context.Interaction.DeferAsync();
 
-			Structures.Commands.CountModule.UserLeaderboardsCountMessages[] responses = await Counter.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString());
+			ReturnMessages[] responses = await Counter.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString());
 
 			RestInteractionMessage? replyMsg = null;
-			foreach (Structures.Commands.CountModule.UserLeaderboardsCountMessages response in responses)
+			foreach (ReturnMessages response in responses)
 			{
 				if (response.MessageType == Common.ResponseMessageType.Embed)
 				{

@@ -20,7 +20,7 @@ namespace LeaderpointsBot.Client.Commands;
 
 public static class Counter
 {
-	public static async Task<Structures.Commands.CountModule.UserLeaderboardsCountMessages[]> UserLeaderboardsCountBathbotAsync(Embed topsCount, SocketGuild guild)
+	public static async Task<ReturnMessages[]> UserLeaderboardsCountBathbotAsync(Embed topsCount, SocketGuild guild)
 	{
 		if (!topsCount.Author.HasValue)
 		{
@@ -62,9 +62,9 @@ public static class Counter
 			throw new SendMessageException("Unhandled client error occurred.");
 		}
 
-		List<Structures.Commands.CountModule.UserLeaderboardsCountMessages> responses = new List<Structures.Commands.CountModule.UserLeaderboardsCountMessages>()
+		List<ReturnMessages> responses = new List<ReturnMessages>()
 		{
-			new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
+			new ReturnMessages()
 			{
 				MessageType = Common.ResponseMessageType.Embed,
 				Contents = Embeds.Counter.CreateCountEmbed(embedUsername, embedTopCounts)
@@ -73,7 +73,7 @@ public static class Counter
 
 		if (updateMessages.HasValue)
 		{
-			responses.Add(new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
+			responses.Add(new ReturnMessages()
 			{
 				MessageType = Common.ResponseMessageType.Text,
 				Contents = updateMessages.Value.PointsMessage
@@ -81,7 +81,7 @@ public static class Counter
 
 			if (!string.IsNullOrWhiteSpace(updateMessages.Value.RoleMessage))
 			{
-				responses.Add(new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
+				responses.Add(new ReturnMessages()
 				{
 					MessageType = Common.ResponseMessageType.Text,
 					Contents = updateMessages.Value.RoleMessage
@@ -92,7 +92,7 @@ public static class Counter
 		return responses.ToArray();
 	}
 
-	public static async Task<Structures.Commands.CountModule.UserLeaderboardsCountMessages[]> CountLeaderboardPointsByDiscordUserAsync(string userDiscordId, string clientDiscordId, SocketGuild? guild = null)
+	public static async Task<ReturnMessages[]> CountLeaderboardPointsByDiscordUserAsync(string userDiscordId, string clientDiscordId, SocketGuild? guild = null)
 	{
 		// TODO: [2023-01-21] extract reused procedures as methods
 
@@ -214,9 +214,9 @@ public static class Counter
 			updateMessages = await Actions.Counter.UpdateUserDataAsync(guild, osuId, points);
 		}
 
-		List<Structures.Commands.CountModule.UserLeaderboardsCountMessages> responses = new List<Structures.Commands.CountModule.UserLeaderboardsCountMessages>()
+		List<ReturnMessages> responses = new List<ReturnMessages>()
 		{
-			new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
+			new ReturnMessages()
 			{
 				MessageType = Common.ResponseMessageType.Embed,
 				Contents = Embeds.Counter.CreateCountEmbed(osuUsername, topCounts, false, Settings.Instance.OsuApi.UseRespektiveStats)
@@ -225,7 +225,7 @@ public static class Counter
 
 		if (updateMessages.HasValue)
 		{
-			responses.Add(new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
+			responses.Add(new ReturnMessages()
 			{
 				MessageType = Common.ResponseMessageType.Text,
 				Contents = updateMessages.Value.PointsMessage
@@ -233,7 +233,7 @@ public static class Counter
 
 			if (!string.IsNullOrWhiteSpace(updateMessages.Value.RoleMessage))
 			{
-				responses.Add(new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
+				responses.Add(new ReturnMessages()
 				{
 					MessageType = Common.ResponseMessageType.Text,
 					Contents = updateMessages.Value.RoleMessage
@@ -244,7 +244,7 @@ public static class Counter
 		return responses.ToArray();
 	}
 
-	public static async Task<Structures.Commands.CountModule.UserLeaderboardsCountMessages[]> CountLeaderboardPointsByOsuUsernameAsync(string osuUsername, SocketGuild? guild = null)
+	public static async Task<ReturnMessages[]> CountLeaderboardPointsByOsuUsernameAsync(string osuUsername, SocketGuild? guild = null)
 	{
 		// TODO: [2023-01-21] extract reused procedures as methods
 
@@ -361,9 +361,9 @@ public static class Counter
 			}
 		}
 
-		List<Structures.Commands.CountModule.UserLeaderboardsCountMessages> responses = new List<Structures.Commands.CountModule.UserLeaderboardsCountMessages>()
+		List<ReturnMessages> responses = new List<ReturnMessages>()
 		{
-			new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
+			new ReturnMessages()
 			{
 				MessageType = Common.ResponseMessageType.Embed,
 				Contents = Embeds.Counter.CreateCountEmbed(osuUsername, topCounts, false, Settings.Instance.OsuApi.UseRespektiveStats)
@@ -372,7 +372,7 @@ public static class Counter
 
 		if (updateMessages.HasValue)
 		{
-			responses.Add(new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
+			responses.Add(new ReturnMessages()
 			{
 				MessageType = Common.ResponseMessageType.Text,
 				Contents = updateMessages.Value.PointsMessage
@@ -380,7 +380,7 @@ public static class Counter
 
 			if (!string.IsNullOrWhiteSpace(updateMessages.Value.RoleMessage))
 			{
-				responses.Add(new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
+				responses.Add(new ReturnMessages()
 				{
 					MessageType = Common.ResponseMessageType.Text,
 					Contents = updateMessages.Value.RoleMessage
@@ -391,7 +391,7 @@ public static class Counter
 		return responses.ToArray();
 	}
 
-	public static async Task<Structures.Commands.CountModule.UserLeaderboardsCountMessages[]> WhatIfUserCount(string userDiscordId, string arguments)
+	public static async Task<ReturnMessages[]> WhatIfUserCount(string userDiscordId, string arguments)
 	{
 		int osuId;
 		string osuUsername;
@@ -550,19 +550,19 @@ public static class Counter
 			}
 		}
 
-		List<Structures.Commands.CountModule.UserLeaderboardsCountMessages> responses = new List<Structures.Commands.CountModule.UserLeaderboardsCountMessages>()
+		List<ReturnMessages> responses = new List<ReturnMessages>()
 		{
-			new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
+			new ReturnMessages()
 			{
 				MessageType = Common.ResponseMessageType.Embed,
 				Contents = Embeds.Counter.CreateCountEmbed(osuUsername, originalTopCounts, false, Settings.Instance.OsuApi.UseRespektiveStats)
 			},
-			new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
+			new ReturnMessages()
 			{
 				MessageType = Common.ResponseMessageType.Embed,
 				Contents = Embeds.Counter.CreateCountEmbed(osuUsername, whatIfTopCounts, true, Settings.Instance.OsuApi.UseRespektiveStats)
 			},
-			new Structures.Commands.CountModule.UserLeaderboardsCountMessages()
+			new ReturnMessages()
 			{
 				MessageType = Common.ResponseMessageType.Text,
 				Contents = retMessage

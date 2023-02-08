@@ -99,7 +99,7 @@ public class MessageHandler
 		}
 
 		SocketCommandContext context = new SocketCommandContext(client, msg);
-		Structures.Commands.CountModule.UserLeaderboardsCountMessages[] responses;
+		ReturnMessages[] responses;
 
 		try
 		{
@@ -120,7 +120,7 @@ public class MessageHandler
 		}
 
 		Log.WriteVerbose("Sending responses.");
-		foreach (Structures.Commands.CountModule.UserLeaderboardsCountMessages response in responses)
+		foreach (ReturnMessages response in responses)
 		{
 			switch (response.MessageType)
 			{

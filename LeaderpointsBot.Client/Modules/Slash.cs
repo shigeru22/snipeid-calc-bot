@@ -11,7 +11,7 @@ using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client.Modules;
 
-public static class Interactions
+public static class Slash
 {
 	public class LinkSlashModule : InteractionModuleBase<SocketInteractionContext>
 	{
@@ -75,7 +75,7 @@ public static class Interactions
 
 			await Context.Interaction.DeferAsync();
 
-			Structures.Commands.CountModule.UserLeaderboardsCountMessages[] responses;
+			ReturnMessages[] responses;
 
 			if (!Context.Interaction.IsDMInteraction)
 			{
@@ -103,7 +103,7 @@ public static class Interactions
 			}
 
 			RestInteractionMessage? replyMsg = null;
-			foreach (Structures.Commands.CountModule.UserLeaderboardsCountMessages response in responses)
+			foreach (ReturnMessages response in responses)
 			{
 				if (response.MessageType == Common.ResponseMessageType.Embed)
 				{
@@ -154,10 +154,10 @@ public static class Interactions
 
 			await Context.Interaction.DeferAsync();
 
-			Structures.Commands.CountModule.UserLeaderboardsCountMessages[] responses = await Counter.WhatIfUserCount(Context.User.Id.ToString(), pointsArgs);
+			ReturnMessages[] responses = await Counter.WhatIfUserCount(Context.User.Id.ToString(), pointsArgs);
 
 			RestInteractionMessage? replyMsg = null;
-			foreach (Structures.Commands.CountModule.UserLeaderboardsCountMessages response in responses)
+			foreach (ReturnMessages response in responses)
 			{
 				if (response.MessageType == Common.ResponseMessageType.Embed)
 				{
