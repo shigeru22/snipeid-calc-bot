@@ -377,6 +377,11 @@ dotnet_style_collection_initializer = true:suggestion
 dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
 dotnet_style_prefer_conditional_expression_over_assignment = true:silent
 
+# file copyright header
+
+file_header_template = Copyright (c) shigeru22, concept by Akshiro28.\nLicensed under the MIT license. See LICENSE in the repository root for details.
+dotnet_diagnostic.IDE0073.severity = warning
+
 # custom analyzers
 
 dotnet_diagnostic.CA1822.severity = none
