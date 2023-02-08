@@ -228,14 +228,15 @@ public static class Interactions
 		// /help
 		[EnabledInDm(true)]
 		[SlashCommand("help", "Returns all commands usage help.", runMode: RunMode.Async)]
-		public static async Task SendHelpCommand(DiscordSocketClient client, SocketSlashCommand cmd)
+		public async Task SendHelpCommand()
 		{
 			Log.WriteInfo($"Sending commands usage help message.");
-			await cmd.DeferAsync();
 
-			Embed replyEmbed = Help.GetBotHelpMessage(client, true);
+			await Context.Interaction.DeferAsync();
 
-			_ = await cmd.ModifyOriginalResponseAsync(msg => msg.Embed = replyEmbed);
+			Embed replyEmbed = Help.GetBotHelpMessage(Context.Client, true);
+
+			_ = await Context.Interaction.ModifyOriginalResponseAsync(msg => msg.Embed = replyEmbed);
 		}
 	}
 
