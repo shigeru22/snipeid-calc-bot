@@ -1,14 +1,13 @@
 // Copyright (c) shigeru22, concept by Akshiro28.
 // Licensed under the MIT license. See LICENSE in the repository root for details.
 
-using Discord.Interactions;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client;
 
 public static class Initialize
 {
-	public static async Task CreateInteractionsAsync(InteractionService interactionService)
+	public static async Task CreateInteractionsAsync(Handler handler)
 	{
 		DateTime startTime = DateTime.Now;
 
@@ -16,8 +15,7 @@ public static class Initialize
 
 		try
 		{
-			var temp = interactionService.SlashCommands;
-			_ = await interactionService.RegisterCommandsGloballyAsync();
+			await handler.RegisterCommandsAsync();
 		}
 		catch (Exception e)
 		{

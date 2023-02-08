@@ -7,7 +7,6 @@ using Discord;
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
-using LeaderpointsBot.Client.Handlers;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client;
@@ -15,8 +14,6 @@ namespace LeaderpointsBot.Client;
 public class Client
 {
 	private readonly DiscordSocketClient client;
-	private readonly CommandService commandService;
-	private readonly InteractionService interactionService;
 
 	private readonly string botToken;
 
@@ -24,8 +21,7 @@ public class Client
 	private readonly CancellationTokenSource delayToken = new CancellationTokenSource();
 	private readonly CancellationTokenSource initDelayToken = new CancellationTokenSource();
 
-	private readonly MessageHandler? messagesFactory;
-	private readonly InteractionHandler? interactionsFactory;
+	private readonly Handler handler;
 
 	public Client(string botToken)
 	{
@@ -38,31 +34,17 @@ public class Client
 		});
 		this.botToken = botToken;
 
-		Log.WriteVerbose("Instantiating service instances.");
+		Log.WriteVerbose("Instantiating event handlers.");
 
-		commandService = new CommandService(new CommandServiceConfig()
-		{
-			LogLevel = LogSeverity.Info,
-			CaseSensitiveCommands = false
-		});
-		interactionService = new InteractionService(client.Rest, new InteractionServiceConfig()
-		{
-			LogLevel = LogSeverity.Info
-		});
-
-		Log.WriteVerbose("Instantiating event factories.");
-
-		interactionsFactory = new InteractionHandler(client, interactionService);
+		handler = new Handler(client);
 
 		if (!(Settings.Instance.ShouldInitializeInteractions || Settings.Instance.ShouldInitializeDatabase))
 		{
-			messagesFactory = new MessageHandler(client, commandService);
-
 			Log.WriteVerbose("Registering client events.");
 
-			client.MessageReceived += messagesFactory.OnNewMessage;
-			client.SlashCommandExecuted += interactionsFactory.OnInvokeInteraction;
-			client.UserCommandExecuted += interactionsFactory.OnInvokeInteraction;
+			client.MessageReceived += handler.OnNewMessage;
+			client.SlashCommandExecuted += handler.OnInvokeInteraction;
+			client.UserCommandExecuted += handler.OnInvokeInteraction;
 		}
 		else
 		{
@@ -80,17 +62,10 @@ public class Client
 
 	public async Task Run()
 	{
-		if (messagesFactory != null)
-		{
-			Log.WriteVerbose("Initializing messaging service.");
-			await messagesFactory.InitializeServiceAsync();
-		}
+		Log.WriteVerbose("Initializing command services.");
 
-		if (interactionsFactory != null)
-		{
-			Log.WriteVerbose("Initializing interactions service.");
-			await interactionsFactory.InitializeServiceAsync();
-		}
+		await handler.InitializeCommandServiceAsync();
+		await handler.InitializeInteractionServiceAsync();
 
 		Log.WriteVerbose("Start client using specified botToken.");
 
@@ -105,11 +80,8 @@ public class Client
 	{
 		if (Settings.Instance.ShouldInitializeInteractions)
 		{
-			if (interactionsFactory != null)
-			{
-				Log.WriteVerbose("Initializing interactions service.");
-				await interactionsFactory.InitializeServiceAsync();
-			}
+			Log.WriteVerbose("Initializing interactions service.");
+			await handler.InitializeInteractionServiceAsync();
 
 			Log.WriteVerbose("Start client using specified botToken.");
 
@@ -121,7 +93,7 @@ public class Client
 				SpinWait.SpinUntil(() => client.ConnectionState == ConnectionState.Connected);
 			}
 
-			await Initialize.CreateInteractionsAsync(interactionService);
+			await Initialize.CreateInteractionsAsync(handler);
 		}
 
 		if (Settings.Instance.ShouldInitializeDatabase)

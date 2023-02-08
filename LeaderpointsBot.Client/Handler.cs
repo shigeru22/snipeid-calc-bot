@@ -4,6 +4,7 @@
 using System.Reflection;
 using Discord;
 using Discord.Commands;
+using Discord.Interactions;
 using Discord.WebSocket;
 using LeaderpointsBot.Client.Commands;
 using LeaderpointsBot.Client.Exceptions.Commands;
@@ -11,29 +12,72 @@ using LeaderpointsBot.Client.Structures;
 using LeaderpointsBot.Utils;
 using LeaderpointsBot.Utils.Process;
 
-namespace LeaderpointsBot.Client.Handlers;
+namespace LeaderpointsBot.Client;
 
-public class MessageHandler
+public class Handler
 {
 	private const string BATHBOT_DISCORD_ID = "297073686916366336";
 
 	private readonly DiscordSocketClient client;
-	private readonly CommandService commandService;
 
-	public MessageHandler(DiscordSocketClient client, CommandService commandService)
+	private readonly CommandService commandService;
+	private readonly InteractionService interactionService;
+
+	public Handler(DiscordSocketClient client)
 	{
-		Log.WriteVerbose("MessagesFactory instance created.");
+		Log.WriteVerbose("Handlers instance created.");
+
+		this.client = client;
+
+		Log.WriteVerbose("Instance parameters set. Will create service instances.");
+
+		commandService = new CommandService(new CommandServiceConfig()
+		{
+			LogLevel = LogSeverity.Info,
+			CaseSensitiveCommands = false
+		});
+
+		interactionService = new InteractionService(client.Rest, new InteractionServiceConfig()
+		{
+			LogLevel = LogSeverity.Info
+		});
+
+		Log.WriteVerbose("Services created.");
+	}
+
+	public Handler(DiscordSocketClient client, CommandService commandService, InteractionService interactionService)
+	{
+		Log.WriteVerbose("Handlers instance created.");
 
 		this.client = client;
 		this.commandService = commandService;
+		this.interactionService = interactionService;
 
 		Log.WriteVerbose("Instance parameters set.");
 	}
 
-	public async Task InitializeServiceAsync()
+	public async Task InitializeCommandServiceAsync()
 	{
 		Log.WriteVerbose("Registering entry assembly as command service module.");
 		_ = await commandService.AddModulesAsync(assembly: Assembly.GetEntryAssembly(), services: null);
+	}
+
+	public async Task InitializeInteractionServiceAsync()
+	{
+		Log.WriteVerbose("Registering entry assembly as interaction service module.");
+		_ = await interactionService.AddModulesAsync(assembly: Assembly.GetEntryAssembly(), services: null);
+	}
+
+	public async Task RegisterCommandsAsync()
+	{
+		Log.WriteVerbose("Registering interaction commands globally.");
+		_ = await interactionService.RegisterCommandsGloballyAsync();
+	}
+
+	public async Task RegisterCommandsAsync(string guildDiscordId)
+	{
+		Log.WriteVerbose($"Registering interaction commands (guild ID {guildDiscordId}).");
+		_ = await interactionService.RegisterCommandsToGuildAsync(ulong.Parse(guildDiscordId));
 	}
 
 	public async Task OnNewMessage(SocketMessage msg)
@@ -68,6 +112,47 @@ public class MessageHandler
 
 		Log.WriteDebug("Message is from user and text-based channel. Handling command.");
 		await HandleCommandsAsync(userMsg);
+	}
+
+	public async Task OnInvokeInteraction(SocketInteraction cmd)
+	{
+		static async Task SendResponse(SocketInteraction cmd, string message)
+		{
+			if (cmd.HasResponded)
+			{
+				_ = await cmd.ModifyOriginalResponseAsync(res => res.Content = message);
+			}
+			else
+			{
+				await cmd.RespondAsync(message);
+			}
+		}
+
+		// Log.WriteDebug("OnInvokeSlashInteraction", $"Slash interaction from { cmd.User.Username }#{ cmd.User.Discriminator }: { cmd.Data.Name } ({ cmd.Data.Id })");
+
+		SocketInteractionContext context = new SocketInteractionContext(client, cmd);
+
+		Discord.Interactions.IResult result = await interactionService.ExecuteCommandAsync(context, null);
+
+		if (result.Error != InteractionCommandError.Exception)
+		{
+			// command processing complete
+			return;
+		}
+
+		if (result is Discord.Interactions.ExecuteResult execResult)
+		{
+			Exception e = execResult.Exception;
+
+			if (e is SendMessageException ex)
+			{
+				await SendResponse(cmd, $"{(ex.IsError ? "**Error:** " : string.Empty)}{ex.Draft})");
+				return;
+			}
+
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
+			await SendResponse(cmd, "**Error:** Unhandled client error occurred.");
+		}
 	}
 
 	private async Task HandleBathbotMessageAsync(SocketUserMessage msg)
@@ -165,7 +250,7 @@ public class MessageHandler
 
 		SocketCommandContext context = new SocketCommandContext(client, msg);
 
-		IResult result = await commandService.ExecuteAsync(context: context, argPos: argPos, services: null);
+		Discord.Commands.IResult result = await commandService.ExecuteAsync(context: context, argPos: argPos, services: null);
 
 		if (result.Error != CommandError.Exception)
 		{
@@ -173,7 +258,7 @@ public class MessageHandler
 			return;
 		}
 
-		if (result is ExecuteResult execResult)
+		if (result is Discord.Commands.ExecuteResult execResult)
 		{
 			Exception e = execResult.Exception;
 
