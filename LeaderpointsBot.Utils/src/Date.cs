@@ -25,10 +25,12 @@ public static class Date
 		return $"{currentTime.Year}/{currentTime.Month.ToString().PadLeft(2, '0')}/{currentTime.Day.ToString().PadLeft(2, '0')} {currentTime.Hour.ToString().PadLeft(2, '0')}:{currentTime.Minute.ToString().PadLeft(2, '0')}:{currentTime.Second.ToString().PadLeft(2, '0')}";
 	}
 
-	public static string DateTimeToString(DateTime time)
+	public static string DateTimeToString(DateTime time, bool useUtc = true)
 	{
-		// mm/dd/yyyy, hh:mm
-		return $"{time.Month}/{time.Day}/{time.Year}, {time.Hour.ToString().PadLeft(2, '0')}:{time.Minute.ToString().PadLeft(2, '0')}";
+		DateTime tempTime = useUtc ? time.ToUniversalTime() : time;
+
+		// yyyy/mm/dd, hh:mm
+		return $"{tempTime.Month}/{tempTime.Day}/{tempTime.Year}, {tempTime.Hour.ToString().PadLeft(2, '0')}:{tempTime.Minute.ToString().PadLeft(2, '0')} ({(useUtc ? "UTC" : "local time")})";
 	}
 
 	public static string DeltaTimeToString(TimeSpan time)

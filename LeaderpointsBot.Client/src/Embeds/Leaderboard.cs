@@ -14,7 +14,7 @@ public static class Leaderboard
 	{
 		string title = $"Top {usersLimit} players based on points count:";
 		StringBuilder description = new StringBuilder();
-		string footer = $"Last updated: {Date.DateTimeToString(lastUpdate)}";
+		string footer = $"Last updated: {Date.DateTimeToString(lastUpdate, true)}";
 
 		int dataLength = data.Length;
 		for (int i = 0; i < dataLength; i++)
