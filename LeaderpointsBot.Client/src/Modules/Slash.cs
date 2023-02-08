@@ -214,7 +214,12 @@ public static class Interactions
 			}
 
 			Log.WriteInfo($"Retrieving server points leaderboard (guild ID {Context.Guild.Id}).");
+
 			await Context.Interaction.DeferAsync();
+
+			Embed replyEmbed = await Leaderboard.GetServerLeaderboard(Context.Guild.Id.ToString());
+
+			_ = await Context.Interaction.ModifyOriginalResponseAsync(msg => msg.Embed = replyEmbed);
 		}
 	}
 

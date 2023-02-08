@@ -219,6 +219,17 @@ public static class Message
 		public async Task SendServerLeaderboardCommand()
 		{
 			Log.WriteInfo($"Retrieving server points leaderboard (guild ID {Context.Guild.Id}).");
+
+			Embed replyEmbed = await Leaderboard.GetServerLeaderboard(Context.Guild.Id.ToString());
+
+			if (Settings.Instance.Client.UseReply)
+			{
+				_ = await Context.Message.ReplyAsync(embed: replyEmbed);
+			}
+			else
+			{
+				_ = await Context.Channel.SendMessageAsync(embed: replyEmbed);
+			}
 		}
 	}
 
