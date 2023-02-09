@@ -56,6 +56,8 @@ public static class Message
 			await Context.Channel.TriggerTypingAsync();
 
 			ReturnMessages[] responses = await Commands.Counter.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString(), Context.Guild);
+
+			Log.WriteVerbose("Points calculated successfully. Sending responses.");
 			await Reply.SendToCommandContextAsync(Context, responses);
 		}
 
@@ -68,6 +70,8 @@ public static class Message
 			await Context.Channel.TriggerTypingAsync();
 
 			ReturnMessages[] responses = await Commands.Counter.CountLeaderboardPointsByOsuUsernameAsync(osuUsername);
+
+			Log.WriteVerbose("Points calculated successfully. Sending responses.");
 			await Reply.SendToCommandContextAsync(Context, responses);
 		}
 
@@ -80,6 +84,8 @@ public static class Message
 			await Context.Channel.TriggerTypingAsync();
 
 			ReturnMessages[] responses = await Commands.Counter.WhatIfUserCount(Context.User.Id.ToString(), pointsArgs);
+
+			Log.WriteVerbose("What-if calculated successfully. Sending responses.");
 			await Reply.SendToCommandContextAsync(Context, responses);
 		}
 	}
@@ -96,6 +102,8 @@ public static class Message
 			await Context.Channel.TriggerTypingAsync();
 
 			Embed replyEmbed = await Leaderboard.GetServerLeaderboard(Context.Guild.Id.ToString());
+
+			Log.WriteVerbose("Leaderboard retrieved successfully. Sending embed response.");
 			await Reply.SendToCommandContextAsync(Context, replyEmbed);
 		}
 	}

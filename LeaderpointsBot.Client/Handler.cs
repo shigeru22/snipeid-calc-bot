@@ -130,8 +130,9 @@ public class Handler
 
 		// Log.WriteDebug("OnInvokeSlashInteraction", $"Slash interaction from { cmd.User.Username }#{ cmd.User.Discriminator }: { cmd.Data.Name } ({ cmd.Data.Id })");
 
-		SocketInteractionContext context = new SocketInteractionContext(client, cmd);
+		Log.WriteVerbose("Creating context and executing command.");
 
+		SocketInteractionContext context = new SocketInteractionContext(client, cmd);
 		Discord.Interactions.IResult result = await interactionService.ExecuteCommandAsync(context, null);
 
 		if (result.Error != InteractionCommandError.Exception)
@@ -249,7 +250,6 @@ public class Handler
 		Log.WriteVerbose("Creating context and executing command.");
 
 		SocketCommandContext context = new SocketCommandContext(client, msg);
-
 		Discord.Commands.IResult result = await commandService.ExecuteAsync(context: context, argPos: argPos, services: null);
 
 		if (result.Error != CommandError.Exception)

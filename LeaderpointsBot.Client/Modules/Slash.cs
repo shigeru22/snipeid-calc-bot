@@ -101,6 +101,7 @@ public static class Slash
 				}
 			}
 
+			Log.WriteVerbose("Points calculated successfully. Sending responses.");
 			await Reply.SendToInteractionContextAsync(Context, responses);
 		}
 
@@ -113,6 +114,8 @@ public static class Slash
 			await Context.Interaction.DeferAsync();
 
 			ReturnMessages[] responses = await Commands.Counter.WhatIfUserCount(Context.User.Id.ToString(), pointsArgs);
+
+			Log.WriteVerbose("What-if calculated successfully. Sending responses.");
 			await Reply.SendToInteractionContextAsync(Context, responses);
 		}
 	}
@@ -134,6 +137,8 @@ public static class Slash
 			await Context.Interaction.DeferAsync();
 
 			Embed replyEmbed = await Leaderboard.GetServerLeaderboard(Context.Guild.Id.ToString());
+
+			Log.WriteVerbose("Leaderboard retrieved successfully. Sending embed response.");
 			await Reply.SendToInteractionContextAsync(Context, replyEmbed, true);
 		}
 	}
