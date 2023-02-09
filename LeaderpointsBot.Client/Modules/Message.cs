@@ -4,6 +4,7 @@
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using LeaderpointsBot.Client.Actions;
 using LeaderpointsBot.Client.Commands;
 using LeaderpointsBot.Client.Structures;
 using LeaderpointsBot.Utils;
@@ -20,21 +21,12 @@ public static class Message
 		public async Task LinkUserCommand([Summary("osu! user ID.")] int osuId)
 		{
 			Log.WriteInfo($"Linking user {Context.User.Username}#{Context.User.Discriminator} ({Context.User.Id}) to osu! user ID {osuId}.");
-
 			await Context.Channel.TriggerTypingAsync();
 
 			Embed replyEmbed = await User.LinkUser(Context.User, osuId, Context.Guild);
 
 			Log.WriteInfo("Link success. Sending embed response.");
-
-			if (Settings.Instance.Client.UseReply)
-			{
-				_ = await Context.Message.ReplyAsync(embed: replyEmbed);
-			}
-			else
-			{
-				_ = await Context.Channel.SendMessageAsync(embed: replyEmbed);
-			}
+			await Reply.SendToCommandContextAsync(Context, replyEmbed);
 		}
 	}
 
@@ -46,17 +38,10 @@ public static class Message
 		public async Task SendPingCommand()
 		{
 			Log.WriteInfo($"Sending ping message.");
+			await Context.Channel.TriggerTypingAsync();
 
 			string replyMsg = Help.GetPingMessage(Context.Client);
-
-			if (Settings.Instance.Client.UseReply)
-			{
-				_ = await Context.Message.ReplyAsync(replyMsg);
-			}
-			else
-			{
-				_ = await Context.Channel.SendMessageAsync(replyMsg);
-			}
+			await Reply.SendToCommandContextAsync(Context, replyMsg);
 		}
 	}
 
@@ -68,47 +53,10 @@ public static class Message
 		public async Task CountPointsCommand()
 		{
 			Log.WriteInfo($"Calculating points for {Context.User.Username}#{Context.User.Discriminator}.");
-
 			await Context.Channel.TriggerTypingAsync();
 
-			ReturnMessages[] responses = await Counter.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString(), Context.Guild);
-
-			foreach (ReturnMessages response in responses)
-			{
-				if (response.MessageType == Common.ResponseMessageType.Embed)
-				{
-					if (Settings.Instance.Client.UseReply)
-					{
-						_ = await Context.Message.ReplyAsync(embed: response.GetEmbed());
-					}
-					else
-					{
-						_ = await Context.Channel.SendMessageAsync(embed: response.GetEmbed());
-					}
-				}
-				else if (response.MessageType == Common.ResponseMessageType.Text)
-				{
-					if (Settings.Instance.Client.UseReply)
-					{
-						_ = await Context.Message.ReplyAsync(response.GetString());
-					}
-					else
-					{
-						_ = await Context.Channel.SendMessageAsync(response.GetString());
-					}
-				}
-				else if (response.MessageType == Common.ResponseMessageType.Error)
-				{
-					if (Settings.Instance.Client.UseReply)
-					{
-						_ = await Context.Message.ReplyAsync($"**Error:** {response.GetString()}");
-					}
-					else
-					{
-						_ = await Context.Channel.SendMessageAsync($"**Error:** {response.GetString()}");
-					}
-				}
-			}
+			ReturnMessages[] responses = await Commands.Counter.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString(), Context.Guild);
+			await Reply.SendToCommandContextAsync(Context, responses);
 		}
 
 		// @bot count [osu! username]
@@ -117,47 +65,10 @@ public static class Message
 		public async Task CountPointsCommand([Summary("osu! username.")] string osuUsername)
 		{
 			Log.WriteInfo($"Calculating points for osu! user {osuUsername}.");
-
 			await Context.Channel.TriggerTypingAsync();
 
-			ReturnMessages[] responses = await Counter.CountLeaderboardPointsByOsuUsernameAsync(osuUsername);
-
-			foreach (ReturnMessages response in responses)
-			{
-				if (response.MessageType == Common.ResponseMessageType.Embed)
-				{
-					if (Settings.Instance.Client.UseReply)
-					{
-						_ = await Context.Message.ReplyAsync(embed: response.GetEmbed());
-					}
-					else
-					{
-						_ = await Context.Channel.SendMessageAsync(embed: response.GetEmbed());
-					}
-				}
-				else if (response.MessageType == Common.ResponseMessageType.Text)
-				{
-					if (Settings.Instance.Client.UseReply)
-					{
-						_ = await Context.Message.ReplyAsync(response.GetString());
-					}
-					else
-					{
-						_ = await Context.Channel.SendMessageAsync(response.GetString());
-					}
-				}
-				else if (response.MessageType == Common.ResponseMessageType.Error)
-				{
-					if (Settings.Instance.Client.UseReply)
-					{
-						_ = await Context.Message.ReplyAsync($"**Error:** {response.GetString()}");
-					}
-					else
-					{
-						_ = await Context.Channel.SendMessageAsync($"**Error:** {response.GetString()}");
-					}
-				}
-			}
+			ReturnMessages[] responses = await Commands.Counter.CountLeaderboardPointsByOsuUsernameAsync(osuUsername);
+			await Reply.SendToCommandContextAsync(Context, responses);
 		}
 
 		// @bot whatif [what-if arguments, comma-delimited]
@@ -166,47 +77,10 @@ public static class Message
 		public async Task WhatIfPointsCommand([Summary("Comma-delimited arguments representing what-if count.")] string pointsArgs)
 		{
 			Log.WriteInfo($"Calculating what-if points for {Context.User.Username}#{Context.User.Discriminator} ({pointsArgs}).");
-
 			await Context.Channel.TriggerTypingAsync();
 
-			ReturnMessages[] responses = await Counter.WhatIfUserCount(Context.User.Id.ToString(), pointsArgs);
-
-			foreach (ReturnMessages response in responses)
-			{
-				if (response.MessageType == Common.ResponseMessageType.Embed)
-				{
-					if (Settings.Instance.Client.UseReply)
-					{
-						_ = await Context.Message.ReplyAsync(embed: response.GetEmbed());
-					}
-					else
-					{
-						_ = await Context.Channel.SendMessageAsync(embed: response.GetEmbed());
-					}
-				}
-				else if (response.MessageType == Common.ResponseMessageType.Text)
-				{
-					if (Settings.Instance.Client.UseReply)
-					{
-						_ = await Context.Message.ReplyAsync(response.GetString());
-					}
-					else
-					{
-						_ = await Context.Channel.SendMessageAsync(response.GetString());
-					}
-				}
-				else if (response.MessageType == Common.ResponseMessageType.Error)
-				{
-					if (Settings.Instance.Client.UseReply)
-					{
-						_ = await Context.Message.ReplyAsync($"**Error:** {response.GetString()}");
-					}
-					else
-					{
-						_ = await Context.Channel.SendMessageAsync($"**Error:** {response.GetString()}");
-					}
-				}
-			}
+			ReturnMessages[] responses = await Commands.Counter.WhatIfUserCount(Context.User.Id.ToString(), pointsArgs);
+			await Reply.SendToCommandContextAsync(Context, responses);
 		}
 	}
 
@@ -219,17 +93,10 @@ public static class Message
 		public async Task SendServerLeaderboardCommand()
 		{
 			Log.WriteInfo($"Retrieving server points leaderboard (guild ID {Context.Guild.Id}).");
+			await Context.Channel.TriggerTypingAsync();
 
 			Embed replyEmbed = await Leaderboard.GetServerLeaderboard(Context.Guild.Id.ToString());
-
-			if (Settings.Instance.Client.UseReply)
-			{
-				_ = await Context.Message.ReplyAsync(embed: replyEmbed);
-			}
-			else
-			{
-				_ = await Context.Channel.SendMessageAsync(embed: replyEmbed);
-			}
+			await Reply.SendToCommandContextAsync(Context, replyEmbed);
 		}
 	}
 
@@ -241,17 +108,10 @@ public static class Message
 		public async Task SendHelpCommand()
 		{
 			Log.WriteInfo($"Sending commands usage help message.");
+			await Context.Channel.TriggerTypingAsync();
 
 			Embed replyEmbed = Help.GetBotHelpMessage(Context.Client);
-
-			if (Settings.Instance.Client.UseReply)
-			{
-				_ = await Context.Message.ReplyAsync(embed: replyEmbed);
-			}
-			else
-			{
-				_ = await Context.Channel.SendMessageAsync(embed: replyEmbed);
-			}
+			await Reply.SendToCommandContextAsync(Context, replyEmbed);
 		}
 	}
 
@@ -273,17 +133,10 @@ public static class Message
 		public async Task SendHelpConfigurationCommand()
 		{
 			Log.WriteInfo($"Sending server configuration commands help message (guild ID {Context.Guild.Id}).");
+			await Context.Channel.TriggerTypingAsync();
 
 			Embed replyEmbed = Help.GetConfigHelpMessage(Context.Client);
-
-			if (Settings.Instance.Client.UseReply)
-			{
-				_ = await Context.Message.ReplyAsync(embed: replyEmbed);
-			}
-			else
-			{
-				_ = await Context.Channel.SendMessageAsync(embed: replyEmbed);
-			}
+			await Reply.SendToCommandContextAsync(Context, replyEmbed);
 		}
 
 		[Group("set")]

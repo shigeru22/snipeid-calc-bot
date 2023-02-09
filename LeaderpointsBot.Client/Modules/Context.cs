@@ -3,8 +3,7 @@
 
 using Discord;
 using Discord.Interactions;
-using Discord.Rest;
-using LeaderpointsBot.Client.Commands;
+using LeaderpointsBot.Client.Actions;
 using LeaderpointsBot.Client.Structures;
 using LeaderpointsBot.Utils;
 
@@ -20,52 +19,10 @@ public static class Context
 		public async Task CountPointsCommand(IUser user)
 		{
 			Log.WriteInfo($"Calculating points for {user.Username}#{user.Discriminator}.");
-
 			await Context.Interaction.DeferAsync();
 
-			ReturnMessages[] responses = await Counter.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString());
-
-			RestInteractionMessage? replyMsg = null;
-			foreach (ReturnMessages response in responses)
-			{
-				if (response.MessageType == Common.ResponseMessageType.Embed)
-				{
-					if (replyMsg == null)
-					{
-						replyMsg = await Context.Interaction.ModifyOriginalResponseAsync(msg =>
-						{
-							msg.Content = string.Empty;
-							msg.Embed = response.GetEmbed();
-						});
-					}
-					else
-					{
-						_ = await replyMsg.Channel.SendMessageAsync(embed: response.GetEmbed());
-					}
-				}
-				else if (response.MessageType == Common.ResponseMessageType.Text)
-				{
-					if (replyMsg == null)
-					{
-						replyMsg = await Context.Interaction.ModifyOriginalResponseAsync(msg => msg.Content = response.GetString());
-					}
-					else
-					{
-						_ = await replyMsg.Channel.SendMessageAsync(response.GetString());
-					}
-				}
-				else if (response.MessageType == Common.ResponseMessageType.Error)
-				{
-					if (replyMsg == null)
-					{
-						replyMsg = await Context.Interaction.ModifyOriginalResponseAsync(msg => msg.Content = $"**Error:** {response.GetString()}");
-					}
-					else
-					{
-						_ = await replyMsg.Channel.SendMessageAsync(response.GetString());
-					}
-				}
-			}
+			ReturnMessages[] responses = await Commands.Counter.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString());
+			await Reply.SendToInteractionContextAsync(Context, responses);
 		}
 	}
 }

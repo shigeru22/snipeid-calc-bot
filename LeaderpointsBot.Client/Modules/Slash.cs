@@ -3,8 +3,8 @@
 
 using Discord;
 using Discord.Interactions;
-using Discord.Rest;
 using Discord.WebSocket;
+using LeaderpointsBot.Client.Actions;
 using LeaderpointsBot.Client.Commands;
 using LeaderpointsBot.Client.Structures;
 using LeaderpointsBot.Utils;
@@ -37,8 +37,7 @@ public static class Slash
 			}
 
 			Log.WriteInfo("Link success. Sending embed response.");
-
-			_ = await Context.Interaction.ModifyOriginalResponseAsync(msg => msg.Embed = replyEmbed);
+			await Reply.SendToInteractionContextAsync(Context, replyEmbed, true);
 		}
 	}
 
@@ -53,7 +52,7 @@ public static class Slash
 			await Context.Interaction.DeferAsync();
 
 			string replyMsg = Help.GetPingMessage(Context.Client);
-			_ = await Context.Interaction.ModifyOriginalResponseAsync(msg => msg.Content = replyMsg);
+			await Reply.SendToInteractionContextAsync(Context, replyMsg, true);
 		}
 	}
 
@@ -81,11 +80,11 @@ public static class Slash
 			{
 				if (!string.IsNullOrWhiteSpace(osuUsername))
 				{
-					responses = await Counter.CountLeaderboardPointsByOsuUsernameAsync(osuUsername, Context.Guild);
+					responses = await Commands.Counter.CountLeaderboardPointsByOsuUsernameAsync(osuUsername, Context.Guild);
 				}
 				else
 				{
-					responses = await Counter.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString(), Context.Guild);
+					responses = await Commands.Counter.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString(), Context.Guild);
 				}
 			}
 			else
@@ -94,55 +93,15 @@ public static class Slash
 
 				if (!string.IsNullOrWhiteSpace(osuUsername))
 				{
-					responses = await Counter.CountLeaderboardPointsByOsuUsernameAsync(osuUsername);
+					responses = await Commands.Counter.CountLeaderboardPointsByOsuUsernameAsync(osuUsername);
 				}
 				else
 				{
-					responses = await Counter.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString());
+					responses = await Commands.Counter.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString());
 				}
 			}
 
-			RestInteractionMessage? replyMsg = null;
-			foreach (ReturnMessages response in responses)
-			{
-				if (response.MessageType == Common.ResponseMessageType.Embed)
-				{
-					if (replyMsg == null)
-					{
-						replyMsg = await Context.Interaction.ModifyOriginalResponseAsync(msg =>
-						{
-							msg.Content = string.Empty;
-							msg.Embed = response.GetEmbed();
-						});
-					}
-					else
-					{
-						_ = await replyMsg.Channel.SendMessageAsync(embed: response.GetEmbed());
-					}
-				}
-				else if (response.MessageType == Common.ResponseMessageType.Text)
-				{
-					if (replyMsg == null)
-					{
-						replyMsg = await Context.Interaction.ModifyOriginalResponseAsync(msg => msg.Content = response.GetString());
-					}
-					else
-					{
-						_ = await replyMsg.Channel.SendMessageAsync(response.GetString());
-					}
-				}
-				else if (response.MessageType == Common.ResponseMessageType.Error)
-				{
-					if (replyMsg == null)
-					{
-						replyMsg = await Context.Interaction.ModifyOriginalResponseAsync(msg => msg.Content = $"**Error:** {response.GetString()}");
-					}
-					else
-					{
-						_ = await replyMsg.Channel.SendMessageAsync(response.GetString());
-					}
-				}
-			}
+			await Reply.SendToInteractionContextAsync(Context, responses);
 		}
 
 		// /whatif [pointsargs]
@@ -151,52 +110,10 @@ public static class Slash
 		public async Task WhatIfPointsCommand([Summary("parameters", "Arguments for what-if count. See help for details.")] string pointsArgs)
 		{
 			Log.WriteInfo($"Calculating what-if points for {Context.User.Username}#{Context.User.Discriminator} ({pointsArgs}).");
-
 			await Context.Interaction.DeferAsync();
 
-			ReturnMessages[] responses = await Counter.WhatIfUserCount(Context.User.Id.ToString(), pointsArgs);
-
-			RestInteractionMessage? replyMsg = null;
-			foreach (ReturnMessages response in responses)
-			{
-				if (response.MessageType == Common.ResponseMessageType.Embed)
-				{
-					if (replyMsg == null)
-					{
-						replyMsg = await Context.Interaction.ModifyOriginalResponseAsync(msg =>
-						{
-							msg.Content = string.Empty;
-							msg.Embed = response.GetEmbed();
-						});
-					}
-					else
-					{
-						_ = await replyMsg.Channel.SendMessageAsync(embed: response.GetEmbed());
-					}
-				}
-				else if (response.MessageType == Common.ResponseMessageType.Text)
-				{
-					if (replyMsg == null)
-					{
-						replyMsg = await Context.Interaction.ModifyOriginalResponseAsync(msg => msg.Content = response.GetString());
-					}
-					else
-					{
-						_ = await replyMsg.Channel.SendMessageAsync(response.GetString());
-					}
-				}
-				else if (response.MessageType == Common.ResponseMessageType.Error)
-				{
-					if (replyMsg == null)
-					{
-						replyMsg = await Context.Interaction.ModifyOriginalResponseAsync(msg => msg.Content = $"**Error:** {response.GetString()}");
-					}
-					else
-					{
-						_ = await replyMsg.Channel.SendMessageAsync(response.GetString());
-					}
-				}
-			}
+			ReturnMessages[] responses = await Commands.Counter.WhatIfUserCount(Context.User.Id.ToString(), pointsArgs);
+			await Reply.SendToInteractionContextAsync(Context, responses);
 		}
 	}
 
@@ -214,12 +131,10 @@ public static class Slash
 			}
 
 			Log.WriteInfo($"Retrieving server points leaderboard (guild ID {Context.Guild.Id}).");
-
 			await Context.Interaction.DeferAsync();
 
 			Embed replyEmbed = await Leaderboard.GetServerLeaderboard(Context.Guild.Id.ToString());
-
-			_ = await Context.Interaction.ModifyOriginalResponseAsync(msg => msg.Embed = replyEmbed);
+			await Reply.SendToInteractionContextAsync(Context, replyEmbed, true);
 		}
 	}
 
@@ -231,12 +146,10 @@ public static class Slash
 		public async Task SendHelpCommand()
 		{
 			Log.WriteInfo($"Sending commands usage help message.");
-
 			await Context.Interaction.DeferAsync();
 
 			Embed replyEmbed = Help.GetBotHelpMessage(Context.Client, true);
-
-			_ = await Context.Interaction.ModifyOriginalResponseAsync(msg => msg.Embed = replyEmbed);
+			await Reply.SendToInteractionContextAsync(Context, replyEmbed, true);
 		}
 	}
 
@@ -274,8 +187,7 @@ public static class Slash
 			await Context.Interaction.DeferAsync();
 
 			Embed replyEmbed = Help.GetConfigHelpMessage(Context.Client, true);
-
-			_ = await Context.Interaction.ModifyOriginalResponseAsync(msg => msg.Embed = replyEmbed);
+			await Reply.SendToInteractionContextAsync(Context, replyEmbed, true);
 		}
 
 		[EnabledInDm(false)]
