@@ -5,6 +5,7 @@ using System.Reflection;
 using Discord;
 using Discord.Commands;
 using Discord.Interactions;
+using Discord.Rest;
 using Discord.WebSocket;
 using LeaderpointsBot.Client.Commands;
 using LeaderpointsBot.Client.Exceptions.Commands;
@@ -42,7 +43,10 @@ public class Handler
 			LogLevel = LogSeverity.Info
 		});
 
-		Log.WriteVerbose("Services created.");
+		commandService.CommandExecuted += OnCommandExecuted;
+		interactionService.SlashCommandExecuted += OnInteractionExecuted;
+
+		Log.WriteVerbose("Service instances created.");
 	}
 
 	public Handler(DiscordSocketClient client, CommandService commandService, InteractionService interactionService)
@@ -116,44 +120,12 @@ public class Handler
 
 	public async Task OnInvokeInteraction(SocketInteraction cmd)
 	{
-		static async Task SendResponse(SocketInteraction cmd, string message)
-		{
-			if (cmd.HasResponded)
-			{
-				_ = await cmd.ModifyOriginalResponseAsync(res => res.Content = message);
-			}
-			else
-			{
-				await cmd.RespondAsync(message);
-			}
-		}
-
 		// Log.WriteDebug("OnInvokeSlashInteraction", $"Slash interaction from { cmd.User.Username }#{ cmd.User.Discriminator }: { cmd.Data.Name } ({ cmd.Data.Id })");
 
 		Log.WriteVerbose("Creating context and executing command.");
 
 		SocketInteractionContext context = new SocketInteractionContext(client, cmd);
-		Discord.Interactions.IResult result = await interactionService.ExecuteCommandAsync(context, null);
-
-		if (result.Error != InteractionCommandError.Exception)
-		{
-			// command processing complete
-			return;
-		}
-
-		if (result is Discord.Interactions.ExecuteResult execResult)
-		{
-			Exception e = execResult.Exception;
-
-			if (e is SendMessageException ex)
-			{
-				await SendResponse(cmd, $"{(ex.IsError ? "**Error:** " : string.Empty)}{ex.Draft})");
-				return;
-			}
-
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			await SendResponse(cmd, "**Error:** Unhandled client error occurred.");
-		}
+		_ = await interactionService.ExecuteCommandAsync(context, null);
 	}
 
 	private async Task HandleBathbotMessageAsync(SocketUserMessage msg)
@@ -227,18 +199,6 @@ public class Handler
 
 	private async Task HandleCommandsAsync(SocketUserMessage msg)
 	{
-		static async Task SendMessage(SocketCommandContext context, string message)
-		{
-			if (Settings.Instance.Client.UseReply)
-			{
-				_ = await context.Message.ReplyAsync(message);
-			}
-			else
-			{
-				_ = await context.Channel.SendMessageAsync(message);
-			}
-		}
-
 		int argPos = 0; // TODO: create per-server prefix setting
 
 		if (!msg.HasMentionPrefix(client.CurrentUser, ref argPos))
@@ -250,9 +210,12 @@ public class Handler
 		Log.WriteVerbose("Creating context and executing command.");
 
 		SocketCommandContext context = new SocketCommandContext(client, msg);
-		Discord.Commands.IResult result = await commandService.ExecuteAsync(context: context, argPos: argPos, services: null);
+		_ = await commandService.ExecuteAsync(context: context, argPos: argPos, services: null);
+	}
 
-		if (result.Error != CommandError.Exception)
+	private async Task OnCommandExecuted(Optional<CommandInfo> commandInfo, ICommandContext context, Discord.Commands.IResult result)
+	{
+		if (result.Error == null)
 		{
 			// command processing complete
 			return;
@@ -260,16 +223,58 @@ public class Handler
 
 		if (result is Discord.Commands.ExecuteResult execResult)
 		{
-			Exception e = execResult.Exception;
-
-			if (e is SendMessageException ex)
+			if (context is SocketCommandContext commandContext)
 			{
-				await SendMessage(context, $"{(ex.IsError ? "**Error:** " : string.Empty)}{ex.Draft}");
-				return;
-			}
+				Exception e = execResult.Exception;
 
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			await SendMessage(context, $"**Error:** Unhandled client error occurred.");
+				if (e is SendMessageException ex)
+				{
+					await Actions.Reply.SendToCommandContextAsync(commandContext, ex.Draft, true);
+				}
+				else
+				{
+					Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
+					await Actions.Reply.SendToCommandContextAsync(commandContext, "Unhandled client error occurred.", true);
+				}
+			}
+			else
+			{
+				Log.WriteCritical("This method is supposed to be used for command events.");
+			}
+		}
+	}
+
+	private async Task OnInteractionExecuted(SlashCommandInfo commandInfo, IInteractionContext context, Discord.Interactions.IResult result)
+	{
+		if (result.Error == null)
+		{
+			// interaction processing complete
+			return;
+		}
+
+		if (result is Discord.Interactions.ExecuteResult execResult)
+		{
+			if (context is SocketInteractionContext interactionContext)
+			{
+				RestInteractionMessage interactionResponse = await interactionContext.Interaction.GetOriginalResponseAsync();
+				bool modifyResponse = interactionResponse.Content.Equals(string.Empty) || interactionResponse.Embeds.Count <= 0;
+
+				Exception e = execResult.Exception;
+
+				if (e is SendMessageException ex)
+				{
+					await Actions.Reply.SendToInteractionContextAsync(interactionContext, ex.Draft, isError: true, modifyResponse);
+				}
+				else
+				{
+					Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
+					await Actions.Reply.SendToInteractionContextAsync(interactionContext, "Unhandled client error occurred.", isError: true, modifyResponse);
+				}
+			}
+			else
+			{
+				Log.WriteCritical("This method is supposed to be used for interaction events.");
+			}
 		}
 	}
 }

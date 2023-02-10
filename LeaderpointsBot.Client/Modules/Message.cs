@@ -16,7 +16,7 @@ public static class Message
 	public class LinkModule : ModuleBase<SocketCommandContext>
 	{
 		// @bot link
-		[Command("link")]
+		[Command("link", RunMode = RunMode.Async)]
 		[Summary("Links your Discord user to an osu! user.")]
 		public async Task LinkUserCommand([Summary("osu! user ID.")] int osuId)
 		{
@@ -33,7 +33,7 @@ public static class Message
 	public class PingModule : ModuleBase<SocketCommandContext>
 	{
 		// @bot ping
-		[Command("ping")]
+		[Command("ping", RunMode = RunMode.Async)]
 		[Summary("Pings the bot.")]
 		public async Task SendPingCommand()
 		{
@@ -48,7 +48,7 @@ public static class Message
 	public class CountModule : ModuleBase<SocketCommandContext>
 	{
 		// @bot count
-		[Command("count")]
+		[Command("count", RunMode = RunMode.Async)]
 		[Summary("Calculates points based on leaderboard count.")]
 		public async Task CountPointsCommand()
 		{
@@ -62,7 +62,7 @@ public static class Message
 		}
 
 		// @bot count [osu! username]
-		[Command("count")]
+		[Command("count", RunMode = RunMode.Async)]
 		[Summary("Calculates points based on leaderboard count.")]
 		public async Task CountPointsCommand([Summary("osu! username.")] string osuUsername)
 		{
@@ -76,7 +76,7 @@ public static class Message
 		}
 
 		// @bot whatif [what-if arguments, comma-delimited]
-		[Command("whatif")]
+		[Command("whatif", RunMode = RunMode.Async)]
 		[Summary("Calculates what-if points based on leaderboard count.")]
 		public async Task WhatIfPointsCommand([Summary("Comma-delimited arguments representing what-if count.")] string pointsArgs)
 		{
@@ -93,7 +93,7 @@ public static class Message
 	public class LeaderboardModule : ModuleBase<SocketCommandContext>
 	{
 		// @bot leaderboard | @bot lb
-		[Command("leaderboard")]
+		[Command("leaderboard", RunMode = RunMode.Async)]
 		[Alias("lb")]
 		[Summary("Returns server points leaderboard.")]
 		public async Task SendServerLeaderboardCommand()
@@ -111,7 +111,7 @@ public static class Message
 	public class HelpModule : ModuleBase<SocketCommandContext>
 	{
 		// @bot config help
-		[Command("help")]
+		[Command("help", RunMode = RunMode.Async)]
 		[Summary("Returns commands usage help message.")]
 		public async Task SendHelpCommand()
 		{
@@ -128,7 +128,7 @@ public static class Message
 	public class ConfigurationModule : ModuleBase<SocketCommandContext>
 	{
 		// @bot config show
-		[Command("show")]
+		[Command("show", RunMode = RunMode.Async)]
 		[Summary("Returns current server configuration. Only available for server administrators.")]
 		public async Task ShowConfigurationCommand()
 		{
@@ -142,7 +142,7 @@ public static class Message
 		}
 
 		// @bot config help
-		[Command("help")]
+		[Command("help", RunMode = RunMode.Async)]
 		[Summary("Returns server configuration commands help message. Only available for server administrators.")]
 		public async Task SendHelpConfigurationCommand()
 		{
@@ -158,7 +158,7 @@ public static class Message
 		public class ConfigurationSetterModule : ModuleBase<SocketCommandContext>
 		{
 			// @bot config set country
-			[Command("country")]
+			[Command("country", RunMode = RunMode.Async)]
 			[Summary("Sets country restriction for this server. Leave empty to disable.")]
 			public async Task SetServerCountryCommand()
 			{
@@ -172,7 +172,7 @@ public static class Message
 			}
 
 			// @bot config set country [2-letter country code]
-			[Command("country")]
+			[Command("country", RunMode = RunMode.Async)]
 			[Summary("Sets country restriction for this server. Leave empty to disable.")]
 			public async Task SetServerCountryCommand([Summary("2-letter country code. Leave empty to disable.")] string countryCode)
 			{
@@ -186,7 +186,7 @@ public static class Message
 			}
 
 			// @bot config set verifiedrole
-			[Command("verifiedrole")]
+			[Command("verifiedrole", RunMode = RunMode.Async)]
 			[Summary("Sets verified user role, see commands help for details. Leave empty to disable.")]
 			public async Task SetServerVerifiedRoleCommand()
 			{
@@ -200,7 +200,7 @@ public static class Message
 			}
 
 			// @bot config set verifiedrole [mentioned role]
-			[Command("verifiedrole")]
+			[Command("verifiedrole", RunMode = RunMode.Async)]
 			[Summary("Sets verified user role, see commands help for details. Leave empty to disable.")]
 			public async Task SetServerVerifiedRoleCommand([Summary("Role for verified users. Leave empty to disable.")] SocketRole role)
 			{
@@ -214,7 +214,7 @@ public static class Message
 			}
 
 			// @bot config set verifiedrole [role ID]
-			[Command("verifiedrole")]
+			[Command("verifiedrole", RunMode = RunMode.Async)]
 			[Summary("Sets verified user role, see commands help for details. Leave empty to disable.")]
 			public async Task SetServerVerifiedRoleCommand([Summary("Role for verified users. Leave empty to disable.")] string roleDiscordId)
 			{
@@ -228,7 +228,7 @@ public static class Message
 			}
 
 			// @bot config set commandschannel
-			[Command("commandschannel")]
+			[Command("commandschannel", RunMode = RunMode.Async)]
 			[Summary("Sets server commands channel restriction. Leave channel option empty to disable.")]
 			public async Task SetServerCommandsChannelCommand()
 			{
@@ -242,7 +242,7 @@ public static class Message
 			}
 
 			// @bot config set commandschannel [mentioned channel]
-			[Command("commandschannel")]
+			[Command("commandschannel", RunMode = RunMode.Async)]
 			[Summary("Sets server commands channel restriction. Leave channel option empty to disable.")]
 			public async Task SetServerCommandsChannelCommand([Summary("Channel for commands restriction. Leave empty to disable.")] SocketGuildChannel channel)
 			{
@@ -256,7 +256,7 @@ public static class Message
 			}
 
 			// @bot config set commandschannel [channel ID]
-			[Command("commandschannel")]
+			[Command("commandschannel", RunMode = RunMode.Async)]
 			[Summary("Sets server commands channel restriction. Leave channel option empty to disable.")]
 			public async Task SetServerCommandsChannelCommand([Summary("Channel for commands restriction. Leave empty to disable.")] string channelDiscordId)
 			{
@@ -270,7 +270,7 @@ public static class Message
 			}
 
 			// @bot config set leaderboardschannel
-			[Command("leaderboardschannel")]
+			[Command("leaderboardschannel", RunMode = RunMode.Async)]
 			[Summary("Sets server leaderboard commands channel restriction. Leave channel option empty to disable.")]
 			public async Task SetServerLeaderboardsChannelCommand()
 			{
@@ -284,7 +284,7 @@ public static class Message
 			}
 
 			// @bot config set leaderboardschannel [mentioned channel]
-			[Command("leaderboardschannel")]
+			[Command("leaderboardschannel", RunMode = RunMode.Async)]
 			[Summary("Sets server leaderboard commands channel restriction. Leave channel option empty to disable.")]
 			public async Task SetServerLeaderboardsChannelCommand([Summary("Channel for leaderboard command restriction. Leave empty to disable.")] SocketGuildChannel channel)
 			{
@@ -298,7 +298,7 @@ public static class Message
 			}
 
 			// @bot config set leaderboardschannel [channel ID]
-			[Command("leaderboardschannel")]
+			[Command("leaderboardschannel", RunMode = RunMode.Async)]
 			[Summary("Sets server leaderboard commands channel restriction. Leave channel option empty to disable.")]
 			public async Task SetServerLeaderboardsChannelCommand([Summary("Channel for leaderboard command restriction. Leave empty to disable.")] string channelDiscordId)
 			{
