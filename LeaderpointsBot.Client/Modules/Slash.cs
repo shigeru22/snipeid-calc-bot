@@ -225,6 +225,11 @@ public static class Slash
 				}
 
 				await Context.Interaction.DeferAsync();
+
+				string replyMsg = await Configuration.SetGuildCountryConfigurationAsync(Context.Guild, countryCode);
+
+				Log.WriteVerbose("Server country configuration set. Sending result message.");
+				await Reply.SendToInteractionContextAsync(Context, replyMsg, modifyResponse: true);
 			}
 
 			// /config set verifiedrole
@@ -248,6 +253,11 @@ public static class Slash
 				}
 
 				await Context.Interaction.DeferAsync();
+
+				string replyMsg = await Configuration.SetGuildVerifiedRoleConfigurationAsync(Context.Guild, role);
+
+				Log.WriteVerbose("Server verified role configuration set. Sending result message.");
+				await Reply.SendToInteractionContextAsync(Context, replyMsg, modifyResponse: true);
 			}
 
 			// /config set commandschannel
@@ -267,10 +277,15 @@ public static class Slash
 				}
 				else
 				{
-					Log.WriteInfo($"Disabling command channel restriction (guild ID {Context.Guild.Id}).");
+					Log.WriteInfo($"Disabling commands channel restriction (guild ID {Context.Guild.Id}).");
 				}
 
 				await Context.Interaction.DeferAsync();
+
+				string replyMsg = await Configuration.SetGuildCommandsChannelConfigurationAsync(Context.Guild, channel);
+
+				Log.WriteVerbose("Server commands channel restriction configuration set. Sending result message.");
+				await Reply.SendToInteractionContextAsync(Context, replyMsg, modifyResponse: true);
 			}
 
 			// /config set leaderboardschannel
@@ -294,6 +309,11 @@ public static class Slash
 				}
 
 				await Context.Interaction.DeferAsync();
+
+				string replyMsg = await Configuration.SetGuildLeaderboardsChannelConfigurationAsync(Context.Guild, channel);
+
+				Log.WriteVerbose("Server leaderboards channel restriction configuration set. Sending result message.");
+				await Reply.SendToInteractionContextAsync(Context, replyMsg, modifyResponse: true);
 			}
 		}
 	}

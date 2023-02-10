@@ -137,7 +137,7 @@ public static class Message
 
 			Embed replyEmbed = await Configuration.GetGuildConfigurationAsync(Context.Guild);
 
-			Log.WriteVerbose("Server data fetched. Returning configuration embed message.");
+			Log.WriteVerbose("Server data fetched. Sending configuration embed message.");
 			await Reply.SendToCommandContextAsync(Context, replyEmbed);
 		}
 
@@ -163,6 +163,12 @@ public static class Message
 			public async Task SetServerCountryCommand()
 			{
 				Log.WriteInfo($"Disabling server country restriction (guild ID {Context.Guild.Id}).");
+				await Context.Channel.TriggerTypingAsync();
+
+				string replyMsg = await Configuration.SetGuildCountryConfigurationAsync(Context.Guild);
+
+				Log.WriteVerbose("Server country configuration set. Sending result message.");
+				await Reply.SendToCommandContextAsync(Context, replyMsg);
 			}
 
 			// @bot config set country [2-letter country code]
@@ -171,6 +177,12 @@ public static class Message
 			public async Task SetServerCountryCommand([Summary("2-letter country code. Leave empty to disable.")] string countryCode)
 			{
 				Log.WriteInfo($"Setting server country restriction to {countryCode} (guild ID {Context.Guild.Id}).");
+				await Context.Channel.TriggerTypingAsync();
+
+				string replyMsg = await Configuration.SetGuildCountryConfigurationAsync(Context.Guild, countryCode);
+
+				Log.WriteVerbose("Server country configuration set. Sending result message.");
+				await Reply.SendToCommandContextAsync(Context, replyMsg);
 			}
 
 			// @bot config set verifiedrole
@@ -179,6 +191,12 @@ public static class Message
 			public async Task SetServerVerifiedRoleCommand()
 			{
 				Log.WriteInfo($"Disabling verified user role (guild ID {Context.Guild.Id}).");
+				await Context.Channel.TriggerTypingAsync();
+
+				string replyMsg = await Configuration.SetGuildVerifiedRoleConfigurationAsync(Context.Guild);
+
+				Log.WriteVerbose("Server verified role configuration set. Sending result message.");
+				await Reply.SendToCommandContextAsync(Context, replyMsg);
 			}
 
 			// @bot config set verifiedrole [mentioned role]
@@ -187,6 +205,12 @@ public static class Message
 			public async Task SetServerVerifiedRoleCommand([Summary("Role for verified users. Leave empty to disable.")] SocketRole role)
 			{
 				Log.WriteInfo($"Setting verified user role to {role.Id} (guild ID {Context.Guild.Id}).");
+				await Context.Channel.TriggerTypingAsync();
+
+				string replyMsg = await Configuration.SetGuildVerifiedRoleConfigurationAsync(Context.Guild, role); // determine whether role is in server?
+
+				Log.WriteVerbose("Server verified role configuration set. Sending result message.");
+				await Reply.SendToCommandContextAsync(Context, replyMsg);
 			}
 
 			// @bot config set verifiedrole [role ID]
@@ -195,6 +219,12 @@ public static class Message
 			public async Task SetServerVerifiedRoleCommand([Summary("Role for verified users. Leave empty to disable.")] string roleDiscordId)
 			{
 				Log.WriteInfo($"Setting verified user role to {roleDiscordId} (guild ID {Context.Guild.Id}).");
+				await Context.Channel.TriggerTypingAsync();
+
+				string replyMsg = await Configuration.SetGuildVerifiedRoleConfigurationAsync(Context.Guild, roleDiscordId);
+
+				Log.WriteVerbose("Server verified role configuration set. Sending result message.");
+				await Reply.SendToCommandContextAsync(Context, replyMsg);
 			}
 
 			// @bot config set commandschannel
@@ -203,6 +233,12 @@ public static class Message
 			public async Task SetServerCommandsChannelCommand()
 			{
 				Log.WriteInfo($"Disabling command channel restriction (guild ID {Context.Guild.Id}).");
+				await Context.Channel.TriggerTypingAsync();
+
+				string replyMsg = await Configuration.SetGuildCommandsChannelConfigurationAsync(Context.Guild);
+
+				Log.WriteVerbose("Server commands channel restriction configuration set. Sending result message.");
+				await Reply.SendToCommandContextAsync(Context, replyMsg);
 			}
 
 			// @bot config set commandschannel [mentioned channel]
@@ -211,6 +247,12 @@ public static class Message
 			public async Task SetServerCommandsChannelCommand([Summary("Channel for commands restriction. Leave empty to disable.")] SocketGuildChannel channel)
 			{
 				Log.WriteInfo($"Setting commands channel to {channel.Id} (guild ID {Context.Guild.Id}).");
+				await Context.Channel.TriggerTypingAsync();
+
+				string replyMsg = await Configuration.SetGuildCommandsChannelConfigurationAsync(Context.Guild, channel);
+
+				Log.WriteVerbose("Server commands channel restriction configuration set. Sending result message.");
+				await Reply.SendToCommandContextAsync(Context, replyMsg);
 			}
 
 			// @bot config set commandschannel [channel ID]
@@ -219,6 +261,12 @@ public static class Message
 			public async Task SetServerCommandsChannelCommand([Summary("Channel for commands restriction. Leave empty to disable.")] string channelDiscordId)
 			{
 				Log.WriteInfo($"Setting commands channel to {channelDiscordId} (guild ID {Context.Guild.Id}).");
+				await Context.Channel.TriggerTypingAsync();
+
+				string replyMsg = await Configuration.SetGuildCommandsChannelConfigurationAsync(Context.Guild, channelDiscordId);
+
+				Log.WriteVerbose("Server commands channel restriction configuration set. Sending result message.");
+				await Reply.SendToCommandContextAsync(Context, replyMsg);
 			}
 
 			// @bot config set leaderboardschannel
@@ -227,6 +275,12 @@ public static class Message
 			public async Task SetServerLeaderboardsChannelCommand()
 			{
 				Log.WriteInfo($"Disabling leaderboard commands channel restriction (guild ID {Context.Guild.Id}).");
+				await Context.Channel.TriggerTypingAsync();
+
+				string replyMsg = await Configuration.SetGuildLeaderboardsChannelConfigurationAsync(Context.Guild);
+
+				Log.WriteVerbose("Server leaderboards channel restriction configuration set. Sending result message.");
+				await Reply.SendToCommandContextAsync(Context, replyMsg);
 			}
 
 			// @bot config set leaderboardschannel [mentioned channel]
@@ -235,6 +289,12 @@ public static class Message
 			public async Task SetServerLeaderboardsChannelCommand([Summary("Channel for leaderboard command restriction. Leave empty to disable.")] SocketGuildChannel channel)
 			{
 				Log.WriteInfo($"Setting leaderboard commands channel to {channel.Id} (guild ID {Context.Guild.Id}).");
+				await Context.Channel.TriggerTypingAsync();
+
+				string replyMsg = await Configuration.SetGuildLeaderboardsChannelConfigurationAsync(Context.Guild, channel);
+
+				Log.WriteVerbose("Server leaderboards channel restriction configuration set. Sending result message.");
+				await Reply.SendToCommandContextAsync(Context, replyMsg);
 			}
 
 			// @bot config set leaderboardschannel [channel ID]
@@ -243,6 +303,12 @@ public static class Message
 			public async Task SetServerLeaderboardsChannelCommand([Summary("Channel for leaderboard command restriction. Leave empty to disable.")] string channelDiscordId)
 			{
 				Log.WriteInfo($"Setting leaderboard commands channel to {channelDiscordId} (guild ID {Context.Guild.Id}).");
+				await Context.Channel.TriggerTypingAsync();
+
+				string replyMsg = await Configuration.SetGuildLeaderboardsChannelConfigurationAsync(Context.Guild, channelDiscordId);
+
+				Log.WriteVerbose("Server leaderboards channel restriction configuration set. Sending result message.");
+				await Reply.SendToCommandContextAsync(Context, replyMsg);
 			}
 		}
 	}
