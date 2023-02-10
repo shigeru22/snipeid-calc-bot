@@ -5,13 +5,13 @@ namespace LeaderpointsBot.Client.Structures.Actions;
 
 public static class UserData
 {
-	public struct AssignmentResultRoleData
+	public readonly struct AssignmentResultRoleData
 	{
 		public string RoleDiscordID { get; init; }
 		public string RoleName { get; init; }
 	}
 
-	public struct AssignmentResult
+	public readonly struct AssignmentResult
 	{
 		public AssignmentResultRoleData? OldRole { get; init; }
 		public AssignmentResultRoleData NewRole { get; init; }

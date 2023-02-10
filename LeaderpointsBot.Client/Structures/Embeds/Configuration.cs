@@ -5,7 +5,7 @@ namespace LeaderpointsBot.Client.Structures.Embeds;
 
 public static class Configuration
 {
-	public struct ServerConfigurations
+	public readonly struct ServerConfigurations
 	{
 		public string GuildName { get; init; }
 		public string? GuildIconURL { get; init; }
