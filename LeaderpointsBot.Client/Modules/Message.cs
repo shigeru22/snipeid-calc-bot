@@ -133,6 +133,12 @@ public static class Message
 		public async Task ShowConfigurationCommand()
 		{
 			Log.WriteInfo($"Retrieving server configuration data (guild ID {Context.Guild.Id}).");
+			await Context.Channel.TriggerTypingAsync();
+
+			Embed replyEmbed = await Configuration.GetGuildConfigurationAsync(Context.Guild);
+
+			Log.WriteVerbose("Server data fetched. Returning configuration embed message.");
+			await Reply.SendToCommandContextAsync(Context, replyEmbed);
 		}
 
 		// @bot config help

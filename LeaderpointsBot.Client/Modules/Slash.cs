@@ -175,6 +175,11 @@ public static class Slash
 
 			Log.WriteInfo($"Retrieving server configuration data (guild ID {Context.Guild.Id}).");
 			await Context.Interaction.DeferAsync();
+
+			Embed replyEmbed = await Configuration.GetGuildConfigurationAsync(Context.Guild);
+
+			Log.WriteVerbose("Server data fetched. Returning configuration embed message.");
+			await Reply.SendToInteractionContextAsync(Context, replyEmbed, true);
 		}
 
 		// /config help
