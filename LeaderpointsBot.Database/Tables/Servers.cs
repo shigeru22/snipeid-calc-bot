@@ -442,7 +442,7 @@ public class Servers : DBConnectorBase
 
 	public async Task UpdateServerVerifiedRoleID(string guildDiscordId, string? roleDiscordId)
 	{
-		if (!string.IsNullOrEmpty(roleDiscordId))
+		if (roleDiscordId != null && roleDiscordId.Equals(string.Empty))
 		{
 			Log.WriteVerbose("Invalid argument. Throwing argument exception.");
 			throw new ArgumentException("roleId must be null or not empty.");
@@ -503,7 +503,7 @@ public class Servers : DBConnectorBase
 
 	public async Task UpdateServerCommandsChannelID(string guildDiscordId, string? channelDiscordId)
 	{
-		if (!string.IsNullOrEmpty(channelDiscordId))
+		if (channelDiscordId != null && channelDiscordId.Equals(string.Empty))
 		{
 			Log.WriteVerbose("Invalid argument. Throwing argument exception.");
 			throw new ArgumentException("channelId must be null or not empty.");
@@ -564,7 +564,7 @@ public class Servers : DBConnectorBase
 
 	public async Task UpdateServerLeaderboardsChannelID(string guildDiscordId, string? channelDiscordId)
 	{
-		if (!string.IsNullOrEmpty(channelDiscordId))
+		if (channelDiscordId != null && channelDiscordId.Equals(string.Empty))
 		{
 			Log.WriteVerbose("Invalid argument. Throwing argument exception.");
 			throw new ArgumentException("channelId must be null or not empty.");
