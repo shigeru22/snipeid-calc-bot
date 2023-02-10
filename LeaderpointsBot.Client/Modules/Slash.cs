@@ -37,7 +37,7 @@ public static class Slash
 			}
 
 			Log.WriteInfo("Link success. Sending embed response.");
-			await Reply.SendToInteractionContextAsync(Context, replyEmbed, true);
+			await Reply.SendToInteractionContextAsync(Context, replyEmbed, modifyResponse: true);
 		}
 	}
 
@@ -52,7 +52,7 @@ public static class Slash
 			await Context.Interaction.DeferAsync();
 
 			string replyMsg = Help.GetPingMessage(Context.Client);
-			await Reply.SendToInteractionContextAsync(Context, replyMsg, true);
+			await Reply.SendToInteractionContextAsync(Context, replyMsg, modifyResponse: true);
 		}
 	}
 
@@ -139,7 +139,7 @@ public static class Slash
 			Embed replyEmbed = await Leaderboard.GetServerLeaderboard(Context.Guild.Id.ToString());
 
 			Log.WriteVerbose("Leaderboard retrieved successfully. Sending embed response.");
-			await Reply.SendToInteractionContextAsync(Context, replyEmbed, true);
+			await Reply.SendToInteractionContextAsync(Context, replyEmbed, modifyResponse: true);
 		}
 	}
 
@@ -154,7 +154,7 @@ public static class Slash
 			await Context.Interaction.DeferAsync();
 
 			Embed replyEmbed = Help.GetBotHelpMessage(Context.Client, true);
-			await Reply.SendToInteractionContextAsync(Context, replyEmbed, true);
+			await Reply.SendToInteractionContextAsync(Context, replyEmbed, modifyResponse: true);
 		}
 	}
 
@@ -179,7 +179,7 @@ public static class Slash
 			Embed replyEmbed = await Configuration.GetGuildConfigurationAsync(Context.Guild);
 
 			Log.WriteVerbose("Server data fetched. Returning configuration embed message.");
-			await Reply.SendToInteractionContextAsync(Context, replyEmbed, true);
+			await Reply.SendToInteractionContextAsync(Context, replyEmbed, modifyResponse: true);
 		}
 
 		// /config help
@@ -197,7 +197,7 @@ public static class Slash
 			await Context.Interaction.DeferAsync();
 
 			Embed replyEmbed = Help.GetConfigHelpMessage(Context.Client, true);
-			await Reply.SendToInteractionContextAsync(Context, replyEmbed, true);
+			await Reply.SendToInteractionContextAsync(Context, replyEmbed, modifyResponse: true);
 		}
 
 		[EnabledInDm(false)]
