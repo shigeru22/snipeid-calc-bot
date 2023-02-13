@@ -484,7 +484,7 @@ public static class Counter
 			whatIfTopCounts = new List<int[]>();
 			originalTopCounts.ForEach(top => whatIfTopCounts.Add(new int[] { top[0], top[1] }));
 
-			int whatIfArgsLength = whatIfs.Length / 2; // TODO: [2023-02-07] find how to fetch first dimension length
+			int whatIfArgsLength = whatIfs.GetLength(0);
 			for (int i = 0; i < whatIfArgsLength; i++)
 			{
 				int targetIndex = whatIfTopCounts.Select((topRank, index) => (topRank, index))
@@ -520,7 +520,7 @@ public static class Counter
 			whatIfTopCounts = new List<int[]>();
 			originalTopCounts.ForEach(top => whatIfTopCounts.Add(new int[] { top[0], top[1] }));
 
-			int whatIfArgsLength = whatIfs.Length / 2;
+			int whatIfArgsLength = whatIfs.GetLength(0);
 			for (int i = 0; i < whatIfArgsLength; i++)
 			{
 				int targetIndex = whatIfTopCounts.Select((topRank, index) => (topRank, index))
