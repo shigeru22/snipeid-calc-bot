@@ -20,15 +20,35 @@ namespace LeaderpointsBot.Client.Commands;
 
 public static class Counter
 {
-	public static async Task<ReturnMessages[]> UserLeaderboardsCountBathbotAsync(Embed topsCount, SocketGuild guild)
+	// Bathbot count (<osc) message
+	public static async Task<ReturnMessages[]> CountBathbotLeaderboardPointsAsync(Embed countEmbed, SocketGuild? guild = null)
 	{
-		if (!topsCount.Author.HasValue)
+		ServersQuerySchema.ServersTableData? dbServer = null;
+		if (guild != null)
+		{
+			try
+			{
+				dbServer = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+			}
+			catch (DataNotFoundException)
+			{
+				throw new SendMessageException("Server not found in our end!", true);
+			}
+			catch (Exception e)
+			{
+				Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
+				throw new SendMessageException("Unhandled client error occurred.");
+			}
+		}
+
+		Log.WriteVerbose("Calculating leaderboards count from first embed.");
+		if (!countEmbed.Author.HasValue)
 		{
 			throw new ClientException("Invalid embed passed to method.");
 		}
 
-		string embedUsername = Parser.ParseUsernameFromBathbotEmbedTitle(topsCount.Title);
-		int embedOsuId = Parser.ParseOsuIDFromBathbotEmbedLink(topsCount.Author.Value.Url);
+		string embedUsername = Parser.ParseUsernameFromBathbotEmbedTitle(countEmbed.Title);
+		int embedOsuId = Parser.ParseOsuIDFromBathbotEmbedLink(countEmbed.Author.Value.Url);
 		int[,] embedTopCounts; // assume non-respektive
 
 		Log.WriteInfo($"Calculating points for osu! username: {embedUsername}");
@@ -36,7 +56,7 @@ public static class Counter
 		try
 		{
 			Log.WriteVerbose("Parsing top counts from embed description.");
-			embedTopCounts = Parser.ParseTopPointsFromBathbotEmbedDescription(topsCount.Description);
+			embedTopCounts = Parser.ParseTopPointsFromBathbotEmbedDescription(countEmbed.Description);
 		}
 		catch (Exception e)
 		{
@@ -48,18 +68,21 @@ public static class Counter
 		int points = Embeds.Counter.CalculateTopPoints(embedTopCounts);
 		Structures.Actions.Counter.UpdateUserDataMessages? updateMessages = null;
 
-		try
+		if (guild != null && dbServer != null)
 		{
-			updateMessages = await Actions.Counter.UpdateUserDataAsync(guild, embedOsuId, points);
-		}
-		catch (SkipUpdateException)
-		{
-			Log.WriteVerbose("No updateMessages set.");
-		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.");
+			try
+			{
+				updateMessages = await Actions.Counter.UpdateUserDataAsync(guild, embedOsuId, points);
+			}
+			catch (SkipUpdateException)
+			{
+				Log.WriteVerbose("No updateMessages set.");
+			}
+			catch (Exception e)
+			{
+				Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
+				throw new SendMessageException("Unhandled client error occurred.");
+			}
 		}
 
 		List<ReturnMessages> responses = new List<ReturnMessages>()

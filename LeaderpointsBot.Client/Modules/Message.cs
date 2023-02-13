@@ -312,4 +312,17 @@ public static class Message
 			}
 		}
 	}
+
+	public static async Task BathbotCountCommand(SocketCommandContext context)
+	{
+		Embed countEmbed = context.Message.Embeds.First();
+
+		string embedUsername = Parser.ParseUsernameFromBathbotEmbedTitle(countEmbed.Title);
+		Log.WriteInfo($"Calculating points for osu! user {embedUsername}.");
+
+		ReturnMessages[] responses = await Commands.Counter.CountBathbotLeaderboardPointsAsync(countEmbed, context.Guild);
+
+		Log.WriteVerbose("Points calculated successfully. Sending responses.");
+		await Reply.SendToCommandContextAsync(context, responses);
+	}
 }
