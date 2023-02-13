@@ -4,6 +4,7 @@
 using LeaderpointsBot.Api;
 using LeaderpointsBot.Database;
 using LeaderpointsBot.Utils;
+using LeaderpointsBot.Utils.Arguments;
 
 namespace LeaderpointsBot.Client;
 
@@ -13,8 +14,7 @@ public static class Program
 	{
 		if (args.Length > 0)
 		{
-			Log.WriteVerbose("Updating settings from command line arguments.");
-			Settings.Instance.AddArguments(args);
+			ArgumentHandler.HandleArguments(args);
 		}
 
 		Log.WriteInfo("Program started.");
