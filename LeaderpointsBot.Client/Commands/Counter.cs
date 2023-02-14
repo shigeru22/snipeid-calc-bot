@@ -238,6 +238,10 @@ public static class Counter
 		{
 			new ReturnMessage()
 			{
+				Embed = Embeds.Counter.CreateTopsEmbed(osuUsername, topCounts)
+			},
+			new ReturnMessage()
+			{
 				Embed = Embeds.Counter.CreateCountEmbed(osuUsername, topCounts, false, Settings.Instance.OsuApi.UseRespektiveStats)
 			}
 		};
@@ -380,6 +384,10 @@ public static class Counter
 
 		List<ReturnMessage> responses = new List<ReturnMessage>()
 		{
+			new ReturnMessage()
+			{
+				Embed = Embeds.Counter.CreateTopsEmbed(osuUsername, topCounts)
+			},
 			new ReturnMessage()
 			{
 				Embed = Embeds.Counter.CreateCountEmbed(osuUsername, topCounts, false, Settings.Instance.OsuApi.UseRespektiveStats)

@@ -41,7 +41,7 @@ public static class Reply
 		foreach (ReturnMessage response in responses)
 		{
 			await SendToInteractionContextAsync(context, response.Message, response.Embed, response.IsError, shouldModifyResponse);
-			modifyResponse = false;
+			shouldModifyResponse = false;
 		}
 	}
 

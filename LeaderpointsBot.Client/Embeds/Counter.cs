@@ -1,6 +1,7 @@
 // Copyright (c) shigeru22, concept by Akshiro28.
 // Licensed under the MIT license. See LICENSE in the repository root for details.
 
+using System.Text;
 using Discord;
 using LeaderpointsBot.Client.Exceptions.Embeds;
 using LeaderpointsBot.Utils;
@@ -9,6 +10,48 @@ namespace LeaderpointsBot.Client.Embeds;
 
 public static class Counter
 {
+	public static Embed CreateTopsEmbed(string osuUsername, int[,] topsCount)
+	{
+		string title = $"{osuUsername} top counts:";
+		StringBuilder description = new StringBuilder();
+
+		_ = description.Append("```\n");
+
+		int topsCountLength = topsCount.GetLength(0);
+		for (int i = 0; i < topsCountLength; i++)
+		{
+			_ = description.Append($"Top {topsCount[i, 0],-3}: {topsCount[i, 1],6}\n");
+		}
+
+		_ = description.Append("```");
+
+		return new EmbedBuilder().WithTitle(title)
+			.WithDescription(description.ToString())
+			.WithColor(BorderColor.Normal)
+			.Build();
+	}
+
+	public static Embed CreateTopsEmbed(string osuUsername, List<int[]> topsCount)
+	{
+		string title = $"{osuUsername} top counts:";
+		StringBuilder description = new StringBuilder();
+
+		_ = description.Append("```\n");
+
+		int topsCountLength = topsCount.Count;
+		for (int i = 0; i < topsCountLength; i++)
+		{
+			_ = description.Append($"Top {topsCount[i][0],-3}: {topsCount[i][1].ToString("N0"),6}\n");
+		}
+
+		_ = description.Append("```");
+
+		return new EmbedBuilder().WithTitle(title)
+			.WithDescription(description.ToString())
+			.WithColor(BorderColor.Normal)
+			.Build();
+	}
+
 	public static Embed CreateCountEmbed(string osuUsername, int[,] topsCount, bool useRespektive = false)
 	{
 		int points = CalculateTopPoints(topsCount, useRespektive);
