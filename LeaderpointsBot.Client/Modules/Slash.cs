@@ -23,21 +23,21 @@ public static class Slash
 			Log.WriteInfo($"Linking user {Context.User.Username}#{Context.User.Discriminator} ({Context.User.Id}) to osu! user ID {osuId}.");
 			await Context.Interaction.DeferAsync();
 
-			Embed replyEmbed;
+			ReturnMessage response;
 
 			if (!Context.Interaction.IsDMInteraction)
 			{
 				Log.WriteVerbose("Interaction sent from server.");
-				replyEmbed = await User.LinkUser(Context.User, osuId, Context.Guild);
+				response = await User.LinkUser(Context.User, osuId, Context.Guild);
 			}
 			else
 			{
 				Log.WriteVerbose("Interaction sent from direct message.");
-				replyEmbed = await User.LinkUser(Context.User, osuId);
+				response = await User.LinkUser(Context.User, osuId);
 			}
 
 			Log.WriteInfo("Link success. Sending embed response.");
-			await Reply.SendToInteractionContextAsync(Context, replyEmbed, modifyResponse: true);
+			await Reply.SendToInteractionContextAsync(Context, response);
 		}
 	}
 
@@ -51,8 +51,8 @@ public static class Slash
 			Log.WriteInfo("Sending ping message.");
 			await Context.Interaction.DeferAsync();
 
-			string replyMsg = Help.GetPingMessage(Context.Client);
-			await Reply.SendToInteractionContextAsync(Context, replyMsg, modifyResponse: true);
+			ReturnMessage response = Help.GetPingMessage(Context.Client);
+			await Reply.SendToInteractionContextAsync(Context, response);
 		}
 	}
 
@@ -74,7 +74,7 @@ public static class Slash
 
 			await Context.Interaction.DeferAsync();
 
-			ReturnMessages[] responses;
+			ReturnMessage[] responses;
 
 			if (!Context.Interaction.IsDMInteraction)
 			{
@@ -113,7 +113,7 @@ public static class Slash
 			Log.WriteInfo($"Calculating what-if points for {Context.User.Username}#{Context.User.Discriminator} ({pointsArgs}).");
 			await Context.Interaction.DeferAsync();
 
-			ReturnMessages[] responses = await Commands.Counter.WhatIfUserCount(Context.User.Id.ToString(), pointsArgs);
+			ReturnMessage[] responses = await Commands.Counter.WhatIfUserCount(Context.User.Id.ToString(), pointsArgs);
 
 			Log.WriteVerbose("What-if calculated successfully. Sending responses.");
 			await Reply.SendToInteractionContextAsync(Context, responses);
@@ -136,10 +136,10 @@ public static class Slash
 			Log.WriteInfo($"Retrieving server points leaderboard (guild ID {Context.Guild.Id}).");
 			await Context.Interaction.DeferAsync();
 
-			Embed replyEmbed = await Leaderboard.GetServerLeaderboard(Context.Guild.Id.ToString());
+			ReturnMessage response = await Leaderboard.GetServerLeaderboard(Context.Guild.Id.ToString());
 
 			Log.WriteVerbose("Leaderboard retrieved successfully. Sending embed response.");
-			await Reply.SendToInteractionContextAsync(Context, replyEmbed, modifyResponse: true);
+			await Reply.SendToInteractionContextAsync(Context, response);
 		}
 	}
 
@@ -153,8 +153,8 @@ public static class Slash
 			Log.WriteInfo($"Sending commands usage help message.");
 			await Context.Interaction.DeferAsync();
 
-			Embed replyEmbed = Help.GetBotHelpMessage(Context.Client, true);
-			await Reply.SendToInteractionContextAsync(Context, replyEmbed, modifyResponse: true);
+			ReturnMessage response = Help.GetBotHelpMessage(Context.Client, true);
+			await Reply.SendToInteractionContextAsync(Context, response);
 		}
 	}
 
@@ -176,10 +176,10 @@ public static class Slash
 			Log.WriteInfo($"Retrieving server configuration data (guild ID {Context.Guild.Id}).");
 			await Context.Interaction.DeferAsync();
 
-			Embed replyEmbed = await Configuration.GetGuildConfigurationAsync(Context.Guild);
+			ReturnMessage response = await Configuration.GetGuildConfigurationAsync(Context.Guild);
 
 			Log.WriteVerbose("Server data fetched. Returning configuration embed message.");
-			await Reply.SendToInteractionContextAsync(Context, replyEmbed, modifyResponse: true);
+			await Reply.SendToInteractionContextAsync(Context, response);
 		}
 
 		// /config help
@@ -196,8 +196,8 @@ public static class Slash
 			Log.WriteInfo($"Sending server configuration commands help message (guild ID {Context.Guild.Id}).");
 			await Context.Interaction.DeferAsync();
 
-			Embed replyEmbed = Help.GetConfigHelpMessage(Context.Client, true);
-			await Reply.SendToInteractionContextAsync(Context, replyEmbed, modifyResponse: true);
+			ReturnMessage response = Help.GetConfigHelpMessage(Context.Client, true);
+			await Reply.SendToInteractionContextAsync(Context, response);
 		}
 
 		[EnabledInDm(false)]
@@ -226,10 +226,10 @@ public static class Slash
 
 				await Context.Interaction.DeferAsync();
 
-				string replyMsg = await Configuration.SetGuildCountryConfigurationAsync(Context.Guild, countryCode);
+				ReturnMessage response = await Configuration.SetGuildCountryConfigurationAsync(Context.Guild, countryCode);
 
 				Log.WriteVerbose("Server country configuration set. Sending result message.");
-				await Reply.SendToInteractionContextAsync(Context, replyMsg, modifyResponse: true);
+				await Reply.SendToInteractionContextAsync(Context, response);
 			}
 
 			// /config set verifiedrole
@@ -254,10 +254,10 @@ public static class Slash
 
 				await Context.Interaction.DeferAsync();
 
-				string replyMsg = await Configuration.SetGuildVerifiedRoleConfigurationAsync(Context.Guild, role);
+				ReturnMessage response = await Configuration.SetGuildVerifiedRoleConfigurationAsync(Context.Guild, role);
 
 				Log.WriteVerbose("Server verified role configuration set. Sending result message.");
-				await Reply.SendToInteractionContextAsync(Context, replyMsg, modifyResponse: true);
+				await Reply.SendToInteractionContextAsync(Context, response);
 			}
 
 			// /config set commandschannel
@@ -282,10 +282,10 @@ public static class Slash
 
 				await Context.Interaction.DeferAsync();
 
-				string replyMsg = await Configuration.SetGuildCommandsChannelConfigurationAsync(Context.Guild, channel);
+				ReturnMessage response = await Configuration.SetGuildCommandsChannelConfigurationAsync(Context.Guild, channel);
 
 				Log.WriteVerbose("Server commands channel restriction configuration set. Sending result message.");
-				await Reply.SendToInteractionContextAsync(Context, replyMsg, modifyResponse: true);
+				await Reply.SendToInteractionContextAsync(Context, response);
 			}
 
 			// /config set leaderboardschannel
@@ -310,10 +310,10 @@ public static class Slash
 
 				await Context.Interaction.DeferAsync();
 
-				string replyMsg = await Configuration.SetGuildLeaderboardsChannelConfigurationAsync(Context.Guild, channel);
+				ReturnMessage response = await Configuration.SetGuildLeaderboardsChannelConfigurationAsync(Context.Guild, channel);
 
 				Log.WriteVerbose("Server leaderboards channel restriction configuration set. Sending result message.");
-				await Reply.SendToInteractionContextAsync(Context, replyMsg, modifyResponse: true);
+				await Reply.SendToInteractionContextAsync(Context, response, modifyResponse: true);
 			}
 		}
 	}

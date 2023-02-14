@@ -7,6 +7,7 @@ using LeaderpointsBot.Api;
 using LeaderpointsBot.Api.Exceptions;
 using LeaderpointsBot.Api.Osu;
 using LeaderpointsBot.Client.Exceptions.Commands;
+using LeaderpointsBot.Client.Structures;
 using LeaderpointsBot.Database;
 using LeaderpointsBot.Database.Exceptions;
 using LeaderpointsBot.Utils;
@@ -16,7 +17,7 @@ namespace LeaderpointsBot.Client.Commands;
 
 public static class User
 {
-	public static async Task<Embed> LinkUser(SocketUser user, int osuId, SocketGuild? guild = null)
+	public static async Task<ReturnMessage> LinkUser(SocketUser user, int osuId, SocketGuild? guild = null)
 	{
 		// TODO: [2023-01-26] use OAuth?
 
@@ -89,6 +90,9 @@ public static class User
 			await Actions.Roles.SetVerifiedRoleAsync(guild, user);
 		}
 
-		return Embeds.User.CreateLinkedEmbed(user.Id.ToString(), osuUser.Username, osuId);
+		return new ReturnMessage()
+		{
+			Embed = Embeds.User.CreateLinkedEmbed(user.Id.ToString(), osuUser.Username, osuId)
+		};
 	}
 }

@@ -179,12 +179,20 @@ public class Handler
 
 				if (e is SendMessageException ex)
 				{
-					await Actions.Reply.SendToCommandContextAsync(commandContext, ex.Draft, true);
+					await Actions.Reply.SendToCommandContextAsync(commandContext, new ReturnMessage()
+					{
+						IsError = true,
+						Message = ex.Draft
+					});
 				}
 				else
 				{
 					Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-					await Actions.Reply.SendToCommandContextAsync(commandContext, "Unhandled client error occurred.", true);
+					await Actions.Reply.SendToCommandContextAsync(commandContext, new ReturnMessage()
+					{
+						IsError = true,
+						Message = "Unhandled client error occurred."
+					});
 				}
 			}
 			else
@@ -206,19 +214,24 @@ public class Handler
 		{
 			if (context is SocketInteractionContext interactionContext)
 			{
-				RestInteractionMessage interactionResponse = await interactionContext.Interaction.GetOriginalResponseAsync();
-				bool modifyResponse = interactionResponse.Content.Equals(string.Empty) || interactionResponse.Embeds.Count <= 0;
-
 				Exception e = execResult.Exception;
 
 				if (e is SendMessageException ex)
 				{
-					await Actions.Reply.SendToInteractionContextAsync(interactionContext, ex.Draft, isError: true, modifyResponse);
+					await Actions.Reply.SendToInteractionContextAsync(interactionContext, new ReturnMessage()
+					{
+						IsError = true,
+						Message = ex.Draft
+					});
 				}
 				else
 				{
 					Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-					await Actions.Reply.SendToInteractionContextAsync(interactionContext, "Unhandled client error occurred.", isError: true, modifyResponse);
+					await Actions.Reply.SendToInteractionContextAsync(interactionContext, new ReturnMessage()
+					{
+						IsError = true,
+						Message = "Unhandled client error occurred."
+					});
 				}
 			}
 			else

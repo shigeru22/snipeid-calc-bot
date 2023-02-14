@@ -21,7 +21,7 @@ namespace LeaderpointsBot.Client.Commands;
 public static class Counter
 {
 	// Bathbot count (<osc) message
-	public static async Task<ReturnMessages[]> CountBathbotLeaderboardPointsAsync(Embed countEmbed, SocketGuild? guild = null)
+	public static async Task<ReturnMessage[]> CountBathbotLeaderboardPointsAsync(Embed countEmbed, SocketGuild? guild = null)
 	{
 		ServersQuerySchema.ServersTableData? dbServer = null;
 		if (guild != null)
@@ -85,29 +85,26 @@ public static class Counter
 			}
 		}
 
-		List<ReturnMessages> responses = new List<ReturnMessages>()
+		List<ReturnMessage> responses = new List<ReturnMessage>()
 		{
-			new ReturnMessages()
+			new ReturnMessage()
 			{
-				MessageType = Common.ResponseMessageType.Embed,
-				Contents = Embeds.Counter.CreateCountEmbed(embedUsername, embedTopCounts)
+				Embed = Embeds.Counter.CreateCountEmbed(embedUsername, embedTopCounts)
 			}
 		};
 
 		if (updateMessages.HasValue)
 		{
-			responses.Add(new ReturnMessages()
+			responses.Add(new ReturnMessage()
 			{
-				MessageType = Common.ResponseMessageType.Text,
-				Contents = updateMessages.Value.PointsMessage
+				Message = updateMessages.Value.PointsMessage
 			});
 
 			if (!string.IsNullOrWhiteSpace(updateMessages.Value.RoleMessage))
 			{
-				responses.Add(new ReturnMessages()
+				responses.Add(new ReturnMessage()
 				{
-					MessageType = Common.ResponseMessageType.Text,
-					Contents = updateMessages.Value.RoleMessage
+					Message = updateMessages.Value.RoleMessage
 				});
 			}
 		}
@@ -115,7 +112,7 @@ public static class Counter
 		return responses.ToArray();
 	}
 
-	public static async Task<ReturnMessages[]> CountLeaderboardPointsByDiscordUserAsync(string userDiscordId, string clientDiscordId, SocketGuild? guild = null)
+	public static async Task<ReturnMessage[]> CountLeaderboardPointsByDiscordUserAsync(string userDiscordId, string clientDiscordId, SocketGuild? guild = null)
 	{
 		// TODO: [2023-01-21] extract reused procedures as methods
 
@@ -237,29 +234,26 @@ public static class Counter
 			updateMessages = await Actions.Counter.UpdateUserDataAsync(guild, osuId, points);
 		}
 
-		List<ReturnMessages> responses = new List<ReturnMessages>()
+		List<ReturnMessage> responses = new List<ReturnMessage>()
 		{
-			new ReturnMessages()
+			new ReturnMessage()
 			{
-				MessageType = Common.ResponseMessageType.Embed,
-				Contents = Embeds.Counter.CreateCountEmbed(osuUsername, topCounts, false, Settings.Instance.OsuApi.UseRespektiveStats)
+				Embed = Embeds.Counter.CreateCountEmbed(osuUsername, topCounts, false, Settings.Instance.OsuApi.UseRespektiveStats)
 			}
 		};
 
 		if (updateMessages.HasValue)
 		{
-			responses.Add(new ReturnMessages()
+			responses.Add(new ReturnMessage()
 			{
-				MessageType = Common.ResponseMessageType.Text,
-				Contents = updateMessages.Value.PointsMessage
+				Message = updateMessages.Value.PointsMessage
 			});
 
 			if (!string.IsNullOrWhiteSpace(updateMessages.Value.RoleMessage))
 			{
-				responses.Add(new ReturnMessages()
+				responses.Add(new ReturnMessage()
 				{
-					MessageType = Common.ResponseMessageType.Text,
-					Contents = updateMessages.Value.RoleMessage
+					Message = updateMessages.Value.RoleMessage
 				});
 			}
 		}
@@ -267,7 +261,7 @@ public static class Counter
 		return responses.ToArray();
 	}
 
-	public static async Task<ReturnMessages[]> CountLeaderboardPointsByOsuUsernameAsync(string osuUsername, SocketGuild? guild = null)
+	public static async Task<ReturnMessage[]> CountLeaderboardPointsByOsuUsernameAsync(string osuUsername, SocketGuild? guild = null)
 	{
 		// TODO: [2023-01-21] extract reused procedures as methods
 
@@ -384,29 +378,26 @@ public static class Counter
 			}
 		}
 
-		List<ReturnMessages> responses = new List<ReturnMessages>()
+		List<ReturnMessage> responses = new List<ReturnMessage>()
 		{
-			new ReturnMessages()
+			new ReturnMessage()
 			{
-				MessageType = Common.ResponseMessageType.Embed,
-				Contents = Embeds.Counter.CreateCountEmbed(osuUsername, topCounts, false, Settings.Instance.OsuApi.UseRespektiveStats)
+				Embed = Embeds.Counter.CreateCountEmbed(osuUsername, topCounts, false, Settings.Instance.OsuApi.UseRespektiveStats)
 			}
 		};
 
 		if (updateMessages.HasValue)
 		{
-			responses.Add(new ReturnMessages()
+			responses.Add(new ReturnMessage()
 			{
-				MessageType = Common.ResponseMessageType.Text,
-				Contents = updateMessages.Value.PointsMessage
+				Message = updateMessages.Value.PointsMessage
 			});
 
 			if (!string.IsNullOrWhiteSpace(updateMessages.Value.RoleMessage))
 			{
-				responses.Add(new ReturnMessages()
+				responses.Add(new ReturnMessage()
 				{
-					MessageType = Common.ResponseMessageType.Text,
-					Contents = updateMessages.Value.RoleMessage
+					Message = updateMessages.Value.RoleMessage
 				});
 			}
 		}
@@ -414,7 +405,7 @@ public static class Counter
 		return responses.ToArray();
 	}
 
-	public static async Task<ReturnMessages[]> WhatIfUserCount(string userDiscordId, string arguments)
+	public static async Task<ReturnMessage[]> WhatIfUserCount(string userDiscordId, string arguments)
 	{
 		int osuId;
 		string osuUsername;
@@ -562,7 +553,7 @@ public static class Counter
 				delta = whatIfPoints - originalPoints;
 				retMessage = $"You would **gain {delta}** point{(delta != 1 ? "s" : string.Empty)} from original top count.";
 			}
-			else if (originalPoints < whatIfPoints)
+			else if (originalPoints > whatIfPoints)
 			{
 				delta = originalPoints - whatIfPoints;
 				retMessage = $"You would **lose {delta}** point{(delta != 1 ? "s" : string.Empty)} from original top count.";
@@ -573,22 +564,19 @@ public static class Counter
 			}
 		}
 
-		List<ReturnMessages> responses = new List<ReturnMessages>()
+		List<ReturnMessage> responses = new List<ReturnMessage>()
 		{
-			new ReturnMessages()
+			new ReturnMessage()
 			{
-				MessageType = Common.ResponseMessageType.Embed,
-				Contents = Embeds.Counter.CreateCountEmbed(osuUsername, originalTopCounts, false, Settings.Instance.OsuApi.UseRespektiveStats)
+				Embed = Embeds.Counter.CreateCountEmbed(osuUsername, originalTopCounts, false, Settings.Instance.OsuApi.UseRespektiveStats)
 			},
-			new ReturnMessages()
+			new ReturnMessage()
 			{
-				MessageType = Common.ResponseMessageType.Embed,
-				Contents = Embeds.Counter.CreateCountEmbed(osuUsername, whatIfTopCounts, true, Settings.Instance.OsuApi.UseRespektiveStats)
+				Embed = Embeds.Counter.CreateCountEmbed(osuUsername, whatIfTopCounts, true, Settings.Instance.OsuApi.UseRespektiveStats)
 			},
-			new ReturnMessages()
+			new ReturnMessage()
 			{
-				MessageType = Common.ResponseMessageType.Text,
-				Contents = retMessage
+				Message = retMessage
 			}
 		};
 

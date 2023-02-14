@@ -21,7 +21,7 @@ public static class Context
 			Log.WriteInfo($"Calculating points for {user.Username}#{user.Discriminator}.");
 			await Context.Interaction.DeferAsync();
 
-			ReturnMessages[] responses = await Commands.Counter.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString());
+			ReturnMessage[] responses = await Commands.Counter.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString());
 
 			Log.WriteVerbose("Points calculated successfully. Sending responses.");
 			await Reply.SendToInteractionContextAsync(Context, responses);

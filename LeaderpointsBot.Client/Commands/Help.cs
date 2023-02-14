@@ -4,38 +4,48 @@
 using Discord;
 using Discord.WebSocket;
 using LeaderpointsBot.Client.Embeds;
+using LeaderpointsBot.Client.Structures;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client.Commands;
 
 public static class Help
 {
-	public static string GetPingMessage(DiscordSocketClient client)
+	public static ReturnMessage GetPingMessage(DiscordSocketClient client)
 	{
 		Log.WriteVerbose("Returning latency from client as ping message.");
-		return $"Pong! ({client.Latency} ms)";
+		return new ReturnMessage()
+		{
+			Message = $"Pong! ({client.Latency} ms)"
+		};
 	}
 
-	public static Embed GetBotHelpMessage(DiscordSocketClient client, bool useInteraction = false)
+	public static ReturnMessage GetBotHelpMessage(DiscordSocketClient client, bool useInteraction = false)
 	{
 		string commandPrefix = !useInteraction ? $"<@{client.CurrentUser.Id}> " : "**/**";
 
-		return new EmbedBuilder().WithTitle("Help: Commands")
-			.WithDescription(HelpMessages.GenerateCommandsHelpMessage(commandPrefix))
-			.WithUrl("https://leaderpoints.kyutorius.com/help")
-			.WithColor(BorderColor.Normal)
-			.Build();
+		return new ReturnMessage()
+		{
+			Embed = new EmbedBuilder().WithTitle("Help: Commands")
+				.WithDescription(HelpMessages.GenerateCommandsHelpMessage(commandPrefix))
+				.WithUrl("https://leaderpoints.kyutorius.com/help")
+				.WithColor(BorderColor.Normal)
+				.Build()
+		};
 	}
 
-	public static Embed GetConfigHelpMessage(DiscordSocketClient client, bool useInteraction = false)
+	public static ReturnMessage GetConfigHelpMessage(DiscordSocketClient client, bool useInteraction = false)
 	{
 		string commandPrefix = !useInteraction ? $"<@{client.CurrentUser.Id}> " : "**/**";
 
-		return new EmbedBuilder().WithTitle("Help: Server Configuration")
-			.WithDescription(HelpMessages.GenerateConfigurationHelpMessage(commandPrefix, useInteraction))
-			.WithUrl("https://leaderpoints.kyutorius.com/help")
-			.WithColor(BorderColor.Normal)
-			.Build();
+		return new ReturnMessage()
+		{
+			Embed = new EmbedBuilder().WithTitle("Help: Server Configuration")
+				.WithDescription(HelpMessages.GenerateConfigurationHelpMessage(commandPrefix, useInteraction))
+				.WithUrl("https://leaderpoints.kyutorius.com/help")
+				.WithColor(BorderColor.Normal)
+				.Build()
+		};
 	}
 
 	private static class HelpMessages

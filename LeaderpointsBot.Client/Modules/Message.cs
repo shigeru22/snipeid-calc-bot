@@ -23,10 +23,10 @@ public static class Message
 			Log.WriteInfo($"Linking user {Context.User.Username}#{Context.User.Discriminator} ({Context.User.Id}) to osu! user ID {osuId}.");
 			await Context.Channel.TriggerTypingAsync();
 
-			Embed replyEmbed = await User.LinkUser(Context.User, osuId, Context.Guild);
+			ReturnMessage response = await User.LinkUser(Context.User, osuId, Context.Guild);
 
 			Log.WriteInfo("Link success. Sending embed response.");
-			await Reply.SendToCommandContextAsync(Context, replyEmbed);
+			await Reply.SendToCommandContextAsync(Context, response);
 		}
 	}
 
@@ -40,8 +40,8 @@ public static class Message
 			Log.WriteInfo($"Sending ping message.");
 			await Context.Channel.TriggerTypingAsync();
 
-			string replyMsg = Help.GetPingMessage(Context.Client);
-			await Reply.SendToCommandContextAsync(Context, replyMsg);
+			ReturnMessage response = Help.GetPingMessage(Context.Client);
+			await Reply.SendToCommandContextAsync(Context, response);
 		}
 	}
 
@@ -55,7 +55,7 @@ public static class Message
 			Log.WriteInfo($"Calculating points for {Context.User.Username}#{Context.User.Discriminator}.");
 			await Context.Channel.TriggerTypingAsync();
 
-			ReturnMessages[] responses = await Commands.Counter.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString(), Context.Guild);
+			ReturnMessage[] responses = await Commands.Counter.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString(), Context.Guild);
 
 			Log.WriteVerbose("Points calculated successfully. Sending responses.");
 			await Reply.SendToCommandContextAsync(Context, responses);
@@ -69,7 +69,7 @@ public static class Message
 			Log.WriteInfo($"Calculating points for osu! user {osuUsername}.");
 			await Context.Channel.TriggerTypingAsync();
 
-			ReturnMessages[] responses = await Commands.Counter.CountLeaderboardPointsByOsuUsernameAsync(osuUsername);
+			ReturnMessage[] responses = await Commands.Counter.CountLeaderboardPointsByOsuUsernameAsync(osuUsername);
 
 			Log.WriteVerbose("Points calculated successfully. Sending responses.");
 			await Reply.SendToCommandContextAsync(Context, responses);
@@ -83,7 +83,7 @@ public static class Message
 			Log.WriteInfo($"Calculating what-if points for {Context.User.Username}#{Context.User.Discriminator} ({pointsArgs}).");
 			await Context.Channel.TriggerTypingAsync();
 
-			ReturnMessages[] responses = await Commands.Counter.WhatIfUserCount(Context.User.Id.ToString(), pointsArgs);
+			ReturnMessage[] responses = await Commands.Counter.WhatIfUserCount(Context.User.Id.ToString(), pointsArgs);
 
 			Log.WriteVerbose("What-if calculated successfully. Sending responses.");
 			await Reply.SendToCommandContextAsync(Context, responses);
@@ -101,10 +101,10 @@ public static class Message
 			Log.WriteInfo($"Retrieving server points leaderboard (guild ID {Context.Guild.Id}).");
 			await Context.Channel.TriggerTypingAsync();
 
-			Embed replyEmbed = await Leaderboard.GetServerLeaderboard(Context.Guild.Id.ToString());
+			ReturnMessage response = await Leaderboard.GetServerLeaderboard(Context.Guild.Id.ToString());
 
 			Log.WriteVerbose("Leaderboard retrieved successfully. Sending embed response.");
-			await Reply.SendToCommandContextAsync(Context, replyEmbed);
+			await Reply.SendToCommandContextAsync(Context, response);
 		}
 	}
 
@@ -118,8 +118,8 @@ public static class Message
 			Log.WriteInfo($"Sending commands usage help message.");
 			await Context.Channel.TriggerTypingAsync();
 
-			Embed replyEmbed = Help.GetBotHelpMessage(Context.Client);
-			await Reply.SendToCommandContextAsync(Context, replyEmbed);
+			ReturnMessage response = Help.GetBotHelpMessage(Context.Client);
+			await Reply.SendToCommandContextAsync(Context, response);
 		}
 	}
 
@@ -135,10 +135,10 @@ public static class Message
 			Log.WriteInfo($"Retrieving server configuration data (guild ID {Context.Guild.Id}).");
 			await Context.Channel.TriggerTypingAsync();
 
-			Embed replyEmbed = await Configuration.GetGuildConfigurationAsync(Context.Guild);
+			ReturnMessage response = await Configuration.GetGuildConfigurationAsync(Context.Guild);
 
 			Log.WriteVerbose("Server data fetched. Sending configuration embed message.");
-			await Reply.SendToCommandContextAsync(Context, replyEmbed);
+			await Reply.SendToCommandContextAsync(Context, response);
 		}
 
 		// @bot config help
@@ -149,8 +149,8 @@ public static class Message
 			Log.WriteInfo($"Sending server configuration commands help message (guild ID {Context.Guild.Id}).");
 			await Context.Channel.TriggerTypingAsync();
 
-			Embed replyEmbed = Help.GetConfigHelpMessage(Context.Client);
-			await Reply.SendToCommandContextAsync(Context, replyEmbed);
+			ReturnMessage response = Help.GetConfigHelpMessage(Context.Client);
+			await Reply.SendToCommandContextAsync(Context, response);
 		}
 
 		[Group("set")]
@@ -165,10 +165,10 @@ public static class Message
 				Log.WriteInfo($"Disabling server country restriction (guild ID {Context.Guild.Id}).");
 				await Context.Channel.TriggerTypingAsync();
 
-				string replyMsg = await Configuration.SetGuildCountryConfigurationAsync(Context.Guild);
+				ReturnMessage response = await Configuration.SetGuildCountryConfigurationAsync(Context.Guild);
 
 				Log.WriteVerbose("Server country configuration set. Sending result message.");
-				await Reply.SendToCommandContextAsync(Context, replyMsg);
+				await Reply.SendToCommandContextAsync(Context, response);
 			}
 
 			// @bot config set country [2-letter country code]
@@ -179,10 +179,10 @@ public static class Message
 				Log.WriteInfo($"Setting server country restriction to {countryCode} (guild ID {Context.Guild.Id}).");
 				await Context.Channel.TriggerTypingAsync();
 
-				string replyMsg = await Configuration.SetGuildCountryConfigurationAsync(Context.Guild, countryCode);
+				ReturnMessage response = await Configuration.SetGuildCountryConfigurationAsync(Context.Guild, countryCode);
 
 				Log.WriteVerbose("Server country configuration set. Sending result message.");
-				await Reply.SendToCommandContextAsync(Context, replyMsg);
+				await Reply.SendToCommandContextAsync(Context, response);
 			}
 
 			// @bot config set verifiedrole
@@ -193,10 +193,10 @@ public static class Message
 				Log.WriteInfo($"Disabling verified user role (guild ID {Context.Guild.Id}).");
 				await Context.Channel.TriggerTypingAsync();
 
-				string replyMsg = await Configuration.SetGuildVerifiedRoleConfigurationAsync(Context.Guild);
+				ReturnMessage response = await Configuration.SetGuildVerifiedRoleConfigurationAsync(Context.Guild);
 
 				Log.WriteVerbose("Server verified role configuration set. Sending result message.");
-				await Reply.SendToCommandContextAsync(Context, replyMsg);
+				await Reply.SendToCommandContextAsync(Context, response);
 			}
 
 			// @bot config set verifiedrole [mentioned role]
@@ -207,10 +207,10 @@ public static class Message
 				Log.WriteInfo($"Setting verified user role to {role.Id} (guild ID {Context.Guild.Id}).");
 				await Context.Channel.TriggerTypingAsync();
 
-				string replyMsg = await Configuration.SetGuildVerifiedRoleConfigurationAsync(Context.Guild, role); // determine whether role is in server?
+				ReturnMessage response = await Configuration.SetGuildVerifiedRoleConfigurationAsync(Context.Guild, role); // determine whether role is in server?
 
 				Log.WriteVerbose("Server verified role configuration set. Sending result message.");
-				await Reply.SendToCommandContextAsync(Context, replyMsg);
+				await Reply.SendToCommandContextAsync(Context, response);
 			}
 
 			// @bot config set verifiedrole [role ID]
@@ -221,10 +221,10 @@ public static class Message
 				Log.WriteInfo($"Setting verified user role to {roleDiscordId} (guild ID {Context.Guild.Id}).");
 				await Context.Channel.TriggerTypingAsync();
 
-				string replyMsg = await Configuration.SetGuildVerifiedRoleConfigurationAsync(Context.Guild, roleDiscordId);
+				ReturnMessage response = await Configuration.SetGuildVerifiedRoleConfigurationAsync(Context.Guild, roleDiscordId);
 
 				Log.WriteVerbose("Server verified role configuration set. Sending result message.");
-				await Reply.SendToCommandContextAsync(Context, replyMsg);
+				await Reply.SendToCommandContextAsync(Context, response);
 			}
 
 			// @bot config set commandschannel
@@ -235,10 +235,10 @@ public static class Message
 				Log.WriteInfo($"Disabling command channel restriction (guild ID {Context.Guild.Id}).");
 				await Context.Channel.TriggerTypingAsync();
 
-				string replyMsg = await Configuration.SetGuildCommandsChannelConfigurationAsync(Context.Guild);
+				ReturnMessage response = await Configuration.SetGuildCommandsChannelConfigurationAsync(Context.Guild);
 
 				Log.WriteVerbose("Server commands channel restriction configuration set. Sending result message.");
-				await Reply.SendToCommandContextAsync(Context, replyMsg);
+				await Reply.SendToCommandContextAsync(Context, response);
 			}
 
 			// @bot config set commandschannel [mentioned channel]
@@ -249,10 +249,10 @@ public static class Message
 				Log.WriteInfo($"Setting commands channel to {channel.Id} (guild ID {Context.Guild.Id}).");
 				await Context.Channel.TriggerTypingAsync();
 
-				string replyMsg = await Configuration.SetGuildCommandsChannelConfigurationAsync(Context.Guild, channel);
+				ReturnMessage response = await Configuration.SetGuildCommandsChannelConfigurationAsync(Context.Guild, channel);
 
 				Log.WriteVerbose("Server commands channel restriction configuration set. Sending result message.");
-				await Reply.SendToCommandContextAsync(Context, replyMsg);
+				await Reply.SendToCommandContextAsync(Context, response);
 			}
 
 			// @bot config set commandschannel [channel ID]
@@ -263,10 +263,10 @@ public static class Message
 				Log.WriteInfo($"Setting commands channel to {channelDiscordId} (guild ID {Context.Guild.Id}).");
 				await Context.Channel.TriggerTypingAsync();
 
-				string replyMsg = await Configuration.SetGuildCommandsChannelConfigurationAsync(Context.Guild, channelDiscordId);
+				ReturnMessage response = await Configuration.SetGuildCommandsChannelConfigurationAsync(Context.Guild, channelDiscordId);
 
 				Log.WriteVerbose("Server commands channel restriction configuration set. Sending result message.");
-				await Reply.SendToCommandContextAsync(Context, replyMsg);
+				await Reply.SendToCommandContextAsync(Context, response);
 			}
 
 			// @bot config set leaderboardschannel
@@ -277,10 +277,10 @@ public static class Message
 				Log.WriteInfo($"Disabling leaderboard commands channel restriction (guild ID {Context.Guild.Id}).");
 				await Context.Channel.TriggerTypingAsync();
 
-				string replyMsg = await Configuration.SetGuildLeaderboardsChannelConfigurationAsync(Context.Guild);
+				ReturnMessage response = await Configuration.SetGuildLeaderboardsChannelConfigurationAsync(Context.Guild);
 
 				Log.WriteVerbose("Server leaderboards channel restriction configuration set. Sending result message.");
-				await Reply.SendToCommandContextAsync(Context, replyMsg);
+				await Reply.SendToCommandContextAsync(Context, response);
 			}
 
 			// @bot config set leaderboardschannel [mentioned channel]
@@ -291,10 +291,10 @@ public static class Message
 				Log.WriteInfo($"Setting leaderboard commands channel to {channel.Id} (guild ID {Context.Guild.Id}).");
 				await Context.Channel.TriggerTypingAsync();
 
-				string replyMsg = await Configuration.SetGuildLeaderboardsChannelConfigurationAsync(Context.Guild, channel);
+				ReturnMessage response = await Configuration.SetGuildLeaderboardsChannelConfigurationAsync(Context.Guild, channel);
 
 				Log.WriteVerbose("Server leaderboards channel restriction configuration set. Sending result message.");
-				await Reply.SendToCommandContextAsync(Context, replyMsg);
+				await Reply.SendToCommandContextAsync(Context, response);
 			}
 
 			// @bot config set leaderboardschannel [channel ID]
@@ -305,10 +305,10 @@ public static class Message
 				Log.WriteInfo($"Setting leaderboard commands channel to {channelDiscordId} (guild ID {Context.Guild.Id}).");
 				await Context.Channel.TriggerTypingAsync();
 
-				string replyMsg = await Configuration.SetGuildLeaderboardsChannelConfigurationAsync(Context.Guild, channelDiscordId);
+				ReturnMessage response = await Configuration.SetGuildLeaderboardsChannelConfigurationAsync(Context.Guild, channelDiscordId);
 
 				Log.WriteVerbose("Server leaderboards channel restriction configuration set. Sending result message.");
-				await Reply.SendToCommandContextAsync(Context, replyMsg);
+				await Reply.SendToCommandContextAsync(Context, response);
 			}
 		}
 	}
@@ -320,7 +320,7 @@ public static class Message
 		string embedUsername = Parser.ParseUsernameFromBathbotEmbedTitle(countEmbed.Title);
 		Log.WriteInfo($"Calculating points for osu! user {embedUsername}.");
 
-		ReturnMessages[] responses = await Commands.Counter.CountBathbotLeaderboardPointsAsync(countEmbed, context.Guild);
+		ReturnMessage[] responses = await Commands.Counter.CountBathbotLeaderboardPointsAsync(countEmbed, context.Guild);
 
 		Log.WriteVerbose("Points calculated successfully. Sending responses.");
 		await Reply.SendToCommandContextAsync(context, responses);

@@ -12,102 +12,68 @@ namespace LeaderpointsBot.Client.Actions;
 
 public static class Reply
 {
-	public static async Task SendToCommandContextAsync(SocketCommandContext context, string replyMsg, bool isError = false)
+	public static async Task SendToCommandContextAsync(SocketCommandContext context, ReturnMessage response)
 	{
-		string draft = $"{(isError ? "**Error:** " : string.Empty)}{replyMsg}";
+		await SendToCommandContextAsync(context, response.Message, response.Embed, response.IsError);
+	}
 
-		if (Settings.Instance.Client.UseReply)
+	public static async Task SendToCommandContextAsync(SocketCommandContext context, ReturnMessage[] responses)
+	{
+		foreach (ReturnMessage response in responses)
 		{
-			_ = await context.Message.ReplyAsync(draft);
-		}
-		else
-		{
-			_ = await context.Channel.SendMessageAsync(draft);
+			await SendToCommandContextAsync(context, response.Message, response.Embed, response.IsError);
 		}
 	}
 
-	public static async Task SendToCommandContextAsync(SocketCommandContext context, Embed replyEmbed)
-	{
-		if (Settings.Instance.Client.UseReply)
-		{
-			_ = await context.Message.ReplyAsync(embed: replyEmbed);
-		}
-		else
-		{
-			_ = await context.Channel.SendMessageAsync(embed: replyEmbed);
-		}
-	}
-
-	public static async Task SendToCommandContextAsync(SocketCommandContext context, ReturnMessages[] responses)
-	{
-		foreach (ReturnMessages response in responses)
-		{
-			switch (response.MessageType)
-			{
-				case Common.ResponseMessageType.Embed:
-					await SendToCommandContextAsync(context, response.GetEmbed());
-					break;
-				case Common.ResponseMessageType.Text:
-					await SendToCommandContextAsync(context, response.GetString());
-					break;
-				case Common.ResponseMessageType.Error:
-					await SendToCommandContextAsync(context, response.GetString(), true);
-					break;
-				default:
-					throw new NotImplementedException("MessageType not implemented in condition block.");
-			}
-		}
-	}
-
-	public static async Task SendToInteractionContextAsync(SocketInteractionContext context, string replyMsg, bool isError = false, bool modifyResponse = false)
-	{
-		string draft = $"{(isError ? "**Error:** " : string.Empty)}{replyMsg}";
-
-		if (modifyResponse)
-		{
-			_ = await context.Interaction.ModifyOriginalResponseAsync(msg => msg.Content = draft);
-		}
-		else
-		{
-			_ = await context.Channel.SendMessageAsync(draft);
-		}
-	}
-
-	public static async Task SendToInteractionContextAsync(SocketInteractionContext context, Embed replyEmbed, bool modifyResponse = false)
-	{
-		if (modifyResponse)
-		{
-			_ = await context.Interaction.ModifyOriginalResponseAsync(msg => msg.Embed = replyEmbed);
-		}
-		else
-		{
-			_ = await context.Channel.SendMessageAsync(embed: replyEmbed);
-		}
-	}
-
-	public static async Task SendToInteractionContextAsync(SocketInteractionContext context, ReturnMessages[] responses)
+	public static async Task SendToInteractionContextAsync(SocketInteractionContext context, ReturnMessage response, bool? modifyResponse = null)
 	{
 		RestInteractionMessage interactionResponse = await context.Interaction.GetOriginalResponseAsync();
-		bool modifyResponse = interactionResponse.Content.Equals(string.Empty) || interactionResponse.Embeds.Count <= 0;
+		bool shouldModifyResponse = modifyResponse == null ? interactionResponse.Content.Equals(string.Empty) || interactionResponse.Embeds.Count <= 0 : modifyResponse.Value;
 
-		foreach (ReturnMessages response in responses)
+		await SendToInteractionContextAsync(context, response.Message, response.Embed, response.IsError, shouldModifyResponse);
+	}
+
+	public static async Task SendToInteractionContextAsync(SocketInteractionContext context, ReturnMessage[] responses, bool? modifyResponse = null)
+	{
+		RestInteractionMessage interactionResponse = await context.Interaction.GetOriginalResponseAsync();
+		bool shouldModifyResponse = modifyResponse == null ? interactionResponse.Content.Equals(string.Empty) || interactionResponse.Embeds.Count <= 0 : modifyResponse.Value;
+
+		foreach (ReturnMessage response in responses)
 		{
-			switch (response.MessageType)
-			{
-				case Common.ResponseMessageType.Embed:
-					await SendToInteractionContextAsync(context, response.GetEmbed(), modifyResponse);
-					break;
-				case Common.ResponseMessageType.Text:
-					await SendToInteractionContextAsync(context, response.GetString(), false, modifyResponse);
-					break;
-				case Common.ResponseMessageType.Error:
-					await SendToInteractionContextAsync(context, response.GetString(), true, modifyResponse);
-					break;
-				default:
-					throw new NotImplementedException("MessageType not implemented in condition block.");
-			}
-
+			await SendToInteractionContextAsync(context, response.Message, response.Embed, response.IsError, shouldModifyResponse);
 			modifyResponse = false;
+		}
+	}
+
+	private static async Task SendToCommandContextAsync(SocketCommandContext context, string? replyMsg = null, Embed? replyEmbed = null, bool isError = false)
+	{
+		string? draft = string.IsNullOrEmpty(replyMsg) ? null : $"{(isError ? "**Error:** " : string.Empty)}{replyMsg}";
+
+		if (Settings.Instance.Client.UseReply)
+		{
+			_ = await context.Message.ReplyAsync(text: draft, embed: replyEmbed);
+		}
+		else
+		{
+			_ = await context.Channel.SendMessageAsync(text: draft, embed: replyEmbed);
+		}
+	}
+
+	private static async Task SendToInteractionContextAsync(SocketInteractionContext context, string? replyMsg = null, Embed? replyEmbed = null, bool isError = false, bool modifyResponse = false)
+	{
+		string? draft = string.IsNullOrEmpty(replyMsg) ? null : $"{(isError ? "**Error:** " : string.Empty)}{replyMsg}";
+
+		if (modifyResponse)
+		{
+			_ = await context.Interaction.ModifyOriginalResponseAsync(msg =>
+			{
+				msg.Content = draft;
+				msg.Embed = replyEmbed;
+			});
+		}
+		else
+		{
+			_ = await context.Channel.SendMessageAsync(text: draft, embed: replyEmbed);
 		}
 	}
 }

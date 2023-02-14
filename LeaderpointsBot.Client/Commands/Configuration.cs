@@ -4,6 +4,7 @@
 using Discord;
 using Discord.WebSocket;
 using LeaderpointsBot.Client.Exceptions.Commands;
+using LeaderpointsBot.Client.Structures;
 using LeaderpointsBot.Database;
 using LeaderpointsBot.Database.Exceptions;
 using LeaderpointsBot.Database.Schemas;
@@ -13,7 +14,7 @@ namespace LeaderpointsBot.Client.Commands;
 
 public static class Configuration
 {
-	public static async Task<Embed> GetGuildConfigurationAsync(SocketGuild guild)
+	public static async Task<ReturnMessage> GetGuildConfigurationAsync(SocketGuild guild)
 	{
 		Log.WriteVerbose($"Fetching server in database (guild ID {guild.Id}).");
 
@@ -84,10 +85,13 @@ public static class Configuration
 			LeaderboardsChannelName = currentLeaderboardsChannel?.Name
 		};
 
-		return Embeds.Configuration.CreateServerConfigurationEmbed(configData);
+		return new ReturnMessage()
+		{
+			Embed = Embeds.Configuration.CreateServerConfigurationEmbed(configData)
+		};
 	}
 
-	public static async Task<string> SetGuildCountryConfigurationAsync(SocketGuild guild, string? targetCountryCode = null)
+	public static async Task<ReturnMessage> SetGuildCountryConfigurationAsync(SocketGuild guild, string? targetCountryCode = null)
 	{
 		Log.WriteVerbose($"Setting country for guild ID {guild.Id} to {(string.IsNullOrWhiteSpace(targetCountryCode) ? "null" : targetCountryCode)}.");
 
@@ -104,17 +108,13 @@ public static class Configuration
 
 		await DatabaseFactory.Instance.ServersInstance.UpdateServerCountry(guild.Id.ToString(), targetCountryCode);
 
-		if (string.IsNullOrWhiteSpace(targetCountryCode))
+		return new ReturnMessage()
 		{
-			return "Server country restriction disabled.";
-		}
-		else
-		{
-			return $"Set server country restriction to **{targetCountryCode}**.";
-		}
+			Message = string.IsNullOrWhiteSpace(targetCountryCode) ? "Server country restriction disabled." : $"Set server country restriction to **{targetCountryCode}**."
+		};
 	}
 
-	public static async Task<string> SetGuildVerifiedRoleConfigurationAsync(SocketGuild guild, SocketRole? targetRole = null)
+	public static async Task<ReturnMessage> SetGuildVerifiedRoleConfigurationAsync(SocketGuild guild, SocketRole? targetRole = null)
 	{
 		Log.WriteVerbose($"Setting verified role for guild ID {guild.Id} to {(targetRole == null ? "null" : targetRole.Id.ToString())}.");
 
@@ -131,17 +131,13 @@ public static class Configuration
 
 		await DatabaseFactory.Instance.ServersInstance.UpdateServerVerifiedRoleID(guild.Id.ToString(), targetRole?.Id.ToString());
 
-		if (targetRole == null)
+		return new ReturnMessage()
 		{
-			return "Server verified role disabled.";
-		}
-		else
-		{
-			return $"Set server verified role to **{targetRole.Name}**.";
-		}
+			Message = targetRole == null ? "Server verified role disabled." : $"Set server verified role to **{targetRole.Name}**."
+		};
 	}
 
-	public static async Task<string> SetGuildVerifiedRoleConfigurationAsync(SocketGuild guild, string targetRoleDiscordId)
+	public static async Task<ReturnMessage> SetGuildVerifiedRoleConfigurationAsync(SocketGuild guild, string targetRoleDiscordId)
 	{
 		Log.WriteVerbose($"Setting verified role for guild ID {guild.Id} to {targetRoleDiscordId}.");
 
@@ -177,10 +173,13 @@ public static class Configuration
 
 		await DatabaseFactory.Instance.ServersInstance.UpdateServerVerifiedRoleID(guild.Id.ToString(), targetRole.Id.ToString());
 
-		return $"Set server verified role to **{targetRole.Name}**";
+		return new ReturnMessage()
+		{
+			Message = $"Set server verified role to **{targetRole.Name}**"
+		};
 	}
 
-	public static async Task<string> SetGuildCommandsChannelConfigurationAsync(SocketGuild guild, SocketGuildChannel? targetChannel = null)
+	public static async Task<ReturnMessage> SetGuildCommandsChannelConfigurationAsync(SocketGuild guild, SocketGuildChannel? targetChannel = null)
 	{
 		Log.WriteVerbose($"Setting commands channel restriction for guild ID {guild.Id} to {(targetChannel == null ? "null" : targetChannel.Id.ToString())}.");
 
@@ -203,17 +202,13 @@ public static class Configuration
 
 		await DatabaseFactory.Instance.ServersInstance.UpdateServerCommandsChannelID(guild.Id.ToString(), targetChannel?.Id.ToString());
 
-		if (targetChannel == null)
+		return new ReturnMessage()
 		{
-			return "Server commands channel restriction disabled.";
-		}
-		else
-		{
-			return $"Set server commands channel restriction to **{targetChannel.Name}**.";
-		}
+			Message = targetChannel == null ? "Server commands channel restriction disabled." : $"Set server commands channel restriction to **{targetChannel.Name}**."
+		};
 	}
 
-	public static async Task<string> SetGuildCommandsChannelConfigurationAsync(SocketGuild guild, string targetChannelDiscordId)
+	public static async Task<ReturnMessage> SetGuildCommandsChannelConfigurationAsync(SocketGuild guild, string targetChannelDiscordId)
 	{
 		Log.WriteVerbose($"Setting commands channel restriction for guild ID {guild.Id} to {targetChannelDiscordId}.");
 
@@ -243,10 +238,13 @@ public static class Configuration
 
 		await DatabaseFactory.Instance.ServersInstance.UpdateServerCommandsChannelID(guild.Id.ToString(), targetChannel.Id.ToString());
 
-		return $"Set server commands channel restriction to **{targetChannel.Name}**.";
+		return new ReturnMessage()
+		{
+			Message = $"Set server commands channel restriction to **{targetChannel.Name}**."
+		};
 	}
 
-	public static async Task<string> SetGuildLeaderboardsChannelConfigurationAsync(SocketGuild guild, SocketGuildChannel? targetChannel = null)
+	public static async Task<ReturnMessage> SetGuildLeaderboardsChannelConfigurationAsync(SocketGuild guild, SocketGuildChannel? targetChannel = null)
 	{
 		Log.WriteVerbose($"Setting leaderboards channel restriction for guild ID {guild.Id} to {(targetChannel == null ? "null" : targetChannel.Id.ToString())}.");
 
@@ -269,17 +267,13 @@ public static class Configuration
 
 		await DatabaseFactory.Instance.ServersInstance.UpdateServerLeaderboardsChannelID(guild.Id.ToString(), targetChannel?.Id.ToString());
 
-		if (targetChannel == null)
+		return new ReturnMessage()
 		{
-			return "Server leaderboards channel restriction disabled.";
-		}
-		else
-		{
-			return $"Set server leaderboards channel restriction to **{targetChannel.Name}**.";
-		}
+			Message = targetChannel == null ? "Server leaderboards channel restriction disabled." : $"Set server leaderboards channel restriction to **{targetChannel.Name}**."
+		};
 	}
 
-	public static async Task<string> SetGuildLeaderboardsChannelConfigurationAsync(SocketGuild guild, string targetChannelDiscordId)
+	public static async Task<ReturnMessage> SetGuildLeaderboardsChannelConfigurationAsync(SocketGuild guild, string targetChannelDiscordId)
 	{
 		Log.WriteVerbose($"Setting leaderboards channel restriction for guild ID {guild.Id} to {targetChannelDiscordId}.");
 
@@ -309,6 +303,9 @@ public static class Configuration
 
 		await DatabaseFactory.Instance.ServersInstance.UpdateServerLeaderboardsChannelID(guild.Id.ToString(), targetChannel.Id.ToString());
 
-		return $"Set server leaderboards channel restriction to **{targetChannel.Name}**.";
+		return new ReturnMessage()
+		{
+			Message = $"Set server leaderboards channel restriction to **{targetChannel.Name}**."
+		};
 	}
 }

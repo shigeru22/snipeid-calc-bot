@@ -3,6 +3,7 @@
 
 using Discord;
 using LeaderpointsBot.Client.Exceptions.Commands;
+using LeaderpointsBot.Client.Structures;
 using LeaderpointsBot.Database;
 using LeaderpointsBot.Database.Schemas;
 using LeaderpointsBot.Utils;
@@ -12,7 +13,7 @@ namespace LeaderpointsBot.Client.Commands;
 
 public static class Leaderboard
 {
-	public static async Task<Embed> GetServerLeaderboard(string guildDiscordId)
+	public static async Task<ReturnMessage> GetServerLeaderboard(string guildDiscordId)
 	{
 		UsersQuerySchema.UsersLeaderboardData[] serverLeaderboardData;
 		DateTime lastUpdate;
@@ -36,6 +37,10 @@ public static class Leaderboard
 		}
 
 		Log.WriteVerbose("Returning leaderboard data as embed.");
-		return Embeds.Leaderboard.CreateLeaderboardEmbed(serverLeaderboardData, lastUpdate);
+
+		return new ReturnMessage()
+		{
+			Embed = Embeds.Leaderboard.CreateLeaderboardEmbed(serverLeaderboardData, lastUpdate)
+		};
 	}
 }
