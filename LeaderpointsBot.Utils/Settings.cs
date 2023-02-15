@@ -62,6 +62,7 @@ public class Settings
 	internal bool shouldPromptPassword;
 	internal bool shouldInitializeInteractions;
 	internal bool shouldInitializeDatabase;
+	internal bool shouldOutputHelpMessage;
 
 	public SettingsTypes.JsonClientSettings Client => client;
 	public SettingsTypes.JsonDatabaseSettings Database => database;
@@ -83,13 +84,36 @@ public class Settings
 		osuApi = temp.OsuApi;
 	}
 
-	[Argument("t")]
+	internal void PostArgumentHandling()
+	{
+		if (shouldOutputHelpMessage)
+		{
+			ArgumentHandler.PrintHelpMessage();
+			Environment.Exit(0);
+		}
+
+		if (shouldPromptPassword)
+		{
+			Console.Write($"Enter database password for {Instance.database.Username}: ");
+			string temp = Input.ReadHiddenLine();
+			database.Password = temp;
+		}
+	}
+
+	[Argument("h", "help")]
+	[Description("Prints this help message.")]
+	internal void ShowHelpMessage() => shouldOutputHelpMessage = true;
+
+	[Argument("t", "bot-token")]
+	[Description("Sets Discord bot token.")]
 	internal void UpdateClientBotToken([ArgumentParameter] string value) => client.BotToken = value;
 
-	[Argument("r")]
+	[Argument("r", "use-reply")]
+	[Description("Sets whether client should reply after each message commands action.")]
 	internal void UpdateClientUseReply() => client.UseReply = true;
 
-	[Argument("u")]
+	[Argument("u", "use-utc")]
+	[Description("Sets whether client should use UTC time for logging.")]
 	internal void UpdateClientUseUTC()
 	{
 		SettingsTypes.JsonClientLoggingSettings temp = client.Logging;
@@ -97,7 +121,8 @@ public class Settings
 		client.Logging = temp;
 	}
 
-	[Argument("s")]
+	[Argument("s", "log-severity")]
+	[Description("Sets client logging severity (1-5).")]
 	internal void UpdateClientLogSeverity([ArgumentParameter] int value)
 	{
 		if (value is < 1 or > 5)
@@ -110,39 +135,51 @@ public class Settings
 		client.Logging = temp;
 	}
 
-	[Argument("dh")]
+	[Argument("dh", "db-hostname")]
+	[Description("Sets database hostname.")]
 	internal void UpdateDatabaseHostname([ArgumentParameter] string value) => database.HostName = value;
 
-	[Argument("dt")]
+	[Argument("dt", "db-port")]
+	[Description("Sets database port.")]
 	internal void UpdateDatabasePort([ArgumentParameter] int value) => database.Port = value;
 
-	[Argument("du")]
+	[Argument("du", "db-username")]
+	[Description("Sets database username.")]
 	internal void UpdateDatabaseUsername([ArgumentParameter] string value) => database.Username = value;
 
-	[Argument("dp")]
+	[Argument("dp", "db-password")]
+	[Description("Sets database password.")]
 	internal void UpdateDatabasePassword() => shouldPromptPassword = true;
 
-	[Argument("dp")]
+	[Argument("dp", "db-password")]
+	[Description("Sets database password directly in plain text.")]
 	internal void UpdateDatabasePassword([ArgumentParameter] string value) => database.Password = value;
 
-	[Argument("dn")]
+	[Argument("dn", "db-name")]
+	[Description("Sets database name.")]
 	internal void UpdateDatabaseName([ArgumentParameter] string value) => database.DatabaseName = value;
 
-	[Argument("dc")]
+	[Argument("dc", "db-cert")]
+	[Description("Sets database certificate path.")]
 	internal void UpdateDatabaseCAPath([ArgumentParameter] string value) => database.CAFilePath = value;
 
-	[Argument("oc")]
+	[Argument("oc", "osu-clientid")]
+	[Description("Sets osu! client ID.")]
 	internal void UpdateOsuApiClientID([ArgumentParameter] int value) => osuApi.ClientID = value;
 
-	[Argument("os")]
+	[Argument("os", "osu-clientsecret")]
+	[Description("Sets osu! client secret.")]
 	internal void UpdateOsuApiClientSecret([ArgumentParameter] string value) => osuApi.ClientSecret = value;
 
-	[Argument("or")]
+	[Argument("or", "osu-use-respektive")]
+	[Description("Sets whether should use respektive's osu!stats API.")]
 	internal void UpdateOsuApiUseRespektive() => osuApi.UseRespektiveStats = true;
 
-	[Argument("i")]
+	[Argument("i", "init-interactions")]
+	[Description("Initializes client interactions.")]
 	internal void UpdateInitializeInteractions() => shouldInitializeInteractions = true;
 
-	[Argument("d")]
+	[Argument("d", "init-db")]
+	[Description("Initializes database.")]
 	internal void UpdateInitializeDatabase() => shouldInitializeDatabase = true;
 }

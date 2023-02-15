@@ -9,7 +9,7 @@ public class ArgumentAttribute : Attribute
 	public string? ShortFlag { get; init; }
 	public string? LongFlag { get; init; }
 
-	public ArgumentAttribute(string? shortFlag)
+	public ArgumentAttribute(string shortFlag)
 	{
 		ShortFlag = shortFlag;
 		LongFlag = null;

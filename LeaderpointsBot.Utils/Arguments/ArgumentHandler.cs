@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the repository root for details.
 
 using System.Reflection;
-using System.Text.Json;
+using System.Text;
 
 namespace LeaderpointsBot.Utils.Arguments;
 
@@ -43,14 +43,82 @@ public static class ArgumentHandler
 			}
 		}
 
-		methods = null; // free memory since no longer used
+		Settings.Instance.PostArgumentHandling();
 
-		if (Settings.Instance.shouldPromptPassword)
+		methods = null; // free memory since no longer used
+	}
+
+	internal static void PrintHelpMessage()
+	{
+		if (methods == null || methods.Length <= 0)
 		{
-			Console.Write($"Enter password for {Settings.Instance.database.Username}: ");
-			string temp = Input.ReadHiddenLine();
-			Settings.Instance.database.Password = temp;
+			// TODO: create better exception
+			throw new NullReferenceException("Methods with Argument attribute not found.");
 		}
+
+		int minShortWidth = 2;
+		int minLongWidth = 2;
+
+		List<string[]> outputRows = new List<string[]>();
+		foreach (MethodInfo method in methods)
+		{
+			ArgumentAttribute? argAttr = (ArgumentAttribute?)method.GetCustomAttribute(typeof(ArgumentAttribute));
+			DescriptionAttribute? descAttr = (DescriptionAttribute?)method.GetCustomAttribute(typeof(DescriptionAttribute));
+
+			if (argAttr == null)
+			{
+				throw new ArgumentException("Invalid method processed.");
+			}
+
+			if (descAttr == null)
+			{
+				throw new ArgumentException("Methods with argument attribute should implement Description attribute.");
+			}
+
+			if (argAttr.ShortFlag != null && minShortWidth < (argAttr.ShortFlag.Length + 1))
+			{
+				minShortWidth = argAttr.ShortFlag.Length + 1;
+			}
+
+			if (argAttr.LongFlag != null && minLongWidth < (argAttr.LongFlag.Length + 3))
+			{
+				minLongWidth = argAttr.LongFlag.Length + 3;
+			}
+
+			if (method.GetParameters().Length == 1 && argAttr.LongFlag != null && minLongWidth < (argAttr.LongFlag.Length + 8))
+			{
+				minLongWidth = argAttr.LongFlag.Length + 10;
+			}
+
+			outputRows.Add(new string[] {
+				$"-{argAttr.ShortFlag ?? string.Empty}",
+				$"--{argAttr.LongFlag ?? string.Empty} {(method.GetParameters().Length == 1 ? "[value]" : string.Empty)}",
+				descAttr.Description
+			});
+		}
+
+		StringBuilder helpMessage = new StringBuilder();
+
+		_ = helpMessage.Append("Usage:\n");
+		_ = helpMessage.Append("  LeaderpointsBot.Client [options]\n\n");
+		_ = helpMessage.Append("Options:\n");
+		_ = helpMessage.Append("Note that each options could be specified for overriding settings without the need for configuration file.\n");
+		_ = helpMessage.Append("However, if any option is not specified, an error message will be shown and exit.\n");
+
+		foreach (string[] outputColumns in outputRows)
+		{
+			_ = helpMessage.Append($"  ");
+			_ = helpMessage.Append($"{outputColumns[0].PadRight(minShortWidth, ' ')}  ");
+			_ = helpMessage.Append($"{outputColumns[1].PadRight(minLongWidth, ' ')}  ");
+			_ = helpMessage.Append($"{outputColumns[2]}\n");
+		}
+
+		_ = helpMessage.Append('\n');
+
+		Console.WriteLine(helpMessage);
+
+		methods = null;
+		Environment.Exit(0);
 	}
 
 	private static void HandleArgument(ref int currentIndex, bool isLongArgument, string key, string? value)
