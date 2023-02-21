@@ -5,7 +5,7 @@ namespace LeaderpointsBot.Utils;
 
 public static class Env
 {
-	private static readonly string envPrefix = "LPB_";
+	internal static readonly string envPrefix = "LPB_";
 
 	// key used for the dictionary is based on argument keys,
 	// for easier referencing while querying help message

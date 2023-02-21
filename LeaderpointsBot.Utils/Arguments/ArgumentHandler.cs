@@ -100,15 +100,15 @@ public static class ArgumentHandler
 				minLongWidth = argAttr.LongFlag.Length + 10;
 			}
 
-			if (envKey != null && minEnvWidth < envKey.Length + 2)
+			if (envKey != null && minEnvWidth < envKey.Length + Env.envPrefix.Length + 2)
 			{
-				minEnvWidth = envKey.Length + 2;
+				minEnvWidth = envKey.Length + Env.envPrefix.Length + 2;
 			}
 
 			outputRows.Add(new string[] {
 				$"-{argAttr.ShortFlag ?? string.Empty}",
 				$"--{argAttr.LongFlag ?? string.Empty} {(method.GetParameters().Length == 1 ? "[value]" : string.Empty)}",
-				envKey ?? string.Empty,
+				$"{(!string.IsNullOrWhiteSpace(envKey) ? $"{Env.envPrefix}{envKey}" : string.Empty)}",
 				$"{descAttr.Description}{(descAttr.IsRequired ? " *" : string.Empty)}"
 			});
 		}
