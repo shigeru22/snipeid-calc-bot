@@ -346,15 +346,27 @@ public class Settings
 			isValid = false;
 		}
 
+		if (client.Logging.LogSeverity == 0)
+		{
+			var temp = client.Logging;
+			temp.LogSeverity = 3; // info
+			client.Logging = temp;
+		}
+		else if (client.Logging.LogSeverity > 5)
+		{
+			Console.WriteLine("Configuration error: Bot token must be specified.");
+			isValid = false;
+		}
+
 		if (string.IsNullOrWhiteSpace(database.HostName))
 		{
-			Console.WriteLine("Configuration error: Database hostname must be specified.");
+			Console.WriteLine("Configuration error: Logging severity must be specified [1(critical)-5(debug)].");
 			isValid = false;
 		}
 
 		if (database.Port is < 1 or > ushort.MaxValue)
 		{
-			Console.WriteLine("Configuration error: Database port must be specified (1-65535).");
+			Console.WriteLine("Configuration error: Database port must be specified [1-65535].");
 			isValid = false;
 		}
 
@@ -364,11 +376,7 @@ public class Settings
 			isValid = false;
 		}
 
-		if (string.IsNullOrWhiteSpace(database.Password))
-		{
-			Console.WriteLine("Configuration error: Database password must be specified.");
-			isValid = false;
-		}
+		database.Password ??= string.Empty;
 
 		if (string.IsNullOrWhiteSpace(database.DatabaseName))
 		{
@@ -376,7 +384,7 @@ public class Settings
 			isValid = false;
 		}
 
-		if (database.Port is < 1)
+		if (osuApi.ClientID is < 1)
 		{
 			Console.WriteLine("Configuration error: osu!api client ID must be specified.");
 			isValid = false;

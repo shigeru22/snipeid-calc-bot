@@ -18,7 +18,7 @@ public static class Args
 	}
 
 	[Argument("t", "bot-token")]
-	[Description("Sets Discord bot token.")]
+	[Description("Sets Discord bot token.", isRequired: true)]
 	internal static void UpdateClientBotToken([ArgumentParameter] string value)
 	{
 		tempConfig.BotToken = value;
@@ -51,21 +51,21 @@ public static class Args
 	}
 
 	[Argument("dh", "db-hostname")]
-	[Description("Sets database hostname.")]
+	[Description("Sets database hostname.", isRequired: true)]
 	internal static void UpdateDatabaseHostname([ArgumentParameter] string value)
 	{
 		tempConfig.DatabaseHostname = value;
 	}
 
 	[Argument("dt", "db-port")]
-	[Description("Sets database port.")]
+	[Description("Sets database port.", isRequired: true)]
 	internal static void UpdateDatabasePort([ArgumentParameter] int value)
 	{
 		tempConfig.DatabasePort = value;
 	}
 
 	[Argument("du", "db-username")]
-	[Description("Sets database username.")]
+	[Description("Sets database username.", isRequired: true)]
 	internal static void UpdateDatabaseUsername([ArgumentParameter] string value)
 	{
 		tempConfig.DatabaseUsername = value;
@@ -86,7 +86,7 @@ public static class Args
 	}
 
 	[Argument("dn", "db-name")]
-	[Description("Sets database name.")]
+	[Description("Sets database name.", isRequired: true)]
 	internal static void UpdateDatabaseName([ArgumentParameter] string value)
 	{
 		tempConfig.DatabaseName = value;
@@ -100,14 +100,14 @@ public static class Args
 	}
 
 	[Argument("oc", "osu-clientid")]
-	[Description("Sets osu! client ID.")]
+	[Description("Sets osu! client ID.", isRequired: true)]
 	internal static void UpdateOsuApiClientID([ArgumentParameter] int value)
 	{
 		tempConfig.OsuApiClientID = value;
 	}
 
 	[Argument("os", "osu-clientsecret")]
-	[Description("Sets osu! client secret.")]
+	[Description("Sets osu! client secret.", isRequired: true)]
 	internal static void UpdateOsuApiClientSecret([ArgumentParameter] string value)
 	{
 		tempConfig.OsuApiClientSecret = value;

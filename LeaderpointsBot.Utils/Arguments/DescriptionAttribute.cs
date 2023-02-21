@@ -8,8 +8,9 @@ public class DescriptionAttribute : Attribute
 {
 	public string Description { get; init; }
 	public bool IsFlag { get; init; }
+	public bool IsRequired { get; init; }
 
-	public DescriptionAttribute(string description, bool isFlag = false)
+	public DescriptionAttribute(string description, bool isFlag = false, bool isRequired = false)
 	{
 		if (string.IsNullOrWhiteSpace(description))
 		{
@@ -18,5 +19,6 @@ public class DescriptionAttribute : Attribute
 
 		Description = description;
 		IsFlag = isFlag;
+		IsRequired = isRequired;
 	}
 }

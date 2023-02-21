@@ -109,7 +109,7 @@ public static class ArgumentHandler
 				$"-{argAttr.ShortFlag ?? string.Empty}",
 				$"--{argAttr.LongFlag ?? string.Empty} {(method.GetParameters().Length == 1 ? "[value]" : string.Empty)}",
 				envKey ?? string.Empty,
-				descAttr.Description
+				$"{descAttr.Description}{(descAttr.IsRequired ? " *" : string.Empty)}"
 			});
 		}
 
@@ -119,7 +119,8 @@ public static class ArgumentHandler
 		_ = helpMessage.Append("  LeaderpointsBot.Client [arguments]\n\n");
 		_ = helpMessage.Append("Options:\n");
 		_ = helpMessage.Append("Note that each options could be specified for overriding settings without the need for configuration file.\n");
-		_ = helpMessage.Append("However, if any option is not specified, an error message will be shown and exit.\n\n");
+		_ = helpMessage.Append("However, if any required option is not specified, an error message will be shown and exit.\n");
+		_ = helpMessage.Append("Asterisk (*) indicates required options.\n\n");
 		_ = helpMessage.Append($"  {"Arguments:".PadRight(minShortWidth + minLongWidth + 4, ' ')}{"Environment:".PadRight(minEnvWidth, ' ')}Description:\n");
 
 		foreach (string[] outputColumns in outputRows)
