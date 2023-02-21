@@ -4,18 +4,14 @@
 using LeaderpointsBot.Api;
 using LeaderpointsBot.Database;
 using LeaderpointsBot.Utils;
-using LeaderpointsBot.Utils.Arguments;
 
 namespace LeaderpointsBot.Client;
 
 public static class Program
 {
-	public static async Task Main(string[] args)
+	public static async Task Main()
 	{
-		if (args.Length > 0)
-		{
-			ArgumentHandler.HandleArguments(args);
-		}
+		Settings.Instance.HandleInstanceArguments();
 
 		Log.WriteInfo("Program started.");
 

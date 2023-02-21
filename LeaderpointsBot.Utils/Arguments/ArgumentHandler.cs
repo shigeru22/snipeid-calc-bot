@@ -10,12 +10,12 @@ public static class ArgumentHandler
 {
 	private static MethodInfo[]? methods = null;
 
-	public static void HandleArguments(string[] args) // TODO: create tests
+	public static void HandleArguments(string[] args, string nameOfType, BindingFlags flags, object? instance = null) // TODO: create tests
 	{
 		methods = AppDomain.CurrentDomain.GetAssemblies()
 			.SelectMany(identifier => identifier.GetTypes())
-			.Where(type => type.IsClass && type.Name.Equals(nameof(Settings)))
-			.SelectMany(classItem => classItem.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance))
+			.Where(type => type.IsClass && type.Name.Equals(nameOfType))
+			.SelectMany(classItem => classItem.GetMethods(flags))
 			.Where(method => method.GetCustomAttribute(typeof(ArgumentAttribute)) != null)
 			.ToArray();
 
@@ -31,11 +31,11 @@ public static class ArgumentHandler
 		{
 			if (args[i].StartsWith("--"))
 			{
-				HandleArgument(ref i, true, args[i][2..], GetArgumentElement(args, i + 1));
+				HandleArgument(ref i, true, args[i][2..], GetArgumentElement(args, i + 1), instance);
 			}
 			else if (args[i].StartsWith("-"))
 			{
-				HandleArgument(ref i, false, args[i][1..], GetArgumentElement(args, i + 1));
+				HandleArgument(ref i, false, args[i][1..], GetArgumentElement(args, i + 1), instance);
 			}
 			else
 			{
@@ -43,13 +43,20 @@ public static class ArgumentHandler
 			}
 		}
 
-		Settings.Instance.PostArgumentHandling();
-
-		methods = null; // free memory since no longer used
+		// free memory since no longer used
+		methods = null;
+		GC.Collect();
 	}
 
 	internal static void PrintHelpMessage()
 	{
+		methods = AppDomain.CurrentDomain.GetAssemblies()
+			.SelectMany(identifier => identifier.GetTypes())
+			.Where(type => type.IsClass)
+			.SelectMany(classItem => classItem.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)) // everything
+			.Where(method => method.GetCustomAttribute(typeof(ArgumentAttribute)) != null)
+			.ToArray();
+
 		if (methods == null || methods.Length <= 0)
 		{
 			// TODO: create better exception
@@ -58,6 +65,7 @@ public static class ArgumentHandler
 
 		int minShortWidth = 2;
 		int minLongWidth = 2;
+		int minEnvWidth = 2;
 
 		List<string[]> outputRows = new List<string[]>();
 		foreach (MethodInfo method in methods)
@@ -75,6 +83,8 @@ public static class ArgumentHandler
 				throw new ArgumentException("Methods with argument attribute should implement Description attribute.");
 			}
 
+			string? envKey = argAttr.ShortFlag != null ? Env.GetEnvironmentKeyByShortFlag(argAttr.ShortFlag) : null;
+
 			if (argAttr.ShortFlag != null && minShortWidth < (argAttr.ShortFlag.Length + 1))
 			{
 				minShortWidth = argAttr.ShortFlag.Length + 1;
@@ -90,9 +100,15 @@ public static class ArgumentHandler
 				minLongWidth = argAttr.LongFlag.Length + 10;
 			}
 
+			if (envKey != null && minEnvWidth < envKey.Length + 2)
+			{
+				minEnvWidth = envKey.Length + 2;
+			}
+
 			outputRows.Add(new string[] {
 				$"-{argAttr.ShortFlag ?? string.Empty}",
 				$"--{argAttr.LongFlag ?? string.Empty} {(method.GetParameters().Length == 1 ? "[value]" : string.Empty)}",
+				envKey ?? string.Empty,
 				descAttr.Description
 			});
 		}
@@ -100,17 +116,19 @@ public static class ArgumentHandler
 		StringBuilder helpMessage = new StringBuilder();
 
 		_ = helpMessage.Append("Usage:\n");
-		_ = helpMessage.Append("  LeaderpointsBot.Client [options]\n\n");
+		_ = helpMessage.Append("  LeaderpointsBot.Client [arguments]\n\n");
 		_ = helpMessage.Append("Options:\n");
 		_ = helpMessage.Append("Note that each options could be specified for overriding settings without the need for configuration file.\n");
-		_ = helpMessage.Append("However, if any option is not specified, an error message will be shown and exit.\n");
+		_ = helpMessage.Append("However, if any option is not specified, an error message will be shown and exit.\n\n");
+		_ = helpMessage.Append($"  {"Arguments:".PadRight(minShortWidth + minLongWidth + 4, ' ')}{"Environment:".PadRight(minEnvWidth, ' ')}Description:\n");
 
 		foreach (string[] outputColumns in outputRows)
 		{
 			_ = helpMessage.Append($"  ");
 			_ = helpMessage.Append($"{outputColumns[0].PadRight(minShortWidth, ' ')}  ");
 			_ = helpMessage.Append($"{outputColumns[1].PadRight(minLongWidth, ' ')}  ");
-			_ = helpMessage.Append($"{outputColumns[2]}\n");
+			_ = helpMessage.Append($"{outputColumns[2].PadRight(minEnvWidth, ' ')}");
+			_ = helpMessage.Append($"{outputColumns[3]}\n");
 		}
 
 		_ = helpMessage.Append('\n');
@@ -121,7 +139,7 @@ public static class ArgumentHandler
 		Environment.Exit(0);
 	}
 
-	private static void HandleArgument(ref int currentIndex, bool isLongArgument, string key, string? value)
+	private static void HandleArgument(ref int currentIndex, bool isLongArgument, string key, string? value, object? target = null)
 	{
 		if (methods == null)
 		{
@@ -136,9 +154,31 @@ public static class ArgumentHandler
 
 			if (method.DeclaringType != null && isCurrentMethod)
 			{
-				if (method.GetParameters().Length == 1)
+				int paramLength = method.GetParameters().Length;
+
+				// if current (iterated) method parameter is empty,
+				// but found multiple overloaded methods with parameter with the same name,
+				// and value is set, skip current method instead
+
+				if (paramLength == 0 && methods.Where(tempMethod => tempMethod.Name.Equals(method.Name)).Count() == 2 && !string.IsNullOrWhiteSpace(value))
 				{
-					if (value == null)
+					continue;
+				}
+
+				if (paramLength == 0)
+				{
+					if (target != null)
+					{
+						_ = method.Invoke(target, null);
+					}
+					else
+					{
+						_ = method.Invoke(null, null);
+					}
+				}
+				else if (paramLength == 1)
+				{
+					if (string.IsNullOrWhiteSpace(value))
 					{
 						throw new ArgumentException("This argument method requires a parameter value.");
 					}
@@ -153,13 +193,22 @@ public static class ArgumentHandler
 					}
 
 					object tempValue = Convert.ChangeType(value, parameters[0].ParameterType);
-					_ = method.Invoke(Settings.Instance, new object[] { tempValue });
+
+					if (target != null)
+					{
+						_ = method.Invoke(target, new object[] { tempValue });
+					}
+					else
+					{
+						_ = method.Invoke(null, new object[] { tempValue });
+					}
 
 					currentIndex++;
 				}
 				else
 				{
-					_ = method.Invoke(Settings.Instance, null);
+					// invalid argument error
+					throw new ArgumentException($"Invalid argument: -{(isLongArgument ? '-' : string.Empty)}{key}");
 				}
 
 				break;
@@ -182,10 +231,5 @@ public static class ArgumentHandler
 		{
 			return null;
 		}
-	}
-
-	private static T? ParseArgumentValue<T>(string argumentValue)
-	{
-		return (T)Convert.ChangeType(argumentValue, typeof(T));
 	}
 }

@@ -10,6 +10,10 @@ public class Settings
 {
 	public static class SettingsTypes
 	{
+		// if field is not available on deserialization,
+		// would default itself to its default value.
+		// (int = 0, bool = false, heap types = null)
+
 		public struct JsonClientSettings
 		{
 			public string BotToken { get; set; }
@@ -48,11 +52,32 @@ public class Settings
 			public JsonDatabaseSettings Database { get; set; }
 			public JsonOsuClientSettings OsuApi { get; set; }
 		}
+
+		public struct EnvironmentSettings
+		{
+			public string? BotToken { get; internal set; }
+			public bool? UseReply { get; internal set; }
+			public bool? LogUseUTC { get; internal set; }
+			public int? LogSeverity { get; internal set; }
+			public string? DatabaseHostname { get; internal set; }
+			public int? DatabasePort { get; internal set; }
+			public string? DatabaseUsername { get; internal set; }
+			public string? DatabasePassword { get; internal set; }
+			public string? DatabaseName { get; internal set; }
+			public string? DatabaseCAFilePath { get; internal set; }
+			public int? OsuApiClientID { get; internal set; }
+			public string? OsuApiClientSecret { get; internal set; }
+			public bool? UseRespektiveApi { get; internal set; }
+			public bool? ShouldOutputHelp { get; internal set; }
+			public bool? ShouldPromptPassword { get; internal set; }
+			public bool? ShouldInitializeInteractions { get; internal set; }
+			public bool? ShouldInitializeDatabase { get; internal set; }
+		}
 	}
 
 	private const string DEFAULT_SETTINGS_PATH = "appsettings.json";
 
-	private static readonly Settings instance = new Settings(DEFAULT_SETTINGS_PATH);
+	private static readonly Settings instance = new Settings();
 
 	public static Settings Instance => instance;
 
@@ -70,21 +95,40 @@ public class Settings
 	public bool ShouldInitializeInteractions => shouldInitializeInteractions;
 	public bool ShouldInitializeDatabase => shouldInitializeDatabase;
 
-	private Settings(string settingsPath)
+	private Settings()
 	{
-		JsonSerializerOptions options = new JsonSerializerOptions()
+		SettingsTypes.EnvironmentSettings envConfig = Env.RetrieveEnvironmentData();
+		SettingsTypes.JsonSettings fileConfig = JsonSerializer.Deserialize<SettingsTypes.JsonSettings>(
+			File.ReadAllText(DEFAULT_SETTINGS_PATH),
+			new JsonSerializerOptions()
+			{
+				PropertyNameCaseInsensitive = true
+			}
+		);
+		SettingsTypes.EnvironmentSettings argConfig = Args.GetConfigurationArguments();
+
+		// Console.WriteLine($"-t = {(argConfig.ShouldOutputHelp == null ? "null" : argConfig.ShouldOutputHelp)}");
+
+		SettingsTypes.JsonSettings mergedConfig = new SettingsTypes.JsonSettings();
+		mergedConfig = MergeConfiguration(
+			MergeConfiguration(
+				MergeConfiguration(mergedConfig, envConfig),
+				fileConfig
+			),
+			argConfig
+		);
+
+		client = mergedConfig.Client;
+		database = mergedConfig.Database;
+		osuApi = mergedConfig.OsuApi;
+
+		if (!VerifyConfiguration())
 		{
-			PropertyNameCaseInsensitive = true
-		};
-
-		SettingsTypes.JsonSettings temp = JsonSerializer.Deserialize<SettingsTypes.JsonSettings>(File.ReadAllText(settingsPath), options);
-
-		client = temp.Client;
-		database = temp.Database;
-		osuApi = temp.OsuApi;
+			Environment.Exit(1);
+		}
 	}
 
-	internal void PostArgumentHandling()
+	public void HandleInstanceArguments()
 	{
 		if (shouldOutputHelpMessage)
 		{
@@ -100,86 +144,255 @@ public class Settings
 		}
 	}
 
-	[Argument("h", "help")]
-	[Description("Prints this help message.")]
-	internal void ShowHelpMessage() => shouldOutputHelpMessage = true;
-
-	[Argument("t", "bot-token")]
-	[Description("Sets Discord bot token.")]
-	internal void UpdateClientBotToken([ArgumentParameter] string value) => client.BotToken = value;
-
-	[Argument("r", "use-reply")]
-	[Description("Sets whether client should reply after each message commands action.")]
-	internal void UpdateClientUseReply() => client.UseReply = true;
-
-	[Argument("u", "use-utc")]
-	[Description("Sets whether client should use UTC time for logging.")]
-	internal void UpdateClientUseUTC()
+	private SettingsTypes.JsonSettings MergeConfiguration(SettingsTypes.JsonSettings target, SettingsTypes.JsonSettings source)
 	{
-		SettingsTypes.JsonClientLoggingSettings temp = client.Logging;
-		temp.UseUTC = true;
-		client.Logging = temp;
-	}
+		var tempClient = target.Client;
+		var tempDatabase = target.Database;
+		var tempOsuApi = target.OsuApi;
 
-	[Argument("s", "log-severity")]
-	[Description("Sets client logging severity (1-5).")]
-	internal void UpdateClientLogSeverity([ArgumentParameter] int value)
-	{
-		if (value is < 1 or > 5)
+		if (!string.IsNullOrWhiteSpace(source.Client.BotToken))
 		{
-			throw new ArgumentException("Invalid program argument.");
+			tempClient.BotToken = source.Client.BotToken;
 		}
 
-		SettingsTypes.JsonClientLoggingSettings temp = client.Logging;
-		temp.LogSeverity = value;
-		client.Logging = temp;
+		if (source.Client.UseReply)
+		{
+			tempClient.UseReply = true;
+		}
+
+		if (source.Client.Logging.UseUTC || (source.Client.Logging.LogSeverity is >= 1 and <= 5))
+		{
+			var tempLogging = tempClient.Logging;
+
+			if (source.Client.Logging.UseUTC)
+			{
+				tempLogging.UseUTC = true;
+			}
+
+			if (source.Client.Logging.LogSeverity is >= 1 and <= 5)
+			{
+				tempLogging.LogSeverity = source.Client.Logging.LogSeverity;
+			}
+
+			tempClient.Logging = tempLogging;
+		}
+
+		if (!string.IsNullOrWhiteSpace(source.Database.HostName))
+		{
+			tempDatabase.HostName = source.Database.HostName;
+		}
+
+		if (source.Database.Port is >= 1 and <= ushort.MaxValue) // 65535
+		{
+			tempDatabase.Port = source.Database.Port;
+		}
+
+		if (!string.IsNullOrWhiteSpace(source.Database.Username))
+		{
+			tempDatabase.Username = source.Database.Username;
+		}
+
+		if (!string.IsNullOrWhiteSpace(source.Database.Password))
+		{
+			tempDatabase.Password = source.Database.Password;
+		}
+
+		if (!string.IsNullOrWhiteSpace(source.Database.DatabaseName))
+		{
+			tempDatabase.DatabaseName = source.Database.DatabaseName;
+		}
+
+		if (!string.IsNullOrWhiteSpace(source.Database.CAFilePath))
+		{
+			tempDatabase.CAFilePath = source.Database.CAFilePath;
+		}
+
+		if (source.OsuApi.ClientID is >= 1)
+		{
+			tempOsuApi.ClientID = source.OsuApi.ClientID;
+		}
+
+		if (!string.IsNullOrWhiteSpace(source.OsuApi.ClientSecret))
+		{
+			tempOsuApi.ClientSecret = source.OsuApi.ClientSecret;
+		}
+
+		if (source.OsuApi.UseRespektiveStats)
+		{
+			tempOsuApi.UseRespektiveStats = true;
+		}
+
+		return new SettingsTypes.JsonSettings()
+		{
+			Client = tempClient,
+			Database = tempDatabase,
+			OsuApi = tempOsuApi
+		};
 	}
 
-	[Argument("dh", "db-hostname")]
-	[Description("Sets database hostname.")]
-	internal void UpdateDatabaseHostname([ArgumentParameter] string value) => database.HostName = value;
+	private SettingsTypes.JsonSettings MergeConfiguration(SettingsTypes.JsonSettings target, SettingsTypes.EnvironmentSettings source)
+	{
+		var tempClient = target.Client;
+		var tempDatabase = target.Database;
+		var tempOsuApi = target.OsuApi;
 
-	[Argument("dt", "db-port")]
-	[Description("Sets database port.")]
-	internal void UpdateDatabasePort([ArgumentParameter] int value) => database.Port = value;
+		if (!string.IsNullOrWhiteSpace(source.BotToken))
+		{
+			tempClient.BotToken = source.BotToken;
+		}
 
-	[Argument("du", "db-username")]
-	[Description("Sets database username.")]
-	internal void UpdateDatabaseUsername([ArgumentParameter] string value) => database.Username = value;
+		if (source.UseReply.HasValue && source.UseReply.Value == true)
+		{
+			tempClient.UseReply = true;
+		}
 
-	[Argument("dp", "db-password")]
-	[Description("Sets database password.")]
-	internal void UpdateDatabasePassword() => shouldPromptPassword = true;
+		if (source.LogUseUTC == true || (source.LogSeverity.HasValue && source.LogSeverity.Value is >= 1 and <= 5))
+		{
+			var tempLogging = tempClient.Logging;
 
-	[Argument("dp", "db-password")]
-	[Description("Sets database password directly in plain text.")]
-	internal void UpdateDatabasePassword([ArgumentParameter] string value) => database.Password = value;
+			if (source.LogUseUTC == true)
+			{
+				tempLogging.UseUTC = true;
+			}
 
-	[Argument("dn", "db-name")]
-	[Description("Sets database name.")]
-	internal void UpdateDatabaseName([ArgumentParameter] string value) => database.DatabaseName = value;
+			if (source.LogSeverity.HasValue && source.LogSeverity.Value is >= 1 and <= 5)
+			{
+				tempLogging.LogSeverity = source.LogSeverity.Value;
+			}
 
-	[Argument("dc", "db-cert")]
-	[Description("Sets database certificate path.")]
-	internal void UpdateDatabaseCAPath([ArgumentParameter] string value) => database.CAFilePath = value;
+			tempClient.Logging = tempLogging;
+		}
 
-	[Argument("oc", "osu-clientid")]
-	[Description("Sets osu! client ID.")]
-	internal void UpdateOsuApiClientID([ArgumentParameter] int value) => osuApi.ClientID = value;
+		if (!string.IsNullOrWhiteSpace(source.DatabaseHostname))
+		{
+			tempDatabase.HostName = source.DatabaseHostname;
+		}
 
-	[Argument("os", "osu-clientsecret")]
-	[Description("Sets osu! client secret.")]
-	internal void UpdateOsuApiClientSecret([ArgumentParameter] string value) => osuApi.ClientSecret = value;
+		if (source.DatabasePort.HasValue && source.DatabasePort.Value is >= 1 and <= ushort.MaxValue) // 65535
+		{
+			tempDatabase.Port = source.DatabasePort.Value;
+		}
 
-	[Argument("or", "osu-use-respektive")]
-	[Description("Sets whether should use respektive's osu!stats API.")]
-	internal void UpdateOsuApiUseRespektive() => osuApi.UseRespektiveStats = true;
+		if (!string.IsNullOrWhiteSpace(source.DatabaseUsername))
+		{
+			tempDatabase.Username = source.DatabaseUsername;
+		}
 
-	[Argument("i", "init-interactions")]
-	[Description("Initializes client interactions.")]
-	internal void UpdateInitializeInteractions() => shouldInitializeInteractions = true;
+		if (!string.IsNullOrWhiteSpace(source.DatabasePassword))
+		{
+			tempDatabase.Password = source.DatabasePassword;
+		}
 
-	[Argument("d", "init-db")]
-	[Description("Initializes database.")]
-	internal void UpdateInitializeDatabase() => shouldInitializeDatabase = true;
+		if (!string.IsNullOrWhiteSpace(source.DatabaseName))
+		{
+			tempDatabase.DatabaseName = source.DatabaseName;
+		}
+
+		if (!string.IsNullOrWhiteSpace(source.DatabaseCAFilePath))
+		{
+			tempDatabase.CAFilePath = source.DatabaseCAFilePath;
+		}
+
+		if (source.OsuApiClientID.HasValue && source.OsuApiClientID.Value is >= 1)
+		{
+			tempOsuApi.ClientID = source.OsuApiClientID.Value;
+		}
+
+		if (!string.IsNullOrWhiteSpace(source.OsuApiClientSecret))
+		{
+			tempOsuApi.ClientSecret = source.OsuApiClientSecret;
+		}
+
+		if (source.UseRespektiveApi.HasValue && source.UseRespektiveApi.Value is true)
+		{
+			tempOsuApi.UseRespektiveStats = true;
+		}
+
+		if (source.ShouldOutputHelp.HasValue && source.ShouldOutputHelp is true)
+		{
+			shouldOutputHelpMessage = true;
+		}
+
+		if (source.ShouldPromptPassword.HasValue && source.ShouldPromptPassword.Value is true)
+		{
+			shouldPromptPassword = true;
+		}
+
+		if (source.ShouldInitializeInteractions.HasValue && source.ShouldInitializeInteractions is true)
+		{
+			shouldInitializeInteractions = true;
+		}
+
+		if (source.ShouldInitializeDatabase.HasValue && source.ShouldInitializeDatabase is true)
+		{
+			shouldInitializeDatabase = true;
+		}
+
+		return new SettingsTypes.JsonSettings()
+		{
+			Client = tempClient,
+			Database = tempDatabase,
+			OsuApi = tempOsuApi
+		};
+	}
+
+	private bool VerifyConfiguration()
+	{
+		bool isValid = true;
+
+		if (string.IsNullOrWhiteSpace(client.BotToken))
+		{
+			Console.WriteLine("Configuration error: Bot token must be specified.");
+			isValid = false;
+		}
+
+		if (string.IsNullOrWhiteSpace(database.HostName))
+		{
+			Console.WriteLine("Configuration error: Database hostname must be specified.");
+			isValid = false;
+		}
+
+		if (database.Port is < 1 or > ushort.MaxValue)
+		{
+			Console.WriteLine("Configuration error: Database port must be specified (1-65535).");
+			isValid = false;
+		}
+
+		if (string.IsNullOrWhiteSpace(database.Username))
+		{
+			Console.WriteLine("Configuration error: Database username must be specified.");
+			isValid = false;
+		}
+
+		if (string.IsNullOrWhiteSpace(database.Password))
+		{
+			Console.WriteLine("Configuration error: Database password must be specified.");
+			isValid = false;
+		}
+
+		if (string.IsNullOrWhiteSpace(database.DatabaseName))
+		{
+			Console.WriteLine("Configuration error: Database name must be specified.");
+			isValid = false;
+		}
+
+		if (database.Port is < 1)
+		{
+			Console.WriteLine("Configuration error: osu!api client ID must be specified.");
+			isValid = false;
+		}
+
+		if (string.IsNullOrWhiteSpace(osuApi.ClientSecret))
+		{
+			Console.WriteLine("Configuration error: osu!api client secret must be specified.");
+			isValid = false;
+		}
+
+		if (!isValid)
+		{
+			Console.WriteLine("Configuration error occurred. See help for configuration options.");
+		}
+
+		return isValid;
+	}
 }
