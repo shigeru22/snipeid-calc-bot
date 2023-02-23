@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using LeaderpointsBot.Utils.Arguments;
+using LeaderpointsBot.Utils.Exceptions.Environments;
 
 namespace LeaderpointsBot.Utils;
 
@@ -97,7 +98,18 @@ public class Settings
 
 	private Settings()
 	{
-		SettingsTypes.EnvironmentSettings envConfig = Env.RetrieveEnvironmentData();
+		SettingsTypes.EnvironmentSettings envConfig = new SettingsTypes.EnvironmentSettings();
+
+		try
+		{
+			envConfig = Env.RetrieveEnvironmentData();
+		}
+		catch (EnvironmentVariableValueException e)
+		{
+			Console.WriteLine(e.Message);
+			Environment.Exit(1);
+		}
+
 		SettingsTypes.JsonSettings fileConfig = JsonSerializer.Deserialize<SettingsTypes.JsonSettings>(
 			File.ReadAllText(DEFAULT_SETTINGS_PATH),
 			new JsonSerializerOptions()

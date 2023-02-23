@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using LeaderpointsBot.Utils.Arguments;
+using LeaderpointsBot.Utils.Exceptions.Arguments;
 
 namespace LeaderpointsBot.Utils;
 
@@ -44,7 +45,7 @@ public static class Args
 	{
 		if (value is < 1 or > 5)
 		{
-			throw new ArgumentException("Invalid program argument.");
+			throw new ArgumentValueException("log severity", "must be between 1 and 5.");
 		}
 
 		tempConfig.LogSeverity = value;
@@ -61,6 +62,11 @@ public static class Args
 	[Description("Sets database port.", isRequired: true)]
 	internal static void UpdateDatabasePort([ArgumentParameter] int value)
 	{
+		if (value is < 1 or > ushort.MaxValue)
+		{
+			throw new ArgumentValueException("database port", "must be between 1 and 65535.");
+		}
+
 		tempConfig.DatabasePort = value;
 	}
 
@@ -103,6 +109,11 @@ public static class Args
 	[Description("Sets osu! client ID.", isRequired: true)]
 	internal static void UpdateOsuApiClientID([ArgumentParameter] int value)
 	{
+		if (value is < 1 or > ushort.MaxValue)
+		{
+			throw new ArgumentValueException("osu! client ID", "must be higher than 0.");
+		}
+
 		tempConfig.OsuApiClientID = value;
 	}
 

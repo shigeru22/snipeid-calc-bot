@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using System.Text;
+using LeaderpointsBot.Utils.Exceptions.Arguments;
 
 namespace LeaderpointsBot.Utils.Arguments;
 
@@ -39,7 +40,7 @@ public static class ArgumentHandler
 			}
 			else
 			{
-				throw new ArgumentException($"Invalid program argument: {args[i]}");
+				throw new InvalidArgumentException(args[i]);
 			}
 		}
 
@@ -59,8 +60,7 @@ public static class ArgumentHandler
 
 		if (methods == null || methods.Length <= 0)
 		{
-			// TODO: create better exception
-			throw new NullReferenceException("Methods with Argument attribute not found.");
+			throw new MethodNotFoundException(nameof(ArgumentAttribute));
 		}
 
 		int minShortWidth = 2;
@@ -75,12 +75,12 @@ public static class ArgumentHandler
 
 			if (argAttr == null)
 			{
-				throw new ArgumentException("Invalid method processed.");
+				throw new InvalidMethodException(method.Name);
 			}
 
 			if (descAttr == null)
 			{
-				throw new ArgumentException("Methods with argument attribute should implement Description attribute.");
+				throw new NullAttributeException(nameof(DescriptionAttribute));
 			}
 
 			string? envKey = argAttr.ShortFlag != null ? Env.GetEnvironmentKeyByShortFlag(argAttr.ShortFlag) : null;
@@ -181,7 +181,7 @@ public static class ArgumentHandler
 				{
 					if (string.IsNullOrWhiteSpace(value))
 					{
-						throw new ArgumentException("This argument method requires a parameter value.");
+						throw new ArgumentParameterException(true);
 					}
 
 					ParameterInfo[] parameters = method.GetParameters()
@@ -190,7 +190,7 @@ public static class ArgumentHandler
 
 					if (parameters.Length <= 0)
 					{
-						throw new ArgumentException("Parameter type not specified using ArgumentParameter attribute.");
+						throw new ParameterAttributeException(method.Name);
 					}
 
 					object tempValue = Convert.ChangeType(value, parameters[0].ParameterType);
@@ -209,7 +209,7 @@ public static class ArgumentHandler
 				else
 				{
 					// invalid argument error
-					throw new ArgumentException($"Invalid argument: -{(isLongArgument ? '-' : string.Empty)}{key}");
+					throw new InvalidArgumentException($"{(isLongArgument ? "--" : "-")}{key}");
 				}
 
 				break;

@@ -1,6 +1,8 @@
 // Copyright (c) shigeru22, concept by Akshiro28.
 // Licensed under the MIT license. See LICENSE in the repository root for details.
 
+using LeaderpointsBot.Utils.Exceptions.Environments;
+
 namespace LeaderpointsBot.Utils;
 
 public static class Env
@@ -46,9 +48,9 @@ public static class Env
 
 		bool? shouldUseReply;
 		bool? logUseUtc;
-		int? logSeverity = null;
-		int? databasePort = null;
-		int? osuApiClientId = null;
+		int? logSeverity;
+		int? databasePort;
+		int? osuApiClientId;
 		bool? useRespektiveApi;
 
 		shouldUseReply = envUseReply != null ? envUseReply.Equals("1") || envUseReply.Equals("true") : null;
@@ -60,8 +62,12 @@ public static class Env
 		}
 		catch (FormatException)
 		{
-			Log.WriteCritical($"Invalid {envPrefix}{environmentKeys["LogSeverity"]}: Value must be number.");
-			Environment.Exit(1);
+			throw new EnvironmentVariableValueException($"{envPrefix}{environmentKeys["s"]}", "must be a valid number between 1 and 5.");
+		}
+
+		if (logSeverity is < 1 or > 5)
+		{
+			throw new EnvironmentVariableValueException($"{envPrefix}{environmentKeys["s"]}", "must be a valid number between 1 and 5.");
 		}
 
 		try
@@ -70,8 +76,12 @@ public static class Env
 		}
 		catch (FormatException)
 		{
-			Log.WriteCritical($"Invalid {envPrefix}{environmentKeys["DatabasePort"]}: Value must be number.");
-			Environment.Exit(1);
+			throw new EnvironmentVariableValueException($"{envPrefix}{environmentKeys["dp"]}", "must be a valid number between 1 and 65535.");
+		}
+
+		if (logSeverity is < 1 or > ushort.MaxValue)
+		{
+			throw new EnvironmentVariableValueException($"{envPrefix}{environmentKeys["dp"]}", "must be a valid number between 1 and 65535.");
 		}
 
 		try
@@ -80,8 +90,12 @@ public static class Env
 		}
 		catch (FormatException)
 		{
-			Log.WriteCritical($"Invalid {envPrefix}{environmentKeys["OsuApiClientID"]}: Value must be number.");
-			Environment.Exit(1);
+			throw new EnvironmentVariableValueException($"{envPrefix}{environmentKeys["oc"]}", "must be a valid number higher than 0.");
+		}
+
+		if (logSeverity is < 1)
+		{
+			throw new EnvironmentVariableValueException($"{envPrefix}{environmentKeys["dp"]}", "must be a valid number higher than 0.");
 		}
 
 		useRespektiveApi = envUseRespektiveApi != null ? envUseRespektiveApi.Equals("1") || envUseRespektiveApi.Equals("true") : null;
