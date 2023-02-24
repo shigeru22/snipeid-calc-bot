@@ -4,8 +4,6 @@
 // ReSharper disable InconsistentlySynchronizedField
 
 using Discord;
-using Discord.Commands;
-using Discord.Interactions;
 using Discord.WebSocket;
 using LeaderpointsBot.Utils;
 
