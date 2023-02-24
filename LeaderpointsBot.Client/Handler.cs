@@ -94,7 +94,9 @@ public class Handler
 			return;
 		}
 
-		// Log.WriteDebug($"Message from {msg.Author.Username}#{msg.Author.Discriminator}: {msg.Content}");
+		ChannelType? channelType = msg.Channel.GetChannelType();
+
+		Log.WriteDebug($"Message from {msg.Author.Username}#{msg.Author.Discriminator}: {msg.Content}");
 
 		if (msg is not SocketUserMessage userMsg)
 		{
@@ -102,7 +104,7 @@ public class Handler
 			return;
 		}
 
-		if (msg.Channel.GetChannelType() != ChannelType.Text)
+		if (channelType is not ChannelType.Text and not ChannelType.PublicThread and not ChannelType.PrivateThread and not ChannelType.DM)
 		{
 			Log.WriteDebug("Message is not from text-based channel.");
 			return;
@@ -173,9 +175,26 @@ public class Handler
 			return;
 		}
 
-		if (result is Discord.Commands.ExecuteResult execResult)
+		if (result.Error == CommandError.UnknownCommand)
 		{
-			if (context is SocketCommandContext commandContext)
+			Log.WriteVerbose("Unknown command. Ignoring message.");
+			return;
+		}
+
+		if (context is SocketCommandContext commandContext)
+		{
+			if (result.Error == CommandError.UnmetPrecondition)
+			{
+				await Actions.Reply.SendToCommandContextAsync(commandContext, new ReturnMessage()
+				{
+					IsError = true,
+					Message = result.ErrorReason
+				});
+
+				return;
+			}
+
+			if (result is Discord.Commands.ExecuteResult execResult)
 			{
 				Exception e = execResult.Exception;
 
@@ -197,10 +216,10 @@ public class Handler
 					});
 				}
 			}
-			else
-			{
-				Log.WriteCritical("This method is supposed to be used for command events.");
-			}
+		}
+		else
+		{
+			Log.WriteCritical("This method is supposed to be used for command events.");
 		}
 	}
 
