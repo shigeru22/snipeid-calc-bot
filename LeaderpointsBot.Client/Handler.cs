@@ -5,9 +5,7 @@ using System.Reflection;
 using Discord;
 using Discord.Commands;
 using Discord.Interactions;
-using Discord.Rest;
 using Discord.WebSocket;
-using LeaderpointsBot.Client.Commands;
 using LeaderpointsBot.Client.Exceptions.Commands;
 using LeaderpointsBot.Client.Structures;
 using LeaderpointsBot.Utils;
@@ -43,8 +41,12 @@ public class Handler
 			LogLevel = LogSeverity.Info
 		});
 
+		commandService.Log += Log.WriteAsync;
+		interactionService.Log += Log.WriteAsync;
+
 		commandService.CommandExecuted += OnCommandExecuted;
-		interactionService.SlashCommandExecuted += OnInteractionExecuted;
+		interactionService.SlashCommandExecuted += OnSlashExecuted;
+		interactionService.ContextCommandExecuted += OnContextExecuted;
 
 		Log.WriteVerbose("Service instances created.");
 	}
@@ -202,7 +204,11 @@ public class Handler
 		}
 	}
 
-	private async Task OnInteractionExecuted(SlashCommandInfo commandInfo, IInteractionContext context, Discord.Interactions.IResult result)
+	private async Task OnSlashExecuted(SlashCommandInfo commandInfo, IInteractionContext context, Discord.Interactions.IResult result) => await InteractionErrorHandlingAsync(context, result);
+
+	private async Task OnContextExecuted(ContextCommandInfo commandInfo, IInteractionContext context, Discord.Interactions.IResult result) => await InteractionErrorHandlingAsync(context, result);
+
+	private async Task InteractionErrorHandlingAsync(IInteractionContext context, Discord.Interactions.IResult result)
 	{
 		if (result.Error == null)
 		{
