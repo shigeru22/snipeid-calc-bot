@@ -11,4 +11,10 @@ public static class Common
 		Text,
 		Embed
 	}
+
+	public static class CachingPrefix
+	{
+		public const string CLIENT = "CID_";
+		public const string GUILD = "GID_";
+	}
 }

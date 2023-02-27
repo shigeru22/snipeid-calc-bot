@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the repository root for details.
 
 using LeaderpointsBot.Api;
+using LeaderpointsBot.Client.Actions;
 using LeaderpointsBot.Client.Caching;
 using LeaderpointsBot.Database;
 using LeaderpointsBot.Utils;
@@ -32,6 +33,10 @@ public static class Program
 			DatabaseName = Settings.Instance.Database.DatabaseName,
 			CAFilePath = Settings.Instance.Database.CAFilePath,
 		});
+
+		Log.WriteVerbose("Start populating server caches from database.");
+
+		await Cache.PopulateGuildConfigurations();
 
 		Log.WriteVerbose("Starting up client.");
 

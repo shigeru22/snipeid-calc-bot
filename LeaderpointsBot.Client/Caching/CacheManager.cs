@@ -16,9 +16,20 @@ public class CacheManager
 
 	public static CacheManager Instance => instance;
 
+	private readonly MemoryCache cache;
+
+	private readonly GuildCache guildCacheInstance;
+
+	public GuildCache GuildCacheInstance => guildCacheInstance;
+
 	private CacheManager()
 	{
-		Log.WriteVerbose("CacheManager instance created.");
+		Log.WriteVerbose("CacheManager instance created. Using default MemoryCache instance.");
+
+		cache = MemoryCache.Default;
+		guildCacheInstance = new GuildCache(cache);
+
+		Log.WriteVerbose("Cache instances created.");
 	}
 
 	public static CacheItemPolicy GenerateCachePolicy() => new CacheItemPolicy()
