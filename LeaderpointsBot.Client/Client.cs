@@ -28,7 +28,8 @@ public class Client
 		client = new DiscordSocketClient(new DiscordSocketConfig()
 		{
 			UseInteractionSnowflakeDate = false,
-			GatewayIntents = GatewayIntents.GuildMessages | // send messages for text-based commands
+			GatewayIntents = GatewayIntents.Guilds | // get channel information in contexts
+				GatewayIntents.GuildMessages | // send messages for text-based commands
 				GatewayIntents.DirectMessages | // get direct messages for text-based commands
 				GatewayIntents.MessageContent // read message contents for text-based commands
 		});
