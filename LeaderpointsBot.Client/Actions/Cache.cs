@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE in the repository root for details.
 
 using LeaderpointsBot.Client.Caching;
-using LeaderpointsBot.Client.Structures;
 using LeaderpointsBot.Database;
 using LeaderpointsBot.Database.Schemas;
 using LeaderpointsBot.Utils;

@@ -27,68 +27,124 @@ public class GuildCache : CacheWrapperBase
 		Log.WriteVerbose("GuildCache instance created.");
 	}
 
-	public ServersQuerySchema.ServersTableData GetDatabaseCache(string guildDiscordId)
+	public ServersQuerySchema.ServersTableData? GetDatabaseCache(string guildDiscordId)
 	{
 		string keyPrefix = $"{CACHE_KEY_PREFIX}_{guildDiscordId}";
 
-		int serverId = GetCache<int>($"{keyPrefix}_{CacheItemSuffixes.DATABASE_ID}");
-		string discordId = GetCache<string>($"{keyPrefix}_{CacheItemSuffixes.DISCORD_ID}");
-		string country = GetCache<string>($"{keyPrefix}_{CacheItemSuffixes.COUNTRY}");
-		string verifyChannelId = GetCache<string>($"{keyPrefix}_{CacheItemSuffixes.VERIFY_CHANNEL_ID}");
-		string verifiedRoleId = GetCache<string>($"{keyPrefix}_{CacheItemSuffixes.VERIFIED_ROLE_ID}");
-		string commandsChannelId = GetCache<string>($"{keyPrefix}_{CacheItemSuffixes.COMMANDS_CHANNEL_ID}");
-		string leaderboardsChannelId = GetCache<string>($"{keyPrefix}_{CacheItemSuffixes.LEADERBOARDS_CHANNEL_ID}");
-
-		return new ServersQuerySchema.ServersTableData()
+		try
 		{
-			ServerID = serverId,
-			DiscordID = discordId,
-			Country = string.IsNullOrWhiteSpace(country) ? null : country,
-			VerifyChannelID = string.IsNullOrWhiteSpace(verifyChannelId) ? null : verifyChannelId,
-			VerifiedRoleID = string.IsNullOrWhiteSpace(verifiedRoleId) ? null : verifiedRoleId,
-			CommandsChannelID = string.IsNullOrWhiteSpace(commandsChannelId) ? null : commandsChannelId,
-			LeaderboardsChannelID = string.IsNullOrWhiteSpace(leaderboardsChannelId) ? null : leaderboardsChannelId
-		};
+			int serverId = GetCache<int>($"{keyPrefix}_{CacheItemSuffixes.DATABASE_ID}");
+			string discordId = GetCache<string>($"{keyPrefix}_{CacheItemSuffixes.DISCORD_ID}");
+			string country = GetCache<string>($"{keyPrefix}_{CacheItemSuffixes.COUNTRY}");
+			string verifyChannelId = GetCache<string>($"{keyPrefix}_{CacheItemSuffixes.VERIFY_CHANNEL_ID}");
+			string verifiedRoleId = GetCache<string>($"{keyPrefix}_{CacheItemSuffixes.VERIFIED_ROLE_ID}");
+			string commandsChannelId = GetCache<string>($"{keyPrefix}_{CacheItemSuffixes.COMMANDS_CHANNEL_ID}");
+			string leaderboardsChannelId = GetCache<string>($"{keyPrefix}_{CacheItemSuffixes.LEADERBOARDS_CHANNEL_ID}");
+
+			return new ServersQuerySchema.ServersTableData()
+			{
+				ServerID = serverId,
+				DiscordID = discordId,
+				Country = string.IsNullOrWhiteSpace(country) ? null : country,
+				VerifyChannelID = string.IsNullOrWhiteSpace(verifyChannelId) ? null : verifyChannelId,
+				VerifiedRoleID = string.IsNullOrWhiteSpace(verifiedRoleId) ? null : verifiedRoleId,
+				CommandsChannelID = string.IsNullOrWhiteSpace(commandsChannelId) ? null : commandsChannelId,
+				LeaderboardsChannelID = string.IsNullOrWhiteSpace(leaderboardsChannelId) ? null : leaderboardsChannelId
+			};
+		}
+		catch (KeyNotFoundException)
+		{
+			return null;
+		}
 	}
 
-	public int GetDatabaseIDCache(string guildDiscordId)
+	public int? GetDatabaseIDCache(string guildDiscordId)
 	{
-		return GetCache<int>($"{CACHE_KEY_PREFIX}_{guildDiscordId}_{CacheItemSuffixes.DATABASE_ID}");
+		try
+		{
+			return GetCache<int>($"{CACHE_KEY_PREFIX}_{guildDiscordId}_{CacheItemSuffixes.DATABASE_ID}");
+		}
+		catch (KeyNotFoundException)
+		{
+			return null;
+		}
 	}
 
-	public string GetDiscordIDCache(string guildDiscordId)
+	public string? GetDiscordIDCache(string guildDiscordId)
 	{
-		return GetCache<string>($"{CACHE_KEY_PREFIX}_{guildDiscordId}_{CacheItemSuffixes.DISCORD_ID}");
+		try
+		{
+			return GetCache<string>($"{CACHE_KEY_PREFIX}_{guildDiscordId}_{CacheItemSuffixes.DISCORD_ID}");
+		}
+		catch (KeyNotFoundException)
+		{
+			return null;
+		}
 	}
 
 	public string? GetCountryCodeCache(string guildDiscordId)
 	{
-		string ret = GetCache<string>($"{CACHE_KEY_PREFIX}_{guildDiscordId}_{CacheItemSuffixes.COUNTRY}");
-		return string.IsNullOrWhiteSpace(ret) ? null : ret;
+		try
+		{
+			string ret = GetCache<string>($"{CACHE_KEY_PREFIX}_{guildDiscordId}_{CacheItemSuffixes.COUNTRY}");
+			return string.IsNullOrWhiteSpace(ret) ? null : ret;
+		}
+		catch (KeyNotFoundException)
+		{
+			return null;
+		}
 	}
 
 	public string? GetVerifyChannelIDCache(string guildDiscordId)
 	{
-		string ret = GetCache<string>($"{CACHE_KEY_PREFIX}_{guildDiscordId}_{CacheItemSuffixes.VERIFY_CHANNEL_ID}");
-		return string.IsNullOrWhiteSpace(ret) ? null : ret;
+		try
+		{
+			string ret = GetCache<string>($"{CACHE_KEY_PREFIX}_{guildDiscordId}_{CacheItemSuffixes.VERIFY_CHANNEL_ID}");
+			return string.IsNullOrWhiteSpace(ret) ? null : ret;
+		}
+		catch (KeyNotFoundException)
+		{
+			return null;
+		}
 	}
 
 	public string? GetVerifiedRoleIDCache(string guildDiscordId)
 	{
-		string ret = GetCache<string>($"{CACHE_KEY_PREFIX}_{guildDiscordId}_{CacheItemSuffixes.VERIFIED_ROLE_ID}");
-		return string.IsNullOrWhiteSpace(ret) ? null : ret;
+		try
+		{
+			string ret = GetCache<string>($"{CACHE_KEY_PREFIX}_{guildDiscordId}_{CacheItemSuffixes.VERIFIED_ROLE_ID}");
+			return string.IsNullOrWhiteSpace(ret) ? null : ret;
+		}
+		catch (KeyNotFoundException)
+		{
+			return null;
+		}
 	}
 
 	public string? GetCommandsChannelIDCache(string guildDiscordId)
 	{
-		string ret = GetCache<string>($"{CACHE_KEY_PREFIX}_{guildDiscordId}_{CacheItemSuffixes.COMMANDS_CHANNEL_ID}");
-		return string.IsNullOrWhiteSpace(ret) ? null : ret;
+		try
+		{
+			string ret = GetCache<string>($"{CACHE_KEY_PREFIX}_{guildDiscordId}_{CacheItemSuffixes.COMMANDS_CHANNEL_ID}");
+			return string.IsNullOrWhiteSpace(ret) ? null : ret;
+		}
+		catch (KeyNotFoundException)
+		{
+			return null;
+		}
 	}
 
 	public string? GetLeaderboardsChannelIDCache(string guildDiscordId)
 	{
-		string ret = GetCache<string>($"{CACHE_KEY_PREFIX}_{guildDiscordId}_{CacheItemSuffixes.LEADERBOARDS_CHANNEL_ID}");
-		return string.IsNullOrWhiteSpace(ret) ? null : ret;
+		try
+		{
+			string ret = GetCache<string>($"{CACHE_KEY_PREFIX}_{guildDiscordId}_{CacheItemSuffixes.LEADERBOARDS_CHANNEL_ID}");
+			return string.IsNullOrWhiteSpace(ret) ? null : ret;
+		}
+		catch (KeyNotFoundException)
+		{
+			return null;
+		}
 	}
 
 	public void AddDatabaseCache(string guildDiscordId, ServersQuerySchema.ServersTableData dbGuildData)

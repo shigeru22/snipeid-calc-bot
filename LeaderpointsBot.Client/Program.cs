@@ -3,7 +3,6 @@
 
 using LeaderpointsBot.Api;
 using LeaderpointsBot.Client.Actions;
-using LeaderpointsBot.Client.Caching;
 using LeaderpointsBot.Database;
 using LeaderpointsBot.Utils;
 
@@ -34,7 +33,7 @@ public static class Program
 			CAFilePath = Settings.Instance.Database.CAFilePath,
 		});
 
-		Log.WriteVerbose("Start populating server caches from database.");
+		Log.WriteInfo("Populating server caches from database.");
 
 		await Cache.PopulateGuildConfigurations();
 
