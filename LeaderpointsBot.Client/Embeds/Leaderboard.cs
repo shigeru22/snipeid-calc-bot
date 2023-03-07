@@ -10,7 +10,7 @@ namespace LeaderpointsBot.Client.Embeds;
 
 public static class Leaderboard
 {
-	public static Embed CreateLeaderboardEmbed(UsersQuerySchema.UsersLeaderboardData[] data, DateTime lastUpdate, int usersLimit = 50)
+	public static Embed CreateLeaderboardEmbed(UsersQuerySchema.UsersLeaderboardData[] data, DateTime lastUpdate, int usersLimit = 50, bool useLegacyColor = false)
 	{
 		string title = $"Top {usersLimit} players based on points count:";
 		StringBuilder description = new StringBuilder();
@@ -29,7 +29,7 @@ public static class Leaderboard
 		return new EmbedBuilder().WithTitle(title)
 			.WithDescription(description.ToString())
 			.WithFooter(footer)
-			.WithColor(BorderColor.Normal)
+			.WithColor(useLegacyColor ? LegacyBorderColor.Normal : BorderColor.Normal)
 			.Build();
 	}
 }

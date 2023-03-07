@@ -87,7 +87,7 @@ public static class Configuration
 
 		return new ReturnMessage()
 		{
-			Embed = Embeds.Configuration.CreateServerConfigurationEmbed(configData)
+			Embed = Embeds.Configuration.CreateServerConfigurationEmbed(configData, Actions.Channel.IsSnipeIDGuild(guild))
 		};
 	}
 

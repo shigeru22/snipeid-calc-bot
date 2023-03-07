@@ -89,7 +89,9 @@ public static class Counter
 		{
 			new ReturnMessage()
 			{
-				Embed = Embeds.Counter.CreateCountEmbed(embedUsername, embedTopCounts)
+				Embed = Embeds.Counter.CreateCountEmbed(embedUsername,
+					embedTopCounts,
+					Actions.Channel.IsSnipeIDGuild(guild))
 			}
 		};
 
@@ -238,11 +240,17 @@ public static class Counter
 		{
 			new ReturnMessage()
 			{
-				Embed = Embeds.Counter.CreateTopsEmbed(osuUsername, topCounts)
+				Embed = Embeds.Counter.CreateTopsEmbed(osuUsername,
+					topCounts,
+					Actions.Channel.IsSnipeIDGuild(guild))
 			},
 			new ReturnMessage()
 			{
-				Embed = Embeds.Counter.CreateCountEmbed(osuUsername, topCounts, false, Settings.Instance.OsuApi.UseRespektiveStats)
+				Embed = Embeds.Counter.CreateCountEmbed(osuUsername,
+					topCounts,
+					false,
+					Settings.Instance.OsuApi.UseRespektiveStats,
+					Actions.Channel.IsSnipeIDGuild(guild))
 			}
 		};
 
@@ -386,11 +394,17 @@ public static class Counter
 		{
 			new ReturnMessage()
 			{
-				Embed = Embeds.Counter.CreateTopsEmbed(osuUsername, topCounts)
+				Embed = Embeds.Counter.CreateTopsEmbed(osuUsername,
+					topCounts,
+					Actions.Channel.IsSnipeIDGuild(guild))
 			},
 			new ReturnMessage()
 			{
-				Embed = Embeds.Counter.CreateCountEmbed(osuUsername, topCounts, false, Settings.Instance.OsuApi.UseRespektiveStats)
+				Embed = Embeds.Counter.CreateCountEmbed(osuUsername,
+					topCounts,
+					false,
+					Settings.Instance.OsuApi.UseRespektiveStats,
+					Actions.Channel.IsSnipeIDGuild(guild))
 			}
 		};
 
@@ -413,7 +427,7 @@ public static class Counter
 		return responses.ToArray();
 	}
 
-	public static async Task<ReturnMessage[]> WhatIfUserCount(string userDiscordId, string arguments)
+	public static async Task<ReturnMessage[]> WhatIfUserCount(string userDiscordId, string arguments, string? guildDiscordId = null)
 	{
 		int osuId;
 		string osuUsername;
@@ -576,11 +590,19 @@ public static class Counter
 		{
 			new ReturnMessage()
 			{
-				Embed = Embeds.Counter.CreateCountEmbed(osuUsername, originalTopCounts, false, Settings.Instance.OsuApi.UseRespektiveStats)
+				Embed = Embeds.Counter.CreateCountEmbed(osuUsername,
+					originalTopCounts,
+					false,
+					Settings.Instance.OsuApi.UseRespektiveStats,
+					Actions.Channel.IsSnipeIDGuild(guildDiscordId))
 			},
 			new ReturnMessage()
 			{
-				Embed = Embeds.Counter.CreateCountEmbed(osuUsername, whatIfTopCounts, true, Settings.Instance.OsuApi.UseRespektiveStats)
+				Embed = Embeds.Counter.CreateCountEmbed(osuUsername,
+					whatIfTopCounts,
+					true,
+					Settings.Instance.OsuApi.UseRespektiveStats,
+					Actions.Channel.IsSnipeIDGuild(guildDiscordId))
 			},
 			new ReturnMessage()
 			{

@@ -1,6 +1,7 @@
 // Copyright (c) shigeru22, concept by Akshiro28.
 // Licensed under the MIT license. See LICENSE in the repository root for details.
 
+using Discord.WebSocket;
 using LeaderpointsBot.Client.Caching;
 using LeaderpointsBot.Client.Exceptions.Commands;
 using LeaderpointsBot.Database;
@@ -12,6 +13,8 @@ namespace LeaderpointsBot.Client.Actions;
 
 public static class Channel
 {
+	public const string SNIPEID_DISCORD_ID = "862267167100502046";
+
 	public static async Task<(bool, string?)> IsClientCommandsAllowedAsync(string guildDiscordId, string channelId)
 	{
 		Log.WriteVerbose($"Checking whether client commands are allowed in the channel (guild ID {guildDiscordId}, channel ID {channelId}).");
@@ -104,4 +107,8 @@ public static class Channel
 
 		return (isAllowed, allowedChannelId);
 	}
+
+	public static bool IsSnipeIDGuild(string? guildDiscordId) => guildDiscordId != null && guildDiscordId.Equals(SNIPEID_DISCORD_ID);
+
+	public static bool IsSnipeIDGuild(SocketGuild? guild) => guild != null && guild.Id.ToString().Equals(SNIPEID_DISCORD_ID);
 }

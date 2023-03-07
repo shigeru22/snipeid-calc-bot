@@ -89,7 +89,7 @@ public static class Message
 			Log.WriteInfo($"Calculating what-if points for {Context.User.Username}#{Context.User.Discriminator} ({pointsArgs}).");
 			await Context.Channel.TriggerTypingAsync();
 
-			ReturnMessage[] responses = await Commands.Counter.WhatIfUserCount(Context.User.Id.ToString(), pointsArgs);
+			ReturnMessage[] responses = await Commands.Counter.WhatIfUserCount(Context.User.Id.ToString(), pointsArgs, Context.Guild.Id.ToString());
 
 			Log.WriteVerbose("What-if calculated successfully. Sending responses.");
 			await Reply.SendToCommandContextAsync(Context, responses);

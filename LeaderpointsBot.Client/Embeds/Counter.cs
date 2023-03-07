@@ -10,7 +10,7 @@ namespace LeaderpointsBot.Client.Embeds;
 
 public static class Counter
 {
-	public static Embed CreateTopsEmbed(string osuUsername, int[,] topsCount)
+	public static Embed CreateTopsEmbed(string osuUsername, int[,] topsCount, bool useLegacyColor = false)
 	{
 		string title = $"{osuUsername} top counts:";
 		StringBuilder description = new StringBuilder();
@@ -27,11 +27,11 @@ public static class Counter
 
 		return new EmbedBuilder().WithTitle(title)
 			.WithDescription(description.ToString())
-			.WithColor(BorderColor.Normal)
+			.WithColor(useLegacyColor ? LegacyBorderColor.Normal : BorderColor.Normal)
 			.Build();
 	}
 
-	public static Embed CreateTopsEmbed(string osuUsername, List<int[]> topsCount)
+	public static Embed CreateTopsEmbed(string osuUsername, List<int[]> topsCount, bool useLegacyColor = false)
 	{
 		string title = $"{osuUsername} top counts:";
 		StringBuilder description = new StringBuilder();
@@ -48,11 +48,11 @@ public static class Counter
 
 		return new EmbedBuilder().WithTitle(title)
 			.WithDescription(description.ToString())
-			.WithColor(BorderColor.Normal)
+			.WithColor(useLegacyColor ? LegacyBorderColor.Normal : BorderColor.Normal)
 			.Build();
 	}
 
-	public static Embed CreateCountEmbed(string osuUsername, int[,] topsCount, bool useRespektive = false)
+	public static Embed CreateCountEmbed(string osuUsername, int[,] topsCount, bool useRespektive = false, bool useLegacyColor = false)
 	{
 		int points = CalculateTopPoints(topsCount, useRespektive);
 		string description;
@@ -87,11 +87,11 @@ public static class Counter
 
 		return new EmbedBuilder().WithTitle($"Points for {osuUsername}:")
 			.WithDescription(description)
-			.WithColor(BorderColor.Normal)
+			.WithColor(useLegacyColor ? LegacyBorderColor.Normal : BorderColor.Normal)
 			.Build();
 	}
 
-	public static Embed CreateCountEmbed(string osuUsername, List<int[]> topsCount, bool isWhatIf = false, bool useRespektive = false)
+	public static Embed CreateCountEmbed(string osuUsername, List<int[]> topsCount, bool isWhatIf = false, bool useRespektive = false, bool useLegacyColor = false)
 	{
 		int points = CalculateTopPoints(topsCount, useRespektive);
 		string title = !isWhatIf ? $"Points for {osuUsername}:" : $"What-if results for {osuUsername}:";
@@ -127,7 +127,7 @@ public static class Counter
 
 		return new EmbedBuilder().WithTitle(title)
 			.WithDescription(description)
-			.WithColor(238, 229, 229)
+			.WithColor(useLegacyColor ? LegacyBorderColor.Normal : BorderColor.Normal)
 			.Build();
 	}
 

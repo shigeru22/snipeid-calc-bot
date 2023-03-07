@@ -39,7 +39,9 @@ public static class Leaderboard
 
 		return new ReturnMessage()
 		{
-			Embed = Embeds.Leaderboard.CreateLeaderboardEmbed(serverLeaderboardData, lastUpdate)
+			Embed = Embeds.Leaderboard.CreateLeaderboardEmbed(serverLeaderboardData,
+				lastUpdate,
+				useLegacyColor: Actions.Channel.IsSnipeIDGuild(guildDiscordId))
 		};
 	}
 }

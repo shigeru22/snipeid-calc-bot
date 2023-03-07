@@ -112,7 +112,7 @@ public static class Slash
 			Log.WriteInfo($"Calculating what-if points for {Context.User.Username}#{Context.User.Discriminator} ({pointsArgs}).");
 			await Context.Interaction.DeferAsync();
 
-			ReturnMessage[] responses = await Commands.Counter.WhatIfUserCount(Context.User.Id.ToString(), pointsArgs);
+			ReturnMessage[] responses = await Commands.Counter.WhatIfUserCount(Context.User.Id.ToString(), pointsArgs, Context.Guild.Id.ToString());
 
 			Log.WriteVerbose("What-if calculated successfully. Sending responses.");
 			await Reply.SendToInteractionContextAsync(Context, responses);

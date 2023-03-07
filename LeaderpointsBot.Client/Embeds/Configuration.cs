@@ -37,7 +37,7 @@ public static class Configuration
 		}
 	}
 
-	public static Embed CreateServerConfigurationEmbed(Structures.Embeds.Configuration.ServerConfigurations data)
+	public static Embed CreateServerConfigurationEmbed(Structures.Embeds.Configuration.ServerConfigurations data, bool useLegacyColor = false)
 	{
 		string title = "Current server configuration:";
 		string description = "```\n" +
@@ -56,7 +56,7 @@ public static class Configuration
 		return new EmbedBuilder().WithTitle(title)
 			.WithDescription(description)
 			.WithFooter(footerBuilder)
-			.WithColor(BorderColor.Normal)
+			.WithColor(useLegacyColor ? LegacyBorderColor.Normal : BorderColor.Normal)
 			.Build();
 	}
 
