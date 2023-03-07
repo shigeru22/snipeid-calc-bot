@@ -50,6 +50,11 @@ public static class Help
 
 	private static class HelpMessages
 	{
+		public static readonly string RebrandingNotificationTitle = "**Renaming the project**";
+		public static readonly string RebrandingNotificationDescription = "This is a brand-new code and era, since I've decided to open this bot for the masses following [this](https://twitter.com/aalleetthheeaa/status/1584541259699408897?t=vWN--oCrJF1tn01xmtS3Yw&s=19).\n" +
+			"Operating originally at **osu!snipe Indonesia**, now it's time for the change.\n" +
+			"The bot's name and project itself would be renamed into **osu!leaderpoints**. 🎊";
+
 		public static readonly string CommandsPointsTitle = "**Points calculation**";
 		public static readonly string CommandsPointsDescription = "Points could be calculated from Bathbot's `<osc` command, which this bot will follow up with calculated points and summary.\nThis bot is able to calculate points directly using `count` command.";
 		public static readonly string CommandsLinkSyntax = "`link [osu! user ID]`";
@@ -89,7 +94,9 @@ public static class Help
 
 		public static string GenerateCommandsHelpMessage(string commandPrefix)
 		{
-			return $"{CommandsPointsTitle}\n" +
+			return $"{RebrandingNotificationTitle}\n" +
+				$"{RebrandingNotificationDescription}\n\n" +
+				$"{CommandsPointsTitle}\n" +
 				$"{CommandsPointsDescription}\n\n" +
 				$"{commandPrefix}`{CommandsLinkSyntax}`\n" +
 				$"{CommandsLinkDescription}\n\n" +
@@ -97,8 +104,7 @@ public static class Help
 				$"{CommandsCountDescription}\n\n" +
 				$"{commandPrefix}{CommandsWhatifSyntax}\n" +
 				$"{CommandsWhatifDescription}\n\n" +
-				$"{commandPrefix}{CommandsLeaderboardSyntax}\n" +
-				$"{commandPrefix}{CommandsLeaderboardSyntaxShort}\n" +
+				$"{commandPrefix}{CommandsLeaderboardSyntax} or {commandPrefix}{CommandsLeaderboardSyntaxShort}\n" +
 				$"{CommandsLeaderboardDescription}\n\n" +
 				$"{commandPrefix}{CommandsHelpSyntax}\n" +
 				$"{CommandsHelpDescription}\n\n" +
