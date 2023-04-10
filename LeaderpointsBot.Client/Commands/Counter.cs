@@ -6,6 +6,7 @@ using Discord.WebSocket;
 using LeaderpointsBot.Api;
 using LeaderpointsBot.Api.Osu;
 using LeaderpointsBot.Api.OsuStats;
+using LeaderpointsBot.Client.Caching;
 using LeaderpointsBot.Client.Exceptions;
 using LeaderpointsBot.Client.Exceptions.Actions;
 using LeaderpointsBot.Client.Exceptions.Commands;
@@ -161,8 +162,15 @@ public static class Counter
 		{
 			Log.WriteVerbose($"Fetching osu! user data from osu!api (osu! ID {osuId}).");
 
-			OsuDataTypes.OsuApiUserResponseData osuUser = await ApiFactory.Instance.OsuApiInstance.GetUserByOsuID(osuId);
-			osuUsername = osuUser.Username;
+			OsuDataTypes.OsuApiUserResponseData? tempUser = CacheManager.Instance.OsuApiCacheInstance.GetOsuUserCache(osuId);
+
+			if (!tempUser.HasValue)
+			{
+				tempUser = await ApiFactory.Instance.OsuApiInstance.GetUserByOsuID(osuId);
+				CacheManager.Instance.OsuApiCacheInstance.AddOsuUserCache(osuId, tempUser.Value);
+			}
+
+			osuUsername = tempUser.Value.Username;
 		}
 		catch (Exception e)
 		{
@@ -302,6 +310,7 @@ public static class Counter
 		{
 			Log.WriteVerbose($"Fetching osu! user data from osu!api (osu! username {osuUsername}).");
 
+			// TODO: find cache by username
 			OsuDataTypes.OsuApiUserResponseData osuUser = await ApiFactory.Instance.OsuApiInstance.GetUserByOsuUsername(osuUsername);
 			tempOsuUsername = osuUser.Username;
 			osuId = osuUser.ID;
@@ -470,8 +479,15 @@ public static class Counter
 		{
 			Log.WriteVerbose($"Fetching osu! user data from osu!api (osu! ID {osuId}).");
 
-			OsuDataTypes.OsuApiUserResponseData osuUser = await ApiFactory.Instance.OsuApiInstance.GetUserByOsuID(osuId);
-			osuUsername = osuUser.Username;
+			OsuDataTypes.OsuApiUserResponseData? tempUser = CacheManager.Instance.OsuApiCacheInstance.GetOsuUserCache(osuId);
+
+			if (!tempUser.HasValue)
+			{
+				tempUser = await ApiFactory.Instance.OsuApiInstance.GetUserByOsuID(osuId);
+				CacheManager.Instance.OsuApiCacheInstance.AddOsuUserCache(osuId, tempUser.Value);
+			}
+
+			osuUsername = tempUser.Value.Username;
 		}
 		catch (Exception e)
 		{

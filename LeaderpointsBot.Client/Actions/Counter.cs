@@ -6,6 +6,7 @@ using Discord.WebSocket;
 using LeaderpointsBot.Api;
 using LeaderpointsBot.Api.Exceptions;
 using LeaderpointsBot.Api.Osu;
+using LeaderpointsBot.Client.Caching;
 using LeaderpointsBot.Client.Exceptions.Actions;
 using LeaderpointsBot.Client.Exceptions.Commands;
 using LeaderpointsBot.Database;
@@ -41,7 +42,15 @@ public static class Counter
 
 		try
 		{
-			osuUser = await ApiFactory.Instance.OsuApiInstance.GetUserByOsuID(osuId);
+			OsuDataTypes.OsuApiUserResponseData? tempUser = CacheManager.Instance.OsuApiCacheInstance.GetOsuUserCache(osuId);
+
+			if (!tempUser.HasValue)
+			{
+				tempUser = await ApiFactory.Instance.OsuApiInstance.GetUserByOsuID(osuId);
+				CacheManager.Instance.OsuApiCacheInstance.AddOsuUserCache(osuId, tempUser.Value);
+			}
+
+			osuUser = tempUser.Value;
 		}
 		catch (ApiResponseException e)
 		{

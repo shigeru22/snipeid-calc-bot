@@ -5,6 +5,7 @@ using Discord.WebSocket;
 using LeaderpointsBot.Api;
 using LeaderpointsBot.Api.Exceptions;
 using LeaderpointsBot.Api.Osu;
+using LeaderpointsBot.Client.Caching;
 using LeaderpointsBot.Client.Exceptions.Commands;
 using LeaderpointsBot.Client.Structures;
 using LeaderpointsBot.Database;
@@ -66,7 +67,11 @@ public static class User
 
 		try
 		{
+			// always fetch latest data (don't use cache)
+			// store response instead after fetch
+
 			osuUser = await ApiFactory.Instance.OsuApiInstance.GetUserByOsuID(osuId);
+			CacheManager.Instance.OsuApiCacheInstance.AddOsuUserCache(osuId, osuUser);
 		}
 		catch (ApiResponseException)
 		{
