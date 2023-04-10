@@ -28,7 +28,7 @@ public static class Channel
 			{
 				ServersQuerySchema.ServersTableData tempGuildData = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guildDiscordId);
 				guildData = tempGuildData;
-				CacheManager.Instance.GuildCacheInstance.SetFromDatabaseCache(guildDiscordId, tempGuildData);
+				CacheManager.Instance.GuildCacheInstance.SetDatabaseCache(guildDiscordId, tempGuildData);
 			}
 			catch (DataNotFoundException)
 			{
@@ -55,7 +55,7 @@ public static class Channel
 			{
 				ServersQuerySchema.ServersTableData tempGuildData = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guildDiscordId);
 				guildData = tempGuildData;
-				CacheManager.Instance.GuildCacheInstance.SetFromDatabaseCache(guildDiscordId, tempGuildData);
+				CacheManager.Instance.GuildCacheInstance.SetDatabaseCache(guildDiscordId, tempGuildData);
 			}
 			catch (DataNotFoundException)
 			{
@@ -88,7 +88,7 @@ public static class Channel
 			{
 				ServersQuerySchema.ServersTableData tempGuildData = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guildDiscordId);
 				guildData = tempGuildData;
-				CacheManager.Instance.GuildCacheInstance.SetFromDatabaseCache(guildDiscordId, tempGuildData);
+				CacheManager.Instance.GuildCacheInstance.SetDatabaseCache(guildDiscordId, tempGuildData);
 			}
 			catch (DataNotFoundException)
 			{
