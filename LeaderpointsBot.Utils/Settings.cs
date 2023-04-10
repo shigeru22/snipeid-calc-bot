@@ -18,6 +18,7 @@ public class Settings
 		public struct JsonClientSettings
 		{
 			public string BotToken { get; set; }
+			public string[] BotTokens { get; set; }
 			public bool UseReply { get; set; }
 			public JsonClientLoggingSettings Logging { get; set; }
 		}
@@ -165,6 +166,11 @@ public class Settings
 		if (!string.IsNullOrWhiteSpace(source.Client.BotToken))
 		{
 			tempClient.BotToken = source.Client.BotToken;
+		}
+
+		if (source.Client.BotTokens.Length > 0)
+		{
+			tempClient.BotTokens = source.Client.BotTokens;
 		}
 
 		if (source.Client.UseReply)
@@ -354,8 +360,12 @@ public class Settings
 
 		if (string.IsNullOrWhiteSpace(client.BotToken))
 		{
-			Console.WriteLine("Configuration error: Bot token must be specified.");
-			isValid = false;
+			Console.WriteLine(client.BotTokens.Length);
+			if (client.BotTokens.Where(token => !string.IsNullOrWhiteSpace(token)).Count() < 2)
+			{
+				Console.WriteLine("Configuration error: Bot token must be specified.");
+				isValid = false;
+			}
 		}
 
 		if (client.Logging.LogSeverity == 0)

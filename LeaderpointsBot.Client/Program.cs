@@ -37,17 +37,49 @@ public static class Program
 
 		await Cache.PopulateGuildConfigurations();
 
-		Log.WriteVerbose("Starting up client.");
-
-		Client client = new Client(Settings.Instance.Client.BotToken);
-
-		if (Settings.Instance.ShouldInitializeInteractions || Settings.Instance.ShouldInitializeDatabase)
+		// single bot token value always takes precedence
+		if (!string.IsNullOrWhiteSpace(Settings.Instance.Client.BotToken))
 		{
-			await client.Initializer();
+			Client client = new Client(Settings.Instance.Client.BotToken);
+
+			if (Settings.Instance.ShouldInitializeInteractions || Settings.Instance.ShouldInitializeDatabase)
+			{
+				Log.WriteVerbose("Initializing client.");
+				await client.Initializer();
+			}
+			else
+			{
+				Log.WriteVerbose("Starting up client.");
+				await client.Run();
+			}
 		}
 		else
 		{
-			await client.Run();
+			/*
+			 * Multiple clients support.
+			 * Refrain from using these since this is used for legacy bot support (osu!snipe Indonesia's SnipeID bot)
+			 * and I'd like to keep that way for that server.
+			 * Keep it undocumented.
+			 */
+
+			Client[] clients = Settings.Instance.Client.BotTokens.Select(token => new Client(token)).ToArray();
+			int clientsLength = clients.Length;
+
+			if (Settings.Instance.ShouldInitializeInteractions || Settings.Instance.ShouldInitializeDatabase)
+			{
+				for (int i = 0; i < clientsLength; i++)
+				{
+					Log.WriteInfo($"Initializing client {i}.");
+					await clients[i].Initializer();
+				}
+			}
+			else
+			{
+				Task[] taskStartClients = clients.Select(client => client.Run()).ToArray();
+
+				Log.WriteInfo($"Starting up {clientsLength} clients.");
+				await Task.WhenAll(taskStartClients);
+			}
 		}
 	}
 }
