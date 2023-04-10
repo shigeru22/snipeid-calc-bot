@@ -19,8 +19,10 @@ public class CacheManager
 	private readonly MemoryCache cache;
 
 	private readonly GuildCache guildCacheInstance;
+	private readonly OsuApiCache osuApiCacheInstance;
 
 	public GuildCache GuildCacheInstance => guildCacheInstance;
+	public OsuApiCache OsuApiCacheInstance => osuApiCacheInstance;
 
 	private CacheManager()
 	{
@@ -28,6 +30,7 @@ public class CacheManager
 
 		cache = MemoryCache.Default;
 		guildCacheInstance = new GuildCache(cache);
+		osuApiCacheInstance = new OsuApiCache(cache);
 
 		Log.WriteVerbose("Cache instances created.");
 	}
