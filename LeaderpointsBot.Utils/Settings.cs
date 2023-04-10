@@ -58,6 +58,7 @@ public class Settings
 		public struct EnvironmentSettings
 		{
 			public string? BotToken { get; internal set; }
+			public string[]? BotTokens { get; internal set; }
 			public bool? UseReply { get; internal set; }
 			public bool? LogUseUTC { get; internal set; }
 			public int? LogSeverity { get; internal set; }
@@ -168,7 +169,7 @@ public class Settings
 			tempClient.BotToken = source.Client.BotToken;
 		}
 
-		if (source.Client.BotTokens.Length > 0)
+		if (source.Client.BotTokens != null && source.Client.BotTokens.Length > 0)
 		{
 			tempClient.BotTokens = source.Client.BotTokens;
 		}
@@ -257,6 +258,11 @@ public class Settings
 		if (!string.IsNullOrWhiteSpace(source.BotToken))
 		{
 			tempClient.BotToken = source.BotToken;
+		}
+
+		if (source.BotTokens != null && source.BotTokens.Length > 0)
+		{
+			tempClient.BotTokens = source.BotTokens;
 		}
 
 		if (source.UseReply.HasValue && source.UseReply.Value == true)

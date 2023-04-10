@@ -32,7 +32,26 @@ public static class Env
 
 	public static Settings.SettingsTypes.EnvironmentSettings RetrieveEnvironmentData()
 	{
-		string? envBotToken = Environment.GetEnvironmentVariable($"{envPrefix}{environmentKeys["t"]}");
+		/*
+		 * Multiple clients support, keep this undocumented too (see Client/Program.cs)
+		 */
+
+		List<string> envBotTokens = new List<string>();
+		int current = 1;
+		while (true)
+		{
+			string? tempEnvBotToken = Environment.GetEnvironmentVariable(
+				$"{envPrefix}{environmentKeys["t"]}{(current > 1 ? $"_{current}" : string.Empty)}"
+			);
+			if (tempEnvBotToken == null)
+			{
+				break;
+			}
+
+			envBotTokens.Add(tempEnvBotToken);
+			current++;
+		}
+
 		string? envUseReply = Environment.GetEnvironmentVariable($"{envPrefix}{environmentKeys["r"]}");
 		string? envLogUseUtc = Environment.GetEnvironmentVariable($"{envPrefix}{environmentKeys["u"]}");
 		string? envLogSeverity = Environment.GetEnvironmentVariable($"{envPrefix}{environmentKeys["s"]}");
@@ -102,7 +121,8 @@ public static class Env
 
 		return new Settings.SettingsTypes.EnvironmentSettings()
 		{
-			BotToken = envBotToken,
+			BotToken = envBotTokens.Count == 1 ? envBotTokens[0] : null,
+			BotTokens = envBotTokens.Count > 1 ? envBotTokens.ToArray() : null,
 			UseReply = shouldUseReply,
 			LogUseUTC = logUseUtc,
 			LogSeverity = logSeverity,
