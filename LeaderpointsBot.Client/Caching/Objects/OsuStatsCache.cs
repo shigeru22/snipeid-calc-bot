@@ -3,10 +3,9 @@
 
 using System.Runtime.Caching;
 using LeaderpointsBot.Api.OsuStats;
-using LeaderpointsBot.Client.Caching;
 using LeaderpointsBot.Utils;
 
-namespace LeaderpointsBot.Client;
+namespace LeaderpointsBot.Client.Caching.Objects;
 
 public class OsuStatsCache : CacheWrapperBase
 {
