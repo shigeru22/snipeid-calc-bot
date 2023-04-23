@@ -1,6 +1,7 @@
 // Copyright (c) shigeru22, concept by Akshiro28.
 // Licensed under the MIT license. See LICENSE in the repository root for details.
 
+using LeaderpointsBot.Database;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client;
@@ -32,8 +33,8 @@ public static class Initialize
 		Log.WriteInfo($"Operation completed in {Math.Round((endTime - startTime).TotalSeconds, 3)} seconds.");
 	}
 
-	public static Task CreateDatabaseAsync()
+	public static async Task CreateDatabaseAsync()
 	{
-		throw new NotImplementedException();
+		await Migration.CreateAllTables();
 	}
 }

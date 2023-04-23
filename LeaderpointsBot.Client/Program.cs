@@ -33,9 +33,11 @@ public static class Program
 			CAFilePath = Settings.Instance.Database.CAFilePath,
 		});
 
-		Log.WriteInfo("Populating server caches from database.");
-
-		await Cache.PopulateGuildConfigurations();
+		if (!Settings.Instance.ShouldInitializeInteractions && !Settings.Instance.ShouldInitializeDatabase)
+		{
+			Log.WriteInfo("Populating server caches from database.");
+			await Cache.PopulateGuildConfigurations();
+		}
 
 		// single bot token value always takes precedence
 		if (!string.IsNullOrWhiteSpace(Settings.Instance.Client.BotToken))

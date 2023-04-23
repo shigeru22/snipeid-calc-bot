@@ -642,4 +642,29 @@ public class Roles : DBConnectorBase
 		await tempConnection.CloseAsync();
 		Log.WriteVerbose("Database connection closed.");
 	}
+
+	internal async Task CreateRolesTable()
+	{
+		const string query = @"
+			CREATE TABLE roles (
+				roleid SERIAL PRIMARY KEY,
+				discordid VARCHAR(255) NOT NULL,
+				serverid INTEGER NOT NULL,
+				rolename VARCHAR(255) NOT NULL,
+				minpoints INTEGER DEFAULT 0 NOT NULL,
+				CONSTRAINT fk_server
+					FOREIGN KEY(serverid) REFERENCES servers(serverid)
+			)
+		";
+
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
+		await tempConnection.OpenAsync();
+
+		Log.WriteVerbose("Database connection created and opened from data source.");
+
+		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection);
+		_ = await command.ExecuteNonQueryAsync();
+
+		await tempConnection.CloseAsync();
+	}
 }

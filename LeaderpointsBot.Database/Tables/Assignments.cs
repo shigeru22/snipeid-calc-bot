@@ -803,4 +803,32 @@ public class Assignments : DBConnectorBase
 		await tempConnection.CloseAsync();
 		Log.WriteVerbose("Database connection closed.");
 	}
+
+	internal async Task CreateAssignmentsTable()
+	{
+		const string query = @"
+			CREATE TABLE assignments (
+				assignmentid SERIAL PRIMARY KEY,
+				userid INTEGER NOT NULL,
+				serverid INTEGER NOT NULL,
+				roleid INTEGER NOT NULL,
+				CONSTRAINT fk_user
+					FOREIGN KEY(userid) REFERENCES users(userid),
+				CONSTRAINT fk_server
+					FOREIGN KEY(serverid) REFERENCES servers(serverid),
+				CONSTRAINT fk_role
+					FOREIGN KEY(roleid) REFERENCES roles(roleid)
+			)
+		";
+
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
+		await tempConnection.OpenAsync();
+
+		Log.WriteVerbose("Database connection created and opened from data source.");
+
+		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection);
+		_ = await command.ExecuteNonQueryAsync();
+
+		await tempConnection.CloseAsync();
+	}
 }

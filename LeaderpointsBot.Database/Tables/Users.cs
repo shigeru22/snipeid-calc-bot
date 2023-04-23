@@ -728,4 +728,29 @@ public class Users : DBConnectorBase
 		await tempConnection.CloseAsync();
 		Log.WriteVerbose("Database connection closed.");
 	}
+
+	internal async Task CreateUsersTable()
+	{
+		const string query = @"
+			CREATE TABLE users (
+				userid SERIAL PRIMARY KEY,
+				discordid VARCHAR(255) NOT NULL,
+				osuid INTEGER NOT NULL,
+				username VARCHAR(255) NOT NULL,
+				country VARCHAR(2) NOT NULL,
+				points INTEGER DEFAULT 0,
+				lastupdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+			)
+		";
+
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
+		await tempConnection.OpenAsync();
+
+		Log.WriteVerbose("Database connection created and opened from data source.");
+
+		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection);
+		_ = await command.ExecuteNonQueryAsync();
+
+		await tempConnection.CloseAsync();
+	}
 }

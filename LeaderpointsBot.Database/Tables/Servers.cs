@@ -759,4 +759,29 @@ public class Servers : DBConnectorBase
 		ServersQuerySchema.ServersTableData guildData = await GetServerByDiscordID(guildDiscordId);
 		return guildData.LeaderboardsChannelID == null || guildData.LeaderboardsChannelID == channelDiscordId;
 	}
+
+	internal async Task CreateServersTable()
+	{
+		const string query = @"
+			CREATE TABLE servers (
+				serverid SERIAL PRIMARY KEY,
+				discordid VARCHAR(255) NOT NULL,
+				country VARCHAR(2),
+				verifychannelid VARCHAR(255) DEFAULT NULL,
+				verifiedroleid VARCHAR(255) DEFAULT NULL,
+				commandschannelid VARCHAR(255) DEFAULT NULL,
+				leaderboardschannelid VARCHAR(255) DEFAULT NULL
+			)
+		";
+
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
+		await tempConnection.OpenAsync();
+
+		Log.WriteVerbose("Database connection created and opened from data source.");
+
+		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection);
+		_ = await command.ExecuteNonQueryAsync();
+
+		await tempConnection.CloseAsync();
+	}
 }
