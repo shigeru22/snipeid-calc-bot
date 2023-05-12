@@ -46,6 +46,7 @@ public class Client
 			client.MessageReceived += handler.OnNewMessage;
 			client.SlashCommandExecuted += handler.OnInvokeInteraction;
 			client.UserCommandExecuted += handler.OnInvokeInteraction;
+			client.JoinedGuild += handler.OnJoinGuild;
 		}
 		else
 		{

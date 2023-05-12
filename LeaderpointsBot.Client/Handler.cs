@@ -167,6 +167,24 @@ public class Handler
 		_ = await interactionService.ExecuteCommandAsync(context, null);
 	}
 
+	public async Task OnJoinGuild(SocketGuild guild)
+	{
+		Log.WriteDebug($"Joined server: {guild.Name} ({guild.Id})");
+		Log.WriteInfo("Running joined server event actions.");
+
+		try
+		{
+			await Actions.Guild.InsertGuildToDatabase(guild);
+		}
+		catch (Exception e)
+		{
+			Log.WriteError($"Unhandled error occurred while executing joined guild action. Exception details below.\n{e}");
+			return;
+		}
+
+		Log.WriteInfo("Server initialization completed.");
+	}
+
 	private async Task OnCommandExecuted(Optional<CommandInfo> commandInfo, ICommandContext context, Discord.Commands.IResult result)
 	{
 		if (result.Error == null)
