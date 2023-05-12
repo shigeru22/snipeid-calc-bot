@@ -1,7 +1,9 @@
 // Copyright (c) shigeru22, concept by Akshiro28.
 // Licensed under the MIT license. See LICENSE in the repository root for details.
 
+using System.Text;
 using Discord;
+using LeaderpointsBot.Database.Schemas;
 
 namespace LeaderpointsBot.Client.Embeds;
 
@@ -55,6 +57,42 @@ public static class Configuration
 
 		return new EmbedBuilder().WithTitle(title)
 			.WithDescription(description)
+			.WithFooter(footerBuilder)
+			.WithColor(useLegacyColor ? LegacyBorderColor.Normal : BorderColor.Normal)
+			.Build();
+	}
+
+	public static Embed CreateGuildRoleConfigurationEmbed(RolesQuerySchema.RolesTableData[] guildRoles, string guildName, string? guildIconUrl = null, bool useLegacyColor = false)
+	{
+		string title = "Current server roles (descending order):";
+		EmbedFooterBuilder footerBuilder = new EmbedFooterBuilder().WithText(guildName);
+		if (!string.IsNullOrWhiteSpace(guildIconUrl))
+		{
+			footerBuilder = footerBuilder.WithIconUrl(guildIconUrl);
+		}
+
+		int roleLabelMinimumWidth = -1;
+		foreach (RolesQuerySchema.RolesTableData role in guildRoles)
+		{
+			if (role.RoleName.Length > roleLabelMinimumWidth)
+			{
+				roleLabelMinimumWidth = role.RoleName.Length;
+			}
+		}
+
+		StringBuilder sbDescription = new StringBuilder();
+		_ = sbDescription.Append("```\n");
+		foreach (RolesQuerySchema.RolesTableData role in guildRoles)
+		{
+			if (!string.IsNullOrWhiteSpace(role.DiscordID))
+			{
+				_ = sbDescription.Append($"- {role.RoleName.PadRight(roleLabelMinimumWidth)} ({role.MinPoints} pts.)\n");
+			}
+		}
+		_ = sbDescription.Append("```");
+
+		return new EmbedBuilder().WithTitle(title)
+			.WithDescription(sbDescription.ToString())
 			.WithFooter(footerBuilder)
 			.WithColor(useLegacyColor ? LegacyBorderColor.Normal : BorderColor.Normal)
 			.Build();

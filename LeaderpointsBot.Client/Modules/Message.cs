@@ -332,6 +332,86 @@ public static class Message
 				await Reply.SendToCommandContextAsync(Context, response);
 			}
 		}
+
+		[Group("guildrole")]
+		[Summary("Guild role commands. Only avalable for server administrators.")]
+		public class ConfigurationGuildRoleModule : ModuleBase<SocketCommandContext>
+		{
+			// @bot config guildrole show
+			[EnabledInDm(false)]
+			[Command("show", RunMode = RunMode.Async)]
+			[Summary("Returns server role configuration.")]
+			public async Task ShowGuildRolePointsCommand()
+			{
+				Log.WriteInfo($"Retrieving server role configuration data (guild ID {Context.Guild.Id}).");
+				await Context.Channel.TriggerTypingAsync();
+
+				ReturnMessage response = await Configuration.GetGuildRolePointsAsync(Context.Guild);
+
+				Log.WriteVerbose("Server role configuration data fetched. Sending configuration embed message.");
+				await Reply.SendToCommandContextAsync(Context, response);
+			}
+
+			// @bot config guildrole add [target role] [minimum points]
+			[EnabledInDm(false)]
+			[Command("add", RunMode = RunMode.Async)]
+			[Summary("Adds server role configuration for achieving certain points.")]
+			public async Task AddGuildRolePointsCommand([Summary("Target role.")] SocketRole role, [Summary("Minimum points for target role (> 0).")] int minPoints)
+			{
+				Log.WriteInfo($"Inserting role ({role.Id}, {minPoints} pts.) (guild ID {Context.Guild.Id})");
+				await Context.Channel.TriggerTypingAsync();
+
+				ReturnMessage response = await Configuration.AddGuildRolePointsConfigurationAsync(Context.Guild, role, minPoints);
+
+				Log.WriteVerbose("Server role inserted. Sending result message.");
+				await Reply.SendToCommandContextAsync(Context, response);
+			}
+
+			// @bot config guildrole add [target role ID] [minimum points]
+			[EnabledInDm(false)]
+			[Command("add", RunMode = RunMode.Async)]
+			[Summary("Adds server role configuration for achieving certain points.")]
+			public async Task AddGuildRolePointsCommand([Summary("Target role.")] string roleDiscordId, [Summary("Minimum points for target role (> 0).")] int minPoints)
+			{
+				Log.WriteInfo($"Inserting role ({roleDiscordId}, {minPoints} pts.) (guild ID {Context.Guild.Id})");
+				await Context.Channel.TriggerTypingAsync();
+
+				ReturnMessage response = await Configuration.AddGuildRolePointsConfigurationAsync(Context.Guild, roleDiscordId, minPoints);
+
+				Log.WriteVerbose("Server role inserted. Sending result message.");
+				await Reply.SendToCommandContextAsync(Context, response);
+			}
+
+			// @bot config guildrole remove [target role]
+			[EnabledInDm(false)]
+			[Command("remove", RunMode = RunMode.Async)]
+			[Summary("Removes server role configuration for achieving certain points.")]
+			public async Task RemoveGuildRolePointsCommand([Summary("Target role.")] SocketRole role)
+			{
+				Log.WriteInfo($"Removing role ({role.Id}) (guild ID {Context.Guild.Id})");
+				await Context.Channel.TriggerTypingAsync();
+
+				ReturnMessage response = await Configuration.RemoveGuildRolePointsConfigurationAsync(Context.Guild, role);
+
+				Log.WriteVerbose("Server role removed. Sending result message.");
+				await Reply.SendToCommandContextAsync(Context, response);
+			}
+
+			// @bot config guildrole remove [target role ID]
+			[EnabledInDm(false)]
+			[Command("remove", RunMode = RunMode.Async)]
+			[Summary("Removes server role configuration for achieving certain points.")]
+			public async Task RemoveGuildRolePointsCommand([Summary("Target role.")] string roleDiscordId)
+			{
+				Log.WriteInfo($"Removing role ({roleDiscordId}) (guild ID {Context.Guild.Id})");
+				await Context.Channel.TriggerTypingAsync();
+
+				ReturnMessage response = await Configuration.RemoveGuildRolePointsConfigurationAsync(Context.Guild, roleDiscordId);
+
+				Log.WriteVerbose("Server role removed. Sending result message.");
+				await Reply.SendToCommandContextAsync(Context, response);
+			}
+		}
 	}
 
 	public static async Task BathbotCountCommand(SocketCommandContext context)

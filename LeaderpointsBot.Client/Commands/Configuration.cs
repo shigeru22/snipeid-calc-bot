@@ -308,4 +308,229 @@ public static class Configuration
 			Message = $"Set server leaderboards channel restriction to **{targetChannel.Name}**."
 		};
 	}
+
+	public static async Task<ReturnMessage> GetGuildRolePointsAsync(SocketGuild guild)
+	{
+		Log.WriteVerbose($"Fetching server in database (guild ID {guild.Id}).");
+
+		ServersQuerySchema.ServersTableData guildData;
+
+		try
+		{
+			guildData = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+		}
+		catch (DataNotFoundException)
+		{
+			Log.WriteError($"Server with Discord ID {guild.Id} not found in database.");
+			throw new SendMessageException("Server not found in our end!", true);
+		}
+
+		Log.WriteVerbose($"Retrieving guild role points list (guild ID {guild.Id}).");
+		RolesQuerySchema.RolesTableData[] guildRoles = await DatabaseFactory.Instance.RolesInstance.GetServerRoles(guild.Id.ToString());
+
+		if (guildRoles.Length <= 1) // which should be "no role" role
+		{
+			return new ReturnMessage()
+			{
+				Message = "No guild roles set for this server."
+			};
+		}
+		else
+		{
+			return new ReturnMessage()
+			{
+				Embed = Embeds.Configuration.CreateGuildRoleConfigurationEmbed(guildRoles, guild.Name, guild.IconUrl, Actions.Channel.IsSnipeIDGuild(guild))
+			};
+		}
+	}
+
+	public static async Task<ReturnMessage> AddGuildRolePointsConfigurationAsync(SocketGuild guild, SocketRole targetRole, int minPoints)
+	{
+		Log.WriteVerbose($"Adding role ({targetRole.Id}, {minPoints} pts.) for guild ID {guild.Id}.");
+
+		// check if server exists
+		ServersQuerySchema.ServersTableData guildData;
+		try
+		{
+			guildData = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+		}
+		catch (DataNotFoundException)
+		{
+			Log.WriteError($"Server with Discord ID {guild.Id} not found in database.");
+			throw new SendMessageException("Server not found in our end!", true);
+		}
+
+		// check if server role exists in database
+		RolesQuerySchema.RolesTableData[] guildRoles = await DatabaseFactory.Instance.RolesInstance.GetServerRoles(guild.Id.ToString());
+		if (guildRoles.Length > 1) // note: 0 points count here and not removable
+		{
+			if (guildRoles.Where(role => !string.IsNullOrWhiteSpace(role.DiscordID) && role.DiscordID.Equals(guild.Id.ToString())).Count() == 1)
+			{
+				Log.WriteWarning($"Role ID {targetRole.Id} already exists for guild ID {guild.Id}. Sending message.");
+				throw new SendMessageException("Target role already added to server configuration.");
+			}
+
+			if (guildRoles.Where(role => role.MinPoints == minPoints).Count() == 1)
+			{
+				Log.WriteWarning($"Role with {minPoints} points already added for guild ID {guild.Id}. Sending message.");
+				throw new SendMessageException("Role with specified points already added to server configuration.");
+			}
+		}
+
+		await DatabaseFactory.Instance.RolesInstance.InsertRole(targetRole.Id.ToString(), targetRole.Name, minPoints, guildData.ServerID);
+
+		return new ReturnMessage()
+		{
+			Message = $"Added role **{targetRole.Name}** with a minimum of {minPoints} points for this server."
+		};
+	}
+
+	public static async Task<ReturnMessage> AddGuildRolePointsConfigurationAsync(SocketGuild guild, string targetRoleDiscordId, int minPoints)
+	{
+		Log.WriteVerbose($"Adding role ({targetRoleDiscordId}, {minPoints} pts.) for guild ID {guild.Id}.");
+
+		// check if server exists
+		ServersQuerySchema.ServersTableData guildData;
+		try
+		{
+			guildData = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+		}
+		catch (DataNotFoundException)
+		{
+			Log.WriteError($"Server with Discord ID {guild.Id} not found in database.");
+			throw new SendMessageException("Server not found in our end!", true);
+		}
+
+		// check if role exists in server
+		SocketRole? targetRole;
+
+		try
+		{
+			targetRole = guild.GetRole(ulong.Parse(targetRoleDiscordId));
+		}
+		catch (FormatException)
+		{
+			Log.WriteWarning("Invalid role Discord ID. Sending error message.");
+			throw new SendMessageException("Invalid ID entered.", true);
+		}
+
+		if (targetRole == null)
+		{
+			Log.WriteWarning("Role not found in guild. Sending error message.");
+			throw new SendMessageException("Role with specified ID not found.", true);
+		}
+
+		// check if server role exists in database
+		RolesQuerySchema.RolesTableData[] guildRoles = await DatabaseFactory.Instance.RolesInstance.GetServerRoles(guild.Id.ToString());
+		if (guildRoles.Length > 1) // note: 0 points count here and not removable
+		{
+			if (guildRoles.Where(role => !string.IsNullOrWhiteSpace(role.DiscordID) && role.DiscordID.Equals(guild.Id.ToString())).Count() == 1)
+			{
+				Log.WriteWarning($"Role ID {targetRole.Id} already exists for guild ID {guild.Id}. Sending message.");
+				throw new SendMessageException("Target role already added to server configuration.");
+			}
+
+			if (guildRoles.Where(role => role.MinPoints == minPoints).Count() == 1)
+			{
+				Log.WriteWarning($"Role with {minPoints} points already added for guild ID {guild.Id}. Sending message.");
+				throw new SendMessageException("Role with specified points already added to server configuration.");
+			}
+		}
+
+		await DatabaseFactory.Instance.RolesInstance.InsertRole(targetRole.Id.ToString(), targetRole.Name, minPoints, guildData.ServerID);
+
+		return new ReturnMessage()
+		{
+			Message = $"Added role **{targetRole.Name}** with a minimum of {minPoints} points for this server."
+		};
+	}
+
+	public static async Task<ReturnMessage> RemoveGuildRolePointsConfigurationAsync(SocketGuild guild, SocketRole targetRole)
+	{
+		Log.WriteVerbose($"Removing role ({targetRole.Id}) for guild ID {guild.Id}.");
+
+		// check if server exists
+		ServersQuerySchema.ServersTableData guildData;
+		try
+		{
+			guildData = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+		}
+		catch (DataNotFoundException)
+		{
+			Log.WriteError($"Server with Discord ID {guild.Id} not found in database.");
+			throw new SendMessageException("Server not found in our end!", true);
+		}
+
+		// check if server role exists in database
+		RolesQuerySchema.RolesTableData[] guildRoles = await DatabaseFactory.Instance.RolesInstance.GetServerRoles(guild.Id.ToString());
+		RolesQuerySchema.RolesTableData[] targetGuildRole = guildRoles.Where(
+			role => !string.IsNullOrWhiteSpace(role.DiscordID) && role.DiscordID.Equals(targetRole.Id.ToString())
+		).ToArray();
+		if (!targetGuildRole.Any())
+		{
+			Log.WriteWarning($"Role ID {targetRole.Id} not found for guild ID {guild.Id}. Sending message.");
+			throw new SendMessageException("Target role not found in server configuration.");
+		}
+
+		await DatabaseFactory.Instance.RolesInstance.DeleteRoleByRoleID(targetGuildRole[0].RoleID);
+
+		return new ReturnMessage()
+		{
+			Message = $"Removed role **{targetRole.Name}** for this server."
+		};
+	}
+
+	public static async Task<ReturnMessage> RemoveGuildRolePointsConfigurationAsync(SocketGuild guild, string targetRoleDiscordId)
+	{
+		Log.WriteVerbose($"Removing role ({targetRoleDiscordId}) for guild ID {guild.Id}.");
+
+		// check if server exists
+		ServersQuerySchema.ServersTableData guildData;
+		try
+		{
+			guildData = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+		}
+		catch (DataNotFoundException)
+		{
+			Log.WriteError($"Server with Discord ID {guild.Id} not found in database.");
+			throw new SendMessageException("Server not found in our end!", true);
+		}
+
+		// check if role exists in server
+		SocketRole? targetRole;
+
+		try
+		{
+			targetRole = guild.GetRole(ulong.Parse(targetRoleDiscordId));
+		}
+		catch (FormatException)
+		{
+			Log.WriteWarning("Invalid role Discord ID. Sending error message.");
+			throw new SendMessageException("Invalid ID entered.", true);
+		}
+
+		if (targetRole == null)
+		{
+			Log.WriteWarning("Role not found in guild. Sending error message.");
+			throw new SendMessageException("Role with specified ID not found.", true);
+		}
+
+		// check if server role exists in database
+		RolesQuerySchema.RolesTableData[] guildRoles = await DatabaseFactory.Instance.RolesInstance.GetServerRoles(guild.Id.ToString());
+		RolesQuerySchema.RolesTableData[] targetGuildRole = guildRoles.Where(
+			role => !string.IsNullOrWhiteSpace(role.DiscordID) && role.DiscordID.Equals(targetRole.Id.ToString())
+		).ToArray();
+		if (!targetGuildRole.Any())
+		{
+			Log.WriteWarning($"Role ID {targetRole.Id} not found for guild ID {guild.Id}. Sending message.");
+			throw new SendMessageException("Target role not found in server configuration.");
+		}
+
+		await DatabaseFactory.Instance.RolesInstance.DeleteRoleByRoleID(targetGuildRole[0].RoleID);
+
+		return new ReturnMessage()
+		{
+			Message = $"Removed role **{targetRole.Name}** for this server."
+		};
+	}
 }

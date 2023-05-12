@@ -315,5 +315,64 @@ public static class Slash
 				await Reply.SendToInteractionContextAsync(Context, response, modifyResponse: true);
 			}
 		}
+
+		[EnabledInDm(false)]
+		[Group("guildrole", "Guild role commands.")]
+		public class ConfigurationGuildRoleModule : InteractionModuleBase<SocketInteractionContext>
+		{
+			// /config guildrole show
+			[EnabledInDm(false)]
+			[SlashCommand("show", "Returns server role configuration.", runMode: RunMode.Async)]
+			public async Task ShowGuildRolePointsCommand()
+			{
+				Log.WriteInfo($"Retrieving server role configuration data (guild ID {Context.Guild.Id}).");
+				await Context.Interaction.DeferAsync();
+
+				ReturnMessage response = await Configuration.GetGuildRolePointsAsync(Context.Guild);
+
+				Log.WriteVerbose("Server role configuration data fetched. Sending configuration embed message.");
+				await Reply.SendToInteractionContextAsync(Context, response);
+			}
+
+			// /config guildrole add
+			[EnabledInDm(false)]
+			[SlashCommand("add", "Adds server role configuration for achieving certain points.", runMode: RunMode.Async)]
+			public async Task AddGuildRolePointsCommand([Summary("role", "Target role.")] SocketRole role, [Summary("minpoints", "Minimum points for target role (> 0).")] int minPoints)
+			{
+				if (Context.Interaction.IsDMInteraction)
+				{
+					await Context.Interaction.RespondAsync("This command is usable on servers.", ephemeral: true);
+					return;
+				}
+
+				Log.WriteInfo($"Inserting role ({role.Id}, {minPoints} pts.) (guild ID {Context.Guild.Id})");
+				await Context.Interaction.DeferAsync();
+
+				ReturnMessage response = await Configuration.AddGuildRolePointsConfigurationAsync(Context.Guild, role, minPoints);
+
+				Log.WriteVerbose("Server role inserted. Sending result message.");
+				await Reply.SendToInteractionContextAsync(Context, response);
+			}
+
+			// /config guildrole remove
+			[EnabledInDm(false)]
+			[SlashCommand("remove", "Removes server role configuration for achieving certain points.", runMode: RunMode.Async)]
+			public async Task RemoveGuildRolePointsCommand([Summary("role", "Target role.")] SocketRole role)
+			{
+				if (Context.Interaction.IsDMInteraction)
+				{
+					await Context.Interaction.RespondAsync("This command is usable on servers.", ephemeral: true);
+					return;
+				}
+
+				Log.WriteInfo($"Removing role ({role.Id}) (guild ID {Context.Guild.Id})");
+				await Context.Channel.TriggerTypingAsync();
+
+				ReturnMessage response = await Configuration.RemoveGuildRolePointsConfigurationAsync(Context.Guild, role);
+
+				Log.WriteVerbose("Server role removed. Sending result message.");
+				await Reply.SendToInteractionContextAsync(Context, response);
+			}
+		}
 	}
 }
