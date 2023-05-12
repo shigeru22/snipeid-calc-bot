@@ -42,12 +42,27 @@ public class Roles : DBConnectorBase
 
 		while (await reader.ReadAsync())
 		{
+			int roleID = reader.GetInt32(0);
+			string? discordId;
+
+			try
+			{
+				discordId = reader.GetString(1);
+			}
+			catch (InvalidCastException)
+			{
+				discordId = null;
+			}
+
+			string roleName = reader.GetString(2);
+			int minPoints = reader.GetInt32(3);
+
 			ret.Add(new RolesQuerySchema.RolesTableData()
 			{
-				RoleID = reader.GetInt32(0),
-				DiscordID = reader.GetString(1),
-				RoleName = reader.GetString(2),
-				MinPoints = reader.GetInt32(3)
+				RoleID = roleID,
+				DiscordID = discordId,
+				RoleName = roleName,
+				MinPoints = minPoints
 			});
 		}
 
@@ -98,12 +113,27 @@ public class Roles : DBConnectorBase
 
 		while (await reader.ReadAsync())
 		{
+			int roleID = reader.GetInt32(0);
+			string? discordId;
+
+			try
+			{
+				discordId = reader.GetString(1);
+			}
+			catch (InvalidCastException)
+			{
+				discordId = null;
+			}
+
+			string roleName = reader.GetString(2);
+			int minPoints = reader.GetInt32(3);
+
 			ret.Add(new RolesQuerySchema.RolesTableData()
 			{
-				RoleID = reader.GetInt32(0),
-				DiscordID = reader.GetString(1),
-				RoleName = reader.GetString(2),
-				MinPoints = reader.GetInt32(3)
+				RoleID = roleID,
+				DiscordID = discordId,
+				RoleName = roleName,
+				MinPoints = minPoints
 			});
 		}
 
@@ -158,12 +188,27 @@ public class Roles : DBConnectorBase
 
 		_ = await reader.ReadAsync();
 
+		int roleID = reader.GetInt32(0);
+		string? discordId;
+
+		try
+		{
+			discordId = reader.GetString(1);
+		}
+		catch (InvalidCastException)
+		{
+			discordId = null;
+		}
+
+		string roleName = reader.GetString(2);
+		int minPoints = reader.GetInt32(3);
+
 		RolesQuerySchema.RolesTableData ret = new RolesQuerySchema.RolesTableData()
 		{
-			RoleID = reader.GetInt32(0),
-			DiscordID = reader.GetString(1),
-			RoleName = reader.GetString(2),
-			MinPoints = reader.GetInt32(3)
+			RoleID = roleID,
+			DiscordID = discordId,
+			RoleName = roleName,
+			MinPoints = minPoints
 		};
 
 		await tempConnection.CloseAsync();
@@ -217,12 +262,27 @@ public class Roles : DBConnectorBase
 
 		_ = await reader.ReadAsync();
 
+		int roleID = reader.GetInt32(0);
+		string? discordId;
+
+		try
+		{
+			discordId = reader.GetString(1);
+		}
+		catch (InvalidCastException)
+		{
+			discordId = null;
+		}
+
+		string roleName = reader.GetString(2);
+		int minPoints = reader.GetInt32(3);
+
 		RolesQuerySchema.RolesTableData ret = new RolesQuerySchema.RolesTableData()
 		{
-			RoleID = reader.GetInt32(0),
-			DiscordID = reader.GetString(1),
-			RoleName = reader.GetString(2),
-			MinPoints = reader.GetInt32(3)
+			RoleID = roleID,
+			DiscordID = discordId,
+			RoleName = roleName,
+			MinPoints = minPoints
 		};
 
 		await tempConnection.CloseAsync();
@@ -283,12 +343,27 @@ public class Roles : DBConnectorBase
 
 		_ = await reader.ReadAsync();
 
+		int roleID = reader.GetInt32(0);
+		string? discordId;
+
+		try
+		{
+			discordId = reader.GetString(1);
+		}
+		catch (InvalidCastException)
+		{
+			discordId = null;
+		}
+
+		string roleName = reader.GetString(2);
+		int minPoints = reader.GetInt32(3);
+
 		RolesQuerySchema.RolesTableData ret = new RolesQuerySchema.RolesTableData()
 		{
-			RoleID = reader.GetInt32(0),
-			DiscordID = reader.GetString(1),
-			RoleName = reader.GetString(2),
-			MinPoints = reader.GetInt32(3)
+			RoleID = roleID,
+			DiscordID = discordId,
+			RoleName = roleName,
+			MinPoints = minPoints
 		};
 
 		await tempConnection.CloseAsync();
@@ -350,12 +425,27 @@ public class Roles : DBConnectorBase
 
 		_ = await reader.ReadAsync();
 
+		int roleID = reader.GetInt32(0);
+		string? discordId;
+
+		try
+		{
+			discordId = reader.GetString(1);
+		}
+		catch (InvalidCastException)
+		{
+			discordId = null;
+		}
+
+		string roleName = reader.GetString(2);
+		int minPoints = reader.GetInt32(3);
+
 		RolesQuerySchema.RolesTableData ret = new RolesQuerySchema.RolesTableData()
 		{
-			RoleID = reader.GetInt32(0),
-			DiscordID = reader.GetString(1),
-			RoleName = reader.GetString(2),
-			MinPoints = reader.GetInt32(3)
+			RoleID = roleID,
+			DiscordID = discordId,
+			RoleName = roleName,
+			MinPoints = minPoints
 		};
 
 		await tempConnection.CloseAsync();
@@ -648,7 +738,7 @@ public class Roles : DBConnectorBase
 		const string query = @"
 			CREATE TABLE roles (
 				roleid SERIAL PRIMARY KEY,
-				discordid VARCHAR(255) NOT NULL,
+				discordid VARCHAR(255) NULL,
 				serverid INTEGER NOT NULL,
 				rolename VARCHAR(255) NOT NULL,
 				minpoints INTEGER DEFAULT 0 NOT NULL,

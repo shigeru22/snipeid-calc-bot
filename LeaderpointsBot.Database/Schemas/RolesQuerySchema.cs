@@ -8,7 +8,7 @@ public static class RolesQuerySchema
 	public struct RolesTableData
 	{
 		public int RoleID { get; set; }
-		public string DiscordID { get; set; }
+		public string? DiscordID { get; set; }
 		public string RoleName { get; set; }
 		public int MinPoints { get; set; }
 	}
