@@ -151,4 +151,11 @@ public static class Args
 	{
 		tempConfig.ShouldInitializeDatabase = true;
 	}
+
+	[Argument("md", "migrate-db")]
+	[Description("Migrates database to V2 (for old client only).")]
+	internal static void MigrateDatabase()
+	{
+		tempConfig.ShouldMigrateDatabase = true;
+	}
 }

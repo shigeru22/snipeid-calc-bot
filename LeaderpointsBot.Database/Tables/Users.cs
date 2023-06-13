@@ -738,8 +738,8 @@ public class Users : DBConnectorBase
 				osuid INTEGER NOT NULL,
 				username VARCHAR(255) NOT NULL,
 				country VARCHAR(2) NOT NULL,
-				points INTEGER DEFAULT 0,
-				lastupdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+				points INTEGER NOT NULL DEFAULT 0,
+				lastupdate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 			)
 		";
 
@@ -750,6 +750,62 @@ public class Users : DBConnectorBase
 
 		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection);
 		_ = await command.ExecuteNonQueryAsync();
+
+		await tempConnection.CloseAsync();
+	}
+
+	internal async Task AlterUsersTableV2(string currentCountryCode)
+	{
+		string modifyTableQuery = $@"
+			ALTER TABLE users
+			ADD COLUMN country VARCHAR(2) NOT NULL DEFAULT '{currentCountryCode}',
+			ADD COLUMN points INTEGER NOT NULL DEFAULT 0,
+			ADD COLUMN lastupdate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+		";
+
+		const string removeDefaultQuery = @"
+			ALTER TABLE users
+			ALTER COLUMN country DROP DEFAULT
+		";
+
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
+		await tempConnection.OpenAsync();
+
+		Log.WriteVerbose("Database connection created and opened from data source.");
+
+		await using NpgsqlCommand modifyTableCommand = new NpgsqlCommand(modifyTableQuery, tempConnection);
+		_ = await modifyTableCommand.ExecuteNonQueryAsync();
+
+		await using NpgsqlCommand removeDefaultCommand = new NpgsqlCommand(removeDefaultQuery, tempConnection);
+		_ = await removeDefaultCommand.ExecuteNonQueryAsync();
+
+		await tempConnection.CloseAsync();
+	}
+
+	internal async Task MigratePointsDataV2()
+	{
+		const string migrateQuery = @"
+			DO $$
+			DECLARE
+				f RECORD;
+			BEGIN
+				FOR f IN SELECT userid, points, lastupdate FROM assignments ORDER BY userid
+				LOOP 
+					UPDATE users
+					SET points=f.points, lastupdate=f.lastupdate
+					WHERE userid=f.userid;
+				END LOOP;
+			END;
+			$$
+		";
+
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
+		await tempConnection.OpenAsync();
+
+		Log.WriteVerbose("Database connection created and opened from data source.");
+
+		await using NpgsqlCommand addColumnCommand = new NpgsqlCommand(migrateQuery, tempConnection);
+		_ = await addColumnCommand.ExecuteNonQueryAsync();
 
 		await tempConnection.CloseAsync();
 	}

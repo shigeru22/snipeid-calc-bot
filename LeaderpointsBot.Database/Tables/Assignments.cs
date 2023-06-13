@@ -831,4 +831,32 @@ public class Assignments : DBConnectorBase
 
 		await tempConnection.CloseAsync();
 	}
+
+	internal async Task AlterAssignmentsTableV2()
+	{
+		const string modifyTableQuery = @"
+			ALTER TABLE assignments
+			DROP COLUMN points,
+			DROP COLUMN lastupdate,
+			ADD COLUMN serverid INTEGER NOT NULL DEFAULT 1 CONSTRAINT fk_server REFERENCES servers(serverid)
+		";
+
+		const string removeDefaultQuery = @"
+			ALTER TABLE assignments
+			ALTER COLUMN serverid DROP DEFAULT
+		";
+
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
+		await tempConnection.OpenAsync();
+
+		Log.WriteVerbose("Database connection created and opened from data source.");
+
+		await using NpgsqlCommand modifyTableCommand = new NpgsqlCommand(modifyTableQuery, tempConnection);
+		_ = await modifyTableCommand.ExecuteNonQueryAsync();
+
+		await using NpgsqlCommand removeDefaultCommand = new NpgsqlCommand(removeDefaultQuery, tempConnection);
+		_ = await removeDefaultCommand.ExecuteNonQueryAsync();
+
+		await tempConnection.CloseAsync();
+	}
 }

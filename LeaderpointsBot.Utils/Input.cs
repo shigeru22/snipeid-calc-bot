@@ -7,6 +7,12 @@ namespace LeaderpointsBot.Utils;
 
 public static class Input
 {
+	public static string? PromptLine(string prompt)
+	{
+		Console.Write(prompt);
+		return Console.ReadLine();
+	}
+
 	public static string ReadHiddenLine()
 	{
 		StringBuilder input = new StringBuilder();

@@ -757,4 +757,68 @@ public class Roles : DBConnectorBase
 
 		await tempConnection.CloseAsync();
 	}
+
+	internal async Task RenameOldTable()
+	{
+		const string query = "ALTER TABLE roles RENAME TO roles_old";
+
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
+		await tempConnection.OpenAsync();
+
+		Log.WriteVerbose("Database connection created and opened from data source.");
+
+		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection);
+		_ = await command.ExecuteNonQueryAsync();
+
+		await tempConnection.CloseAsync();
+	}
+
+	internal async Task MigrateRolesDataV2()
+	{
+		const string migrateDataQuery = @"
+			INSERT INTO roles (discordid, serverid, rolename, minpoints)
+				SELECT discordid, 1, rolename, minpoints FROM roles_old ORDER BY roleid
+		";
+
+		const string removeRoleConstraintQuery = @"
+			ALTER TABLE assignments
+			DROP CONSTRAINT fk_role
+		";
+
+		const string dropOldTableQuery = "DROP TABLE roles_old";
+
+		const string addNewRoleConstraintQuery = @"
+			ALTER TABLE assignments
+			ADD CONSTRAINT fk_role FOREIGN KEY (roleid) REFERENCES roles(roleid)
+		";
+
+		// since old rolees table still exist, creating new roles table
+		// will create a sequence with the prefix "_seq1",
+		// this will rename the sequence table
+		const string renameSequenceTableQuery = @"
+			ALTER SEQUENCE roles_roleid_seq1 RENAME TO roles_roleid_seq;
+		";
+
+		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
+		await tempConnection.OpenAsync();
+
+		Log.WriteVerbose("Database connection created and opened from data source.");
+
+		await using NpgsqlCommand migrateDataCommand = new NpgsqlCommand(migrateDataQuery, tempConnection);
+		_ = await migrateDataCommand.ExecuteNonQueryAsync();
+
+		await using NpgsqlCommand removeRoleConstraintCommand = new NpgsqlCommand(removeRoleConstraintQuery, tempConnection);
+		_ = await removeRoleConstraintCommand.ExecuteNonQueryAsync();
+
+		await using NpgsqlCommand dropOldTableCommand = new NpgsqlCommand(dropOldTableQuery, tempConnection);
+		_ = await dropOldTableCommand.ExecuteNonQueryAsync();
+
+		await using NpgsqlCommand addNewRoleConstraintCommand = new NpgsqlCommand(addNewRoleConstraintQuery, tempConnection);
+		_ = await addNewRoleConstraintCommand.ExecuteNonQueryAsync();
+
+		await using NpgsqlCommand renameSequenceTableCommand = new NpgsqlCommand(renameSequenceTableQuery, tempConnection);
+		_ = await renameSequenceTableCommand.ExecuteNonQueryAsync();
+
+		await tempConnection.CloseAsync();
+	}
 }

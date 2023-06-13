@@ -26,4 +26,42 @@ public static class Migration
 
 		Log.WriteInfo("Database table creation completed.");
 	}
+
+	public static async Task MigrateData()
+	{
+		string? guildDiscordId = null;
+		string? currentCountryCode = null;
+
+		while (string.IsNullOrWhiteSpace(guildDiscordId))
+		{
+			guildDiscordId = Input.PromptLine("Current active server's Discord ID: ");
+		}
+
+		while (string.IsNullOrWhiteSpace(currentCountryCode))
+		{
+			currentCountryCode = Input.PromptLine("Current active server's country code: ");
+		}
+
+		currentCountryCode = currentCountryCode.ToUpper();
+
+		Log.WriteInfo("(1/6) Creating servers table...");
+		await DatabaseFactory.Instance.ServersInstance.CreateServersTable();
+
+		Log.WriteInfo("(2/6) Insert current server data...");
+		await DatabaseFactory.Instance.ServersInstance.InsertServer(guildDiscordId);
+
+		Log.WriteInfo("(3/6) Altering users table...");
+		await DatabaseFactory.Instance.UsersInstance.AlterUsersTableV2(currentCountryCode);
+
+		Log.WriteInfo("(4/6) Migrating points data to users table...");
+		await DatabaseFactory.Instance.UsersInstance.MigratePointsDataV2();
+
+		Log.WriteInfo("(5/6) Altering assignments table...");
+		await DatabaseFactory.Instance.AssignmentsInstance.AlterAssignmentsTableV2();
+
+		Log.WriteInfo("(6/6) Modifying roles table...");
+		await DatabaseFactory.Instance.RolesInstance.RenameOldTable();
+		await DatabaseFactory.Instance.RolesInstance.CreateRolesTable();
+		await DatabaseFactory.Instance.RolesInstance.MigrateRolesDataV2();
+	}
 }

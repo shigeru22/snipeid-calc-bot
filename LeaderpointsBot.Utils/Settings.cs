@@ -75,6 +75,7 @@ public class Settings
 			public bool? ShouldPromptPassword { get; internal set; }
 			public bool? ShouldInitializeInteractions { get; internal set; }
 			public bool? ShouldInitializeDatabase { get; internal set; }
+			public bool? ShouldMigrateDatabase { get; internal set; }
 		}
 	}
 
@@ -90,6 +91,7 @@ public class Settings
 	internal bool shouldPromptPassword;
 	internal bool shouldInitializeInteractions;
 	internal bool shouldInitializeDatabase;
+	internal bool shouldMigrateDatabase;
 	internal bool shouldOutputHelpMessage;
 
 	public SettingsTypes.JsonClientSettings Client => client;
@@ -97,6 +99,7 @@ public class Settings
 	public SettingsTypes.JsonOsuClientSettings OsuApi => osuApi;
 	public bool ShouldInitializeInteractions => shouldInitializeInteractions;
 	public bool ShouldInitializeDatabase => shouldInitializeDatabase;
+	public bool ShouldMigrateDatabase => shouldMigrateDatabase;
 
 	private Settings()
 	{
@@ -148,6 +151,13 @@ public class Settings
 		{
 			ArgumentHandler.PrintHelpMessage();
 			Environment.Exit(0);
+		}
+
+		if (shouldInitializeDatabase && shouldMigrateDatabase)
+		{
+			Console.WriteLine("Argument error: Both -d and -md must not be used together.");
+			Console.WriteLine("Help: LeaderpointsBot.Client --help");
+			Environment.Exit(1);
 		}
 
 		if (shouldPromptPassword)
@@ -350,6 +360,11 @@ public class Settings
 		if (source.ShouldInitializeDatabase.HasValue && source.ShouldInitializeDatabase is true)
 		{
 			shouldInitializeDatabase = true;
+		}
+
+		if (source.ShouldMigrateDatabase.HasValue && source.ShouldMigrateDatabase is true)
+		{
+			shouldMigrateDatabase = true;
 		}
 
 		return new SettingsTypes.JsonSettings()

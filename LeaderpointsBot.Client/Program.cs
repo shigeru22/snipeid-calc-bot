@@ -33,6 +33,12 @@ public static class Program
 			CAFilePath = Settings.Instance.Database.CAFilePath,
 		});
 
+		if (Settings.Instance.ShouldMigrateDatabase)
+		{
+			await Migration.MigrateData();
+			Environment.Exit(0);
+		}
+
 		if (!Settings.Instance.ShouldInitializeInteractions && !Settings.Instance.ShouldInitializeDatabase)
 		{
 			Log.WriteInfo("Populating server caches from database.");
