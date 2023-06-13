@@ -93,8 +93,12 @@ public static class User
 		if (guild != null)
 		{
 			Log.WriteVerbose("Message sent from server. Granting server verified role (if set).");
-			await Actions.Roles.SetVerifiedRoleAsync(guild, user);
+			await Actions.Roles.SetVerifiedRoleAsync(transaction, guild, user);
 		}
+
+		await transaction.CommitAsync();
+
+		Log.WriteVerbose("Returning linked message as embed.");
 
 		return new ReturnMessage()
 		{

@@ -31,7 +31,7 @@ public static class Counter
 		{
 			try
 			{
-				dbServer = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+				dbServer = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 			}
 			catch (DataNotFoundException)
 			{
@@ -88,6 +88,8 @@ public static class Counter
 			}
 		}
 
+		await transaction.CommitAsync();
+
 		List<ReturnMessage> responses = new List<ReturnMessage>()
 		{
 			new ReturnMessage()
@@ -128,7 +130,7 @@ public static class Counter
 		{
 			try
 			{
-				dbServer = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+				dbServer = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 			}
 			catch (DataNotFoundException)
 			{
@@ -265,6 +267,8 @@ public static class Counter
 			updateMessages = await Actions.Counter.UpdateUserDataAsync(transaction, guild, osuId, points);
 		}
 
+		await transaction.CommitAsync();
+
 		List<ReturnMessage> responses = new List<ReturnMessage>()
 		{
 			new ReturnMessage()
@@ -317,7 +321,7 @@ public static class Counter
 		{
 			try
 			{
-				dbServer = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+				dbServer = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 			}
 			catch (DataNotFoundException)
 			{
@@ -439,6 +443,8 @@ public static class Counter
 				throw new SendMessageException("Unhandled client error occurred.");
 			}
 		}
+
+		await transaction.CommitAsync();
 
 		List<ReturnMessage> responses = new List<ReturnMessage>()
 		{
@@ -663,6 +669,8 @@ public static class Counter
 				retMessage = "You would gain nothing from your original top count!";
 			}
 		}
+
+		await transaction.CommitAsync();
 
 		List<ReturnMessage> responses = new List<ReturnMessage>()
 		{

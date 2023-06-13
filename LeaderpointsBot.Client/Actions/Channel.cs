@@ -15,7 +15,7 @@ public static class Channel
 {
 	public const string SNIPEID_DISCORD_ID = "862267167100502046";
 
-	public static async Task<(bool, string?)> IsClientCommandsAllowedAsync(string guildDiscordId, string channelId)
+	public static async Task<(bool, string?)> IsClientCommandsAllowedAsync(DatabaseTransaction transaction, string guildDiscordId, string channelId)
 	{
 		Log.WriteVerbose($"Checking whether client commands are allowed in the channel (guild ID {guildDiscordId}, channel ID {channelId}).");
 
@@ -26,7 +26,7 @@ public static class Channel
 
 			try
 			{
-				ServersQuerySchema.ServersTableData tempGuildData = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guildDiscordId);
+				ServersQuerySchema.ServersTableData tempGuildData = await Database.Tables.Servers.GetServerByDiscordID(transaction, guildDiscordId);
 				guildData = tempGuildData;
 				CacheManager.Instance.GuildCacheInstance.SetDatabaseCache(guildDiscordId, tempGuildData);
 			}
@@ -42,7 +42,7 @@ public static class Channel
 		return (isAllowed, allowedChannelId);
 	}
 
-	public static async Task<(bool, string?)> IsVerifyCommandsAllowedAsync(string guildDiscordId, string channelId)
+	public static async Task<(bool, string?)> IsVerifyCommandsAllowedAsync(DatabaseTransaction transaction, string guildDiscordId, string channelId)
 	{
 		Log.WriteVerbose($"Checking whether verification commands are allowed in the channel (guild ID {guildDiscordId}, channel ID {channelId}).");
 
@@ -53,7 +53,7 @@ public static class Channel
 
 			try
 			{
-				ServersQuerySchema.ServersTableData tempGuildData = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guildDiscordId);
+				ServersQuerySchema.ServersTableData tempGuildData = await Database.Tables.Servers.GetServerByDiscordID(transaction, guildDiscordId);
 				guildData = tempGuildData;
 				CacheManager.Instance.GuildCacheInstance.SetDatabaseCache(guildDiscordId, tempGuildData);
 			}
@@ -75,7 +75,7 @@ public static class Channel
 		return (isAllowed, allowedChannelId);
 	}
 
-	public static async Task<(bool, string?)> IsLeaderboardCommandsAllowedAsync(string guildDiscordId, string channelId)
+	public static async Task<(bool, string?)> IsLeaderboardCommandsAllowedAsync(DatabaseTransaction transaction, string guildDiscordId, string channelId)
 	{
 		Log.WriteVerbose($"Checking whether leaderboard commands are allowed in the channel (guild ID {guildDiscordId}, channel ID {channelId}).");
 
@@ -86,7 +86,7 @@ public static class Channel
 
 			try
 			{
-				ServersQuerySchema.ServersTableData tempGuildData = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guildDiscordId);
+				ServersQuerySchema.ServersTableData tempGuildData = await Database.Tables.Servers.GetServerByDiscordID(transaction, guildDiscordId);
 				guildData = tempGuildData;
 				CacheManager.Instance.GuildCacheInstance.SetDatabaseCache(guildDiscordId, tempGuildData);
 			}

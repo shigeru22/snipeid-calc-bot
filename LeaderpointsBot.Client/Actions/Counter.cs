@@ -25,7 +25,7 @@ public static class Counter
 
 		try
 		{
-			_ = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+			_ = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 		}
 		catch (DataNotFoundException)
 		{

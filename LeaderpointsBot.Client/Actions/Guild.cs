@@ -11,35 +11,18 @@ namespace LeaderpointsBot.Client.Actions;
 
 public class Guild
 {
-	public static async Task InsertGuildToDatabase(SocketGuild guild)
+	public static async Task InsertGuildToDatabase(DatabaseTransaction transaction, SocketGuild guild)
 	{
-		Log.WriteVerbose("Checking for existing server in database.");
-
-		try
-		{
-			ServersQuerySchema.ServersTableData tempServer = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
-			if (tempServer.DiscordID.Equals(guild.Id.ToString()))
-			{
-				Log.WriteInfo($"Server already exists in database ({guild.Id}).");
-				return;
-			}
-		}
-		catch (DataNotFoundException)
-		{
-			// exception thrown is server not found, continue instead
-			Log.WriteVerbose("DataNotFound exception thrown. Ignoring since this is intended.");
-		}
-
 		Log.WriteInfo($"Inserting new server data to database ({guild.Id}).");
 
-		await DatabaseFactory.Instance.ServersInstance.InsertServer(guild.Id.ToString());
+		await Database.Tables.Servers.InsertServer(transaction, guild.Id.ToString());
 
 		Log.WriteInfo($"Inserting empty role to server data ({guild.Id}).");
 
 		ServersQuerySchema.ServersTableData guildData;
 		try
 		{
-			guildData = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+			guildData = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 		}
 		catch (DataNotFoundException)
 		{

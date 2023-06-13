@@ -16,13 +16,15 @@ public static class Configuration
 {
 	public static async Task<ReturnMessage> GetGuildConfigurationAsync(SocketGuild guild)
 	{
+		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
+
 		Log.WriteVerbose($"Fetching server in database (guild ID {guild.Id}).");
 
 		ServersQuerySchema.ServersTableData guildData;
 
 		try
 		{
-			guildData = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+			guildData = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 		}
 		catch (DataNotFoundException)
 		{
@@ -85,6 +87,8 @@ public static class Configuration
 			LeaderboardsChannelName = currentLeaderboardsChannel?.Name
 		};
 
+		await transaction.CommitAsync();
+
 		return new ReturnMessage()
 		{
 			Embed = Embeds.Configuration.CreateServerConfigurationEmbed(configData, Actions.Channel.IsSnipeIDGuild(guild))
@@ -93,12 +97,14 @@ public static class Configuration
 
 	public static async Task<ReturnMessage> SetGuildCountryConfigurationAsync(SocketGuild guild, string? targetCountryCode = null)
 	{
+		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
+
 		Log.WriteVerbose($"Setting country for guild ID {guild.Id} to {(string.IsNullOrWhiteSpace(targetCountryCode) ? "null" : targetCountryCode)}.");
 
 		try
 		{
 			// check if server exists
-			_ = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+			_ = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 		}
 		catch (DataNotFoundException)
 		{
@@ -106,7 +112,9 @@ public static class Configuration
 			throw new SendMessageException("Server not found in our end!", true);
 		}
 
-		await DatabaseFactory.Instance.ServersInstance.UpdateServerCountry(guild.Id.ToString(), targetCountryCode);
+		await Database.Tables.Servers.UpdateServerCountry(transaction, guild.Id.ToString(), targetCountryCode);
+
+		await transaction.CommitAsync();
 
 		return new ReturnMessage()
 		{
@@ -116,12 +124,14 @@ public static class Configuration
 
 	public static async Task<ReturnMessage> SetGuildVerifiedRoleConfigurationAsync(SocketGuild guild, SocketRole? targetRole = null)
 	{
+		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
+
 		Log.WriteVerbose($"Setting verified role for guild ID {guild.Id} to {(targetRole == null ? "null" : targetRole.Id.ToString())}.");
 
 		try
 		{
 			// check if server exists
-			_ = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+			_ = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 		}
 		catch (DataNotFoundException)
 		{
@@ -129,7 +139,9 @@ public static class Configuration
 			throw new SendMessageException("Server not found in our end!", true);
 		}
 
-		await DatabaseFactory.Instance.ServersInstance.UpdateServerVerifiedRoleID(guild.Id.ToString(), targetRole?.Id.ToString());
+		await Database.Tables.Servers.UpdateServerVerifiedRoleID(transaction, guild.Id.ToString(), targetRole?.Id.ToString());
+
+		await transaction.CommitAsync();
 
 		return new ReturnMessage()
 		{
@@ -139,12 +151,14 @@ public static class Configuration
 
 	public static async Task<ReturnMessage> SetGuildVerifiedRoleConfigurationAsync(SocketGuild guild, string targetRoleDiscordId)
 	{
+		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
+
 		Log.WriteVerbose($"Setting verified role for guild ID {guild.Id} to {targetRoleDiscordId}.");
 
 		try
 		{
 			// check if server exists
-			_ = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+			_ = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 		}
 		catch (DataNotFoundException)
 		{
@@ -171,7 +185,9 @@ public static class Configuration
 			throw new SendMessageException("Role with specified ID not found.", true);
 		}
 
-		await DatabaseFactory.Instance.ServersInstance.UpdateServerVerifiedRoleID(guild.Id.ToString(), targetRole.Id.ToString());
+		await Database.Tables.Servers.UpdateServerVerifiedRoleID(transaction, guild.Id.ToString(), targetRole.Id.ToString());
+
+		await transaction.CommitAsync();
 
 		return new ReturnMessage()
 		{
@@ -181,12 +197,14 @@ public static class Configuration
 
 	public static async Task<ReturnMessage> SetGuildCommandsChannelConfigurationAsync(SocketGuild guild, SocketGuildChannel? targetChannel = null)
 	{
+		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
+
 		Log.WriteVerbose($"Setting commands channel restriction for guild ID {guild.Id} to {(targetChannel == null ? "null" : targetChannel.Id.ToString())}.");
 
 		try
 		{
 			// check if server exists
-			_ = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+			_ = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 		}
 		catch (DataNotFoundException)
 		{
@@ -200,7 +218,9 @@ public static class Configuration
 			throw new SendMessageException("Specified channel is not text channel.", true);
 		}
 
-		await DatabaseFactory.Instance.ServersInstance.UpdateServerCommandsChannelID(guild.Id.ToString(), targetChannel?.Id.ToString());
+		await Database.Tables.Servers.UpdateServerCommandsChannelID(transaction, guild.Id.ToString(), targetChannel?.Id.ToString());
+
+		await transaction.CommitAsync();
 
 		return new ReturnMessage()
 		{
@@ -210,12 +230,14 @@ public static class Configuration
 
 	public static async Task<ReturnMessage> SetGuildCommandsChannelConfigurationAsync(SocketGuild guild, string targetChannelDiscordId)
 	{
+		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
+
 		Log.WriteVerbose($"Setting commands channel restriction for guild ID {guild.Id} to {targetChannelDiscordId}.");
 
 		try
 		{
 			// check if server exists
-			_ = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+			_ = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 		}
 		catch (DataNotFoundException)
 		{
@@ -236,7 +258,9 @@ public static class Configuration
 			throw new SendMessageException("Invalid ID entered.", true);
 		}
 
-		await DatabaseFactory.Instance.ServersInstance.UpdateServerCommandsChannelID(guild.Id.ToString(), targetChannel.Id.ToString());
+		await Database.Tables.Servers.UpdateServerCommandsChannelID(transaction, guild.Id.ToString(), targetChannel.Id.ToString());
+
+		await transaction.CommitAsync();
 
 		return new ReturnMessage()
 		{
@@ -246,12 +270,14 @@ public static class Configuration
 
 	public static async Task<ReturnMessage> SetGuildLeaderboardsChannelConfigurationAsync(SocketGuild guild, SocketGuildChannel? targetChannel = null)
 	{
+		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
+
 		Log.WriteVerbose($"Setting leaderboards channel restriction for guild ID {guild.Id} to {(targetChannel == null ? "null" : targetChannel.Id.ToString())}.");
 
 		try
 		{
 			// check if server exists
-			_ = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+			_ = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 		}
 		catch (DataNotFoundException)
 		{
@@ -265,7 +291,9 @@ public static class Configuration
 			throw new SendMessageException("Specified channel is not text channel.", true);
 		}
 
-		await DatabaseFactory.Instance.ServersInstance.UpdateServerLeaderboardsChannelID(guild.Id.ToString(), targetChannel?.Id.ToString());
+		await Database.Tables.Servers.UpdateServerLeaderboardsChannelID(transaction, guild.Id.ToString(), targetChannel?.Id.ToString());
+
+		await transaction.CommitAsync();
 
 		return new ReturnMessage()
 		{
@@ -275,12 +303,14 @@ public static class Configuration
 
 	public static async Task<ReturnMessage> SetGuildLeaderboardsChannelConfigurationAsync(SocketGuild guild, string targetChannelDiscordId)
 	{
+		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
+
 		Log.WriteVerbose($"Setting leaderboards channel restriction for guild ID {guild.Id} to {targetChannelDiscordId}.");
 
 		try
 		{
 			// check if server exists
-			_ = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+			_ = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 		}
 		catch (DataNotFoundException)
 		{
@@ -301,7 +331,9 @@ public static class Configuration
 			throw new SendMessageException("Invalid ID entered.", true);
 		}
 
-		await DatabaseFactory.Instance.ServersInstance.UpdateServerLeaderboardsChannelID(guild.Id.ToString(), targetChannel.Id.ToString());
+		await Database.Tables.Servers.UpdateServerLeaderboardsChannelID(transaction, guild.Id.ToString(), targetChannel.Id.ToString());
+
+		await transaction.CommitAsync();
 
 		return new ReturnMessage()
 		{
@@ -311,13 +343,15 @@ public static class Configuration
 
 	public static async Task<ReturnMessage> GetGuildRolePointsAsync(SocketGuild guild)
 	{
+		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
+
 		Log.WriteVerbose($"Fetching server in database (guild ID {guild.Id}).");
 
 		ServersQuerySchema.ServersTableData guildData;
 
 		try
 		{
-			guildData = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+			guildData = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 		}
 		catch (DataNotFoundException)
 		{
@@ -327,6 +361,8 @@ public static class Configuration
 
 		Log.WriteVerbose($"Retrieving guild role points list (guild ID {guild.Id}).");
 		RolesQuerySchema.RolesTableData[] guildRoles = await DatabaseFactory.Instance.RolesInstance.GetServerRoles(guild.Id.ToString());
+
+		await transaction.CommitAsync();
 
 		if (guildRoles.Length <= 1) // which should be "no role" role
 		{
@@ -346,13 +382,15 @@ public static class Configuration
 
 	public static async Task<ReturnMessage> AddGuildRolePointsConfigurationAsync(SocketGuild guild, SocketRole targetRole, int minPoints)
 	{
+		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
+
 		Log.WriteVerbose($"Adding role ({targetRole.Id}, {minPoints} pts.) for guild ID {guild.Id}.");
 
 		// check if server exists
 		ServersQuerySchema.ServersTableData guildData;
 		try
 		{
-			guildData = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+			guildData = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 		}
 		catch (DataNotFoundException)
 		{
@@ -378,6 +416,8 @@ public static class Configuration
 		}
 
 		await DatabaseFactory.Instance.RolesInstance.InsertRole(targetRole.Id.ToString(), targetRole.Name, minPoints, guildData.ServerID);
+
+		await transaction.CommitAsync();
 
 		return new ReturnMessage()
 		{
@@ -387,13 +427,15 @@ public static class Configuration
 
 	public static async Task<ReturnMessage> AddGuildRolePointsConfigurationAsync(SocketGuild guild, string targetRoleDiscordId, int minPoints)
 	{
+		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
+
 		Log.WriteVerbose($"Adding role ({targetRoleDiscordId}, {minPoints} pts.) for guild ID {guild.Id}.");
 
 		// check if server exists
 		ServersQuerySchema.ServersTableData guildData;
 		try
 		{
-			guildData = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+			guildData = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 		}
 		catch (DataNotFoundException)
 		{
@@ -439,6 +481,8 @@ public static class Configuration
 
 		await DatabaseFactory.Instance.RolesInstance.InsertRole(targetRole.Id.ToString(), targetRole.Name, minPoints, guildData.ServerID);
 
+		await transaction.CommitAsync();
+
 		return new ReturnMessage()
 		{
 			Message = $"Added role **{targetRole.Name}** with a minimum of {minPoints} points for this server."
@@ -447,13 +491,15 @@ public static class Configuration
 
 	public static async Task<ReturnMessage> RemoveGuildRolePointsConfigurationAsync(SocketGuild guild, SocketRole targetRole)
 	{
+		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
+
 		Log.WriteVerbose($"Removing role ({targetRole.Id}) for guild ID {guild.Id}.");
 
 		// check if server exists
 		ServersQuerySchema.ServersTableData guildData;
 		try
 		{
-			guildData = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+			guildData = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 		}
 		catch (DataNotFoundException)
 		{
@@ -474,6 +520,8 @@ public static class Configuration
 
 		await DatabaseFactory.Instance.RolesInstance.DeleteRoleByRoleID(targetGuildRole[0].RoleID);
 
+		await transaction.CommitAsync();
+
 		return new ReturnMessage()
 		{
 			Message = $"Removed role **{targetRole.Name}** for this server."
@@ -482,13 +530,15 @@ public static class Configuration
 
 	public static async Task<ReturnMessage> RemoveGuildRolePointsConfigurationAsync(SocketGuild guild, string targetRoleDiscordId)
 	{
+		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
+
 		Log.WriteVerbose($"Removing role ({targetRoleDiscordId}) for guild ID {guild.Id}.");
 
 		// check if server exists
 		ServersQuerySchema.ServersTableData guildData;
 		try
 		{
-			guildData = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+			guildData = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 		}
 		catch (DataNotFoundException)
 		{
@@ -527,6 +577,8 @@ public static class Configuration
 		}
 
 		await DatabaseFactory.Instance.RolesInstance.DeleteRoleByRoleID(targetGuildRole[0].RoleID);
+
+		await transaction.CommitAsync();
 
 		return new ReturnMessage()
 		{

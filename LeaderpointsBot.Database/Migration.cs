@@ -19,7 +19,7 @@ public static class Migration
 		await Users.CreateUsersTable(transaction);
 
 		Log.WriteInfo("Creating servers table...");
-		await DatabaseFactory.Instance.ServersInstance.CreateServersTable();
+		await Servers.CreateServersTable(transaction);
 
 		Log.WriteInfo("Creating roles table...");
 		await DatabaseFactory.Instance.RolesInstance.CreateRolesTable();
@@ -50,10 +50,10 @@ public static class Migration
 		currentCountryCode = currentCountryCode.ToUpper();
 
 		Log.WriteInfo("(1/6) Creating servers table...");
-		await DatabaseFactory.Instance.ServersInstance.CreateServersTable();
+		await Servers.CreateServersTable(transaction);
 
 		Log.WriteInfo("(2/6) Insert current server data...");
-		await DatabaseFactory.Instance.ServersInstance.InsertServer(guildDiscordId);
+		await Servers.InsertServer(transaction, guildDiscordId);
 
 		Log.WriteInfo("(3/6) Altering users table...");
 		await Users.AlterUsersTableV2(transaction, currentCountryCode);

@@ -10,11 +10,11 @@ namespace LeaderpointsBot.Client.Actions;
 
 public static class Cache
 {
-	public static async Task PopulateGuildConfigurations()
+	public static async Task PopulateGuildConfigurations(DatabaseTransaction transaction)
 	{
 		Log.WriteVerbose("Acquiring server data and storing to cache.");
 
-		ServersQuerySchema.ServersTableData[] guildsData = await DatabaseFactory.Instance.ServersInstance.GetServers();
+		ServersQuerySchema.ServersTableData[] guildsData = await Database.Tables.Servers.GetServers(transaction);
 
 		if (guildsData.Length <= 0)
 		{

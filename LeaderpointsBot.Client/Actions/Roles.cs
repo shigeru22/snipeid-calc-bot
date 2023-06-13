@@ -13,7 +13,7 @@ namespace LeaderpointsBot.Client.Actions;
 
 public static class Roles
 {
-	public static async Task SetVerifiedRoleAsync(SocketGuild guild, SocketUser user)
+	public static async Task SetVerifiedRoleAsync(DatabaseTransaction transaction, SocketGuild guild, SocketUser user)
 	{
 		try
 		{
@@ -21,7 +21,7 @@ public static class Roles
 			try
 			{
 				Log.WriteVerbose($"Fetching server data from database (server ID {guild.Id}).");
-				dbGuild = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(guild.Id.ToString());
+				dbGuild = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 			}
 			catch (DataNotFoundException)
 			{

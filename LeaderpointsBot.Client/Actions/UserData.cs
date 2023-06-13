@@ -25,7 +25,7 @@ public static class UserData
 		// check if server exists
 		try
 		{
-			_ = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(serverDiscordId);
+			_ = await Database.Tables.Servers.GetServerByDiscordID(transaction, serverDiscordId);
 		}
 		catch (DataNotFoundException)
 		{
@@ -148,7 +148,7 @@ public static class UserData
 			// insert server assignment data
 			try
 			{
-				ServersQuerySchema.ServersTableData serverData = await DatabaseFactory.Instance.ServersInstance.GetServerByDiscordID(serverDiscordId);
+				ServersQuerySchema.ServersTableData serverData = await Database.Tables.Servers.GetServerByDiscordID(transaction, serverDiscordId);
 				await DatabaseFactory.Instance.AssignmentsInstance.InsertAssignment(serverData.ServerID, currentUser.UserID, targetRole.RoleID);
 			}
 			catch (Exception e)
@@ -159,8 +159,6 @@ public static class UserData
 		}
 
 		Log.WriteVerbose("Returning assignment result message data.");
-
-		await transaction.CommitAsync();
 
 		return new Structures.Actions.UserData.AssignmentResult()
 		{

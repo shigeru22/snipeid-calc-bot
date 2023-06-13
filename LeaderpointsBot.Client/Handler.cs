@@ -174,7 +174,7 @@ public class Handler
 
 		try
 		{
-			await Actions.Guild.InsertGuildToDatabase(guild);
+			await Commands.Guild.InsertGuildData(guild);
 		}
 		catch (Exception e)
 		{

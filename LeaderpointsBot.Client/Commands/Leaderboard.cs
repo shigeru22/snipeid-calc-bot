@@ -37,6 +37,8 @@ public static class Leaderboard
 			throw new SendMessageException("Leaderboard is empty. Go for the first!");
 		}
 
+		await transaction.CommitAsync();
+
 		Log.WriteVerbose("Returning leaderboard data as embed.");
 
 		return new ReturnMessage()

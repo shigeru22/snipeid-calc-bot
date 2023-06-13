@@ -17,11 +17,9 @@ public class DatabaseFactory
 	private NpgsqlDataSource? dataSource;
 
 	private Roles? dbRoles;
-	private Servers? dbServers;
 	private Assignments? dbAssignments;
 
 	public Roles RolesInstance => dbRoles ?? throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
-	public Servers ServersInstance => dbServers ?? throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
 	public Assignments AssignmentsInstance => dbAssignments ?? throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
 
 	private DatabaseFactory()
@@ -38,7 +36,6 @@ public class DatabaseFactory
 		Log.WriteVerbose("Database data source created. Initializing per table instance.");
 
 		dbRoles = new Roles(dataSource);
-		dbServers = new Servers(dataSource);
 		dbAssignments = new Assignments(dataSource);
 
 		Log.WriteVerbose("Database table wrapper instances created.");
