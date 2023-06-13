@@ -267,6 +267,7 @@ public static class Counter
 			{
 				Embed = Embeds.Counter.CreateTopsEmbed(osuUsername,
 					topCounts,
+					osuId,
 					Actions.Channel.IsSnipeIDGuild(guild))
 			},
 			new ReturnMessage()
@@ -439,6 +440,7 @@ public static class Counter
 			{
 				Embed = Embeds.Counter.CreateTopsEmbed(osuUsername,
 					topCounts,
+					osuId,
 					Actions.Channel.IsSnipeIDGuild(guild))
 			},
 			new ReturnMessage()

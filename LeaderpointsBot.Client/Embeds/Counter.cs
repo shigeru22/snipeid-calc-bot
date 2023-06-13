@@ -10,8 +10,10 @@ namespace LeaderpointsBot.Client.Embeds;
 
 public static class Counter
 {
-	public static Embed CreateTopsEmbed(string osuUsername, int[,] topsCount, bool useLegacyColor = false)
+	public static Embed CreateTopsEmbed(string osuUsername, int[,] topsCount, int osuId, bool useLegacyColor = false)
 	{
+		string osuUserImageLink = $"https://a.ppy.sh/{osuId}";
+
 		string title = $"{osuUsername} top counts:";
 		StringBuilder description = new StringBuilder();
 
@@ -28,11 +30,14 @@ public static class Counter
 		return new EmbedBuilder().WithTitle(title)
 			.WithDescription(description.ToString())
 			.WithColor(useLegacyColor ? LegacyBorderColor.Normal : BorderColor.Normal)
+			.WithThumbnailUrl(osuUserImageLink)
 			.Build();
 	}
 
-	public static Embed CreateTopsEmbed(string osuUsername, List<int[]> topsCount, bool useLegacyColor = false)
+	public static Embed CreateTopsEmbed(string osuUsername, List<int[]> topsCount, int osuId, bool useLegacyColor = false)
 	{
+		string osuUserImageLink = $"https://a.ppy.sh/{osuId}";
+
 		string title = $"{osuUsername} top counts:";
 		StringBuilder description = new StringBuilder();
 
@@ -49,6 +54,7 @@ public static class Counter
 		return new EmbedBuilder().WithTitle(title)
 			.WithDescription(description.ToString())
 			.WithColor(useLegacyColor ? LegacyBorderColor.Normal : BorderColor.Normal)
+			.WithThumbnailUrl(osuUserImageLink)
 			.Build();
 	}
 
