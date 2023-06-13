@@ -21,12 +21,7 @@ public abstract class CacheWrapperBase
 	{
 		Log.WriteVerbose($"Retrieving item (key: {key}) from cache.");
 
-		object ret = cache.Get(key);
-		if (ret == null)
-		{
-			throw new KeyNotFoundException("Cache item with specified key not found.");
-		}
-
+		object ret = cache.Get(key) ?? throw new KeyNotFoundException("Cache item with specified key not found.");
 		return ret;
 	}
 
@@ -34,12 +29,7 @@ public abstract class CacheWrapperBase
 	{
 		Log.WriteVerbose($"Retrieving item (key: {key}) from cache.");
 
-		object ret = cache.Get(key);
-		if (ret == null)
-		{
-			throw new KeyNotFoundException("Cache item with specified key not found.");
-		}
-
+		object ret = cache.Get(key) ?? throw new KeyNotFoundException("Cache item with specified key not found.");
 		return (T)ret;
 	}
 
