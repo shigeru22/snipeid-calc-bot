@@ -46,4 +46,14 @@ public class DatabaseFactory
 
 		Log.WriteVerbose("Database table wrapper instances created.");
 	}
+
+	public DatabaseTransaction InitializeTransaction()
+	{
+		if (dataSource == null)
+		{
+			throw new DatabaseInstanceException("Data source has not been configured. Call SetConfig() before invoking.");
+		}
+
+		return new DatabaseTransaction(dataSource.CreateConnection());
+	}
 }
