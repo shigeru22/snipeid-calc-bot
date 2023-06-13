@@ -24,6 +24,8 @@ public static class Counter
 	// Bathbot count (<osc) message
 	public static async Task<ReturnMessage[]> CountBathbotLeaderboardPointsAsync(Embed countEmbed, SocketGuild? guild = null)
 	{
+		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
+
 		ServersQuerySchema.ServersTableData? dbServer = null;
 		if (guild != null)
 		{
@@ -73,7 +75,7 @@ public static class Counter
 		{
 			try
 			{
-				updateMessages = await Actions.Counter.UpdateUserDataAsync(guild, embedOsuId, points);
+				updateMessages = await Actions.Counter.UpdateUserDataAsync(transaction, guild, embedOsuId, points);
 			}
 			catch (SkipUpdateException)
 			{
@@ -119,6 +121,8 @@ public static class Counter
 	{
 		// TODO: [2023-01-21] extract reused procedures as methods
 
+		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
+
 		ServersQuerySchema.ServersTableData? dbServer = null;
 		if (guild != null)
 		{
@@ -144,7 +148,7 @@ public static class Counter
 		{
 			Log.WriteVerbose($"Fetching user data from database (Discord ID {userDiscordId}).");
 
-			UsersQuerySchema.UsersTableData dbUser = await DatabaseFactory.Instance.UsersInstance.GetUserByDiscordID(userDiscordId);
+			UsersQuerySchema.UsersTableData dbUser = await Database.Tables.Users.GetUserByDiscordID(transaction, userDiscordId);
 			osuId = dbUser.OsuID;
 		}
 		catch (DataNotFoundException)
@@ -258,7 +262,7 @@ public static class Counter
 		Structures.Actions.Counter.UpdateUserDataMessages? updateMessages = null;
 		if (guild != null && dbServer != null)
 		{
-			updateMessages = await Actions.Counter.UpdateUserDataAsync(guild, osuId, points);
+			updateMessages = await Actions.Counter.UpdateUserDataAsync(transaction, guild, osuId, points);
 		}
 
 		List<ReturnMessage> responses = new List<ReturnMessage>()
@@ -302,6 +306,8 @@ public static class Counter
 	public static async Task<ReturnMessage[]> CountLeaderboardPointsByOsuUsernameAsync(string osuUsername, SocketGuild? guild = null)
 	{
 		// TODO: [2023-01-21] extract reused procedures as methods
+
+		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
 
 		string tempOsuUsername;
 		int osuId;
@@ -421,7 +427,7 @@ public static class Counter
 		{
 			try
 			{
-				updateMessages = await Actions.Counter.UpdateUserDataAsync(guild, osuId, points);
+				updateMessages = await Actions.Counter.UpdateUserDataAsync(transaction, guild, osuId, points);
 			}
 			catch (SkipUpdateException)
 			{
@@ -474,6 +480,8 @@ public static class Counter
 
 	public static async Task<ReturnMessage[]> WhatIfUserCount(string userDiscordId, string arguments, string? guildDiscordId = null)
 	{
+		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
+
 		int osuId;
 		string osuUsername;
 
@@ -481,7 +489,7 @@ public static class Counter
 		{
 			Log.WriteVerbose($"Fetching user data from database (Discord ID {userDiscordId}).");
 
-			UsersQuerySchema.UsersTableData dbUser = await DatabaseFactory.Instance.UsersInstance.GetUserByDiscordID(userDiscordId);
+			UsersQuerySchema.UsersTableData dbUser = await Database.Tables.Users.GetUserByDiscordID(transaction, userDiscordId);
 			osuId = dbUser.OsuID;
 		}
 		catch (DataNotFoundException)

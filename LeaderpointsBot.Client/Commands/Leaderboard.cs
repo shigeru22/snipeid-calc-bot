@@ -14,6 +14,8 @@ public static class Leaderboard
 {
 	public static async Task<ReturnMessage> GetServerLeaderboard(string guildDiscordId)
 	{
+		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
+
 		UsersQuerySchema.UsersLeaderboardData[] serverLeaderboardData;
 		DateTime lastUpdate;
 
@@ -21,8 +23,8 @@ public static class Leaderboard
 		{
 			Log.WriteVerbose($"Fetching leaderboard data from database (guild ID {guildDiscordId}).");
 
-			serverLeaderboardData = await DatabaseFactory.Instance.UsersInstance.GetServerPointsLeaderboard(guildDiscordId);
-			lastUpdate = await DatabaseFactory.Instance.UsersInstance.GetServerLastPointUpdate(guildDiscordId);
+			serverLeaderboardData = await Database.Tables.Users.GetServerPointsLeaderboard(transaction, guildDiscordId);
+			lastUpdate = await Database.Tables.Users.GetServerLastPointUpdate(transaction, guildDiscordId);
 		}
 		catch (Exception e)
 		{

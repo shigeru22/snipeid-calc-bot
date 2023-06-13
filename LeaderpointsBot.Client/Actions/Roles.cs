@@ -84,7 +84,7 @@ public static class Roles
 		await user.AddRoleAsync(ulong.Parse(assignmentResult.NewRole.RoleDiscordID));
 	}
 
-	public static async Task SetAssignmentRolesAsync(SocketGuild guild, int osuId, Structures.Actions.UserData.AssignmentResult assignmentResult)
+	public static async Task SetAssignmentRolesAsync(DatabaseTransaction transaction, SocketGuild guild, int osuId, Structures.Actions.UserData.AssignmentResult assignmentResult)
 	{
 		if (assignmentResult.OldRole.HasValue && assignmentResult.NewRole.RoleDiscordID.Equals(assignmentResult.OldRole.Value.RoleDiscordID))
 		{
@@ -96,7 +96,7 @@ public static class Roles
 
 		try
 		{
-			dbUser = await DatabaseFactory.Instance.UsersInstance.GetUserByOsuID(osuId);
+			dbUser = await Database.Tables.Users.GetUserByOsuID(transaction, osuId);
 		}
 		catch (Exception e)
 		{

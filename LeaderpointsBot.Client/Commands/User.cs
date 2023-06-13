@@ -21,11 +21,13 @@ public static class User
 	{
 		// TODO: [2023-01-26] use OAuth?
 
+		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
+
 		Log.WriteVerbose($"Checking user in database (user ID {user.Id}).");
 
 		try
 		{
-			_ = await DatabaseFactory.Instance.UsersInstance.GetUserByDiscordID(user.Id.ToString());
+			_ = await Database.Tables.Users.GetUserByDiscordID(transaction, user.Id.ToString());
 
 			Log.WriteInfo($"User with ID {user.Id} already linked (in database). Sending error message.");
 			throw new SendMessageException("You've already linked your osu! account.", true);
@@ -45,7 +47,7 @@ public static class User
 
 		try
 		{
-			_ = await DatabaseFactory.Instance.UsersInstance.GetUserByOsuID(osuId);
+			_ = await Database.Tables.Users.GetUserByOsuID(transaction, osuId);
 
 			Log.WriteInfo($"osu! ID {osuId} already linked by someone (in database). Sending error message.");
 			throw new SendMessageException("osu! account already linked.", true);
@@ -86,7 +88,7 @@ public static class User
 
 		Log.WriteVerbose($"Inserting Discord user to database (user ID {user.Id}).");
 
-		await DatabaseFactory.Instance.UsersInstance.InsertUser(user.Id.ToString(), osuId, osuUser.Username, osuUser.CountryCode);
+		await Database.Tables.Users.InsertUser(transaction, user.Id.ToString(), osuId, osuUser.Username, osuUser.CountryCode);
 
 		if (guild != null)
 		{

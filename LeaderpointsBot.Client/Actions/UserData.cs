@@ -13,7 +13,7 @@ namespace LeaderpointsBot.Client.Actions;
 
 public static class UserData
 {
-	public static async Task<Structures.Actions.UserData.AssignmentResult> InsertOrUpdateAssignment(string serverDiscordId, int osuId, string osuUsername, string osuCountryCode, int points)
+	public static async Task<Structures.Actions.UserData.AssignmentResult> InsertOrUpdateAssignment(DatabaseTransaction transaction, string serverDiscordId, int osuId, string osuUsername, string osuCountryCode, int points)
 	{
 		UsersQuerySchema.UsersTableData currentUser;
 		RolesQuerySchema.RolesTableData? currentRole;
@@ -41,7 +41,7 @@ public static class UserData
 		// get current user from database
 		try
 		{
-			currentUser = await DatabaseFactory.Instance.UsersInstance.GetUserByOsuID(osuId);
+			currentUser = await Database.Tables.Users.GetUserByOsuID(transaction, osuId);
 		}
 		catch (DataNotFoundException)
 		{
@@ -107,7 +107,7 @@ public static class UserData
 			// fetch if assignment in database
 			if (currentServerAssignment != null)
 			{
-				lastServerUserUpdate = await DatabaseFactory.Instance.UsersInstance.GetServerLastPointUpdate(serverDiscordId);
+				lastServerUserUpdate = await Database.Tables.Users.GetServerLastPointUpdate(transaction, serverDiscordId);
 			}
 			else
 			{
@@ -133,7 +133,7 @@ public static class UserData
 			string? argOsuUsername = !currentUser.Username.Equals(osuUsername) ? osuUsername : null;
 			string? argOsuCountryCode = !currentUser.Country.Equals(osuCountryCode) ? osuCountryCode : null;
 
-			await DatabaseFactory.Instance.UsersInstance.UpdateUser(osuId, points, argOsuUsername, argOsuCountryCode);
+			await Database.Tables.Users.UpdateUser(transaction, osuId, points, argOsuUsername, argOsuCountryCode);
 		}
 
 		Log.WriteDebug($"points = {points}, rolename = {targetRole.RoleName}, minpoints = {targetRole.MinPoints}");
@@ -159,6 +159,8 @@ public static class UserData
 		}
 
 		Log.WriteVerbose("Returning assignment result message data.");
+
+		await transaction.CommitAsync();
 
 		return new Structures.Actions.UserData.AssignmentResult()
 		{

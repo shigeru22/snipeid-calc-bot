@@ -1,6 +1,7 @@
 // Copyright (c) shigeru22, concept by Akshiro28.
 // Licensed under the MIT license. See LICENSE in the repository root for details.
 
+using LeaderpointsBot.Database.Tables;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Database;
@@ -12,8 +13,10 @@ public static class Migration
 		// in relation order:
 		// users -> servers -> roles -> assignments
 
+		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
+
 		Log.WriteInfo("Creating users table...");
-		await DatabaseFactory.Instance.UsersInstance.CreateUsersTable();
+		await Users.CreateUsersTable(transaction);
 
 		Log.WriteInfo("Creating servers table...");
 		await DatabaseFactory.Instance.ServersInstance.CreateServersTable();
@@ -31,6 +34,8 @@ public static class Migration
 	{
 		string? guildDiscordId = null;
 		string? currentCountryCode = null;
+
+		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
 
 		while (string.IsNullOrWhiteSpace(guildDiscordId))
 		{
@@ -51,10 +56,10 @@ public static class Migration
 		await DatabaseFactory.Instance.ServersInstance.InsertServer(guildDiscordId);
 
 		Log.WriteInfo("(3/6) Altering users table...");
-		await DatabaseFactory.Instance.UsersInstance.AlterUsersTableV2(currentCountryCode);
+		await Users.AlterUsersTableV2(transaction, currentCountryCode);
 
 		Log.WriteInfo("(4/6) Migrating points data to users table...");
-		await DatabaseFactory.Instance.UsersInstance.MigratePointsDataV2();
+		await Users.MigratePointsDataV2(transaction);
 
 		Log.WriteInfo("(5/6) Altering assignments table...");
 		await DatabaseFactory.Instance.AssignmentsInstance.AlterAssignmentsTableV2();

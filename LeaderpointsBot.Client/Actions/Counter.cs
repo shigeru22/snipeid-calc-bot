@@ -18,7 +18,7 @@ namespace LeaderpointsBot.Client.Actions;
 
 public static class Counter
 {
-	public static async Task<Structures.Actions.Counter.UpdateUserDataMessages?> UpdateUserDataAsync(SocketGuild guild, int osuId, int points)
+	public static async Task<Structures.Actions.Counter.UpdateUserDataMessages?> UpdateUserDataAsync(DatabaseTransaction transaction, SocketGuild guild, int osuId, int points)
 	{
 		OsuDataTypes.OsuApiUserResponseData osuUser;
 		Structures.Actions.UserData.AssignmentResult assignmentResult;
@@ -81,7 +81,7 @@ public static class Counter
 
 		try
 		{
-			assignmentResult = await UserData.InsertOrUpdateAssignment(guild.Id.ToString(), osuId, osuUser.Username, osuUser.CountryCode, points);
+			assignmentResult = await UserData.InsertOrUpdateAssignment(transaction, guild.Id.ToString(), osuId, osuUser.Username, osuUser.CountryCode, points);
 		}
 		catch (SkipUpdateException)
 		{
@@ -96,7 +96,7 @@ public static class Counter
 
 		try
 		{
-			await Roles.SetAssignmentRolesAsync(guild, osuId, assignmentResult);
+			await Roles.SetAssignmentRolesAsync(transaction, guild, osuId, assignmentResult);
 		}
 		catch (Exception e)
 		{
