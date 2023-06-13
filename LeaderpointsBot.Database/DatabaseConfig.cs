@@ -12,12 +12,12 @@ public struct DatabaseConfig
 	private string databaseName;
 	private string? caFilePath;
 
-	public string HostName { get => hostName; set => hostName = value; }
-	public int Port { get => port; set => port = value; }
-	public string Username { get => username; set => username = value; }
-	public string Password { get => password; set => password = value; }
-	public string DatabaseName { get => databaseName; set => databaseName = value; }
-	public string? CAFilePath { get => caFilePath; set => caFilePath = value; }
+	public string HostName { readonly get => hostName; set => hostName = value; }
+	public int Port { readonly get => port; set => port = value; }
+	public string Username { readonly get => username; set => username = value; }
+	public string Password { readonly get => password; set => password = value; }
+	public string DatabaseName { readonly get => databaseName; set => databaseName = value; }
+	public string? CAFilePath { readonly get => caFilePath; set => caFilePath = value; }
 
 	public DatabaseConfig(string hostName, int port, string username, string password, string databaseName, string? caFilePath)
 	{
@@ -29,7 +29,7 @@ public struct DatabaseConfig
 		this.caFilePath = caFilePath;
 	}
 
-	public string ToConnectionString()
+	public readonly string ToConnectionString()
 	{
 		string connectionString = $"Host={hostName};Port={port};Username={username};Password={password};Database={databaseName}";
 
