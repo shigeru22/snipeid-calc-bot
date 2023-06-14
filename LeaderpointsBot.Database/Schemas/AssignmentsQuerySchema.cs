@@ -15,6 +15,7 @@ public static class AssignmentsQuerySchema
 	{
 		public int AssignmentID { get; set; }
 		public string Username { get; set; }
+		public int RoleID { get; set; }
 		public string RoleName { get; set; }
 	}
 

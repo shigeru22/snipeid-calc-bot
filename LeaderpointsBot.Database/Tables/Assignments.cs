@@ -17,6 +17,7 @@ public static class Assignments
 			SELECT
 				assignments.""assignmentid"",
 				users.""username"",
+				roles.""roleid"",
 				roles.""rolename""
 			FROM
 				assignments
@@ -52,7 +53,8 @@ public static class Assignments
 			{
 				AssignmentID = reader.GetInt32(0),
 				Username = reader.GetString(1),
-				RoleName = reader.GetString(2)
+				RoleID = reader.GetInt32(2),
+				RoleName = reader.GetString(3)
 			});
 		}
 
@@ -66,6 +68,7 @@ public static class Assignments
 			SELECT
 				assignments.""assignmentid"",
 				users.""username"",
+				roles.""roleid"",
 				roles.""rolename""
 			FROM
 				assignments
@@ -103,7 +106,8 @@ public static class Assignments
 			{
 				AssignmentID = reader.GetInt32(0),
 				Username = reader.GetString(1),
-				RoleName = reader.GetString(2)
+				RoleID = reader.GetInt32(2),
+				RoleName = reader.GetString(3)
 			});
 		}
 
@@ -117,6 +121,7 @@ public static class Assignments
 			SELECT
 				assignments.""assignmentid"",
 				users.""username"",
+				roles.""roleid"",
 				roles.""rolename""
 			FROM
 				assignments
@@ -157,7 +162,8 @@ public static class Assignments
 		{
 			AssignmentID = reader.GetInt32(0),
 			Username = reader.GetString(1),
-			RoleName = reader.GetString(2)
+			RoleID = reader.GetInt32(2),
+			RoleName = reader.GetString(3)
 		};
 
 		Log.WriteInfo("servers: Returned 1 row.");
@@ -170,6 +176,7 @@ public static class Assignments
 			SELECT
 				assignments.""assignmentid"",
 				users.""username"",
+				roles.""roleid"",
 				roles.""rolename""
 			FROM
 				assignments
@@ -210,7 +217,8 @@ public static class Assignments
 		{
 			AssignmentID = reader.GetInt32(0),
 			Username = reader.GetString(1),
-			RoleName = reader.GetString(2)
+			RoleID = reader.GetInt32(2),
+			RoleName = reader.GetString(3)
 		};
 
 		Log.WriteInfo("servers: Returned 1 row.");
@@ -223,6 +231,7 @@ public static class Assignments
 			SELECT
 				assignments.""assignmentid"",
 				users.""username"",
+				roles.""roleid"",
 				roles.""rolename""
 			FROM
 				assignments
@@ -266,7 +275,8 @@ public static class Assignments
 		{
 			AssignmentID = reader.GetInt32(0),
 			Username = reader.GetString(1),
-			RoleName = reader.GetString(2)
+			RoleID = reader.GetInt32(2),
+			RoleName = reader.GetString(3)
 		};
 
 		Log.WriteInfo("servers: Returned 1 row.");
@@ -279,6 +289,7 @@ public static class Assignments
 			SELECT
 				assignments.""assignmentid"",
 				users.""username"",
+				roles.""roleid"",
 				roles.""rolename""
 			FROM
 				assignments
@@ -319,7 +330,8 @@ public static class Assignments
 		{
 			AssignmentID = reader.GetInt32(0),
 			Username = reader.GetString(1),
-			RoleName = reader.GetString(2)
+			RoleID = reader.GetInt32(2),
+			RoleName = reader.GetString(3)
 		};
 
 		Log.WriteInfo("servers: Returned 1 row.");
@@ -332,6 +344,7 @@ public static class Assignments
 			SELECT
 				assignments.""assignmentid"",
 				users.""username"",
+				roles.""roleid"",
 				roles.""rolename""
 			FROM
 				assignments
@@ -375,7 +388,8 @@ public static class Assignments
 		{
 			AssignmentID = reader.GetInt32(0),
 			Username = reader.GetString(1),
-			RoleName = reader.GetString(2)
+			RoleID = reader.GetInt32(2),
+			RoleName = reader.GetString(3)
 		};
 
 		Log.WriteInfo("servers: Returned 1 row.");
@@ -388,6 +402,7 @@ public static class Assignments
 			SELECT
 				assignments.""assignmentid"",
 				users.""username"",
+				roles.""roleid"",
 				roles.""rolename""
 			FROM
 				assignments
@@ -431,7 +446,8 @@ public static class Assignments
 		{
 			AssignmentID = reader.GetInt32(0),
 			Username = reader.GetString(1),
-			RoleName = reader.GetString(2)
+			RoleID = reader.GetInt32(2),
+			RoleName = reader.GetString(3)
 		};
 
 		Log.WriteInfo("servers: Returned 1 row.");
