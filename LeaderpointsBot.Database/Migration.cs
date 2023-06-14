@@ -27,6 +27,8 @@ public static class Migration
 		Log.WriteInfo("Creating assignments table...");
 		await DatabaseFactory.Instance.AssignmentsInstance.CreateAssignmentsTable();
 
+		await transaction.CommitAsync();
+
 		Log.WriteInfo("Database table creation completed.");
 	}
 
@@ -68,5 +70,9 @@ public static class Migration
 		await DatabaseFactory.Instance.RolesInstance.RenameOldTable();
 		await DatabaseFactory.Instance.RolesInstance.CreateRolesTable();
 		await DatabaseFactory.Instance.RolesInstance.MigrateRolesDataV2();
+
+		await transaction.CommitAsync();
+
+		Log.WriteInfo("Database migration completed.");
 	}
 }
