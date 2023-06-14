@@ -31,6 +31,6 @@ public class Guild
 			return;
 		}
 
-		await DatabaseFactory.Instance.RolesInstance.InsertRole("0", "(No role)", 0, guildData.ServerID);
+		await Database.Tables.Roles.InsertRole(transaction, "0", "(No role)", 0, guildData.ServerID);
 	}
 }

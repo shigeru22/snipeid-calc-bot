@@ -22,7 +22,7 @@ public static class Migration
 		await Servers.CreateServersTable(transaction);
 
 		Log.WriteInfo("Creating roles table...");
-		await DatabaseFactory.Instance.RolesInstance.CreateRolesTable();
+		await Roles.CreateRolesTable(transaction);
 
 		Log.WriteInfo("Creating assignments table...");
 		await DatabaseFactory.Instance.AssignmentsInstance.CreateAssignmentsTable();
@@ -67,9 +67,9 @@ public static class Migration
 		await DatabaseFactory.Instance.AssignmentsInstance.AlterAssignmentsTableV2();
 
 		Log.WriteInfo("(6/6) Modifying roles table...");
-		await DatabaseFactory.Instance.RolesInstance.RenameOldTable();
-		await DatabaseFactory.Instance.RolesInstance.CreateRolesTable();
-		await DatabaseFactory.Instance.RolesInstance.MigrateRolesDataV2();
+		await Roles.RenameOldTable(transaction);
+		await Roles.CreateRolesTable(transaction);
+		await Roles.MigrateRolesDataV2(transaction);
 
 		await transaction.CommitAsync();
 

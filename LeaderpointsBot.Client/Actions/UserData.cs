@@ -57,7 +57,7 @@ public static class UserData
 		// get current role from database
 		try
 		{
-			currentRole = await DatabaseFactory.Instance.RolesInstance.GetServerRoleByOsuID(serverDiscordId, osuId);
+			currentRole = await Database.Tables.Roles.GetServerRoleByOsuID(transaction, serverDiscordId, osuId);
 		}
 		catch (DataNotFoundException)
 		{
@@ -73,7 +73,7 @@ public static class UserData
 		// get target role from database
 		try
 		{
-			targetRole = await DatabaseFactory.Instance.RolesInstance.GetTargetServerRoleByPoints(serverDiscordId, points);
+			targetRole = await Database.Tables.Roles.GetTargetServerRoleByPoints(transaction, serverDiscordId, points);
 		}
 		catch (DataNotFoundException)
 		{

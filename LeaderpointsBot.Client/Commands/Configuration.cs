@@ -360,7 +360,7 @@ public static class Configuration
 		}
 
 		Log.WriteVerbose($"Retrieving guild role points list (guild ID {guild.Id}).");
-		RolesQuerySchema.RolesTableData[] guildRoles = await DatabaseFactory.Instance.RolesInstance.GetServerRoles(guild.Id.ToString());
+		RolesQuerySchema.RolesTableData[] guildRoles = await Database.Tables.Roles.GetServerRoles(transaction, guild.Id.ToString());
 
 		await transaction.CommitAsync();
 
@@ -399,7 +399,7 @@ public static class Configuration
 		}
 
 		// check if server role exists in database
-		RolesQuerySchema.RolesTableData[] guildRoles = await DatabaseFactory.Instance.RolesInstance.GetServerRoles(guild.Id.ToString());
+		RolesQuerySchema.RolesTableData[] guildRoles = await Database.Tables.Roles.GetServerRoles(transaction, guild.Id.ToString());
 		if (guildRoles.Length > 1) // note: 0 points count here and not removable
 		{
 			if (guildRoles.Where(role => !string.IsNullOrWhiteSpace(role.DiscordID) && role.DiscordID.Equals(guild.Id.ToString())).Count() == 1)
@@ -415,7 +415,7 @@ public static class Configuration
 			}
 		}
 
-		await DatabaseFactory.Instance.RolesInstance.InsertRole(targetRole.Id.ToString(), targetRole.Name, minPoints, guildData.ServerID);
+		await Database.Tables.Roles.InsertRole(transaction, targetRole.Id.ToString(), targetRole.Name, minPoints, guildData.ServerID);
 
 		await transaction.CommitAsync();
 
@@ -463,7 +463,7 @@ public static class Configuration
 		}
 
 		// check if server role exists in database
-		RolesQuerySchema.RolesTableData[] guildRoles = await DatabaseFactory.Instance.RolesInstance.GetServerRoles(guild.Id.ToString());
+		RolesQuerySchema.RolesTableData[] guildRoles = await Database.Tables.Roles.GetServerRoles(transaction, guild.Id.ToString());
 		if (guildRoles.Length > 1) // note: 0 points count here and not removable
 		{
 			if (guildRoles.Where(role => !string.IsNullOrWhiteSpace(role.DiscordID) && role.DiscordID.Equals(guild.Id.ToString())).Count() == 1)
@@ -479,7 +479,7 @@ public static class Configuration
 			}
 		}
 
-		await DatabaseFactory.Instance.RolesInstance.InsertRole(targetRole.Id.ToString(), targetRole.Name, minPoints, guildData.ServerID);
+		await Database.Tables.Roles.InsertRole(transaction, targetRole.Id.ToString(), targetRole.Name, minPoints, guildData.ServerID);
 
 		await transaction.CommitAsync();
 
@@ -508,7 +508,7 @@ public static class Configuration
 		}
 
 		// check if server role exists in database
-		RolesQuerySchema.RolesTableData[] guildRoles = await DatabaseFactory.Instance.RolesInstance.GetServerRoles(guild.Id.ToString());
+		RolesQuerySchema.RolesTableData[] guildRoles = await Database.Tables.Roles.GetServerRoles(transaction, guild.Id.ToString());
 		RolesQuerySchema.RolesTableData[] targetGuildRole = guildRoles.Where(
 			role => !string.IsNullOrWhiteSpace(role.DiscordID) && role.DiscordID.Equals(targetRole.Id.ToString())
 		).ToArray();
@@ -518,7 +518,7 @@ public static class Configuration
 			throw new SendMessageException("Target role not found in server configuration.");
 		}
 
-		await DatabaseFactory.Instance.RolesInstance.DeleteRoleByRoleID(targetGuildRole[0].RoleID);
+		await Database.Tables.Roles.DeleteRoleByRoleID(transaction, targetGuildRole[0].RoleID);
 
 		await transaction.CommitAsync();
 
@@ -566,7 +566,7 @@ public static class Configuration
 		}
 
 		// check if server role exists in database
-		RolesQuerySchema.RolesTableData[] guildRoles = await DatabaseFactory.Instance.RolesInstance.GetServerRoles(guild.Id.ToString());
+		RolesQuerySchema.RolesTableData[] guildRoles = await Database.Tables.Roles.GetServerRoles(transaction, guild.Id.ToString());
 		RolesQuerySchema.RolesTableData[] targetGuildRole = guildRoles.Where(
 			role => !string.IsNullOrWhiteSpace(role.DiscordID) && role.DiscordID.Equals(targetRole.Id.ToString())
 		).ToArray();
@@ -576,7 +576,7 @@ public static class Configuration
 			throw new SendMessageException("Target role not found in server configuration.");
 		}
 
-		await DatabaseFactory.Instance.RolesInstance.DeleteRoleByRoleID(targetGuildRole[0].RoleID);
+		await Database.Tables.Roles.DeleteRoleByRoleID(transaction, targetGuildRole[0].RoleID);
 
 		await transaction.CommitAsync();
 

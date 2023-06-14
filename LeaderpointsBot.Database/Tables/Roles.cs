@@ -9,14 +9,9 @@ using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Database.Tables;
 
-public class Roles : DBConnectorBase
+public static class Roles
 {
-	public Roles(NpgsqlDataSource dataSource) : base(dataSource)
-	{
-		Log.WriteVerbose("Roles table class instance created.");
-	}
-
-	public async Task<RolesQuerySchema.RolesTableData[]> GetRoles()
+	public static async Task<RolesQuerySchema.RolesTableData[]> GetRoles(DatabaseTransaction transaction)
 	{
 		const string query = @"
 			SELECT
@@ -28,7 +23,7 @@ public class Roles : DBConnectorBase
 				roles
 		";
 
-		await using NpgsqlCommand command = DataSource.CreateCommand(query);
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction);
 		await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
 
 		if (!reader.HasRows)
@@ -70,7 +65,7 @@ public class Roles : DBConnectorBase
 		return ret.ToArray();
 	}
 
-	public async Task<RolesQuerySchema.RolesTableData[]> GetServerRoles(string guildDiscordId)
+	public static async Task<RolesQuerySchema.RolesTableData[]> GetServerRoles(DatabaseTransaction transaction, string guildDiscordId)
 	{
 		const string query = @"
 			SELECT
@@ -88,12 +83,7 @@ public class Roles : DBConnectorBase
 				minPoints DESC
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -137,14 +127,11 @@ public class Roles : DBConnectorBase
 			});
 		}
 
-		await tempConnection.CloseAsync();
-		Log.WriteVerbose("Database connection closed.");
-
 		Log.WriteInfo($"roles: Returned {reader.Rows} row{(reader.Rows != 1 ? "s" : string.Empty)}.");
 		return ret.ToArray();
 	}
 
-	public async Task<RolesQuerySchema.RolesTableData> GetRoleByRoleID(int roleId)
+	public static async Task<RolesQuerySchema.RolesTableData> GetRoleByRoleID(DatabaseTransaction transaction, int roleId)
 	{
 		const string query = @"
 			SELECT
@@ -158,12 +145,7 @@ public class Roles : DBConnectorBase
 				roles.""roleid"" = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -211,14 +193,11 @@ public class Roles : DBConnectorBase
 			MinPoints = minPoints
 		};
 
-		await tempConnection.CloseAsync();
-		Log.WriteVerbose("Database connection closed.");
-
 		Log.WriteInfo("roles: Returned 1 row.");
 		return ret;
 	}
 
-	public async Task<RolesQuerySchema.RolesTableData> GetRoleByDiscordID(string roleDiscordId)
+	public static async Task<RolesQuerySchema.RolesTableData> GetRoleByDiscordID(DatabaseTransaction transaction, string roleDiscordId)
 	{
 		const string query = @"
 			SELECT
@@ -232,12 +211,7 @@ public class Roles : DBConnectorBase
 				roles.""discordid"" = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -285,14 +259,11 @@ public class Roles : DBConnectorBase
 			MinPoints = minPoints
 		};
 
-		await tempConnection.CloseAsync();
-		Log.WriteVerbose("Database connection closed.");
-
 		Log.WriteInfo("roles: Returned 1 row.");
 		return ret;
 	}
 
-	public async Task<RolesQuerySchema.RolesTableData> GetServerRoleByOsuID(string guildDiscordId, int osuId)
+	public static async Task<RolesQuerySchema.RolesTableData> GetServerRoleByOsuID(DatabaseTransaction transaction, string guildDiscordId, int osuId)
 	{
 		const string query = @"
 			SELECT
@@ -312,12 +283,7 @@ public class Roles : DBConnectorBase
 			    users.""osuid"" = ($1) AND servers.""discordid"" = ($2)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -366,14 +332,11 @@ public class Roles : DBConnectorBase
 			MinPoints = minPoints
 		};
 
-		await tempConnection.CloseAsync();
-		Log.WriteVerbose("Database connection closed.");
-
 		Log.WriteInfo("roles: Returned 1 row.");
 		return ret;
 	}
 
-	public async Task<RolesQuerySchema.RolesTableData> GetTargetServerRoleByPoints(string guildDiscordId, int points)
+	public static async Task<RolesQuerySchema.RolesTableData> GetTargetServerRoleByPoints(DatabaseTransaction transaction, string guildDiscordId, int points)
 	{
 		const string query = @"
 			SELECT
@@ -392,12 +355,7 @@ public class Roles : DBConnectorBase
 			LIMIT 1
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -448,26 +406,18 @@ public class Roles : DBConnectorBase
 			MinPoints = minPoints
 		};
 
-		await tempConnection.CloseAsync();
-		Log.WriteVerbose("Database connection closed.");
-
 		Log.WriteInfo("roles: Returned 1 row.");
 		return ret;
 	}
 
-	public async Task InsertRole(string roleDiscordId, string roleName, int minPoints, int serverId)
+	public static async Task InsertRole(DatabaseTransaction transaction, string roleDiscordId, string roleName, int minPoints, int serverId)
 	{
 		const string query = @"
 			INSERT INTO roles (discordid, rolename, minpoints, serverid)
 				VALUES ($1, $2, $3, $4)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -482,31 +432,21 @@ public class Roles : DBConnectorBase
 
 		if (affectedRows != 1)
 		{
-			await tempConnection.CloseAsync();
-			Log.WriteVerbose("Database connection closed.");
 			Log.WriteError($"Insert query execution failed (discordId = {roleDiscordId}, roleName = {roleName}, minPoints = {minPoints}, serverId = {serverId}).");
 			throw new DatabaseInstanceException("Insertion query failed."); // D0201
 		}
 
 		Log.WriteInfo("roles: Inserted 1 row.");
-
-		await tempConnection.CloseAsync();
-		Log.WriteVerbose("Database connection closed.");
 	}
 
-	public async Task InsertRole(int roleId, string roleDiscordId, string roleName, int minPoints, int serverId)
+	public static async Task InsertRole(DatabaseTransaction transaction, int roleId, string roleDiscordId, string roleName, int minPoints, int serverId)
 	{
 		const string query = @"
 			INSERT INTO roles (roleid, discordid, rolename, minpoints, serverid)
 				VALUES ($1, $2, $3, $4, $5)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -522,19 +462,14 @@ public class Roles : DBConnectorBase
 
 		if (affectedRows != 1)
 		{
-			await tempConnection.CloseAsync();
-			Log.WriteVerbose("Database connection closed.");
 			Log.WriteError($"Insert query execution failed (roleId = {roleId}, discordId = {roleDiscordId}, roleName = {roleName}, minPoints = {minPoints}, serverId = {serverId}).");
 			throw new DatabaseInstanceException("Insertion query failed."); // D0201
 		}
 
 		Log.WriteInfo("roles: Inserted 1 row.");
-
-		await tempConnection.CloseAsync();
-		Log.WriteVerbose("Database connection closed.");
 	}
 
-	public async Task UpdateRole(int roleId, string? roleName = null, int? minPoints = null)
+	public static async Task UpdateRole(DatabaseTransaction transaction, int roleId, string? roleName = null, int? minPoints = null)
 	{
 		if (string.IsNullOrEmpty(roleName) && minPoints < 0)
 		{
@@ -552,16 +487,11 @@ public class Roles : DBConnectorBase
 				roleid = ({(!string.IsNullOrEmpty(roleName) && minPoints >= 0 ? "$3" : "$2")})
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
 		NpgsqlCommand command;
 
 		if (!string.IsNullOrEmpty(roleName) && minPoints >= 0)
 		{
-			command = new NpgsqlCommand(query, tempConnection)
+			command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 			{
 				Parameters =
 				{
@@ -575,7 +505,7 @@ public class Roles : DBConnectorBase
 		{
 			if (!string.IsNullOrEmpty(roleName))
 			{
-				command = new NpgsqlCommand(query, tempConnection)
+				command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 				{
 					Parameters =
 					{
@@ -586,7 +516,7 @@ public class Roles : DBConnectorBase
 			}
 			else if (minPoints >= 0)
 			{
-				command = new NpgsqlCommand(query, tempConnection)
+				command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 				{
 					Parameters =
 					{
@@ -599,7 +529,7 @@ public class Roles : DBConnectorBase
 			{
 				// should not fall here
 
-				command = new NpgsqlCommand(query, tempConnection)
+				command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 				{
 					Parameters =
 					{
@@ -613,31 +543,21 @@ public class Roles : DBConnectorBase
 
 		if (affectedRows != 1)
 		{
-			await tempConnection.CloseAsync();
-			Log.WriteVerbose("Database connection closed.");
 			Log.WriteError($"Update query execution failed (roleId = {roleId}, roleName = {roleName ?? "null"}, minPoints = {minPoints}).");
 			throw new DatabaseInstanceException("Update query failed."); // D0201
 		}
 
 		Log.WriteInfo("roles: Updated 1 row.");
-
-		await tempConnection.CloseAsync();
-		Log.WriteVerbose("Database connection closed.");
 	}
 
-	public async Task DeleteRoleByRoleID(int roleId)
+	public static async Task DeleteRoleByRoleID(DatabaseTransaction transaction, int roleId)
 	{
 		const string query = @"
 			DELETE FROM roles
 			WHERE roles.""roleid"" = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -649,31 +569,21 @@ public class Roles : DBConnectorBase
 
 		if (affectedRows != 1)
 		{
-			await tempConnection.CloseAsync();
-			Log.WriteVerbose("Database connection closed.");
 			Log.WriteError($"Delete query execution failed (roleId = {roleId}).");
 			throw new DatabaseInstanceException("Deletion query failed."); // D0201
 		}
 
 		Log.WriteInfo("roles: Deleted 1 row.");
-
-		await tempConnection.CloseAsync();
-		Log.WriteVerbose("Database connection closed.");
 	}
 
-	public async Task DeleteRoleByDiscordID(int discordId)
+	public static async Task DeleteRoleByDiscordID(DatabaseTransaction transaction, int discordId)
 	{
 		const string query = @"
 			DELETE FROM roles
 				WHERE roles.""discordid"" = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -685,31 +595,21 @@ public class Roles : DBConnectorBase
 
 		if (affectedRows != 1)
 		{
-			await tempConnection.CloseAsync();
-			Log.WriteVerbose("Database connection closed.");
 			Log.WriteError($"Delete query execution failed (discordId = {discordId}).");
 			throw new DatabaseInstanceException("Deletion query failed."); // D0201
 		}
 
 		Log.WriteInfo("roles: Deleted 1 row.");
-
-		await tempConnection.CloseAsync();
-		Log.WriteVerbose("Database connection closed.");
 	}
 
-	public async Task DeleteServerRoles(int guildId)
+	public static async Task DeleteServerRoles(DatabaseTransaction transaction, int guildId)
 	{
 		const string query = @"
 			DELETE FROM roles
 				WHERE roles.""serverid"" = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -721,19 +621,14 @@ public class Roles : DBConnectorBase
 
 		if (affectedRows <= 0)
 		{
-			await tempConnection.CloseAsync();
-			Log.WriteVerbose("Database connection closed.");
 			Log.WriteError($"Delete query execution failed (serverId = {guildId}).");
 			throw new DatabaseInstanceException("Deletion query failed."); // D0201
 		}
 
 		Log.WriteInfo($"roles: Deleted {affectedRows} row{(affectedRows != 1 ? "s" : string.Empty)}.");
-
-		await tempConnection.CloseAsync();
-		Log.WriteVerbose("Database connection closed.");
 	}
 
-	internal async Task CreateRolesTable()
+	internal static async Task CreateRolesTable(DatabaseTransaction transaction)
 	{
 		const string query = @"
 			CREATE TABLE roles (
@@ -747,33 +642,19 @@ public class Roles : DBConnectorBase
 			)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection);
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction);
 		_ = await command.ExecuteNonQueryAsync();
-
-		await tempConnection.CloseAsync();
 	}
 
-	internal async Task RenameOldTable()
+	internal static async Task RenameOldTable(DatabaseTransaction transaction)
 	{
 		const string query = "ALTER TABLE roles RENAME TO roles_old";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection);
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction);
 		_ = await command.ExecuteNonQueryAsync();
-
-		await tempConnection.CloseAsync();
 	}
 
-	internal async Task MigrateRolesDataV2()
+	internal static async Task MigrateRolesDataV2(DatabaseTransaction transaction)
 	{
 		const string migrateDataQuery = @"
 			INSERT INTO roles (discordid, serverid, rolename, minpoints)
@@ -799,26 +680,19 @@ public class Roles : DBConnectorBase
 			ALTER SEQUENCE roles_roleid_seq1 RENAME TO roles_roleid_seq;
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand migrateDataCommand = new NpgsqlCommand(migrateDataQuery, tempConnection);
+		await using NpgsqlCommand migrateDataCommand = new NpgsqlCommand(migrateDataQuery, transaction.Connection, transaction.Transaction);
 		_ = await migrateDataCommand.ExecuteNonQueryAsync();
 
-		await using NpgsqlCommand removeRoleConstraintCommand = new NpgsqlCommand(removeRoleConstraintQuery, tempConnection);
+		await using NpgsqlCommand removeRoleConstraintCommand = new NpgsqlCommand(removeRoleConstraintQuery, transaction.Connection, transaction.Transaction);
 		_ = await removeRoleConstraintCommand.ExecuteNonQueryAsync();
 
-		await using NpgsqlCommand dropOldTableCommand = new NpgsqlCommand(dropOldTableQuery, tempConnection);
+		await using NpgsqlCommand dropOldTableCommand = new NpgsqlCommand(dropOldTableQuery, transaction.Connection, transaction.Transaction);
 		_ = await dropOldTableCommand.ExecuteNonQueryAsync();
 
-		await using NpgsqlCommand addNewRoleConstraintCommand = new NpgsqlCommand(addNewRoleConstraintQuery, tempConnection);
+		await using NpgsqlCommand addNewRoleConstraintCommand = new NpgsqlCommand(addNewRoleConstraintQuery, transaction.Connection, transaction.Transaction);
 		_ = await addNewRoleConstraintCommand.ExecuteNonQueryAsync();
 
-		await using NpgsqlCommand renameSequenceTableCommand = new NpgsqlCommand(renameSequenceTableQuery, tempConnection);
+		await using NpgsqlCommand renameSequenceTableCommand = new NpgsqlCommand(renameSequenceTableQuery, transaction.Connection, transaction.Transaction);
 		_ = await renameSequenceTableCommand.ExecuteNonQueryAsync();
-
-		await tempConnection.CloseAsync();
 	}
 }
