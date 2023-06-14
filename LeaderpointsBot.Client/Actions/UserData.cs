@@ -89,7 +89,7 @@ public static class UserData
 		// get current assignment from database
 		try
 		{
-			currentServerAssignment = await DatabaseFactory.Instance.AssignmentsInstance.GetAssignmentByOsuID(serverDiscordId, osuId);
+			currentServerAssignment = await Database.Tables.Assignments.GetAssignmentByOsuID(transaction, serverDiscordId, osuId);
 		}
 		catch (DataNotFoundException)
 		{
@@ -141,7 +141,7 @@ public static class UserData
 		if (currentServerAssignment.HasValue)
 		{
 			// update server assignment data
-			await DatabaseFactory.Instance.AssignmentsInstance.UpdateAssignmentByAssignmentID(currentServerAssignment.Value.AssignmentID, targetRole.RoleID);
+			await Database.Tables.Assignments.UpdateAssignmentByAssignmentID(transaction, currentServerAssignment.Value.AssignmentID, targetRole.RoleID);
 		}
 		else
 		{
@@ -149,7 +149,7 @@ public static class UserData
 			try
 			{
 				ServersQuerySchema.ServersTableData serverData = await Database.Tables.Servers.GetServerByDiscordID(transaction, serverDiscordId);
-				await DatabaseFactory.Instance.AssignmentsInstance.InsertAssignment(serverData.ServerID, currentUser.UserID, targetRole.RoleID);
+				await Database.Tables.Assignments.InsertAssignment(transaction, serverData.ServerID, currentUser.UserID, targetRole.RoleID);
 			}
 			catch (Exception e)
 			{

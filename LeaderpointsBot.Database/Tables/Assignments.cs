@@ -9,14 +9,9 @@ using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Database.Tables;
 
-public class Assignments : DBConnectorBase
+public static class Assignments
 {
-	public Assignments(NpgsqlDataSource dataSource) : base(dataSource)
-	{
-		Log.WriteVerbose("Servers table class instance created.");
-	}
-
-	public async Task<AssignmentsQuerySchema.AssignmentsTableData[]> GetAssignmentsByServerID(int serverId)
+	public static async Task<AssignmentsQuerySchema.AssignmentsTableData[]> GetAssignmentsByServerID(DatabaseTransaction transaction, int serverId)
 	{
 		const string query = @"
 			SELECT
@@ -33,12 +28,7 @@ public class Assignments : DBConnectorBase
 				assignments.""serverid"" = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -70,7 +60,7 @@ public class Assignments : DBConnectorBase
 		return ret.ToArray();
 	}
 
-	public async Task<AssignmentsQuerySchema.AssignmentsTableData[]> GetAssignmentsByServerDiscordID(string guildDiscordId)
+	public static async Task<AssignmentsQuerySchema.AssignmentsTableData[]> GetAssignmentsByServerDiscordID(DatabaseTransaction transaction, string guildDiscordId)
 	{
 		const string query = @"
 			SELECT
@@ -89,12 +79,7 @@ public class Assignments : DBConnectorBase
 				servers.""discordid"" = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -126,7 +111,7 @@ public class Assignments : DBConnectorBase
 		return ret.ToArray();
 	}
 
-	public async Task<AssignmentsQuerySchema.AssignmentsTableData> GetAssignmentByAssignmentID(int assignmentId)
+	public static async Task<AssignmentsQuerySchema.AssignmentsTableData> GetAssignmentByAssignmentID(DatabaseTransaction transaction, int assignmentId)
 	{
 		const string query = @"
 			SELECT
@@ -143,12 +128,7 @@ public class Assignments : DBConnectorBase
 				assignments.""assignmentid"" = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -180,14 +160,11 @@ public class Assignments : DBConnectorBase
 			RoleName = reader.GetString(2)
 		};
 
-		await tempConnection.CloseAsync();
-		Log.WriteVerbose("Database connection closed.");
-
 		Log.WriteInfo("servers: Returned 1 row.");
 		return ret;
 	}
 
-	public async Task<AssignmentsQuerySchema.AssignmentsTableData> GetAssignmentByUserID(int userId)
+	public static async Task<AssignmentsQuerySchema.AssignmentsTableData> GetAssignmentByUserID(DatabaseTransaction transaction, int userId)
 	{
 		const string query = @"
 			SELECT
@@ -204,12 +181,7 @@ public class Assignments : DBConnectorBase
 				assignments.""userid"" = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -241,14 +213,11 @@ public class Assignments : DBConnectorBase
 			RoleName = reader.GetString(2)
 		};
 
-		await tempConnection.CloseAsync();
-		Log.WriteVerbose("Database connection closed.");
-
 		Log.WriteInfo("servers: Returned 1 row.");
 		return ret;
 	}
 
-	public async Task<AssignmentsQuerySchema.AssignmentsTableData> GetAssignmentByUserID(string guildDiscordId, int userId)
+	public static async Task<AssignmentsQuerySchema.AssignmentsTableData> GetAssignmentByUserID(DatabaseTransaction transaction, string guildDiscordId, int userId)
 	{
 		const string query = @"
 			SELECT
@@ -267,12 +236,7 @@ public class Assignments : DBConnectorBase
 				assignments.""userid"" = ($1) AND servers.""discordid"" = ($2)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -305,14 +269,11 @@ public class Assignments : DBConnectorBase
 			RoleName = reader.GetString(2)
 		};
 
-		await tempConnection.CloseAsync();
-		Log.WriteVerbose("Database connection closed.");
-
 		Log.WriteInfo("servers: Returned 1 row.");
 		return ret;
 	}
 
-	public async Task<AssignmentsQuerySchema.AssignmentsTableData> GetAssignmentByUserDiscordID(string userDiscordId)
+	public static async Task<AssignmentsQuerySchema.AssignmentsTableData> GetAssignmentByUserDiscordID(DatabaseTransaction transaction, string userDiscordId)
 	{
 		const string query = @"
 			SELECT
@@ -329,12 +290,7 @@ public class Assignments : DBConnectorBase
 				users.""discordid"" = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -366,14 +322,11 @@ public class Assignments : DBConnectorBase
 			RoleName = reader.GetString(2)
 		};
 
-		await tempConnection.CloseAsync();
-		Log.WriteVerbose("Database connection closed.");
-
 		Log.WriteInfo("servers: Returned 1 row.");
 		return ret;
 	}
 
-	public async Task<AssignmentsQuerySchema.AssignmentsTableData> GetAssignmentByUserDiscordID(string guildDiscordId, string userDiscordId)
+	public static async Task<AssignmentsQuerySchema.AssignmentsTableData> GetAssignmentByUserDiscordID(DatabaseTransaction transaction, string guildDiscordId, string userDiscordId)
 	{
 		const string query = @"
 			SELECT
@@ -392,12 +345,7 @@ public class Assignments : DBConnectorBase
 				users.""discordid"" = ($1) AND servers.""discordid"" = ($2)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -430,14 +378,11 @@ public class Assignments : DBConnectorBase
 			RoleName = reader.GetString(2)
 		};
 
-		await tempConnection.CloseAsync();
-		Log.WriteVerbose("Database connection closed.");
-
 		Log.WriteInfo("servers: Returned 1 row.");
 		return ret;
 	}
 
-	public async Task<AssignmentsQuerySchema.AssignmentsTableData> GetAssignmentByOsuID(string guildDiscordId, int osuId)
+	public static async Task<AssignmentsQuerySchema.AssignmentsTableData> GetAssignmentByOsuID(DatabaseTransaction transaction, string guildDiscordId, int osuId)
 	{
 		const string query = @"
 			SELECT
@@ -456,12 +401,7 @@ public class Assignments : DBConnectorBase
 				users.""osuid"" = ($1) AND servers.""discordid"" = ($2)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -494,26 +434,18 @@ public class Assignments : DBConnectorBase
 			RoleName = reader.GetString(2)
 		};
 
-		await tempConnection.CloseAsync();
-		Log.WriteVerbose("Database connection closed.");
-
 		Log.WriteInfo("servers: Returned 1 row.");
 		return ret;
 	}
 
-	public async Task InsertAssignment(int serverId, int userId, int roleId)
+	public static async Task InsertAssignment(DatabaseTransaction transaction, int serverId, int userId, int roleId)
 	{
 		const string query = @"
 			INSERT INTO assignments (userid, roleid, serverid)
 				VALUES ($1, $2, $3)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -527,31 +459,21 @@ public class Assignments : DBConnectorBase
 
 		if (affectedRows != 1)
 		{
-			await tempConnection.CloseAsync();
-			Log.WriteVerbose("Database connection closed.");
 			Log.WriteError($"Insert query execution failed (userId = {userId}, roleId = {roleId}, serverId = {serverId}).");
 			throw new DatabaseInstanceException("Insertion query failed."); // D0201
 		}
 
 		Log.WriteInfo("assignments: Inserted 1 row.");
-
-		await tempConnection.CloseAsync();
-		Log.WriteVerbose("Database connection closed.");
 	}
 
-	public async Task InsertAssignment(int assignmentId, string guildDiscordId, int userId, int roleId)
+	public static async Task InsertAssignment(DatabaseTransaction transaction, int assignmentId, string guildDiscordId, int userId, int roleId)
 	{
 		const string query = @"
 			INSERT INTO assignments (assignmentid, userid, roleid, serverid)
 				VALUES ($1, $2, $3, $4)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -566,19 +488,14 @@ public class Assignments : DBConnectorBase
 
 		if (affectedRows != 1)
 		{
-			await tempConnection.CloseAsync();
-			Log.WriteVerbose("Database connection closed.");
 			Log.WriteError($"Insert query execution failed (assignmentId = {assignmentId}, userId = {userId}, roleId = {roleId}, serverId = {guildDiscordId}).");
 			throw new DatabaseInstanceException("Insertion query failed."); // D0201
 		}
 
 		Log.WriteInfo("assignments: Inserted 1 row.");
-
-		await tempConnection.CloseAsync();
-		Log.WriteVerbose("Database connection closed.");
 	}
 
-	public async Task UpdateAssignmentByAssignmentID(int assignmentId, int roleId)
+	public static async Task UpdateAssignmentByAssignmentID(DatabaseTransaction transaction, int assignmentId, int roleId)
 	{
 		const string query = @"
 			UPDATE assignments
@@ -588,12 +505,7 @@ public class Assignments : DBConnectorBase
 				assignmentid = ($2)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -606,19 +518,14 @@ public class Assignments : DBConnectorBase
 
 		if (affectedRows != 1)
 		{
-			await tempConnection.CloseAsync();
-			Log.WriteVerbose("Database connection closed.");
 			Log.WriteError($"Update query execution failed (roleId = {roleId} -> assignmentId = {assignmentId}).");
 			throw new DatabaseInstanceException("Update query failed."); // D0201
 		}
 
 		Log.WriteInfo("assignments: Updated 1 row.");
-
-		await tempConnection.CloseAsync();
-		Log.WriteVerbose("Database connection closed.");
 	}
 
-	public async Task UpdateAssignmentByUserDatabaseID(int serverId, int userId, int roleId)
+	public static async Task UpdateAssignmentByUserDatabaseID(DatabaseTransaction transaction, int serverId, int userId, int roleId)
 	{
 		const string query = @"
 			UPDATE assignments
@@ -628,12 +535,7 @@ public class Assignments : DBConnectorBase
 				userid = ($2) AND serverid = ($3)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -647,31 +549,21 @@ public class Assignments : DBConnectorBase
 
 		if (affectedRows != 1)
 		{
-			await tempConnection.CloseAsync();
-			Log.WriteVerbose("Database connection closed.");
 			Log.WriteError($"Update query execution failed (roleId = {roleId} -> userId = {userId}, serverId = {serverId}).");
 			throw new DatabaseInstanceException("Update query failed."); // D0201
 		}
 
 		Log.WriteInfo("assignments: Updated 1 row.");
-
-		await tempConnection.CloseAsync();
-		Log.WriteVerbose("Database connection closed.");
 	}
 
-	public async Task DeleteAssignmentByAssignmentID(int assignmentId)
+	public static async Task DeleteAssignmentByAssignmentID(DatabaseTransaction transaction, int assignmentId)
 	{
 		const string query = @"
 			DELETE FROM assignments
 			WHERE assignmentid = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -683,31 +575,21 @@ public class Assignments : DBConnectorBase
 
 		if (affectedRows != 1)
 		{
-			await tempConnection.CloseAsync();
-			Log.WriteVerbose("Database connection closed.");
 			Log.WriteError($"Delete query execution failed (assignmentId = {assignmentId}).");
 			throw new DatabaseInstanceException("Deletion query failed."); // D0201
 		}
 
 		Log.WriteInfo("assignments: Deleted 1 row.");
-
-		await tempConnection.CloseAsync();
-		Log.WriteVerbose("Database connection closed.");
 	}
 
-	public async Task DeleteAssignmentByUserID(int userId)
+	public static async Task DeleteAssignmentByUserID(DatabaseTransaction transaction, int userId)
 	{
 		const string query = @"
 			DELETE FROM assignments
 			WHERE userid = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -719,31 +601,21 @@ public class Assignments : DBConnectorBase
 
 		if (affectedRows <= 0)
 		{
-			await tempConnection.CloseAsync();
-			Log.WriteVerbose("Database connection closed.");
 			Log.WriteError($"Delete query execution failed (userId = {userId}).");
 			throw new DatabaseInstanceException("Deletion query failed."); // D0201
 		}
 
 		Log.WriteInfo($"assignments: Deleted {affectedRows} row{(affectedRows != 1 ? "s" : string.Empty)}.");
-
-		await tempConnection.CloseAsync();
-		Log.WriteVerbose("Database connection closed.");
 	}
 
-	public async Task DeleteAssignmentByUserID(int userId, int serverId)
+	public static async Task DeleteAssignmentByUserID(DatabaseTransaction transaction, int userId, int serverId)
 	{
 		const string query = @"
 			DELETE FROM assignments
 			WHERE userid = ($1) AND serverid = ($2)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -756,31 +628,21 @@ public class Assignments : DBConnectorBase
 
 		if (affectedRows != 1)
 		{
-			await tempConnection.CloseAsync();
-			Log.WriteVerbose("Database connection closed.");
 			Log.WriteError($"Delete query execution failed (userId = {userId}, serverId = {serverId}).");
 			throw new DatabaseInstanceException("Deletion query failed."); // D0201
 		}
 
 		Log.WriteInfo("assignments: Deleted 1 row.");
-
-		await tempConnection.CloseAsync();
-		Log.WriteVerbose("Database connection closed.");
 	}
 
-	public async Task DeleteAssignmentsByServerID(int serverId)
+	public static async Task DeleteAssignmentsByServerID(DatabaseTransaction transaction, int serverId)
 	{
 		const string query = @"
 			DELETE FROM assignments
 			WHERE serverid = ($1)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection)
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction)
 		{
 			Parameters =
 			{
@@ -792,19 +654,14 @@ public class Assignments : DBConnectorBase
 
 		if (affectedRows <= 0)
 		{
-			await tempConnection.CloseAsync();
-			Log.WriteVerbose("Database connection closed.");
 			Log.WriteError($"Delete query execution failed (serverId = {serverId}).");
 			throw new DatabaseInstanceException("Deletion query failed."); // D0201
 		}
 
 		Log.WriteInfo($"assignments: Deleted {affectedRows} row{(affectedRows != 1 ? "s" : string.Empty)}.");
-
-		await tempConnection.CloseAsync();
-		Log.WriteVerbose("Database connection closed.");
 	}
 
-	internal async Task CreateAssignmentsTable()
+	internal static async Task CreateAssignmentsTable(DatabaseTransaction transaction)
 	{
 		const string query = @"
 			CREATE TABLE assignments (
@@ -821,18 +678,11 @@ public class Assignments : DBConnectorBase
 			)
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand command = new NpgsqlCommand(query, tempConnection);
+		await using NpgsqlCommand command = new NpgsqlCommand(query, transaction.Connection, transaction.Transaction);
 		_ = await command.ExecuteNonQueryAsync();
-
-		await tempConnection.CloseAsync();
 	}
 
-	internal async Task AlterAssignmentsTableV2()
+	internal static async Task AlterAssignmentsTableV2(DatabaseTransaction transaction)
 	{
 		const string modifyTableQuery = @"
 			ALTER TABLE assignments
@@ -846,17 +696,10 @@ public class Assignments : DBConnectorBase
 			ALTER COLUMN serverid DROP DEFAULT
 		";
 
-		await using NpgsqlConnection tempConnection = DataSource.CreateConnection();
-		await tempConnection.OpenAsync();
-
-		Log.WriteVerbose("Database connection created and opened from data source.");
-
-		await using NpgsqlCommand modifyTableCommand = new NpgsqlCommand(modifyTableQuery, tempConnection);
+		await using NpgsqlCommand modifyTableCommand = new NpgsqlCommand(modifyTableQuery, transaction.Connection, transaction.Transaction);
 		_ = await modifyTableCommand.ExecuteNonQueryAsync();
 
-		await using NpgsqlCommand removeDefaultCommand = new NpgsqlCommand(removeDefaultQuery, tempConnection);
+		await using NpgsqlCommand removeDefaultCommand = new NpgsqlCommand(removeDefaultQuery, transaction.Connection, transaction.Transaction);
 		_ = await removeDefaultCommand.ExecuteNonQueryAsync();
-
-		await tempConnection.CloseAsync();
 	}
 }

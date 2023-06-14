@@ -11,14 +11,9 @@ namespace LeaderpointsBot.Database;
 public class DatabaseFactory
 {
 	private static readonly DatabaseFactory instance = new DatabaseFactory();
-
 	public static DatabaseFactory Instance => instance;
 
 	private NpgsqlDataSource? dataSource;
-
-	private Assignments? dbAssignments;
-
-	public Assignments AssignmentsInstance => dbAssignments ?? throw new DatabaseInstanceException("Factory has not been configured. Call SetConfig() before invoking.");
 
 	private DatabaseFactory()
 	{
@@ -28,14 +23,7 @@ public class DatabaseFactory
 	public void SetConfig(DatabaseConfig config)
 	{
 		Log.WriteVerbose("Setting configuration based on config parameter.");
-
 		dataSource = NpgsqlDataSource.Create(config.ToConnectionString());
-
-		Log.WriteVerbose("Database data source created. Initializing per table instance.");
-
-		dbAssignments = new Assignments(dataSource);
-
-		Log.WriteVerbose("Database table wrapper instances created.");
 	}
 
 	public DatabaseTransaction InitializeTransaction()
