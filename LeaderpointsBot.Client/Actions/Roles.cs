@@ -64,7 +64,7 @@ public static class Roles
 		}
 	}
 
-	public static async Task SetAssignmentRolesAsync(SocketGuild guild, string userDiscordId, Structures.Actions.UserData.AssignmentResult assignmentResult)
+	public static async Task SetAssignmentRolesAsync(DatabaseTransaction transaction, SocketGuildUser user, Structures.Actions.UserData.AssignmentResult assignmentResult)
 	{
 		if (assignmentResult.OldRole.HasValue && assignmentResult.NewRole.RoleDiscordID.Equals(assignmentResult.OldRole.Value.RoleDiscordID))
 		{
@@ -72,15 +72,24 @@ public static class Roles
 			return;
 		}
 
-		SocketGuildUser user = guild.Users.First(guildUser => guildUser.Id.ToString().Equals(userDiscordId));
+		UsersQuerySchema.UsersTableData dbUser;
+		try
+		{
+			dbUser = await Database.Tables.Users.GetUserByDiscordID(transaction, user.Id.ToString());
+		}
+		catch (Exception e)
+		{
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
+			throw new SendMessageException("Failed to grant role.", true);
+		}
 
 		if (assignmentResult.OldRole.HasValue)
 		{
-			Log.WriteVerbose($"Old role found. Removing role from user ({userDiscordId}).");
+			Log.WriteVerbose($"Old role found. Removing role from user ({dbUser.DiscordID}).");
 			await user.RemoveRoleAsync(ulong.Parse(assignmentResult.OldRole.Value.RoleDiscordID));
 		}
 
-		Log.WriteVerbose($"Adding role to user ({userDiscordId}).");
+		Log.WriteVerbose($"Adding role to user ({dbUser.DiscordID}).");
 		await user.AddRoleAsync(ulong.Parse(assignmentResult.NewRole.RoleDiscordID));
 	}
 

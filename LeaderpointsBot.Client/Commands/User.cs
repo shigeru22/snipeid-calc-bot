@@ -10,6 +10,7 @@ using LeaderpointsBot.Client.Exceptions.Commands;
 using LeaderpointsBot.Client.Structures;
 using LeaderpointsBot.Database;
 using LeaderpointsBot.Database.Exceptions;
+using LeaderpointsBot.Database.Schemas;
 using LeaderpointsBot.Utils;
 using LeaderpointsBot.Utils.Process;
 
@@ -17,6 +18,91 @@ namespace LeaderpointsBot.Client.Commands;
 
 public static class User
 {
+	public static async Task ReapplyUserRoles(SocketGuildUser user)
+	{
+		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
+
+		Log.WriteVerbose($"Checking user in database (user ID {user.Id}).");
+
+		UsersQuerySchema.UsersTableData userData;
+		try
+		{
+			userData = await Database.Tables.Users.GetUserByDiscordID(transaction, user.Id.ToString());
+		}
+		catch (DataNotFoundException)
+		{
+			Log.WriteVerbose($"User with ID {user.Id} not found in database. Cancelling roles reapplication.");
+			return;
+		}
+		catch (Exception e)
+		{
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
+			throw new SendMessageException("Unhandled client error occurred.");
+		}
+
+		Log.WriteVerbose($"Checking user roles in server (user ID {user.Id}, server ID {user.Guild.Id}).");
+
+		AssignmentsQuerySchema.AssignmentsTableData guildUserRole;
+		try
+		{
+			guildUserRole = await Database.Tables.Assignments.GetAssignmentByUserDiscordID(transaction, user.Id.ToString());
+		}
+		catch (DataNotFoundException)
+		{
+			Log.WriteVerbose($"User assignment data with ID {user.Id} not found in database. Cancelling roles reapplication.");
+			return;
+		}
+		catch (Exception e)
+		{
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
+			throw new SendMessageException("Unhandled client error occurred.");
+		}
+
+		Log.WriteVerbose($"Checking server verified role settings.");
+
+		ServersQuerySchema.ServersTableData guildData;
+		try
+		{
+			guildData = await Database.Tables.Servers.GetServerByDiscordID(transaction, user.Guild.Id.ToString());
+		}
+		catch (Exception e)
+		{
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
+			throw new SendMessageException("Unhandled client error occurred.");
+		}
+
+		if (guildData.VerifiedRoleID != null)
+		{
+			Log.WriteVerbose($"Granting user verified role (user ID {user.Id}, server ID {user.Guild.Id}).");
+			await Actions.Roles.SetVerifiedRoleAsync(transaction, user.Guild, user);
+		}
+
+		RolesQuerySchema.RolesTableData roleData;
+		try
+		{
+			roleData = await Database.Tables.Roles.GetRoleByRoleID(transaction, guildUserRole.RoleID);
+		}
+		catch (Exception e)
+		{
+			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
+			throw new SendMessageException("Unhandled client error occurred.");
+		}
+
+		if (!string.IsNullOrWhiteSpace(roleData.DiscordID))
+		{
+			await Actions.Roles.SetAssignmentRolesAsync(transaction, user, new Structures.Actions.UserData.AssignmentResult()
+			{
+				NewRole = new Structures.Actions.UserData.AssignmentResultRoleData()
+				{
+					RoleDiscordID = roleData.DiscordID,
+					RoleName = roleData.RoleName
+				}
+			});
+		}
+
+		await transaction.CommitAsync();
+	}
+
 	public static async Task<ReturnMessage> LinkUser(SocketUser user, int osuId, SocketGuild? guild = null)
 	{
 		// TODO: [2023-01-26] use OAuth?

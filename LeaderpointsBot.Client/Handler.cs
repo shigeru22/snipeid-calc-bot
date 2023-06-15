@@ -167,10 +167,28 @@ public class Handler
 		_ = await interactionService.ExecuteCommandAsync(context, null);
 	}
 
+	public async Task OnUserJoinGuild(SocketGuildUser user)
+	{
+		Log.WriteDebug($"User joined guild: {user.Username}#{user.Discriminator} ({user.Guild.Name}, {user.Guild.Id})");
+		Log.WriteInfo("Running user joined guild event actions.");
+
+		try
+		{
+			await Commands.User.ReapplyUserRoles(user);
+		}
+		catch (Exception e)
+		{
+			Log.WriteError($"Unhandled error occurred while executing user join action. Exception details below.\n{e}");
+			return;
+		}
+
+		Log.WriteInfo("User join actions completed.");
+	}
+
 	public async Task OnJoinGuild(SocketGuild guild)
 	{
 		Log.WriteDebug($"Joined server: {guild.Name} ({guild.Id})");
-		Log.WriteInfo("Running joined server event actions.");
+		Log.WriteInfo("Initializing server data.");
 
 		try
 		{
@@ -250,6 +268,7 @@ public class Handler
 		if (result.Error == null)
 		{
 			// interaction processing complete
+			Log.WriteDebug("Command processing completed.");
 			return;
 		}
 

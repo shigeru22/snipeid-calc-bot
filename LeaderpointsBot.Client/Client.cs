@@ -29,6 +29,7 @@ public class Client
 		{
 			UseInteractionSnowflakeDate = false,
 			GatewayIntents = GatewayIntents.Guilds | // get channel information in contexts
+				GatewayIntents.GuildMembers | // get joined guild member information
 				GatewayIntents.GuildMessages | // send messages for text-based commands
 				GatewayIntents.DirectMessages | // get direct messages for text-based commands
 				GatewayIntents.MessageContent // read message contents for text-based commands
@@ -44,6 +45,7 @@ public class Client
 			Log.WriteVerbose("Registering client events.");
 
 			client.MessageReceived += handler.OnNewMessage;
+			client.UserJoined += handler.OnUserJoinGuild;
 			client.SlashCommandExecuted += handler.OnInvokeInteraction;
 			client.UserCommandExecuted += handler.OnInvokeInteraction;
 			client.JoinedGuild += handler.OnJoinGuild;
