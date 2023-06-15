@@ -132,6 +132,7 @@ public static class Message
 	}
 
 	[Group("config")]
+	[RequireUserPermission(GuildPermission.Administrator)]
 	[Summary("Server configuration commands.")]
 	public class ConfigurationModule : ModuleBase<SocketCommandContext>
 	{
@@ -399,6 +400,7 @@ public static class Message
 
 			// @bot config guildrole remove [target role ID]
 			[EnabledInDm(false)]
+			[RequireUserPermission(GuildPermission.Administrator)]
 			[Command("remove", RunMode = RunMode.Async)]
 			[Summary("Removes server role configuration for achieving certain points.")]
 			public async Task RemoveGuildRolePointsCommand([Summary("Target role.")] string roleDiscordId)
