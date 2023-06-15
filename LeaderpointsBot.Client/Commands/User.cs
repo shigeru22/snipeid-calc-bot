@@ -111,12 +111,13 @@ public static class User
 
 		Log.WriteVerbose($"Checking user in database (user ID {user.Id}).");
 
+		bool isUserFound = false;
 		try
 		{
 			_ = await Users.GetUserByDiscordID(transaction, user.Id.ToString());
 
 			Log.WriteInfo($"User with ID {user.Id} already linked (in database). Sending error message.");
-			throw new SendMessageException("You've already linked your osu! account.", true);
+			isUserFound = true;
 		}
 		catch (DataNotFoundException)
 		{
@@ -127,6 +128,11 @@ public static class User
 		{
 			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
 			throw new SendMessageException("Unhandled client error occurred.");
+		}
+
+		if (isUserFound)
+		{
+			throw new SendMessageException("You've already linked your osu! account.", true);
 		}
 
 		Log.WriteVerbose($"Checking user in database (osu! ID {osuId}).");
