@@ -5,7 +5,7 @@ using Discord.WebSocket;
 using LeaderpointsBot.Client.Exceptions.Commands;
 using LeaderpointsBot.Database;
 using LeaderpointsBot.Database.Exceptions;
-using LeaderpointsBot.Database.Schemas;
+using LeaderpointsBot.Database.Tables;
 using LeaderpointsBot.Utils;
 using LeaderpointsBot.Utils.Process;
 
@@ -17,11 +17,11 @@ public static class Roles
 	{
 		try
 		{
-			ServersQuerySchema.ServersTableData dbGuild;
+			Servers.ServersTableData dbGuild;
 			try
 			{
 				Log.WriteVerbose($"Fetching server data from database (server ID {guild.Id}).");
-				dbGuild = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
+				dbGuild = await Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 			}
 			catch (DataNotFoundException)
 			{
@@ -72,10 +72,10 @@ public static class Roles
 			return;
 		}
 
-		UsersQuerySchema.UsersTableData dbUser;
+		Users.UsersTableData dbUser;
 		try
 		{
-			dbUser = await Database.Tables.Users.GetUserByDiscordID(transaction, user.Id.ToString());
+			dbUser = await Users.GetUserByDiscordID(transaction, user.Id.ToString());
 		}
 		catch (Exception e)
 		{
@@ -101,11 +101,11 @@ public static class Roles
 			return;
 		}
 
-		UsersQuerySchema.UsersTableData dbUser;
+		Users.UsersTableData dbUser;
 
 		try
 		{
-			dbUser = await Database.Tables.Users.GetUserByOsuID(transaction, osuId);
+			dbUser = await Users.GetUserByOsuID(transaction, osuId);
 		}
 		catch (Exception e)
 		{

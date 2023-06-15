@@ -5,9 +5,10 @@ using LeaderpointsBot.Client.Exceptions.Actions;
 using LeaderpointsBot.Client.Exceptions.Commands;
 using LeaderpointsBot.Database;
 using LeaderpointsBot.Database.Exceptions;
-using LeaderpointsBot.Database.Schemas;
+using LeaderpointsBot.Database.Tables;
 using LeaderpointsBot.Utils;
 using LeaderpointsBot.Utils.Process;
+using RolesTable = LeaderpointsBot.Database.Tables.Roles;
 
 namespace LeaderpointsBot.Client.Actions;
 
@@ -15,17 +16,17 @@ public static class UserData
 {
 	public static async Task<Structures.Actions.UserData.AssignmentResult> InsertOrUpdateAssignment(DatabaseTransaction transaction, string serverDiscordId, int osuId, string osuUsername, string osuCountryCode, int points)
 	{
-		UsersQuerySchema.UsersTableData currentUser;
-		RolesQuerySchema.RolesTableData? currentRole;
-		RolesQuerySchema.RolesTableData targetRole;
-		AssignmentsQuerySchema.AssignmentsTableData? currentServerAssignment;
+		Users.UsersTableData currentUser;
+		RolesTable.RolesTableData? currentRole;
+		RolesTable.RolesTableData targetRole;
+		Assignments.AssignmentsTableData? currentServerAssignment;
 
 		DateTime? lastServerUserUpdate;
 
 		// check if server exists
 		try
 		{
-			_ = await Database.Tables.Servers.GetServerByDiscordID(transaction, serverDiscordId);
+			_ = await Servers.GetServerByDiscordID(transaction, serverDiscordId);
 		}
 		catch (DataNotFoundException)
 		{
@@ -41,7 +42,7 @@ public static class UserData
 		// get current user from database
 		try
 		{
-			currentUser = await Database.Tables.Users.GetUserByOsuID(transaction, osuId);
+			currentUser = await Users.GetUserByOsuID(transaction, osuId);
 		}
 		catch (DataNotFoundException)
 		{
@@ -57,7 +58,7 @@ public static class UserData
 		// get current role from database
 		try
 		{
-			currentRole = await Database.Tables.Roles.GetServerRoleByOsuID(transaction, serverDiscordId, osuId);
+			currentRole = await RolesTable.GetServerRoleByOsuID(transaction, serverDiscordId, osuId);
 		}
 		catch (DataNotFoundException)
 		{
@@ -73,7 +74,7 @@ public static class UserData
 		// get target role from database
 		try
 		{
-			targetRole = await Database.Tables.Roles.GetTargetServerRoleByPoints(transaction, serverDiscordId, points);
+			targetRole = await RolesTable.GetTargetServerRoleByPoints(transaction, serverDiscordId, points);
 		}
 		catch (DataNotFoundException)
 		{
@@ -89,7 +90,7 @@ public static class UserData
 		// get current assignment from database
 		try
 		{
-			currentServerAssignment = await Database.Tables.Assignments.GetAssignmentByOsuID(transaction, serverDiscordId, osuId);
+			currentServerAssignment = await Assignments.GetAssignmentByOsuID(transaction, serverDiscordId, osuId);
 		}
 		catch (DataNotFoundException)
 		{
@@ -107,7 +108,7 @@ public static class UserData
 			// fetch if assignment in database
 			if (currentServerAssignment != null)
 			{
-				lastServerUserUpdate = await Database.Tables.Users.GetServerLastPointUpdate(transaction, serverDiscordId);
+				lastServerUserUpdate = await Users.GetServerLastPointUpdate(transaction, serverDiscordId);
 			}
 			else
 			{
@@ -133,7 +134,7 @@ public static class UserData
 			string? argOsuUsername = !currentUser.Username.Equals(osuUsername) ? osuUsername : null;
 			string? argOsuCountryCode = !currentUser.Country.Equals(osuCountryCode) ? osuCountryCode : null;
 
-			await Database.Tables.Users.UpdateUser(transaction, osuId, points, argOsuUsername, argOsuCountryCode);
+			await Users.UpdateUser(transaction, osuId, points, argOsuUsername, argOsuCountryCode);
 		}
 
 		Log.WriteDebug($"points = {points}, rolename = {targetRole.RoleName}, minpoints = {targetRole.MinPoints}");
@@ -141,15 +142,15 @@ public static class UserData
 		if (currentServerAssignment.HasValue)
 		{
 			// update server assignment data
-			await Database.Tables.Assignments.UpdateAssignmentByAssignmentID(transaction, currentServerAssignment.Value.AssignmentID, targetRole.RoleID);
+			await Assignments.UpdateAssignmentByAssignmentID(transaction, currentServerAssignment.Value.AssignmentID, targetRole.RoleID);
 		}
 		else
 		{
 			// insert server assignment data
 			try
 			{
-				ServersQuerySchema.ServersTableData serverData = await Database.Tables.Servers.GetServerByDiscordID(transaction, serverDiscordId);
-				await Database.Tables.Assignments.InsertAssignment(transaction, serverData.ServerID, currentUser.UserID, targetRole.RoleID);
+				Servers.ServersTableData serverData = await Servers.GetServerByDiscordID(transaction, serverDiscordId);
+				await Assignments.InsertAssignment(transaction, serverData.ServerID, currentUser.UserID, targetRole.RoleID);
 			}
 			catch (Exception e)
 			{

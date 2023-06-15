@@ -4,7 +4,7 @@
 using LeaderpointsBot.Client.Exceptions.Commands;
 using LeaderpointsBot.Client.Structures;
 using LeaderpointsBot.Database;
-using LeaderpointsBot.Database.Schemas;
+using LeaderpointsBot.Database.Tables;
 using LeaderpointsBot.Utils;
 using LeaderpointsBot.Utils.Process;
 
@@ -16,15 +16,15 @@ public static class Leaderboard
 	{
 		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
 
-		UsersQuerySchema.UsersLeaderboardData[] serverLeaderboardData;
+		Users.UsersLeaderboardData[] serverLeaderboardData;
 		DateTime lastUpdate;
 
 		try
 		{
 			Log.WriteVerbose($"Fetching leaderboard data from database (guild ID {guildDiscordId}).");
 
-			serverLeaderboardData = await Database.Tables.Users.GetServerPointsLeaderboard(transaction, guildDiscordId);
-			lastUpdate = await Database.Tables.Users.GetServerLastPointUpdate(transaction, guildDiscordId);
+			serverLeaderboardData = await Users.GetServerPointsLeaderboard(transaction, guildDiscordId);
+			lastUpdate = await Users.GetServerLastPointUpdate(transaction, guildDiscordId);
 		}
 		catch (Exception e)
 		{

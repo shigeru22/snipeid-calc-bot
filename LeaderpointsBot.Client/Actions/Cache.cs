@@ -3,7 +3,7 @@
 
 using LeaderpointsBot.Client.Caching;
 using LeaderpointsBot.Database;
-using LeaderpointsBot.Database.Schemas;
+using LeaderpointsBot.Database.Tables;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client.Actions;
@@ -14,7 +14,7 @@ public static class Cache
 	{
 		Log.WriteVerbose("Acquiring server data and storing to cache.");
 
-		ServersQuerySchema.ServersTableData[] guildsData = await Database.Tables.Servers.GetServers(transaction);
+		Servers.ServersTableData[] guildsData = await Servers.GetServers(transaction);
 
 		if (guildsData.Length <= 0)
 		{
@@ -23,7 +23,7 @@ public static class Cache
 			return;
 		}
 
-		foreach (ServersQuerySchema.ServersTableData guildData in guildsData)
+		foreach (Servers.ServersTableData guildData in guildsData)
 		{
 			CacheManager.Instance.GuildCacheInstance.AddDatabaseCache(guildData.DiscordID, guildData);
 

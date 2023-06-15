@@ -13,7 +13,7 @@ using LeaderpointsBot.Client.Exceptions.Commands;
 using LeaderpointsBot.Client.Structures;
 using LeaderpointsBot.Database;
 using LeaderpointsBot.Database.Exceptions;
-using LeaderpointsBot.Database.Schemas;
+using LeaderpointsBot.Database.Tables;
 using LeaderpointsBot.Utils;
 using LeaderpointsBot.Utils.Process;
 
@@ -26,12 +26,12 @@ public static class Counter
 	{
 		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
 
-		ServersQuerySchema.ServersTableData? dbServer = null;
+		Servers.ServersTableData? dbServer = null;
 		if (guild != null)
 		{
 			try
 			{
-				dbServer = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
+				dbServer = await Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 			}
 			catch (DataNotFoundException)
 			{
@@ -125,12 +125,12 @@ public static class Counter
 
 		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
 
-		ServersQuerySchema.ServersTableData? dbServer = null;
+		Servers.ServersTableData? dbServer = null;
 		if (guild != null)
 		{
 			try
 			{
-				dbServer = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
+				dbServer = await Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 			}
 			catch (DataNotFoundException)
 			{
@@ -150,7 +150,7 @@ public static class Counter
 		{
 			Log.WriteVerbose($"Fetching user data from database (Discord ID {userDiscordId}).");
 
-			UsersQuerySchema.UsersTableData dbUser = await Database.Tables.Users.GetUserByDiscordID(transaction, userDiscordId);
+			Users.UsersTableData dbUser = await Users.GetUserByDiscordID(transaction, userDiscordId);
 			osuId = dbUser.OsuID;
 		}
 		catch (DataNotFoundException)
@@ -316,12 +316,12 @@ public static class Counter
 		string tempOsuUsername;
 		int osuId;
 
-		ServersQuerySchema.ServersTableData? dbServer = null;
+		Servers.ServersTableData? dbServer = null;
 		if (guild != null)
 		{
 			try
 			{
-				dbServer = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
+				dbServer = await Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 			}
 			catch (DataNotFoundException)
 			{
@@ -495,7 +495,7 @@ public static class Counter
 		{
 			Log.WriteVerbose($"Fetching user data from database (Discord ID {userDiscordId}).");
 
-			UsersQuerySchema.UsersTableData dbUser = await Database.Tables.Users.GetUserByDiscordID(transaction, userDiscordId);
+			Users.UsersTableData dbUser = await Users.GetUserByDiscordID(transaction, userDiscordId);
 			osuId = dbUser.OsuID;
 		}
 		catch (DataNotFoundException)

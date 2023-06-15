@@ -11,6 +11,7 @@ using LeaderpointsBot.Client.Exceptions.Actions;
 using LeaderpointsBot.Client.Exceptions.Commands;
 using LeaderpointsBot.Database;
 using LeaderpointsBot.Database.Exceptions;
+using LeaderpointsBot.Database.Tables;
 using LeaderpointsBot.Utils;
 using LeaderpointsBot.Utils.Process;
 
@@ -25,7 +26,7 @@ public static class Counter
 
 		try
 		{
-			_ = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
+			_ = await Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 		}
 		catch (DataNotFoundException)
 		{

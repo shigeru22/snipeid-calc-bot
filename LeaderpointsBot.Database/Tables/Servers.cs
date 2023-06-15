@@ -4,14 +4,24 @@
 using System.Data;
 using Npgsql;
 using LeaderpointsBot.Database.Exceptions;
-using LeaderpointsBot.Database.Schemas;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Database.Tables;
 
 public static class Servers
 {
-	public static async Task<ServersQuerySchema.ServersTableData[]> GetServers(DatabaseTransaction transaction)
+	public struct ServersTableData
+	{
+		public int ServerID { get; set; }
+		public string DiscordID { get; set; }
+		public string? Country { get; set; }
+		public string? VerifyChannelID { get; set; }
+		public string? VerifiedRoleID { get; set; }
+		public string? CommandsChannelID { get; set; }
+		public string? LeaderboardsChannelID { get; set; }
+	}
+
+	public static async Task<ServersTableData[]> GetServers(DatabaseTransaction transaction)
 	{
 		const string query = @"
 			SELECT
@@ -32,10 +42,10 @@ public static class Servers
 		if (!reader.HasRows)
 		{
 			Log.WriteVerbose("servers: Returned 0 rows.");
-			return Array.Empty<ServersQuerySchema.ServersTableData>();
+			return Array.Empty<ServersTableData>();
 		}
 
-		List<ServersQuerySchema.ServersTableData> ret = new List<ServersQuerySchema.ServersTableData>();
+		List<ServersTableData> ret = new List<ServersTableData>();
 
 		while (await reader.ReadAsync())
 		{
@@ -92,7 +102,7 @@ public static class Servers
 				leaderboardsChannelId = null;
 			}
 
-			ret.Add(new ServersQuerySchema.ServersTableData()
+			ret.Add(new ServersTableData()
 			{
 				ServerID = serverId,
 				DiscordID = discordId,
@@ -108,7 +118,7 @@ public static class Servers
 		return ret.ToArray();
 	}
 
-	public static async Task<ServersQuerySchema.ServersTableData[]> GetServersByCountry(DatabaseTransaction transaction, string countryCode)
+	public static async Task<ServersTableData[]> GetServersByCountry(DatabaseTransaction transaction, string countryCode)
 	{
 		const string query = @"
 			SELECT
@@ -137,14 +147,14 @@ public static class Servers
 		if (!reader.HasRows)
 		{
 			Log.WriteVerbose("servers: Returned 0 rows.");
-			return Array.Empty<ServersQuerySchema.ServersTableData>();
+			return Array.Empty<ServersTableData>();
 		}
 
-		List<ServersQuerySchema.ServersTableData> ret = new List<ServersQuerySchema.ServersTableData>();
+		List<ServersTableData> ret = new List<ServersTableData>();
 
 		while (await reader.ReadAsync())
 		{
-			ret.Add(new ServersQuerySchema.ServersTableData()
+			ret.Add(new ServersTableData()
 			{
 				ServerID = reader.GetInt32(0),
 				DiscordID = reader.GetString(1),
@@ -160,7 +170,7 @@ public static class Servers
 		return ret.ToArray();
 	}
 
-	public static async Task<ServersQuerySchema.ServersTableData> GetServerByServerID(DatabaseTransaction transaction, int serverId)
+	public static async Task<ServersTableData> GetServerByServerID(DatabaseTransaction transaction, int serverId)
 	{
 		const string query = @"
 			SELECT
@@ -202,7 +212,7 @@ public static class Servers
 
 		_ = await reader.ReadAsync();
 
-		ServersQuerySchema.ServersTableData ret = new ServersQuerySchema.ServersTableData()
+		ServersTableData ret = new ServersTableData()
 		{
 			ServerID = reader.GetInt32(0),
 			DiscordID = reader.GetString(1),
@@ -217,7 +227,7 @@ public static class Servers
 		return ret;
 	}
 
-	public static async Task<ServersQuerySchema.ServersTableData> GetServerByDiscordID(DatabaseTransaction transaction, string guildDiscordId)
+	public static async Task<ServersTableData> GetServerByDiscordID(DatabaseTransaction transaction, string guildDiscordId)
 	{
 		const string query = @"
 			SELECT
@@ -259,7 +269,7 @@ public static class Servers
 
 		_ = await reader.ReadAsync();
 
-		ServersQuerySchema.ServersTableData ret;
+		ServersTableData ret;
 		{
 			int serverId = reader.GetInt32(0);
 			string discordId = reader.GetString(1);
@@ -314,7 +324,7 @@ public static class Servers
 				leaderboardsChannelId = null;
 			}
 
-			ret = new ServersQuerySchema.ServersTableData()
+			ret = new ServersTableData()
 			{
 				ServerID = serverId,
 				DiscordID = discordId,
@@ -641,13 +651,13 @@ public static class Servers
 
 	public static async Task<bool> IsCommandsChannel(DatabaseTransaction transaction, string guildDiscordId, string channelDiscordId)
 	{
-		ServersQuerySchema.ServersTableData guildData = await GetServerByDiscordID(transaction, guildDiscordId);
+		ServersTableData guildData = await GetServerByDiscordID(transaction, guildDiscordId);
 		return guildData.CommandsChannelID == null || guildData.CommandsChannelID == channelDiscordId;
 	}
 
 	public static async Task<bool> IsLeaderboardsChannel(DatabaseTransaction transaction, string guildDiscordId, string channelDiscordId)
 	{
-		ServersQuerySchema.ServersTableData guildData = await GetServerByDiscordID(transaction, guildDiscordId);
+		ServersTableData guildData = await GetServerByDiscordID(transaction, guildDiscordId);
 		return guildData.LeaderboardsChannelID == null || guildData.LeaderboardsChannelID == channelDiscordId;
 	}
 

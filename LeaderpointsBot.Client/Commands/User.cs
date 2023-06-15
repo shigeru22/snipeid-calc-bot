@@ -10,7 +10,7 @@ using LeaderpointsBot.Client.Exceptions.Commands;
 using LeaderpointsBot.Client.Structures;
 using LeaderpointsBot.Database;
 using LeaderpointsBot.Database.Exceptions;
-using LeaderpointsBot.Database.Schemas;
+using LeaderpointsBot.Database.Tables;
 using LeaderpointsBot.Utils;
 using LeaderpointsBot.Utils.Process;
 
@@ -24,10 +24,10 @@ public static class User
 
 		Log.WriteVerbose($"Checking user in database (user ID {user.Id}).");
 
-		UsersQuerySchema.UsersTableData userData;
+		Users.UsersTableData userData;
 		try
 		{
-			userData = await Database.Tables.Users.GetUserByDiscordID(transaction, user.Id.ToString());
+			userData = await Users.GetUserByDiscordID(transaction, user.Id.ToString());
 		}
 		catch (DataNotFoundException)
 		{
@@ -42,10 +42,10 @@ public static class User
 
 		Log.WriteVerbose($"Checking user roles in server (user ID {user.Id}, server ID {user.Guild.Id}).");
 
-		AssignmentsQuerySchema.AssignmentsTableData guildUserRole;
+		Assignments.AssignmentsTableData guildUserRole;
 		try
 		{
-			guildUserRole = await Database.Tables.Assignments.GetAssignmentByUserDiscordID(transaction, user.Id.ToString());
+			guildUserRole = await Assignments.GetAssignmentByUserDiscordID(transaction, user.Id.ToString());
 		}
 		catch (DataNotFoundException)
 		{
@@ -60,10 +60,10 @@ public static class User
 
 		Log.WriteVerbose($"Checking server verified role settings.");
 
-		ServersQuerySchema.ServersTableData guildData;
+		Servers.ServersTableData guildData;
 		try
 		{
-			guildData = await Database.Tables.Servers.GetServerByDiscordID(transaction, user.Guild.Id.ToString());
+			guildData = await Servers.GetServerByDiscordID(transaction, user.Guild.Id.ToString());
 		}
 		catch (Exception e)
 		{
@@ -77,10 +77,10 @@ public static class User
 			await Actions.Roles.SetVerifiedRoleAsync(transaction, user.Guild, user);
 		}
 
-		RolesQuerySchema.RolesTableData roleData;
+		Roles.RolesTableData roleData;
 		try
 		{
-			roleData = await Database.Tables.Roles.GetRoleByRoleID(transaction, guildUserRole.RoleID);
+			roleData = await Roles.GetRoleByRoleID(transaction, guildUserRole.RoleID);
 		}
 		catch (Exception e)
 		{
@@ -113,7 +113,7 @@ public static class User
 
 		try
 		{
-			_ = await Database.Tables.Users.GetUserByDiscordID(transaction, user.Id.ToString());
+			_ = await Users.GetUserByDiscordID(transaction, user.Id.ToString());
 
 			Log.WriteInfo($"User with ID {user.Id} already linked (in database). Sending error message.");
 			throw new SendMessageException("You've already linked your osu! account.", true);
@@ -133,7 +133,7 @@ public static class User
 
 		try
 		{
-			_ = await Database.Tables.Users.GetUserByOsuID(transaction, osuId);
+			_ = await Users.GetUserByOsuID(transaction, osuId);
 
 			Log.WriteInfo($"osu! ID {osuId} already linked by someone (in database). Sending error message.");
 			throw new SendMessageException("osu! account already linked.", true);
@@ -174,7 +174,7 @@ public static class User
 
 		Log.WriteVerbose($"Inserting Discord user to database (user ID {user.Id}).");
 
-		await Database.Tables.Users.InsertUser(transaction, user.Id.ToString(), osuId, osuUser.Username, osuUser.CountryCode);
+		await Users.InsertUser(transaction, user.Id.ToString(), osuId, osuUser.Username, osuUser.CountryCode);
 
 		if (guild != null)
 		{

@@ -3,14 +3,14 @@
 
 using System.Text;
 using Discord;
-using LeaderpointsBot.Database.Schemas;
+using LeaderpointsBot.Database.Tables;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client.Embeds;
 
 public static class Leaderboard
 {
-	public static Embed CreateLeaderboardEmbed(UsersQuerySchema.UsersLeaderboardData[] data, DateTime lastUpdate, int usersLimit = 50, bool useLegacyColor = false)
+	public static Embed CreateLeaderboardEmbed(Users.UsersLeaderboardData[] data, DateTime lastUpdate, int usersLimit = 50, bool useLegacyColor = false)
 	{
 		string title = $"Top {usersLimit} players based on points count:";
 		StringBuilder description = new StringBuilder();

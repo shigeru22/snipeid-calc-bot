@@ -4,7 +4,7 @@
 using Discord.WebSocket;
 using LeaderpointsBot.Database;
 using LeaderpointsBot.Database.Exceptions;
-using LeaderpointsBot.Database.Schemas;
+using LeaderpointsBot.Database.Tables;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client.Commands;
@@ -18,7 +18,7 @@ public static class Guild
 		Log.WriteVerbose("Checking for existing server in database.");
 		try
 		{
-			ServersQuerySchema.ServersTableData tempServer = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
+			Servers.ServersTableData tempServer = await Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 			if (tempServer.DiscordID.Equals(guild.Id.ToString()))
 			{
 				Log.WriteInfo($"Server already exists in database ({guild.Id}).");

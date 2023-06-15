@@ -4,14 +4,31 @@
 using System.Data;
 using Npgsql;
 using LeaderpointsBot.Database.Exceptions;
-using LeaderpointsBot.Database.Schemas;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Database.Tables;
 
 public static class Users
 {
-	public static async Task<UsersQuerySchema.UsersTableData[]> GetUsers(DatabaseTransaction transaction)
+	public struct UsersTableData
+	{
+		public int UserID { get; set; }
+		public string DiscordID { get; set; }
+		public int OsuID { get; set; }
+		public string Username { get; set; }
+		public string Country { get; set; }
+		public int Points { get; set; }
+		public DateTime LastUpdate { get; set; }
+	}
+
+	public struct UsersLeaderboardData
+	{
+		public int UserID { get; set; }
+		public string Username { get; set; }
+		public int Points { get; set; }
+	}
+
+	public static async Task<UsersTableData[]> GetUsers(DatabaseTransaction transaction)
 	{
 		const string query = @"
 			SELECT
@@ -32,14 +49,14 @@ public static class Users
 		if (!reader.HasRows)
 		{
 			Log.WriteInfo("users: Returned 0 rows.");
-			return Array.Empty<UsersQuerySchema.UsersTableData>();
+			return Array.Empty<UsersTableData>();
 		}
 
-		List<UsersQuerySchema.UsersTableData> ret = new List<UsersQuerySchema.UsersTableData>();
+		List<UsersTableData> ret = new List<UsersTableData>();
 
 		while (await reader.ReadAsync())
 		{
-			ret.Add(new UsersQuerySchema.UsersTableData()
+			ret.Add(new UsersTableData()
 			{
 				UserID = reader.GetInt32(0),
 				DiscordID = reader.GetString(1),
@@ -55,7 +72,7 @@ public static class Users
 		return ret.ToArray();
 	}
 
-	public static async Task<UsersQuerySchema.UsersTableData> GetUserByUserID(DatabaseTransaction transaction, int userId)
+	public static async Task<UsersTableData> GetUserByUserID(DatabaseTransaction transaction, int userId)
 	{
 		const string query = @"
 			SELECT
@@ -99,7 +116,7 @@ public static class Users
 
 		_ = await reader.ReadAsync();
 
-		UsersQuerySchema.UsersTableData ret = new UsersQuerySchema.UsersTableData()
+		UsersTableData ret = new UsersTableData()
 		{
 			UserID = reader.GetInt32(0),
 			DiscordID = reader.GetString(1),
@@ -114,7 +131,7 @@ public static class Users
 		return ret;
 	}
 
-	public static async Task<UsersQuerySchema.UsersTableData> GetUserByOsuID(DatabaseTransaction transaction, int osuId)
+	public static async Task<UsersTableData> GetUserByOsuID(DatabaseTransaction transaction, int osuId)
 	{
 		const string query = @"
 			SELECT
@@ -154,7 +171,7 @@ public static class Users
 
 		_ = await reader.ReadAsync();
 
-		UsersQuerySchema.UsersTableData ret = new UsersQuerySchema.UsersTableData()
+		UsersTableData ret = new UsersTableData()
 		{
 			UserID = reader.GetInt32(0),
 			DiscordID = reader.GetString(1),
@@ -169,7 +186,7 @@ public static class Users
 		return ret;
 	}
 
-	public static async Task<UsersQuerySchema.UsersTableData> GetUserByDiscordID(DatabaseTransaction transaction, string userDiscordId)
+	public static async Task<UsersTableData> GetUserByDiscordID(DatabaseTransaction transaction, string userDiscordId)
 	{
 		const string query = @"
 			SELECT
@@ -209,7 +226,7 @@ public static class Users
 
 		_ = await reader.ReadAsync();
 
-		UsersQuerySchema.UsersTableData ret = new UsersQuerySchema.UsersTableData()
+		UsersTableData ret = new UsersTableData()
 		{
 			UserID = reader.GetInt32(0),
 			DiscordID = reader.GetString(1),
@@ -224,7 +241,7 @@ public static class Users
 		return ret;
 	}
 
-	public static async Task<UsersQuerySchema.UsersLeaderboardData[]> GetServerPointsLeaderboard(DatabaseTransaction transaction, string guildDiscordId, bool descending = true)
+	public static async Task<UsersLeaderboardData[]> GetServerPointsLeaderboard(DatabaseTransaction transaction, string guildDiscordId, bool descending = true)
 	{
 		string query = $@"
 			SELECT
@@ -257,14 +274,14 @@ public static class Users
 			await reader.CloseAsync();
 			Log.WriteVerbose("Database connection closed.");
 			Log.WriteInfo("users: Returned 0 rows.");
-			return Array.Empty<UsersQuerySchema.UsersLeaderboardData>();
+			return Array.Empty<UsersLeaderboardData>();
 		}
 
-		List<UsersQuerySchema.UsersLeaderboardData> ret = new List<UsersQuerySchema.UsersLeaderboardData>();
+		List<UsersLeaderboardData> ret = new List<UsersLeaderboardData>();
 
 		while (await reader.ReadAsync())
 		{
-			ret.Add(new UsersQuerySchema.UsersLeaderboardData()
+			ret.Add(new UsersLeaderboardData()
 			{
 				UserID = reader.GetInt32(0),
 				Username = reader.GetString(1),
@@ -276,7 +293,7 @@ public static class Users
 		return ret.ToArray();
 	}
 
-	public static async Task<UsersQuerySchema.UsersLeaderboardData[]> GetServerPointsLeaderboardByCountry(DatabaseTransaction transaction, string guildDiscordId, string countryCode, bool descending = true)
+	public static async Task<UsersLeaderboardData[]> GetServerPointsLeaderboardByCountry(DatabaseTransaction transaction, string guildDiscordId, string countryCode, bool descending = true)
 	{
 		string query = $@"
 			SELECT
@@ -308,14 +325,14 @@ public static class Users
 		if (!reader.HasRows)
 		{
 			Log.WriteInfo("users: Returned 0 rows.");
-			return Array.Empty<UsersQuerySchema.UsersLeaderboardData>();
+			return Array.Empty<UsersLeaderboardData>();
 		}
 
-		List<UsersQuerySchema.UsersLeaderboardData> ret = new List<UsersQuerySchema.UsersLeaderboardData>();
+		List<UsersLeaderboardData> ret = new List<UsersLeaderboardData>();
 
 		while (await reader.ReadAsync())
 		{
-			ret.Add(new UsersQuerySchema.UsersLeaderboardData()
+			ret.Add(new UsersLeaderboardData()
 			{
 				UserID = reader.GetInt32(0),
 				Username = reader.GetString(1),

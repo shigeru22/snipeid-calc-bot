@@ -4,14 +4,29 @@
 using System.Data;
 using Npgsql;
 using LeaderpointsBot.Database.Exceptions;
-using LeaderpointsBot.Database.Schemas;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Database.Tables;
 
 public static class Roles
 {
-	public static async Task<RolesQuerySchema.RolesTableData[]> GetRoles(DatabaseTransaction transaction)
+	public struct RolesTableData
+	{
+		public int RoleID { get; set; }
+		public string? DiscordID { get; set; }
+		public string RoleName { get; set; }
+		public int MinPoints { get; set; }
+	}
+
+	public struct RoleAssignmentData
+	{
+		public string? OldRoleID { get; set; }
+		public string? OldRoleName { get; set; }
+		public string NewRoleID { get; set; }
+		public string NewRoleName { get; set; }
+	}
+
+	public static async Task<RolesTableData[]> GetRoles(DatabaseTransaction transaction)
 	{
 		const string query = @"
 			SELECT
@@ -30,10 +45,10 @@ public static class Roles
 		{
 			Log.WriteVerbose("roles: Returned 0 rows.");
 			Log.WriteWarning("No roles found. Returning empty array.");
-			return Array.Empty<RolesQuerySchema.RolesTableData>();
+			return Array.Empty<RolesTableData>();
 		}
 
-		List<RolesQuerySchema.RolesTableData> ret = new List<RolesQuerySchema.RolesTableData>();
+		List<RolesTableData> ret = new List<RolesTableData>();
 
 		while (await reader.ReadAsync())
 		{
@@ -52,7 +67,7 @@ public static class Roles
 			string roleName = reader.GetString(2);
 			int minPoints = reader.GetInt32(3);
 
-			ret.Add(new RolesQuerySchema.RolesTableData()
+			ret.Add(new RolesTableData()
 			{
 				RoleID = roleID,
 				DiscordID = discordId,
@@ -65,7 +80,7 @@ public static class Roles
 		return ret.ToArray();
 	}
 
-	public static async Task<RolesQuerySchema.RolesTableData[]> GetServerRoles(DatabaseTransaction transaction, string guildDiscordId)
+	public static async Task<RolesTableData[]> GetServerRoles(DatabaseTransaction transaction, string guildDiscordId)
 	{
 		const string query = @"
 			SELECT
@@ -96,10 +111,10 @@ public static class Roles
 		{
 			Log.WriteVerbose("roles: Returned 0 rows.");
 			Log.WriteWarning($"Roles with servers.discordId = {guildDiscordId} not found. Returning empty array.");
-			return Array.Empty<RolesQuerySchema.RolesTableData>();
+			return Array.Empty<RolesTableData>();
 		}
 
-		List<RolesQuerySchema.RolesTableData> ret = new List<RolesQuerySchema.RolesTableData>();
+		List<RolesTableData> ret = new List<RolesTableData>();
 
 		while (await reader.ReadAsync())
 		{
@@ -118,7 +133,7 @@ public static class Roles
 			string roleName = reader.GetString(2);
 			int minPoints = reader.GetInt32(3);
 
-			ret.Add(new RolesQuerySchema.RolesTableData()
+			ret.Add(new RolesTableData()
 			{
 				RoleID = roleID,
 				DiscordID = discordId,
@@ -131,7 +146,7 @@ public static class Roles
 		return ret.ToArray();
 	}
 
-	public static async Task<RolesQuerySchema.RolesTableData> GetRoleByRoleID(DatabaseTransaction transaction, int roleId)
+	public static async Task<RolesTableData> GetRoleByRoleID(DatabaseTransaction transaction, int roleId)
 	{
 		const string query = @"
 			SELECT
@@ -185,7 +200,7 @@ public static class Roles
 		string roleName = reader.GetString(2);
 		int minPoints = reader.GetInt32(3);
 
-		RolesQuerySchema.RolesTableData ret = new RolesQuerySchema.RolesTableData()
+		RolesTableData ret = new RolesTableData()
 		{
 			RoleID = roleID,
 			DiscordID = discordId,
@@ -197,7 +212,7 @@ public static class Roles
 		return ret;
 	}
 
-	public static async Task<RolesQuerySchema.RolesTableData> GetRoleByDiscordID(DatabaseTransaction transaction, string roleDiscordId)
+	public static async Task<RolesTableData> GetRoleByDiscordID(DatabaseTransaction transaction, string roleDiscordId)
 	{
 		const string query = @"
 			SELECT
@@ -251,7 +266,7 @@ public static class Roles
 		string roleName = reader.GetString(2);
 		int minPoints = reader.GetInt32(3);
 
-		RolesQuerySchema.RolesTableData ret = new RolesQuerySchema.RolesTableData()
+		RolesTableData ret = new RolesTableData()
 		{
 			RoleID = roleID,
 			DiscordID = discordId,
@@ -263,7 +278,7 @@ public static class Roles
 		return ret;
 	}
 
-	public static async Task<RolesQuerySchema.RolesTableData> GetServerRoleByOsuID(DatabaseTransaction transaction, string guildDiscordId, int osuId)
+	public static async Task<RolesTableData> GetServerRoleByOsuID(DatabaseTransaction transaction, string guildDiscordId, int osuId)
 	{
 		const string query = @"
 			SELECT
@@ -324,7 +339,7 @@ public static class Roles
 		string roleName = reader.GetString(2);
 		int minPoints = reader.GetInt32(3);
 
-		RolesQuerySchema.RolesTableData ret = new RolesQuerySchema.RolesTableData()
+		RolesTableData ret = new RolesTableData()
 		{
 			RoleID = roleID,
 			DiscordID = discordId,
@@ -336,7 +351,7 @@ public static class Roles
 		return ret;
 	}
 
-	public static async Task<RolesQuerySchema.RolesTableData> GetTargetServerRoleByPoints(DatabaseTransaction transaction, string guildDiscordId, int points)
+	public static async Task<RolesTableData> GetTargetServerRoleByPoints(DatabaseTransaction transaction, string guildDiscordId, int points)
 	{
 		const string query = @"
 			SELECT
@@ -398,7 +413,7 @@ public static class Roles
 		string roleName = reader.GetString(2);
 		int minPoints = reader.GetInt32(3);
 
-		RolesQuerySchema.RolesTableData ret = new RolesQuerySchema.RolesTableData()
+		RolesTableData ret = new RolesTableData()
 		{
 			RoleID = roleID,
 			DiscordID = discordId,

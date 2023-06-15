@@ -4,14 +4,37 @@
 using System.Data;
 using Npgsql;
 using LeaderpointsBot.Database.Exceptions;
-using LeaderpointsBot.Database.Schemas;
+using LeaderpointsBot.Database.Tables;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Database.Tables;
 
 public static class Assignments
 {
-	public static async Task<AssignmentsQuerySchema.AssignmentsTableData[]> GetAssignmentsByServerID(DatabaseTransaction transaction, int serverId)
+	public enum AssignmentType
+	{
+		INSERT = 1,
+		UPDATE
+	}
+
+	public struct AssignmentsTableData
+	{
+		public int AssignmentID { get; set; }
+		public string Username { get; set; }
+		public int RoleID { get; set; }
+		public string RoleName { get; set; }
+	}
+
+	public struct AssignmentsResultData
+	{
+		public AssignmentType Type { get; set; }
+		public string DiscordID { get; set; } // user Discord ID
+		public Roles.RoleAssignmentData Role { get; set; }
+		public int Delta { get; set; }
+		public DateTime? LastUpdate { get; set; }
+	}
+
+	public static async Task<AssignmentsTableData[]> GetAssignmentsByServerID(DatabaseTransaction transaction, int serverId)
 	{
 		const string query = @"
 			SELECT
@@ -42,14 +65,14 @@ public static class Assignments
 		{
 			Log.WriteVerbose("servers: Returned 0 rows.");
 			Log.WriteWarning($"Assignments with assignments.serverId = {serverId} not found. Returning empty array.");
-			return Array.Empty<AssignmentsQuerySchema.AssignmentsTableData>();
+			return Array.Empty<AssignmentsTableData>();
 		}
 
-		List<AssignmentsQuerySchema.AssignmentsTableData> ret = new List<AssignmentsQuerySchema.AssignmentsTableData>();
+		List<AssignmentsTableData> ret = new List<AssignmentsTableData>();
 
 		while (await reader.ReadAsync())
 		{
-			ret.Add(new AssignmentsQuerySchema.AssignmentsTableData()
+			ret.Add(new AssignmentsTableData()
 			{
 				AssignmentID = reader.GetInt32(0),
 				Username = reader.GetString(1),
@@ -62,7 +85,7 @@ public static class Assignments
 		return ret.ToArray();
 	}
 
-	public static async Task<AssignmentsQuerySchema.AssignmentsTableData[]> GetAssignmentsByServerDiscordID(DatabaseTransaction transaction, string guildDiscordId)
+	public static async Task<AssignmentsTableData[]> GetAssignmentsByServerDiscordID(DatabaseTransaction transaction, string guildDiscordId)
 	{
 		const string query = @"
 			SELECT
@@ -95,14 +118,14 @@ public static class Assignments
 		{
 			Log.WriteVerbose("servers: Returned 0 rows.");
 			Log.WriteWarning($"Assignments with servers.discordId = {guildDiscordId} not found. Returning empty array.");
-			return Array.Empty<AssignmentsQuerySchema.AssignmentsTableData>();
+			return Array.Empty<AssignmentsTableData>();
 		}
 
-		List<AssignmentsQuerySchema.AssignmentsTableData> ret = new List<AssignmentsQuerySchema.AssignmentsTableData>();
+		List<AssignmentsTableData> ret = new List<AssignmentsTableData>();
 
 		while (await reader.ReadAsync())
 		{
-			ret.Add(new AssignmentsQuerySchema.AssignmentsTableData()
+			ret.Add(new AssignmentsTableData()
 			{
 				AssignmentID = reader.GetInt32(0),
 				Username = reader.GetString(1),
@@ -115,7 +138,7 @@ public static class Assignments
 		return ret.ToArray();
 	}
 
-	public static async Task<AssignmentsQuerySchema.AssignmentsTableData> GetAssignmentByAssignmentID(DatabaseTransaction transaction, int assignmentId)
+	public static async Task<AssignmentsTableData> GetAssignmentByAssignmentID(DatabaseTransaction transaction, int assignmentId)
 	{
 		const string query = @"
 			SELECT
@@ -158,7 +181,7 @@ public static class Assignments
 
 		_ = await reader.ReadAsync();
 
-		AssignmentsQuerySchema.AssignmentsTableData ret = new AssignmentsQuerySchema.AssignmentsTableData()
+		AssignmentsTableData ret = new AssignmentsTableData()
 		{
 			AssignmentID = reader.GetInt32(0),
 			Username = reader.GetString(1),
@@ -170,7 +193,7 @@ public static class Assignments
 		return ret;
 	}
 
-	public static async Task<AssignmentsQuerySchema.AssignmentsTableData> GetAssignmentByUserID(DatabaseTransaction transaction, int userId)
+	public static async Task<AssignmentsTableData> GetAssignmentByUserID(DatabaseTransaction transaction, int userId)
 	{
 		const string query = @"
 			SELECT
@@ -213,7 +236,7 @@ public static class Assignments
 
 		_ = await reader.ReadAsync();
 
-		AssignmentsQuerySchema.AssignmentsTableData ret = new AssignmentsQuerySchema.AssignmentsTableData()
+		AssignmentsTableData ret = new AssignmentsTableData()
 		{
 			AssignmentID = reader.GetInt32(0),
 			Username = reader.GetString(1),
@@ -225,7 +248,7 @@ public static class Assignments
 		return ret;
 	}
 
-	public static async Task<AssignmentsQuerySchema.AssignmentsTableData> GetAssignmentByUserID(DatabaseTransaction transaction, string guildDiscordId, int userId)
+	public static async Task<AssignmentsTableData> GetAssignmentByUserID(DatabaseTransaction transaction, string guildDiscordId, int userId)
 	{
 		const string query = @"
 			SELECT
@@ -271,7 +294,7 @@ public static class Assignments
 
 		_ = await reader.ReadAsync();
 
-		AssignmentsQuerySchema.AssignmentsTableData ret = new AssignmentsQuerySchema.AssignmentsTableData()
+		AssignmentsTableData ret = new AssignmentsTableData()
 		{
 			AssignmentID = reader.GetInt32(0),
 			Username = reader.GetString(1),
@@ -283,7 +306,7 @@ public static class Assignments
 		return ret;
 	}
 
-	public static async Task<AssignmentsQuerySchema.AssignmentsTableData> GetAssignmentByUserDiscordID(DatabaseTransaction transaction, string userDiscordId)
+	public static async Task<AssignmentsTableData> GetAssignmentByUserDiscordID(DatabaseTransaction transaction, string userDiscordId)
 	{
 		const string query = @"
 			SELECT
@@ -326,7 +349,7 @@ public static class Assignments
 
 		_ = await reader.ReadAsync();
 
-		AssignmentsQuerySchema.AssignmentsTableData ret = new AssignmentsQuerySchema.AssignmentsTableData()
+		AssignmentsTableData ret = new AssignmentsTableData()
 		{
 			AssignmentID = reader.GetInt32(0),
 			Username = reader.GetString(1),
@@ -338,7 +361,7 @@ public static class Assignments
 		return ret;
 	}
 
-	public static async Task<AssignmentsQuerySchema.AssignmentsTableData> GetAssignmentByUserDiscordID(DatabaseTransaction transaction, string guildDiscordId, string userDiscordId)
+	public static async Task<AssignmentsTableData> GetAssignmentByUserDiscordID(DatabaseTransaction transaction, string guildDiscordId, string userDiscordId)
 	{
 		const string query = @"
 			SELECT
@@ -384,7 +407,7 @@ public static class Assignments
 
 		_ = await reader.ReadAsync();
 
-		AssignmentsQuerySchema.AssignmentsTableData ret = new AssignmentsQuerySchema.AssignmentsTableData()
+		AssignmentsTableData ret = new AssignmentsTableData()
 		{
 			AssignmentID = reader.GetInt32(0),
 			Username = reader.GetString(1),
@@ -396,7 +419,7 @@ public static class Assignments
 		return ret;
 	}
 
-	public static async Task<AssignmentsQuerySchema.AssignmentsTableData> GetAssignmentByOsuID(DatabaseTransaction transaction, string guildDiscordId, int osuId)
+	public static async Task<AssignmentsTableData> GetAssignmentByOsuID(DatabaseTransaction transaction, string guildDiscordId, int osuId)
 	{
 		const string query = @"
 			SELECT
@@ -442,7 +465,7 @@ public static class Assignments
 
 		_ = await reader.ReadAsync();
 
-		AssignmentsQuerySchema.AssignmentsTableData ret = new AssignmentsQuerySchema.AssignmentsTableData()
+		AssignmentsTableData ret = new AssignmentsTableData()
 		{
 			AssignmentID = reader.GetInt32(0),
 			Username = reader.GetString(1),

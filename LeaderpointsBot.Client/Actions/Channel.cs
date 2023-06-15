@@ -6,7 +6,7 @@ using LeaderpointsBot.Client.Caching;
 using LeaderpointsBot.Client.Exceptions.Commands;
 using LeaderpointsBot.Database;
 using LeaderpointsBot.Database.Exceptions;
-using LeaderpointsBot.Database.Schemas;
+using LeaderpointsBot.Database.Tables;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client.Actions;
@@ -19,14 +19,14 @@ public static class Channel
 	{
 		Log.WriteVerbose($"Checking whether client commands are allowed in the channel (guild ID {guildDiscordId}, channel ID {channelId}).");
 
-		ServersQuerySchema.ServersTableData? guildData = CacheManager.Instance.GuildCacheInstance.GetDatabaseCache(guildDiscordId);
+		Servers.ServersTableData? guildData = CacheManager.Instance.GuildCacheInstance.GetDatabaseCache(guildDiscordId);
 		if (guildData == null)
 		{
 			Log.WriteVerbose("Cache data not found or expired. Fetching database data.");
 
 			try
 			{
-				ServersQuerySchema.ServersTableData tempGuildData = await Database.Tables.Servers.GetServerByDiscordID(transaction, guildDiscordId);
+				Servers.ServersTableData tempGuildData = await Servers.GetServerByDiscordID(transaction, guildDiscordId);
 				guildData = tempGuildData;
 				CacheManager.Instance.GuildCacheInstance.SetDatabaseCache(guildDiscordId, tempGuildData);
 			}
@@ -46,14 +46,14 @@ public static class Channel
 	{
 		Log.WriteVerbose($"Checking whether verification commands are allowed in the channel (guild ID {guildDiscordId}, channel ID {channelId}).");
 
-		ServersQuerySchema.ServersTableData? guildData = CacheManager.Instance.GuildCacheInstance.GetDatabaseCache(guildDiscordId);
+		Servers.ServersTableData? guildData = CacheManager.Instance.GuildCacheInstance.GetDatabaseCache(guildDiscordId);
 		if (guildData == null)
 		{
 			Log.WriteVerbose("Cache data not found or expired. Fetching database data.");
 
 			try
 			{
-				ServersQuerySchema.ServersTableData tempGuildData = await Database.Tables.Servers.GetServerByDiscordID(transaction, guildDiscordId);
+				Servers.ServersTableData tempGuildData = await Servers.GetServerByDiscordID(transaction, guildDiscordId);
 				guildData = tempGuildData;
 				CacheManager.Instance.GuildCacheInstance.SetDatabaseCache(guildDiscordId, tempGuildData);
 			}
@@ -79,14 +79,14 @@ public static class Channel
 	{
 		Log.WriteVerbose($"Checking whether leaderboard commands are allowed in the channel (guild ID {guildDiscordId}, channel ID {channelId}).");
 
-		ServersQuerySchema.ServersTableData? guildData = CacheManager.Instance.GuildCacheInstance.GetDatabaseCache(guildDiscordId);
+		Servers.ServersTableData? guildData = CacheManager.Instance.GuildCacheInstance.GetDatabaseCache(guildDiscordId);
 		if (guildData == null)
 		{
 			Log.WriteVerbose("Cache data not found or expired. Fetching database data.");
 
 			try
 			{
-				ServersQuerySchema.ServersTableData tempGuildData = await Database.Tables.Servers.GetServerByDiscordID(transaction, guildDiscordId);
+				Servers.ServersTableData tempGuildData = await Servers.GetServerByDiscordID(transaction, guildDiscordId);
 				guildData = tempGuildData;
 				CacheManager.Instance.GuildCacheInstance.SetDatabaseCache(guildDiscordId, tempGuildData);
 			}

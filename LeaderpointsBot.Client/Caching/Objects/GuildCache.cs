@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the repository root for details.
 
 using System.Runtime.Caching;
-using LeaderpointsBot.Database.Schemas;
+using LeaderpointsBot.Database.Tables;
 using LeaderpointsBot.Utils;
 
 namespace LeaderpointsBot.Client.Caching.Objects;
@@ -16,13 +16,13 @@ public class GuildCache : CacheWrapperBase
 		Log.WriteVerbose("GuildCache instance created.");
 	}
 
-	public ServersQuerySchema.ServersTableData? GetDatabaseCache(string guildDiscordId)
+	public Servers.ServersTableData? GetDatabaseCache(string guildDiscordId)
 	{
 		string keyPrefix = $"{CACHE_KEY_PREFIX}_{guildDiscordId}";
 
 		try
 		{
-			ServersQuerySchema.ServersTableData dbGuildData = GetCache<ServersQuerySchema.ServersTableData>(keyPrefix);
+			Servers.ServersTableData dbGuildData = GetCache<Servers.ServersTableData>(keyPrefix);
 			return dbGuildData;
 		}
 		catch (KeyNotFoundException)
@@ -37,7 +37,7 @@ public class GuildCache : CacheWrapperBase
 
 		try
 		{
-			ServersQuerySchema.ServersTableData dbGuildData = GetCache<ServersQuerySchema.ServersTableData>(keyPrefix);
+			Servers.ServersTableData dbGuildData = GetCache<Servers.ServersTableData>(keyPrefix);
 			return dbGuildData.ServerID;
 		}
 		catch (KeyNotFoundException)
@@ -52,7 +52,7 @@ public class GuildCache : CacheWrapperBase
 
 		try
 		{
-			ServersQuerySchema.ServersTableData dbGuildData = GetCache<ServersQuerySchema.ServersTableData>(keyPrefix);
+			Servers.ServersTableData dbGuildData = GetCache<Servers.ServersTableData>(keyPrefix);
 			return dbGuildData.DiscordID;
 		}
 		catch (KeyNotFoundException)
@@ -67,7 +67,7 @@ public class GuildCache : CacheWrapperBase
 
 		try
 		{
-			ServersQuerySchema.ServersTableData dbGuildData = GetCache<ServersQuerySchema.ServersTableData>(keyPrefix);
+			Servers.ServersTableData dbGuildData = GetCache<Servers.ServersTableData>(keyPrefix);
 			return string.IsNullOrWhiteSpace(dbGuildData.Country) ? null : dbGuildData.Country;
 		}
 		catch (KeyNotFoundException)
@@ -82,7 +82,7 @@ public class GuildCache : CacheWrapperBase
 
 		try
 		{
-			ServersQuerySchema.ServersTableData dbGuildData = GetCache<ServersQuerySchema.ServersTableData>(keyPrefix);
+			Servers.ServersTableData dbGuildData = GetCache<Servers.ServersTableData>(keyPrefix);
 			return string.IsNullOrWhiteSpace(dbGuildData.VerifyChannelID) ? null : dbGuildData.VerifyChannelID;
 		}
 		catch (KeyNotFoundException)
@@ -97,7 +97,7 @@ public class GuildCache : CacheWrapperBase
 
 		try
 		{
-			ServersQuerySchema.ServersTableData dbGuildData = GetCache<ServersQuerySchema.ServersTableData>(keyPrefix);
+			Servers.ServersTableData dbGuildData = GetCache<Servers.ServersTableData>(keyPrefix);
 			return string.IsNullOrWhiteSpace(dbGuildData.VerifiedRoleID) ? null : dbGuildData.VerifiedRoleID;
 		}
 		catch (KeyNotFoundException)
@@ -112,7 +112,7 @@ public class GuildCache : CacheWrapperBase
 
 		try
 		{
-			ServersQuerySchema.ServersTableData dbGuildData = GetCache<ServersQuerySchema.ServersTableData>(keyPrefix);
+			Servers.ServersTableData dbGuildData = GetCache<Servers.ServersTableData>(keyPrefix);
 			return string.IsNullOrWhiteSpace(dbGuildData.CommandsChannelID) ? null : dbGuildData.CommandsChannelID;
 		}
 		catch (KeyNotFoundException)
@@ -127,7 +127,7 @@ public class GuildCache : CacheWrapperBase
 
 		try
 		{
-			ServersQuerySchema.ServersTableData dbGuildData = GetCache<ServersQuerySchema.ServersTableData>(keyPrefix);
+			Servers.ServersTableData dbGuildData = GetCache<Servers.ServersTableData>(keyPrefix);
 			return string.IsNullOrWhiteSpace(dbGuildData.LeaderboardsChannelID) ? null : dbGuildData.LeaderboardsChannelID;
 		}
 		catch (KeyNotFoundException)
@@ -136,10 +136,10 @@ public class GuildCache : CacheWrapperBase
 		}
 	}
 
-	public void AddDatabaseCache(string guildDiscordId, ServersQuerySchema.ServersTableData dbGuildData)
+	public void AddDatabaseCache(string guildDiscordId, Servers.ServersTableData dbGuildData)
 		=> AddToCache($"{CACHE_KEY_PREFIX}_{guildDiscordId}", dbGuildData);
 
-	public void SetDatabaseCache(string guildDiscordId, ServersQuerySchema.ServersTableData dbGuildData)
+	public void SetDatabaseCache(string guildDiscordId, Servers.ServersTableData dbGuildData)
 		=> SetInCache($"{CACHE_KEY_PREFIX}_{guildDiscordId}", dbGuildData);
 
 	public void RemoveDatabaseCache(string guildDiscordId) => RemoveFromCache($"{CACHE_KEY_PREFIX}_{guildDiscordId}");

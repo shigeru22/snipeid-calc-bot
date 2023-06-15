@@ -3,7 +3,7 @@
 
 using System.Text;
 using Discord;
-using LeaderpointsBot.Database.Schemas;
+using LeaderpointsBot.Database.Tables;
 
 namespace LeaderpointsBot.Client.Embeds;
 
@@ -62,7 +62,7 @@ public static class Configuration
 			.Build();
 	}
 
-	public static Embed CreateGuildRoleConfigurationEmbed(RolesQuerySchema.RolesTableData[] guildRoles, string guildName, string? guildIconUrl = null, bool useLegacyColor = false)
+	public static Embed CreateGuildRoleConfigurationEmbed(Roles.RolesTableData[] guildRoles, string guildName, string? guildIconUrl = null, bool useLegacyColor = false)
 	{
 		string title = "Current server roles (descending order):";
 		EmbedFooterBuilder footerBuilder = new EmbedFooterBuilder().WithText(guildName);
@@ -72,7 +72,7 @@ public static class Configuration
 		}
 
 		int roleLabelMinimumWidth = -1;
-		foreach (RolesQuerySchema.RolesTableData role in guildRoles)
+		foreach (Roles.RolesTableData role in guildRoles)
 		{
 			if (role.RoleName.Length > roleLabelMinimumWidth)
 			{
@@ -82,7 +82,7 @@ public static class Configuration
 
 		StringBuilder sbDescription = new StringBuilder();
 		_ = sbDescription.Append("```\n");
-		foreach (RolesQuerySchema.RolesTableData role in guildRoles)
+		foreach (Roles.RolesTableData role in guildRoles)
 		{
 			if (!string.IsNullOrWhiteSpace(role.DiscordID))
 			{

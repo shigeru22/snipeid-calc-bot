@@ -4,8 +4,9 @@
 using Discord.WebSocket;
 using LeaderpointsBot.Database;
 using LeaderpointsBot.Database.Exceptions;
-using LeaderpointsBot.Database.Schemas;
+using LeaderpointsBot.Database.Tables;
 using LeaderpointsBot.Utils;
+using RolesTable = LeaderpointsBot.Database.Tables.Roles;
 
 namespace LeaderpointsBot.Client.Actions;
 
@@ -15,14 +16,14 @@ public class Guild
 	{
 		Log.WriteInfo($"Inserting new server data to database ({guild.Id}).");
 
-		await Database.Tables.Servers.InsertServer(transaction, guild.Id.ToString());
+		await Servers.InsertServer(transaction, guild.Id.ToString());
 
 		Log.WriteInfo($"Inserting empty role to server data ({guild.Id}).");
 
-		ServersQuerySchema.ServersTableData guildData;
+		Servers.ServersTableData guildData;
 		try
 		{
-			guildData = await Database.Tables.Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
+			guildData = await Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 		}
 		catch (DataNotFoundException)
 		{
@@ -31,6 +32,6 @@ public class Guild
 			return;
 		}
 
-		await Database.Tables.Roles.InsertRole(transaction, "0", "(No role)", 0, guildData.ServerID);
+		await RolesTable.InsertRole(transaction, "0", "(No role)", 0, guildData.ServerID);
 	}
 }
