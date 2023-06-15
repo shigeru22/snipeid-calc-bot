@@ -94,7 +94,10 @@ public static class Roles
 			await user.RemoveRoleAsync(ulong.Parse(assignmentResult.OldRole.Value.RoleDiscordID));
 		}
 
-		Log.WriteVerbose($"Adding role to user ({dbUser.DiscordID}).");
-		await user.AddRoleAsync(ulong.Parse(assignmentResult.NewRole.RoleDiscordID));
+		if (!assignmentResult.NewRole.RoleDiscordID.Equals("0"))
+		{
+			Log.WriteVerbose($"Adding role to user ({dbUser.DiscordID}).");
+			await user.AddRoleAsync(ulong.Parse(assignmentResult.NewRole.RoleDiscordID));
+		}
 	}
 }
