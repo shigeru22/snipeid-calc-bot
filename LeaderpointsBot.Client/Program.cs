@@ -33,6 +33,8 @@ public static class Program
 			CAFilePath = Settings.Instance.Database.CAFilePath,
 		});
 
+		DatabaseTransaction tempTransaction = DatabaseFactory.Instance.InitializeTransaction();
+
 		if (Settings.Instance.ShouldMigrateDatabase)
 		{
 			await Migration.MigrateData();
@@ -42,8 +44,10 @@ public static class Program
 		if (!Settings.Instance.ShouldInitializeInteractions && !Settings.Instance.ShouldInitializeDatabase)
 		{
 			Log.WriteInfo("Populating server caches from database.");
-			await Cache.PopulateGuildConfigurations();
+			await Cache.PopulateGuildConfigurations(tempTransaction);
 		}
+
+		await tempTransaction.CommitAsync();
 
 		// single bot token value always takes precedence
 		if (!string.IsNullOrWhiteSpace(Settings.Instance.Client.BotToken))
