@@ -34,11 +34,6 @@ public static class User
 			Log.WriteVerbose($"User with ID {user.Id} not found in database. Cancelling roles reapplication.");
 			return;
 		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.");
-		}
 
 		Log.WriteVerbose($"Checking user roles in server (user ID {user.Id}, server ID {user.Guild.Id}).");
 
@@ -52,24 +47,10 @@ public static class User
 			Log.WriteVerbose($"User assignment data with ID {user.Id} not found in database. Cancelling roles reapplication.");
 			return;
 		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.");
-		}
 
 		Log.WriteVerbose($"Checking server verified role settings.");
 
-		Servers.ServersTableData guildData;
-		try
-		{
-			guildData = await Servers.GetServerByDiscordID(transaction, user.Guild.Id.ToString());
-		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.");
-		}
+		Servers.ServersTableData guildData = await Servers.GetServerByDiscordID(transaction, user.Guild.Id.ToString());
 
 		if (guildData.VerifiedRoleID != null)
 		{
@@ -77,16 +58,7 @@ public static class User
 			await Actions.Roles.SetVerifiedRoleAsync(transaction, user.Guild, user);
 		}
 
-		Roles.RolesTableData roleData;
-		try
-		{
-			roleData = await Roles.GetRoleByRoleID(transaction, guildUserRole.RoleID);
-		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.");
-		}
+		Roles.RolesTableData roleData = await Roles.GetRoleByRoleID(transaction, guildUserRole.RoleID);
 
 		if (!string.IsNullOrWhiteSpace(roleData.DiscordID))
 		{
@@ -124,11 +96,6 @@ public static class User
 			// continue
 			Log.WriteVerbose($"User with ID {user.Id} not found in database.");
 		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.");
-		}
 
 		if (isUserFound)
 		{
@@ -149,11 +116,6 @@ public static class User
 			// continue
 			Log.WriteVerbose($"User with osu! ID {osuId} not found in database.");
 		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.");
-		}
 
 		Log.WriteVerbose($"Fetching osu! user from osu!api (osu! ID {osuId}).");
 
@@ -171,11 +133,6 @@ public static class User
 		{
 			Log.WriteError("osu!api error occurred. Sending error message.");
 			throw new SendMessageException("osu!api error occurred. Check status?", true);
-		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.");
 		}
 
 		Log.WriteVerbose($"Inserting Discord user to database (user ID {user.Id}).");

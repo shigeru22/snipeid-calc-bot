@@ -16,21 +16,10 @@ public static class Leaderboard
 	{
 		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
 
-		Users.UsersLeaderboardData[] serverLeaderboardData;
-		DateTime lastUpdate;
+		Log.WriteVerbose($"Fetching leaderboard data from database (guild ID {guildDiscordId}).");
 
-		try
-		{
-			Log.WriteVerbose($"Fetching leaderboard data from database (guild ID {guildDiscordId}).");
-
-			serverLeaderboardData = await Users.GetServerPointsLeaderboard(transaction, guildDiscordId);
-			lastUpdate = await Users.GetServerLastPointUpdate(transaction, guildDiscordId);
-		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.");
-		}
+		Users.UsersLeaderboardData[] serverLeaderboardData = await Users.GetServerPointsLeaderboard(transaction, guildDiscordId);
+		DateTime lastUpdate = await Users.GetServerLastPointUpdate(transaction, guildDiscordId);
 
 		if (serverLeaderboardData.Length <= 0)
 		{

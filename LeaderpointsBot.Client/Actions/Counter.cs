@@ -33,11 +33,6 @@ public static class Counter
 			Log.WriteError($"Server with Discord ID {guild.Id} not found in database.");
 			throw new SendMessageException("Server not found.", true);
 		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.", true);
-		}
 
 		Log.WriteVerbose($"Updating user data for osu! ID {osuId}.");
 
@@ -62,11 +57,6 @@ public static class Counter
 
 			throw new SendMessageException("osu!api error occurred.", true);
 		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.", true);
-		}
 
 		{
 			if (osuUser.IsBot)
@@ -89,21 +79,10 @@ public static class Counter
 			Log.WriteVerbose("Data update skipped. Returning update messages as null.");
 			return null;
 		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.", true);
-		}
 
-		try
-		{
-			await Roles.SetAssignmentRolesAsync(transaction, guild, osuId, assignmentResult);
-		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.", true);
-		}
+		Log.WriteVerbose("Granting assignment roles.");
+
+		await Roles.SetAssignmentRolesAsync(transaction, guild, osuId, assignmentResult);
 
 		Log.WriteVerbose("Returning user update result message data.");
 

@@ -33,6 +33,8 @@ public static class Guild
 
 		await Actions.Guild.InsertGuildToDatabase(transaction, guild);
 
+		await transaction.CommitAsync();
+
 		Log.WriteInfo($"Server added to database ({guild.Id}).");
 	}
 }

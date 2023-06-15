@@ -15,53 +15,45 @@ public static class Roles
 {
 	public static async Task SetVerifiedRoleAsync(DatabaseTransaction transaction, SocketGuild guild, SocketUser user)
 	{
+		Servers.ServersTableData dbGuild;
 		try
 		{
-			Servers.ServersTableData dbGuild;
-			try
-			{
-				Log.WriteVerbose($"Fetching server data from database (server ID {guild.Id}).");
-				dbGuild = await Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
-			}
-			catch (DataNotFoundException)
-			{
-				Log.WriteError("No server found in database. Sending error message.");
-				throw new SendMessageException("Server not found in our end!", true);
-			}
-
-			if (string.IsNullOrWhiteSpace(dbGuild.VerifiedRoleID))
-			{
-				Log.WriteVerbose($"Server verified role not set. Skipping verified role grant.");
-				return;
-			}
-
-			SocketRole targetRole;
-			try
-			{
-				targetRole = guild.Roles
-					.Where(guildRole => guildRole.Id.ToString() == dbGuild.VerifiedRoleID)
-					.First();
-			}
-			catch (InvalidOperationException)
-			{
-				Log.WriteInfo("Server verified role is set, but not found in server roles list. Sending error message.");
-				throw new SendMessageException("Verified role for this server is missing.", true);
-			}
-
-			// should be found, else why he/she is in the server?
-			SocketGuildUser targetGuildUser = guild.Users
-				.Where(guildUser => guildUser.Id == user.Id)
-				.First();
-
-			Log.WriteInfo($"Granting server verified role (server ID {guild.Id}, user ID {user.Id}).");
-
-			await targetGuildUser.AddRoleAsync(targetRole);
+			Log.WriteVerbose($"Fetching server data from database (server ID {guild.Id}).");
+			dbGuild = await Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
 		}
-		catch (Exception e)
+		catch (DataNotFoundException)
 		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("An error occurred while checking or granting user verified role.");
+			Log.WriteError("No server found in database. Sending error message.");
+			throw new SendMessageException("Server not found in our end!", true);
 		}
+
+		if (string.IsNullOrWhiteSpace(dbGuild.VerifiedRoleID))
+		{
+			Log.WriteVerbose($"Server verified role not set. Skipping verified role grant.");
+			return;
+		}
+
+		SocketRole targetRole;
+		try
+		{
+			targetRole = guild.Roles
+				.Where(guildRole => guildRole.Id.ToString() == dbGuild.VerifiedRoleID)
+				.First();
+		}
+		catch (InvalidOperationException)
+		{
+			Log.WriteInfo("Server verified role is set, but not found in server roles list. Sending error message.");
+			throw new SendMessageException("Verified role for this server is missing.", true);
+		}
+
+		// should be found, else why he/she is in the server?
+		SocketGuildUser targetGuildUser = guild.Users
+			.Where(guildUser => guildUser.Id == user.Id)
+			.First();
+
+		Log.WriteInfo($"Granting server verified role (server ID {guild.Id}, user ID {user.Id}).");
+
+		await targetGuildUser.AddRoleAsync(targetRole);
 	}
 
 	public static async Task SetAssignmentRolesAsync(DatabaseTransaction transaction, SocketGuildUser user, Structures.Actions.UserData.AssignmentResult assignmentResult)
@@ -72,16 +64,7 @@ public static class Roles
 			return;
 		}
 
-		Users.UsersTableData dbUser;
-		try
-		{
-			dbUser = await Users.GetUserByDiscordID(transaction, user.Id.ToString());
-		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Failed to grant role.", true);
-		}
+		Users.UsersTableData dbUser = await Users.GetUserByDiscordID(transaction, user.Id.ToString());
 
 		if (assignmentResult.OldRole.HasValue)
 		{
@@ -101,17 +84,7 @@ public static class Roles
 			return;
 		}
 
-		Users.UsersTableData dbUser;
-
-		try
-		{
-			dbUser = await Users.GetUserByOsuID(transaction, osuId);
-		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Failed to grant role.", true);
-		}
+		Users.UsersTableData dbUser = await Users.GetUserByOsuID(transaction, osuId);
 
 		SocketGuildUser user = guild.Users.First(guildUser => guildUser.Id.ToString().Equals(dbUser.DiscordID));
 

@@ -37,11 +37,6 @@ public static class Counter
 			{
 				throw new SendMessageException("Server not found in our end!", true);
 			}
-			catch (Exception e)
-			{
-				Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-				throw new SendMessageException("Unhandled client error occurred.");
-			}
 		}
 
 		Log.WriteVerbose("Calculating leaderboards count from first embed.");
@@ -56,16 +51,8 @@ public static class Counter
 
 		Log.WriteInfo($"Calculating points for osu! username: {embedUsername}");
 
-		try
-		{
-			Log.WriteVerbose("Parsing top counts from embed description.");
-			embedTopCounts = Parser.ParseTopPointsFromBathbotEmbedDescription(countEmbed.Description);
-		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.");
-		}
+		Log.WriteVerbose("Parsing top counts from embed description.");
+		embedTopCounts = Parser.ParseTopPointsFromBathbotEmbedDescription(countEmbed.Description);
 
 		// Bathbot doesn't use respektive's API at the moment
 		int points = Embeds.Counter.CalculateTopPoints(embedTopCounts);
@@ -80,11 +67,6 @@ public static class Counter
 			catch (SkipUpdateException)
 			{
 				Log.WriteVerbose("No updateMessages set.");
-			}
-			catch (Exception e)
-			{
-				Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-				throw new SendMessageException("Unhandled client error occurred.");
 			}
 		}
 
@@ -136,11 +118,6 @@ public static class Counter
 			{
 				throw new SendMessageException("Server not found in our end!", true);
 			}
-			catch (Exception e)
-			{
-				Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-				throw new SendMessageException("Unhandled client error occurred.");
-			}
 		}
 
 		int osuId;
@@ -158,32 +135,17 @@ public static class Counter
 			Log.WriteVerbose($"User not found in database (Discord ID {userDiscordId}). Sending link message.");
 			throw new SendMessageException($"Not yet linked to osu! user. Link using <@{clientDiscordId}>` link [osu! user ID]`{(dbServer != null && dbServer.Value.CommandsChannelID != null ? $" at <#{dbServer.Value.CommandsChannelID}>" : string.Empty)}.", true);
 		}
-		catch (Exception e)
+
+		Log.WriteVerbose($"Fetching osu! user data from osu!api (osu! ID {osuId}).");
+
+		OsuDataTypes.OsuApiUserResponseData? tempUser = CacheManager.Instance.OsuApiCacheInstance.GetOsuUserCache(osuId);
+		if (!tempUser.HasValue)
 		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.");
+			tempUser = await ApiFactory.Instance.OsuApiInstance.GetUserByOsuID(osuId);
+			CacheManager.Instance.OsuApiCacheInstance.AddOsuUserCache(osuId, tempUser.Value);
 		}
 
-		try
-		{
-			Log.WriteVerbose($"Fetching osu! user data from osu!api (osu! ID {osuId}).");
-
-			OsuDataTypes.OsuApiUserResponseData? tempUser = CacheManager.Instance.OsuApiCacheInstance.GetOsuUserCache(osuId);
-
-			if (!tempUser.HasValue)
-			{
-				tempUser = await ApiFactory.Instance.OsuApiInstance.GetUserByOsuID(osuId);
-				CacheManager.Instance.OsuApiCacheInstance.AddOsuUserCache(osuId, tempUser.Value);
-			}
-
-			osuUsername = tempUser.Value.Username;
-		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.");
-		}
-
+		osuUsername = tempUser.Value.Username;
 		List<int[]> topCounts = new List<int[]>();
 		int points;
 
@@ -216,23 +178,14 @@ public static class Counter
 					osuStatsRequests.Add(ApiFactory.Instance.OsuStatsInstance.GetTopCounts(osuUsername, rank));
 				}
 
-				OsuStatsDataTypes.OsuStatsResponseData[] osuStatsResponses;
-				try
-				{
-					osuStatsResponses = await Task.WhenAll(osuStatsRequests);
+				OsuStatsDataTypes.OsuStatsResponseData[] osuStatsResponses = await Task.WhenAll(osuStatsRequests);
 
-					foreach (OsuStatsDataTypes.OsuStatsResponseData response in osuStatsResponses)
-					{
-						CacheManager.Instance.OsuStatsCacheInstance.AddOsuStatsCache(osuUsername, response.MaxRank, response);
-					}
-
-					topCounts = osuStatsResponses.Select(response => new int[] { response.MaxRank, response.Count }).ToList();
-				}
-				catch (Exception e)
+				foreach (OsuStatsDataTypes.OsuStatsResponseData response in osuStatsResponses)
 				{
-					Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-					throw new SendMessageException("Unhandled client error occurred.");
+					CacheManager.Instance.OsuStatsCacheInstance.AddOsuStatsCache(osuUsername, response.MaxRank, response);
 				}
+
+				topCounts = osuStatsResponses.Select(response => new int[] { response.MaxRank, response.Count }).ToList();
 			}
 
 			points = Embeds.Counter.CalculateTopPoints(topCounts);
@@ -241,17 +194,7 @@ public static class Counter
 		{
 			Log.WriteVerbose("Fetching respektive osu!stats data.");
 
-			OsuStatsDataTypes.OsuStatsRespektiveResponseData osuStatsResponse;
-
-			try
-			{
-				osuStatsResponse = await ApiFactory.Instance.OsuStatsInstance.GetRespektiveTopCounts(osuId);
-			}
-			catch (Exception e)
-			{
-				Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-				throw new SendMessageException("Unhandled client error occurred.");
-			}
+			OsuStatsDataTypes.OsuStatsRespektiveResponseData osuStatsResponse = await ApiFactory.Instance.OsuStatsInstance.GetRespektiveTopCounts(osuId);
 
 			topCounts.Add(new int[] { 1, osuStatsResponse.Top1 ?? 0 });
 			topCounts.Add(new int[] { 8, osuStatsResponse.Top8 ?? 0 });
@@ -327,27 +270,14 @@ public static class Counter
 			{
 				throw new SendMessageException("Server not found in our end!", true);
 			}
-			catch (Exception e)
-			{
-				Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-				throw new SendMessageException("Unhandled client error occurred.");
-			}
 		}
 
-		try
-		{
-			Log.WriteVerbose($"Fetching osu! user data from osu!api (osu! username {osuUsername}).");
+		Log.WriteVerbose($"Fetching osu! user data from osu!api (osu! username {osuUsername}).");
 
-			// TODO: find cache by username
-			OsuDataTypes.OsuApiUserResponseData osuUser = await ApiFactory.Instance.OsuApiInstance.GetUserByOsuUsername(osuUsername);
-			tempOsuUsername = osuUser.Username;
-			osuId = osuUser.ID;
-		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.");
-		}
+		// TODO: find cache by username
+		OsuDataTypes.OsuApiUserResponseData osuUser = await ApiFactory.Instance.OsuApiInstance.GetUserByOsuUsername(osuUsername);
+		tempOsuUsername = osuUser.Username;
+		osuId = osuUser.ID;
 
 		List<int[]> topCounts = new List<int[]>();
 		int points;
@@ -381,23 +311,14 @@ public static class Counter
 					osuStatsRequests.Add(ApiFactory.Instance.OsuStatsInstance.GetTopCounts(osuUsername, rank));
 				}
 
-				OsuStatsDataTypes.OsuStatsResponseData[] osuStatsResponses;
-				try
-				{
-					osuStatsResponses = await Task.WhenAll(osuStatsRequests);
+				OsuStatsDataTypes.OsuStatsResponseData[] osuStatsResponses = await Task.WhenAll(osuStatsRequests);
 
-					foreach (OsuStatsDataTypes.OsuStatsResponseData response in osuStatsResponses)
-					{
-						CacheManager.Instance.OsuStatsCacheInstance.AddOsuStatsCache(osuUsername, response.MaxRank, response);
-					}
-
-					topCounts = osuStatsResponses.Select(response => new int[] { response.MaxRank, response.Count }).ToList();
-				}
-				catch (Exception e)
+				foreach (OsuStatsDataTypes.OsuStatsResponseData response in osuStatsResponses)
 				{
-					Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-					throw new SendMessageException("Unhandled client error occurred.");
+					CacheManager.Instance.OsuStatsCacheInstance.AddOsuStatsCache(osuUsername, response.MaxRank, response);
 				}
+
+				topCounts = osuStatsResponses.Select(response => new int[] { response.MaxRank, response.Count }).ToList();
 			}
 
 			points = Embeds.Counter.CalculateTopPoints(topCounts);
@@ -406,17 +327,7 @@ public static class Counter
 		{
 			Log.WriteVerbose("Fetching respektive osu!stats data.");
 
-			OsuStatsDataTypes.OsuStatsRespektiveResponseData osuStatsResponse;
-
-			try
-			{
-				osuStatsResponse = await ApiFactory.Instance.OsuStatsInstance.GetRespektiveTopCounts(osuId);
-			}
-			catch (Exception e)
-			{
-				Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-				throw new SendMessageException("Unhandled client error occurred.");
-			}
+			OsuStatsDataTypes.OsuStatsRespektiveResponseData osuStatsResponse = await ApiFactory.Instance.OsuStatsInstance.GetRespektiveTopCounts(osuId);
 
 			topCounts.Add(new int[] { 1, osuStatsResponse.Top1 ?? 0 });
 			topCounts.Add(new int[] { 8, osuStatsResponse.Top8 ?? 0 });
@@ -436,11 +347,6 @@ public static class Counter
 			catch (SkipUpdateException)
 			{
 				Log.WriteVerbose("No updateMessages set.");
-			}
-			catch (Exception e)
-			{
-				Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-				throw new SendMessageException("Unhandled client error occurred.");
 			}
 		}
 
@@ -503,11 +409,6 @@ public static class Counter
 			Log.WriteVerbose($"User not found in database (Discord ID {userDiscordId}). Sending link message.");
 			throw new SendMessageException($"Not yet linked to osu! user. Link using `link` command first.", true);
 		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.");
-		}
 
 		int[,] whatIfs;
 		try
@@ -519,31 +420,18 @@ public static class Counter
 			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.UtilError.Message));
 			throw new SendMessageException("Unhandled client error occurred.");
 		}
-		catch (Exception e)
+
+		Log.WriteVerbose($"Fetching osu! user data from osu!api (osu! ID {osuId}).");
+
+		OsuDataTypes.OsuApiUserResponseData? tempUser = CacheManager.Instance.OsuApiCacheInstance.GetOsuUserCache(osuId);
+
+		if (!tempUser.HasValue)
 		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.");
+			tempUser = await ApiFactory.Instance.OsuApiInstance.GetUserByOsuID(osuId);
+			CacheManager.Instance.OsuApiCacheInstance.AddOsuUserCache(osuId, tempUser.Value);
 		}
 
-		try
-		{
-			Log.WriteVerbose($"Fetching osu! user data from osu!api (osu! ID {osuId}).");
-
-			OsuDataTypes.OsuApiUserResponseData? tempUser = CacheManager.Instance.OsuApiCacheInstance.GetOsuUserCache(osuId);
-
-			if (!tempUser.HasValue)
-			{
-				tempUser = await ApiFactory.Instance.OsuApiInstance.GetUserByOsuID(osuId);
-				CacheManager.Instance.OsuApiCacheInstance.AddOsuUserCache(osuId, tempUser.Value);
-			}
-
-			osuUsername = tempUser.Value.Username;
-		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.");
-		}
+		osuUsername = tempUser.Value.Username;
 
 		List<int[]> originalTopCounts = new List<int[]>();
 		List<int[]> whatIfTopCounts = new List<int[]>();
@@ -580,23 +468,14 @@ public static class Counter
 					osuStatsRequests.Add(ApiFactory.Instance.OsuStatsInstance.GetTopCounts(osuUsername, rank));
 				}
 
-				OsuStatsDataTypes.OsuStatsResponseData[] osuStatsResponses;
-				try
-				{
-					osuStatsResponses = await Task.WhenAll(osuStatsRequests);
+				OsuStatsDataTypes.OsuStatsResponseData[] osuStatsResponses = await Task.WhenAll(osuStatsRequests);
 
-					foreach (OsuStatsDataTypes.OsuStatsResponseData response in osuStatsResponses)
-					{
-						CacheManager.Instance.OsuStatsCacheInstance.AddOsuStatsCache(osuUsername, response.MaxRank, response);
-					}
-
-					originalTopCounts = osuStatsResponses.Select(response => new int[] { response.MaxRank, response.Count }).ToList();
-				}
-				catch (Exception e)
+				foreach (OsuStatsDataTypes.OsuStatsResponseData response in osuStatsResponses)
 				{
-					Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-					throw new SendMessageException("Unhandled client error occurred.");
+					CacheManager.Instance.OsuStatsCacheInstance.AddOsuStatsCache(osuUsername, response.MaxRank, response);
 				}
+
+				originalTopCounts = osuStatsResponses.Select(response => new int[] { response.MaxRank, response.Count }).ToList();
 			}
 
 			originalPoints = Embeds.Counter.CalculateTopPoints(originalTopCounts);
@@ -618,17 +497,7 @@ public static class Counter
 		{
 			Log.WriteVerbose("Fetching respektive osu!stats data.");
 
-			OsuStatsDataTypes.OsuStatsRespektiveResponseData osuStatsResponse;
-
-			try
-			{
-				osuStatsResponse = await ApiFactory.Instance.OsuStatsInstance.GetRespektiveTopCounts(osuId);
-			}
-			catch (Exception e)
-			{
-				Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-				throw new SendMessageException("Unhandled client error occurred.");
-			}
+			OsuStatsDataTypes.OsuStatsRespektiveResponseData osuStatsResponse = await ApiFactory.Instance.OsuStatsInstance.GetRespektiveTopCounts(osuId);
 
 			originalTopCounts.Add(new int[] { 1, osuStatsResponse.Top1 ?? 0 });
 			originalTopCounts.Add(new int[] { 8, osuStatsResponse.Top8 ?? 0 });
