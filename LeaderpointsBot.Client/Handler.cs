@@ -136,7 +136,27 @@ public class Handler
 			Log.WriteVerbose("Creating context and calculating points.");
 
 			SocketCommandContext bathbotContext = new SocketCommandContext(client, userMsg);
-			await Modules.Message.BathbotCountCommand(bathbotContext);
+			try
+			{
+				await Modules.Message.BathbotCountCommand(bathbotContext);
+			}
+			catch (SendMessageException e)
+			{
+				await Actions.Reply.SendToCommandContextAsync(bathbotContext, new ReturnMessage()
+				{
+					IsError = true,
+					Message = e.Draft
+				});
+			}
+			catch (Exception e)
+			{
+				Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
+				await Actions.Reply.SendToCommandContextAsync(bathbotContext, new ReturnMessage()
+				{
+					IsError = true,
+					Message = "Unhandled client error occurred."
+				});
+			}
 
 			return;
 		}
