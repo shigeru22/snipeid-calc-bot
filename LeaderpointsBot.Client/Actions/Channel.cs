@@ -100,18 +100,28 @@ public static class Channel
 		}
 
 		// check verification channel, if null check commands channel
-		if (guildData.Value.VerifyChannelID != null || guildData.Value.CommandsChannelID != null)
+
+		if (guildData.Value.VerifyChannelID != null)
 		{
-			if (guildData.Value.VerifyChannelID != null && !guildData.Value.VerifyChannelID.Equals(channelId))
+			if (!guildData.Value.VerifyChannelID.Equals(channelId))
 			{
 				return (false, guildData.Value.VerifyChannelID);
 			}
 
-			if (guildData.Value.CommandsChannelID != null && !guildData.Value.CommandsChannelID.Equals(channelId))
+			return (true, null);
+		}
+
+		if (guildData.Value.CommandsChannelID != null)
+		{
+			if (!guildData.Value.CommandsChannelID.Equals(channelId))
 			{
 				return (false, guildData.Value.CommandsChannelID);
 			}
+
+			return (true, null);
 		}
+
+		// if both null, return true
 
 		return (true, null);
 	}
@@ -141,18 +151,28 @@ public static class Channel
 		}
 
 		// check leaderboards channel, if null check commands channel
-		if (guildData.Value.LeaderboardsChannelID != null || guildData.Value.CommandsChannelID != null)
+
+		if (guildData.Value.LeaderboardsChannelID != null)
 		{
-			if (guildData.Value.LeaderboardsChannelID != null && !guildData.Value.LeaderboardsChannelID.Equals(channelId))
+			if (!guildData.Value.LeaderboardsChannelID.Equals(channelId))
 			{
 				return (false, guildData.Value.LeaderboardsChannelID);
 			}
 
-			if (guildData.Value.CommandsChannelID != null && !guildData.Value.CommandsChannelID.Equals(channelId))
+			return (true, null);
+		}
+
+		if (guildData.Value.CommandsChannelID != null)
+		{
+			if (!guildData.Value.CommandsChannelID.Equals(channelId))
 			{
 				return (false, guildData.Value.CommandsChannelID);
 			}
+
+			return (true, null);
 		}
+
+		// if both null, return true
 
 		return (true, null);
 	}
