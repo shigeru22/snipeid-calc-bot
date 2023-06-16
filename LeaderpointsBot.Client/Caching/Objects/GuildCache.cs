@@ -142,5 +142,50 @@ public class GuildCache : CacheWrapperBase
 	public void SetDatabaseCache(string guildDiscordId, Servers.ServersTableData dbGuildData)
 		=> SetInCache($"{CACHE_KEY_PREFIX}_{guildDiscordId}", dbGuildData);
 
+	public void SetCountryCodeCache(string guildDiscordId, string? countryCode)
+	{
+		string keyPrefix = $"{CACHE_KEY_PREFIX}_{guildDiscordId}";
+
+		Servers.ServersTableData dbGuildData = GetCache<Servers.ServersTableData>(keyPrefix);
+		dbGuildData.Country = countryCode;
+		SetInCache(keyPrefix, dbGuildData);
+	}
+
+	public void SetVerifyChannelIDCache(string guildDiscordId, string? verifyChannelId)
+	{
+		string keyPrefix = $"{CACHE_KEY_PREFIX}_{guildDiscordId}";
+
+		Servers.ServersTableData dbGuildData = GetCache<Servers.ServersTableData>(keyPrefix);
+		dbGuildData.VerifyChannelID = verifyChannelId;
+		SetInCache(keyPrefix, dbGuildData);
+	}
+
+	public void SetVerifiedRoleIDCache(string guildDiscordId, string? verifiedRoleId)
+	{
+		string keyPrefix = $"{CACHE_KEY_PREFIX}_{guildDiscordId}";
+
+		Servers.ServersTableData dbGuildData = GetCache<Servers.ServersTableData>(keyPrefix);
+		dbGuildData.VerifiedRoleID = verifiedRoleId;
+		SetInCache(keyPrefix, dbGuildData);
+	}
+
+	public void SetCommandsChannelIDCache(string guildDiscordId, string? commandsChannelId)
+	{
+		string keyPrefix = $"{CACHE_KEY_PREFIX}_{guildDiscordId}";
+
+		Servers.ServersTableData dbGuildData = GetCache<Servers.ServersTableData>(keyPrefix);
+		dbGuildData.CommandsChannelID = commandsChannelId;
+		SetInCache(keyPrefix, dbGuildData);
+	}
+
+	public void SetLeaderboardsChannelIDCache(string guildDiscordId, string? leaderboardsChannelId)
+	{
+		string keyPrefix = $"{CACHE_KEY_PREFIX}_{guildDiscordId}";
+
+		Servers.ServersTableData dbGuildData = GetCache<Servers.ServersTableData>(keyPrefix);
+		dbGuildData.LeaderboardsChannelID = leaderboardsChannelId;
+		SetInCache(keyPrefix, dbGuildData);
+	}
+
 	public void RemoveDatabaseCache(string guildDiscordId) => RemoveFromCache($"{CACHE_KEY_PREFIX}_{guildDiscordId}");
 }

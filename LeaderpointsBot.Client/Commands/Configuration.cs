@@ -3,6 +3,7 @@
 
 using Discord;
 using Discord.WebSocket;
+using LeaderpointsBot.Client.Caching;
 using LeaderpointsBot.Client.Exceptions.Commands;
 using LeaderpointsBot.Client.Structures;
 using LeaderpointsBot.Database;
@@ -115,10 +116,13 @@ public static class Configuration
 		await Servers.UpdateServerCountry(transaction, guild.Id.ToString(), targetCountryCode);
 
 		await transaction.CommitAsync();
+		CacheManager.Instance.GuildCacheInstance.SetCountryCodeCache(guild.Id.ToString(), targetCountryCode);
 
 		return new ReturnMessage()
 		{
-			Message = string.IsNullOrWhiteSpace(targetCountryCode) ? "Server country restriction disabled." : $"Set server country restriction to **{targetCountryCode}**."
+			Message = string.IsNullOrWhiteSpace(targetCountryCode)
+				? "Server country restriction disabled."
+				: $"Set server country restriction to **{targetCountryCode}**."
 		};
 	}
 
@@ -142,10 +146,13 @@ public static class Configuration
 		await Servers.UpdateServerVerifiedRoleID(transaction, guild.Id.ToString(), targetRole?.Id.ToString());
 
 		await transaction.CommitAsync();
+		CacheManager.Instance.GuildCacheInstance.SetVerifiedRoleIDCache(guild.Id.ToString(), targetRole?.Id.ToString());
 
 		return new ReturnMessage()
 		{
-			Message = targetRole == null ? "Server verified role disabled." : $"Set server verified role to **{targetRole.Name}**."
+			Message = targetRole == null
+				? "Server verified role disabled."
+				: $"Set server verified role to **{targetRole.Name}**."
 		};
 	}
 
@@ -188,10 +195,13 @@ public static class Configuration
 		await Servers.UpdateServerVerifiedRoleID(transaction, guild.Id.ToString(), targetRole.Id.ToString());
 
 		await transaction.CommitAsync();
+		CacheManager.Instance.GuildCacheInstance.SetVerifiedRoleIDCache(guild.Id.ToString(), targetRole?.Id.ToString());
 
 		return new ReturnMessage()
 		{
-			Message = $"Set server verified role to **{targetRole.Name}**"
+			Message = targetRole == null
+				? "Server verified role disabled."
+				: $"Set server verified role to **{targetRole.Name}**."
 		};
 	}
 
@@ -221,10 +231,13 @@ public static class Configuration
 		await Servers.UpdateServerCommandsChannelID(transaction, guild.Id.ToString(), targetChannel?.Id.ToString());
 
 		await transaction.CommitAsync();
+		CacheManager.Instance.GuildCacheInstance.SetCommandsChannelIDCache(guild.Id.ToString(), targetChannel?.Id.ToString());
 
 		return new ReturnMessage()
 		{
-			Message = targetChannel == null ? "Server commands channel restriction disabled." : $"Set server commands channel restriction to **{targetChannel.Name}**."
+			Message = targetChannel == null
+				? "Server commands channel restriction disabled."
+				: $"Set server commands channel restriction to **{targetChannel.Name}**."
 		};
 	}
 
@@ -261,10 +274,13 @@ public static class Configuration
 		await Servers.UpdateServerCommandsChannelID(transaction, guild.Id.ToString(), targetChannel.Id.ToString());
 
 		await transaction.CommitAsync();
+		CacheManager.Instance.GuildCacheInstance.SetCommandsChannelIDCache(guild.Id.ToString(), targetChannel?.Id.ToString());
 
 		return new ReturnMessage()
 		{
-			Message = $"Set server commands channel restriction to **{targetChannel.Name}**."
+			Message = targetChannel == null
+				? "Server commands channel restriction disabled."
+				: $"Set server commands channel restriction to **{targetChannel.Name}**."
 		};
 	}
 
@@ -294,10 +310,13 @@ public static class Configuration
 		await Servers.UpdateServerLeaderboardsChannelID(transaction, guild.Id.ToString(), targetChannel?.Id.ToString());
 
 		await transaction.CommitAsync();
+		CacheManager.Instance.GuildCacheInstance.SetLeaderboardsChannelIDCache(guild.Id.ToString(), targetChannel?.Id.ToString());
 
 		return new ReturnMessage()
 		{
-			Message = targetChannel == null ? "Server leaderboards channel restriction disabled." : $"Set server leaderboards channel restriction to **{targetChannel.Name}**."
+			Message = targetChannel == null
+				? "Server leaderboards channel restriction disabled."
+				: $"Set server leaderboards channel restriction to **{targetChannel.Name}**."
 		};
 	}
 
@@ -334,10 +353,13 @@ public static class Configuration
 		await Servers.UpdateServerLeaderboardsChannelID(transaction, guild.Id.ToString(), targetChannel.Id.ToString());
 
 		await transaction.CommitAsync();
+		CacheManager.Instance.GuildCacheInstance.SetLeaderboardsChannelIDCache(guild.Id.ToString(), targetChannel?.Id.ToString());
 
 		return new ReturnMessage()
 		{
-			Message = $"Set server leaderboards channel restriction to **{targetChannel.Name}**."
+			Message = targetChannel == null
+				? "Server leaderboards channel restriction disabled."
+				: $"Set server leaderboards channel restriction to **{targetChannel.Name}**."
 		};
 	}
 
