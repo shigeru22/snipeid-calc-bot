@@ -87,6 +87,7 @@ public static class Counter
 			{
 				Embed = Embeds.Counter.CreateCountEmbed(embedUsername,
 					embedTopCounts,
+					false,
 					guildChannel != null && Actions.Channel.IsSnipeIDGuild(guildChannel.Guild.Id.ToString()))
 			}
 		};
