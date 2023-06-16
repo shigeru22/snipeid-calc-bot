@@ -148,6 +148,10 @@ public class Handler
 					Message = e.Draft
 				});
 			}
+			catch (InterruptProcessException e)
+			{
+				Log.WriteInfo($"Client interrupted the process: {e.Reason}");
+			}
 			catch (Exception e)
 			{
 				Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
@@ -262,6 +266,10 @@ public class Handler
 						Message = ex.Draft
 					});
 				}
+				else if (e is InterruptProcessException ex2)
+				{
+					Log.WriteInfo($"Client interrupted the process: {ex2.Reason}");
+				}
 				else
 				{
 					Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
@@ -305,6 +313,10 @@ public class Handler
 						IsError = true,
 						Message = ex.Draft
 					});
+				}
+				else if (e is InterruptProcessException)
+				{
+					throw new InvalidOperationException("InterruptProcessException should not be used on interaction events.");
 				}
 				else
 				{

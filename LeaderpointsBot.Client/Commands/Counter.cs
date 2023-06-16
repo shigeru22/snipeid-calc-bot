@@ -26,6 +26,15 @@ public static class Counter
 	{
 		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
 
+		if (guildChannel != null)
+		{
+			(bool isChannelAllowed, _) = await Actions.Channel.IsClientCommandsAllowedAsync(transaction, guildChannel);
+			if (!isChannelAllowed)
+			{
+				throw new InterruptProcessException("Ignoring since channel is not guild commands channel.");
+			}
+		}
+
 		Servers.ServersTableData? dbServer = null;
 		if (guildChannel != null)
 		{
