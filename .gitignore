@@ -402,3 +402,6 @@ appsettings.json
 
 # Certificates
 .cert
+
+# Environment variable file
+.env
