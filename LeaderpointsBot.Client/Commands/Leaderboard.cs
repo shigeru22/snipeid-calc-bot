@@ -16,7 +16,7 @@ public static class Leaderboard
 	{
 		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
 
-		await Actions.Channel.CheckCommandChannelAsync(transaction, guildChannel, Actions.Channel.GuildChannelType.VERIFY);
+		await Actions.Channel.CheckCommandChannelAsync(transaction, guildChannel, Actions.Channel.GuildChannelType.LEADERBOARDS);
 
 		Log.WriteVerbose($"Fetching leaderboard data from database (guild ID {guildChannel.Guild.Id}).");
 

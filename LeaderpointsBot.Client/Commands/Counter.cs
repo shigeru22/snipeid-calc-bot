@@ -109,7 +109,7 @@ public static class Counter
 
 		if (guildChannel != null)
 		{
-			await Actions.Channel.CheckCommandChannelAsync(transaction, guildChannel, Actions.Channel.GuildChannelType.LEADERBOARDS);
+			await Actions.Channel.CheckCommandChannelAsync(transaction, guildChannel, Actions.Channel.GuildChannelType.COMMANDS);
 		}
 
 		Servers.ServersTableData? dbServer = null;
@@ -406,7 +406,7 @@ public static class Counter
 
 		if (guildChannel != null)
 		{
-			await Actions.Channel.CheckCommandChannelAsync(transaction, guildChannel, Actions.Channel.GuildChannelType.LEADERBOARDS);
+			await Actions.Channel.CheckCommandChannelAsync(transaction, guildChannel, Actions.Channel.GuildChannelType.COMMANDS);
 		}
 
 		int osuId;
