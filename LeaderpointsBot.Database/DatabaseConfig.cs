@@ -37,6 +37,10 @@ public struct DatabaseConfig
 		{
 			connectionString += $";SSL Certificate={Path.GetFullPath(caFilePath)}";
 		}
+		else
+		{
+			connectionString += ";SSL Mode=Disable"; // TODO: add standalone option
+		}
 
 		return connectionString;
 	}
