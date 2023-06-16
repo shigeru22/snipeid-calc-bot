@@ -33,11 +33,6 @@ public static class UserData
 			Log.WriteError($"Server with Discord ID {serverDiscordId} not found in database.");
 			throw new SendMessageException("Server not found.", true);
 		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.", true);
-		}
 
 		// get current user from database
 		try
@@ -48,11 +43,6 @@ public static class UserData
 		{
 			Log.WriteVerbose($"User with osu! ID {osuId} not found in database. Skipping data update.");
 			throw new SkipUpdateException();
-		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.", true);
 		}
 
 		// get current role from database
@@ -65,11 +55,6 @@ public static class UserData
 			// user found but current role not found in database, continue with null
 			currentRole = null;
 		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.", true);
-		}
 
 		// get target role from database
 		try
@@ -81,11 +66,6 @@ public static class UserData
 			Log.WriteError($"Role for {points} points (server ID {serverDiscordId} not found in database. Make sure 0 points role exists.");
 			throw new SendMessageException("Role error. Contact server administrator for configuration.", true);
 		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.", true);
-		}
 
 		// get current assignment from database
 		try
@@ -96,11 +76,6 @@ public static class UserData
 		{
 			// current server assignment not found, continue with null
 			currentServerAssignment = null;
-		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.", true);
 		}
 
 		try
@@ -119,11 +94,6 @@ public static class UserData
 		{
 			// no server user data (will be created), continue with null
 			lastServerUserUpdate = null;
-		}
-		catch (Exception e)
-		{
-			Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-			throw new SendMessageException("Unhandled client error occurred.", true);
 		}
 
 		{
@@ -147,16 +117,8 @@ public static class UserData
 		else
 		{
 			// insert server assignment data
-			try
-			{
-				Servers.ServersTableData serverData = await Servers.GetServerByDiscordID(transaction, serverDiscordId);
-				await Assignments.InsertAssignment(transaction, serverData.ServerID, currentUser.UserID, targetRole.RoleID);
-			}
-			catch (Exception e)
-			{
-				Log.WriteError(Log.GenerateExceptionMessage(e, ErrorMessages.ClientError.Message));
-				throw new SendMessageException("Error while inserting assignment.");
-			}
+			Servers.ServersTableData serverData = await Servers.GetServerByDiscordID(transaction, serverDiscordId);
+			await Assignments.InsertAssignment(transaction, serverData.ServerID, currentUser.UserID, targetRole.RoleID);
 		}
 
 		Log.WriteVerbose("Returning assignment result message data.");
