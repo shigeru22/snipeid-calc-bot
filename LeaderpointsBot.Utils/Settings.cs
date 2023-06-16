@@ -115,23 +115,27 @@ public class Settings
 			Environment.Exit(1);
 		}
 
-		SettingsTypes.JsonSettings fileConfig = JsonSerializer.Deserialize<SettingsTypes.JsonSettings>(
-			File.ReadAllText(DEFAULT_SETTINGS_PATH),
-			new JsonSerializerOptions()
-			{
-				PropertyNameCaseInsensitive = true
-			}
-		);
+		SettingsTypes.JsonSettings? fileConfig = null;
+		if (File.Exists(DEFAULT_SETTINGS_PATH))
+		{
+			fileConfig = JsonSerializer.Deserialize<SettingsTypes.JsonSettings>(
+				File.ReadAllText(DEFAULT_SETTINGS_PATH),
+				new JsonSerializerOptions()
+				{
+					PropertyNameCaseInsensitive = true
+				}
+			);
+		}
+
 		SettingsTypes.EnvironmentSettings argConfig = Args.GetConfigurationArguments();
 
 		// Console.WriteLine($"-t = {(argConfig.ShouldOutputHelp == null ? "null" : argConfig.ShouldOutputHelp)}");
 
 		SettingsTypes.JsonSettings mergedConfig = new SettingsTypes.JsonSettings();
 		mergedConfig = MergeConfiguration(
-			MergeConfiguration(
-				MergeConfiguration(mergedConfig, envConfig),
-				fileConfig
-			),
+			fileConfig.HasValue
+				? MergeConfiguration(MergeConfiguration(mergedConfig, envConfig), fileConfig.Value)
+				: MergeConfiguration(mergedConfig, envConfig),
 			argConfig
 		);
 
