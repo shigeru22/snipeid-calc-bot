@@ -90,7 +90,7 @@ public static class Counter
 		{
 			PointsMessage = assignmentResult.LastUpdate.HasValue switch
 			{
-				true => $"<@{assignmentResult.UserDiscordID}> has {(assignmentResult.DeltaPoints >= 0 ? "gained" : "lost")} **{assignmentResult.DeltaPoints}** point{(Math.Abs(assignmentResult.DeltaPoints) != 1 ? "s" : string.Empty)} since {Date.DeltaTimeToString(assignmentResult.LastUpdate.Value - DateTime.Now)} ago.",
+				true => $"<@{assignmentResult.UserDiscordID}> has {(assignmentResult.DeltaPoints >= 0 ? "gained" : "lost")} **{assignmentResult.DeltaPoints}** point{(Math.Abs(assignmentResult.DeltaPoints) != 1 ? "s" : string.Empty)} since {Date.DeltaTimeToString(assignmentResult.LastUpdate.Value - DateTime.UtcNow)} ago.",
 				_ => $"<@{assignmentResult.UserDiscordID}> achieved {points} points. Go for those leaderboards!"
 			},
 			RoleMessage = assignmentResult.OldRole.HasValue switch

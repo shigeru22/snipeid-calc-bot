@@ -469,7 +469,7 @@ public static class Users
 				Parameters =
 				{
 					new NpgsqlParameter() { Value = points },
-					new NpgsqlParameter() { Value = DateTime.Now },
+					new NpgsqlParameter() { Value = DateTime.UtcNow },
 					new NpgsqlParameter() { Value = username },
 					new NpgsqlParameter() { Value = countryCode },
 					new NpgsqlParameter() { Value = osuId }
@@ -485,7 +485,7 @@ public static class Users
 					Parameters =
 					{
 						new NpgsqlParameter() { Value = points },
-						new NpgsqlParameter() { Value = DateTime.Now },
+						new NpgsqlParameter() { Value = DateTime.UtcNow },
 						new NpgsqlParameter() { Value = username },
 						new NpgsqlParameter() { Value = osuId }
 					}
@@ -498,7 +498,7 @@ public static class Users
 					Parameters =
 					{
 						new NpgsqlParameter() { Value = points },
-						new NpgsqlParameter() { Value = DateTime.Now },
+						new NpgsqlParameter() { Value = DateTime.UtcNow },
 						new NpgsqlParameter() { Value = countryCode },
 						new NpgsqlParameter() { Value = osuId }
 					}
@@ -513,7 +513,7 @@ public static class Users
 					Parameters =
 					{
 						new NpgsqlParameter() { Value = points },
-						new NpgsqlParameter() { Value = DateTime.Now },
+						new NpgsqlParameter() { Value = DateTime.UtcNow },
 						new NpgsqlParameter() { Value = osuId }
 					}
 				};
@@ -526,7 +526,7 @@ public static class Users
 				Parameters =
 				{
 					new NpgsqlParameter() { Value = points },
-					new NpgsqlParameter() { Value = DateTime.Now },
+					new NpgsqlParameter() { Value = DateTime.UtcNow },
 					new NpgsqlParameter() { Value = osuId }
 				}
 			};
@@ -631,7 +631,7 @@ public static class Users
 				username VARCHAR(255) NOT NULL,
 				country VARCHAR(2) NOT NULL,
 				points INTEGER NOT NULL DEFAULT 0,
-				lastupdate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+				lastupdate TIMESTAMP NOT NULL DEFAULT (NOW() AT TIMEZONE 'UTC')
 			)
 		";
 
@@ -645,7 +645,7 @@ public static class Users
 			ALTER TABLE users
 			ADD COLUMN country VARCHAR(2) NOT NULL DEFAULT '{currentCountryCode}',
 			ADD COLUMN points INTEGER NOT NULL DEFAULT 0,
-			ADD COLUMN lastupdate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+			ADD COLUMN lastupdate TIMESTAMP NOT NULL DEFAULT (NOW() AT TIMEZONE 'UTC')
 		";
 
 		const string removeDefaultQuery = @"
