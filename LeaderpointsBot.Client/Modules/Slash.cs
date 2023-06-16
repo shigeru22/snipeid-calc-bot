@@ -23,18 +23,8 @@ public static class Slash
 			Log.WriteInfo($"Linking user {Context.User.Username}#{Context.User.Discriminator} ({Context.User.Id}) to osu! user ID {osuId}.");
 			await Context.Interaction.DeferAsync();
 
-			ReturnMessage response;
-
-			if (!Context.Interaction.IsDMInteraction)
-			{
-				Log.WriteVerbose("Interaction sent from server.");
-				response = await User.LinkUser(Context.User, osuId, Context.Guild);
-			}
-			else
-			{
-				Log.WriteVerbose("Interaction sent from direct message.");
-				response = await User.LinkUser(Context.User, osuId);
-			}
+			SocketGuildChannel? guildChannel = Context.Channel as SocketGuildChannel;
+			ReturnMessage response = await User.LinkUser(Context.User, osuId, guildChannel);
 
 			Log.WriteInfo("Link success. Sending embed response.");
 			await Reply.SendToInteractionContextAsync(Context, response);
@@ -74,31 +64,16 @@ public static class Slash
 
 			await Context.Interaction.DeferAsync();
 
+			SocketGuildChannel? guildChannel = Context.Channel as SocketGuildChannel;
 			ReturnMessage[] responses;
 
-			if (!Context.Interaction.IsDMInteraction)
+			if (string.IsNullOrWhiteSpace(osuUsername))
 			{
-				if (!string.IsNullOrWhiteSpace(osuUsername))
-				{
-					responses = await Commands.Counter.CountLeaderboardPointsByOsuUsernameAsync(osuUsername, Context.Guild);
-				}
-				else
-				{
-					responses = await Commands.Counter.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString(), Context.Guild);
-				}
+				responses = await Commands.Counter.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString(), guildChannel);
 			}
 			else
 			{
-				Log.WriteInfo("Command invoked from direct message. This will ignore update actions.");
-
-				if (!string.IsNullOrWhiteSpace(osuUsername))
-				{
-					responses = await Commands.Counter.CountLeaderboardPointsByOsuUsernameAsync(osuUsername);
-				}
-				else
-				{
-					responses = await Commands.Counter.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString());
-				}
+				responses = await Commands.Counter.CountLeaderboardPointsByOsuUsernameAsync(osuUsername, guildChannel);
 			}
 
 			Log.WriteVerbose("Points calculated successfully. Sending responses.");
@@ -113,7 +88,8 @@ public static class Slash
 			Log.WriteInfo($"Calculating what-if points for {Context.User.Username}#{Context.User.Discriminator} ({pointsArgs}).");
 			await Context.Interaction.DeferAsync();
 
-			ReturnMessage[] responses = await Commands.Counter.WhatIfUserCount(Context.User.Id.ToString(), pointsArgs, Context.Guild.Id.ToString());
+			SocketGuildChannel? guildChannel = Context.Channel as SocketGuildChannel;
+			ReturnMessage[] responses = await Commands.Counter.WhatIfUserCount(Context.User.Id.ToString(), pointsArgs, guildChannel);
 
 			Log.WriteVerbose("What-if calculated successfully. Sending responses.");
 			await Reply.SendToInteractionContextAsync(Context, responses);
@@ -127,7 +103,7 @@ public static class Slash
 		[SlashCommand("serverleaderboard", "Returns server points leaderboard.", runMode: RunMode.Async)]
 		public async Task SendServerLeaderboardCommand()
 		{
-			if (Context.Interaction.IsDMInteraction)
+			if (Context.Channel is not SocketGuildChannel guildChannel)
 			{
 				await Context.Interaction.RespondAsync("This command is usable on servers.", ephemeral: true);
 				return;
@@ -136,7 +112,7 @@ public static class Slash
 			Log.WriteInfo($"Retrieving server points leaderboard (guild ID {Context.Guild.Id}).");
 			await Context.Interaction.DeferAsync();
 
-			ReturnMessage response = await Leaderboard.GetServerLeaderboard(Context.Guild.Id.ToString());
+			ReturnMessage response = await Leaderboard.GetServerLeaderboard(guildChannel);
 
 			Log.WriteVerbose("Leaderboard retrieved successfully. Sending embed response.");
 			await Reply.SendToInteractionContextAsync(Context, response);

@@ -75,11 +75,16 @@ public static class User
 		await transaction.CommitAsync();
 	}
 
-	public static async Task<ReturnMessage> LinkUser(SocketUser user, int osuId, SocketGuild? guild = null)
+	public static async Task<ReturnMessage> LinkUser(SocketUser user, int osuId, SocketGuildChannel? guildChannel = null)
 	{
 		// TODO: [2023-01-26] use OAuth?
 
 		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
+
+		if (guildChannel != null)
+		{
+			await Actions.Channel.CheckCommandChannelAsync(transaction, guildChannel, Actions.Channel.GuildChannelType.VERIFY);
+		}
 
 		Log.WriteVerbose($"Checking user in database (user ID {user.Id}).");
 
@@ -139,10 +144,10 @@ public static class User
 
 		await Users.InsertUser(transaction, user.Id.ToString(), osuId, osuUser.Username, osuUser.CountryCode);
 
-		if (guild != null)
+		if (guildChannel != null)
 		{
 			Log.WriteVerbose("Message sent from server. Granting server verified role (if set).");
-			await Actions.Roles.SetVerifiedRoleAsync(transaction, guild, user);
+			await Actions.Roles.SetVerifiedRoleAsync(transaction, guildChannel.Guild, user);
 		}
 
 		await transaction.CommitAsync();

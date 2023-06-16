@@ -1,25 +1,27 @@
 // Copyright (c) shigeru22, concept by Akshiro28.
 // Licensed under the MIT license. See LICENSE in the repository root for details.
 
+using Discord.WebSocket;
 using LeaderpointsBot.Client.Exceptions.Commands;
 using LeaderpointsBot.Client.Structures;
 using LeaderpointsBot.Database;
 using LeaderpointsBot.Database.Tables;
 using LeaderpointsBot.Utils;
-using LeaderpointsBot.Utils.Process;
 
 namespace LeaderpointsBot.Client.Commands;
 
 public static class Leaderboard
 {
-	public static async Task<ReturnMessage> GetServerLeaderboard(string guildDiscordId)
+	public static async Task<ReturnMessage> GetServerLeaderboard(SocketGuildChannel guildChannel)
 	{
 		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
 
-		Log.WriteVerbose($"Fetching leaderboard data from database (guild ID {guildDiscordId}).");
+		await Actions.Channel.CheckCommandChannelAsync(transaction, guildChannel, Actions.Channel.GuildChannelType.VERIFY);
 
-		Users.UsersLeaderboardData[] serverLeaderboardData = await Users.GetServerPointsLeaderboard(transaction, guildDiscordId);
-		DateTime lastUpdate = await Users.GetServerLastPointUpdate(transaction, guildDiscordId);
+		Log.WriteVerbose($"Fetching leaderboard data from database (guild ID {guildChannel.Guild.Id}).");
+
+		Users.UsersLeaderboardData[] serverLeaderboardData = await Users.GetServerPointsLeaderboard(transaction, guildChannel.Guild.Id.ToString());
+		DateTime lastUpdate = await Users.GetServerLastPointUpdate(transaction, guildChannel.Guild.Id.ToString());
 
 		if (serverLeaderboardData.Length <= 0)
 		{
@@ -34,7 +36,7 @@ public static class Leaderboard
 		{
 			Embed = Embeds.Leaderboard.CreateLeaderboardEmbed(serverLeaderboardData,
 				lastUpdate,
-				useLegacyColor: Actions.Channel.IsSnipeIDGuild(guildDiscordId))
+				useLegacyColor: Actions.Channel.IsSnipeIDGuild(guildChannel.Guild.Id.ToString()))
 		};
 	}
 }

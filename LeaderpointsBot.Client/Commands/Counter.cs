@@ -22,16 +22,16 @@ namespace LeaderpointsBot.Client.Commands;
 public static class Counter
 {
 	// Bathbot count (<osc) message
-	public static async Task<ReturnMessage[]> CountBathbotLeaderboardPointsAsync(Embed countEmbed, SocketGuild? guild = null)
+	public static async Task<ReturnMessage[]> CountBathbotLeaderboardPointsAsync(Embed countEmbed, SocketGuildChannel? guildChannel = null)
 	{
 		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
 
 		Servers.ServersTableData? dbServer = null;
-		if (guild != null)
+		if (guildChannel != null)
 		{
 			try
 			{
-				dbServer = await Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
+				dbServer = await Servers.GetServerByDiscordID(transaction, guildChannel.Guild.Id.ToString());
 			}
 			catch (DataNotFoundException)
 			{
@@ -58,11 +58,11 @@ public static class Counter
 		int points = Embeds.Counter.CalculateTopPoints(embedTopCounts);
 		Structures.Actions.Counter.UpdateUserDataMessages? updateMessages = null;
 
-		if (guild != null && dbServer != null)
+		if (guildChannel != null && dbServer != null)
 		{
 			try
 			{
-				updateMessages = await Actions.Counter.UpdateUserDataAsync(transaction, guild, embedOsuId, points);
+				updateMessages = await Actions.Counter.UpdateUserDataAsync(transaction, guildChannel.Guild, embedOsuId, points);
 			}
 			catch (SkipUpdateException)
 			{
@@ -78,7 +78,7 @@ public static class Counter
 			{
 				Embed = Embeds.Counter.CreateCountEmbed(embedUsername,
 					embedTopCounts,
-					Actions.Channel.IsSnipeIDGuild(guild))
+					guildChannel != null && Actions.Channel.IsSnipeIDGuild(guildChannel.Guild.Id.ToString()))
 			}
 		};
 
@@ -101,18 +101,23 @@ public static class Counter
 		return responses.ToArray();
 	}
 
-	public static async Task<ReturnMessage[]> CountLeaderboardPointsByDiscordUserAsync(string userDiscordId, string clientDiscordId, SocketGuild? guild = null)
+	public static async Task<ReturnMessage[]> CountLeaderboardPointsByDiscordUserAsync(string userDiscordId, string clientDiscordId, SocketGuildChannel? guildChannel = null)
 	{
 		// TODO: [2023-01-21] extract reused procedures as methods
 
 		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
 
+		if (guildChannel != null)
+		{
+			await Actions.Channel.CheckCommandChannelAsync(transaction, guildChannel, Actions.Channel.GuildChannelType.LEADERBOARDS);
+		}
+
 		Servers.ServersTableData? dbServer = null;
-		if (guild != null)
+		if (guildChannel != null)
 		{
 			try
 			{
-				dbServer = await Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
+				dbServer = await Servers.GetServerByDiscordID(transaction, guildChannel.Guild.Id.ToString());
 			}
 			catch (DataNotFoundException)
 			{
@@ -205,9 +210,9 @@ public static class Counter
 		}
 
 		Structures.Actions.Counter.UpdateUserDataMessages? updateMessages = null;
-		if (guild != null && dbServer != null)
+		if (guildChannel != null && dbServer != null)
 		{
-			updateMessages = await Actions.Counter.UpdateUserDataAsync(transaction, guild, osuId, points);
+			updateMessages = await Actions.Counter.UpdateUserDataAsync(transaction, guildChannel.Guild, osuId, points);
 		}
 
 		await transaction.CommitAsync();
@@ -219,7 +224,7 @@ public static class Counter
 				Embed = Embeds.Counter.CreateTopsEmbed(osuUsername,
 					topCounts,
 					osuId,
-					Actions.Channel.IsSnipeIDGuild(guild))
+					guildChannel != null && Actions.Channel.IsSnipeIDGuild(guildChannel.Guild))
 			},
 			new ReturnMessage()
 			{
@@ -227,7 +232,7 @@ public static class Counter
 					topCounts,
 					false,
 					Settings.Instance.OsuApi.UseRespektiveStats,
-					Actions.Channel.IsSnipeIDGuild(guild))
+					guildChannel != null && Actions.Channel.IsSnipeIDGuild(guildChannel.Guild))
 			}
 		};
 
@@ -250,21 +255,26 @@ public static class Counter
 		return responses.ToArray();
 	}
 
-	public static async Task<ReturnMessage[]> CountLeaderboardPointsByOsuUsernameAsync(string osuUsername, SocketGuild? guild = null)
+	public static async Task<ReturnMessage[]> CountLeaderboardPointsByOsuUsernameAsync(string osuUsername, SocketGuildChannel? guildChannel = null)
 	{
 		// TODO: [2023-01-21] extract reused procedures as methods
 
 		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
 
+		if (guildChannel != null)
+		{
+			await Actions.Channel.CheckCommandChannelAsync(transaction, guildChannel, Actions.Channel.GuildChannelType.COMMANDS);
+		}
+
 		string tempOsuUsername;
 		int osuId;
 
 		Servers.ServersTableData? dbServer = null;
-		if (guild != null)
+		if (guildChannel != null)
 		{
 			try
 			{
-				dbServer = await Servers.GetServerByDiscordID(transaction, guild.Id.ToString());
+				dbServer = await Servers.GetServerByDiscordID(transaction, guildChannel.Guild.Id.ToString());
 			}
 			catch (DataNotFoundException)
 			{
@@ -338,11 +348,11 @@ public static class Counter
 		}
 
 		Structures.Actions.Counter.UpdateUserDataMessages? updateMessages = null;
-		if (guild != null && dbServer != null)
+		if (guildChannel != null && dbServer != null)
 		{
 			try
 			{
-				updateMessages = await Actions.Counter.UpdateUserDataAsync(transaction, guild, osuId, points);
+				updateMessages = await Actions.Counter.UpdateUserDataAsync(transaction, guildChannel.Guild, osuId, points);
 			}
 			catch (SkipUpdateException)
 			{
@@ -359,7 +369,7 @@ public static class Counter
 				Embed = Embeds.Counter.CreateTopsEmbed(osuUsername,
 					topCounts,
 					osuId,
-					Actions.Channel.IsSnipeIDGuild(guild))
+					guildChannel != null && Actions.Channel.IsSnipeIDGuild(guildChannel.Guild))
 			},
 			new ReturnMessage()
 			{
@@ -367,7 +377,7 @@ public static class Counter
 					topCounts,
 					false,
 					Settings.Instance.OsuApi.UseRespektiveStats,
-					Actions.Channel.IsSnipeIDGuild(guild))
+					guildChannel != null && Actions.Channel.IsSnipeIDGuild(guildChannel.Guild))
 			}
 		};
 
@@ -390,9 +400,14 @@ public static class Counter
 		return responses.ToArray();
 	}
 
-	public static async Task<ReturnMessage[]> WhatIfUserCount(string userDiscordId, string arguments, string? guildDiscordId = null)
+	public static async Task<ReturnMessage[]> WhatIfUserCount(string userDiscordId, string arguments, SocketGuildChannel? guildChannel = null)
 	{
 		DatabaseTransaction transaction = DatabaseFactory.Instance.InitializeTransaction();
+
+		if (guildChannel != null)
+		{
+			await Actions.Channel.CheckCommandChannelAsync(transaction, guildChannel, Actions.Channel.GuildChannelType.LEADERBOARDS);
+		}
 
 		int osuId;
 		string osuUsername;
@@ -549,7 +564,7 @@ public static class Counter
 					originalTopCounts,
 					false,
 					Settings.Instance.OsuApi.UseRespektiveStats,
-					Actions.Channel.IsSnipeIDGuild(guildDiscordId))
+					guildChannel != null && Actions.Channel.IsSnipeIDGuild(guildChannel.Guild.Id.ToString()))
 			},
 			new ReturnMessage()
 			{
@@ -557,7 +572,7 @@ public static class Counter
 					whatIfTopCounts,
 					true,
 					Settings.Instance.OsuApi.UseRespektiveStats,
-					Actions.Channel.IsSnipeIDGuild(guildDiscordId))
+					guildChannel != null && Actions.Channel.IsSnipeIDGuild(guildChannel.Guild.Id.ToString()))
 			},
 			new ReturnMessage()
 			{

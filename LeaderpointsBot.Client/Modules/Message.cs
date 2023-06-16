@@ -25,7 +25,8 @@ public static class Message
 			Log.WriteInfo($"Linking user {Context.User.Username}#{Context.User.Discriminator} ({Context.User.Id}) to osu! user ID {osuId}.");
 			await Context.Channel.TriggerTypingAsync();
 
-			ReturnMessage response = await User.LinkUser(Context.User, osuId, Context.Guild);
+			SocketGuildChannel? guildChannel = Context.Channel as SocketGuildChannel;
+			ReturnMessage response = await User.LinkUser(Context.User, osuId, guildChannel);
 
 			Log.WriteInfo("Link success. Sending embed response.");
 			await Reply.SendToCommandContextAsync(Context, response);
@@ -59,7 +60,8 @@ public static class Message
 			Log.WriteInfo($"Calculating points for {Context.User.Username}#{Context.User.Discriminator}.");
 			await Context.Channel.TriggerTypingAsync();
 
-			ReturnMessage[] responses = await Commands.Counter.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString(), Context.Guild);
+			SocketGuildChannel? guildChannel = Context.Channel as SocketGuildChannel;
+			ReturnMessage[] responses = await Commands.Counter.CountLeaderboardPointsByDiscordUserAsync(Context.User.Id.ToString(), Context.Client.CurrentUser.Id.ToString(), guildChannel);
 
 			Log.WriteVerbose("Points calculated successfully. Sending responses.");
 			await Reply.SendToCommandContextAsync(Context, responses);
@@ -74,7 +76,8 @@ public static class Message
 			Log.WriteInfo($"Calculating points for osu! user {osuUsername}.");
 			await Context.Channel.TriggerTypingAsync();
 
-			ReturnMessage[] responses = await Commands.Counter.CountLeaderboardPointsByOsuUsernameAsync(osuUsername);
+			SocketGuildChannel? guildChannel = Context.Channel as SocketGuildChannel;
+			ReturnMessage[] responses = await Commands.Counter.CountLeaderboardPointsByOsuUsernameAsync(osuUsername, guildChannel);
 
 			Log.WriteVerbose("Points calculated successfully. Sending responses.");
 			await Reply.SendToCommandContextAsync(Context, responses);
@@ -89,7 +92,8 @@ public static class Message
 			Log.WriteInfo($"Calculating what-if points for {Context.User.Username}#{Context.User.Discriminator} ({pointsArgs}).");
 			await Context.Channel.TriggerTypingAsync();
 
-			ReturnMessage[] responses = await Commands.Counter.WhatIfUserCount(Context.User.Id.ToString(), pointsArgs, Context.Guild.Id.ToString());
+			SocketGuildChannel? guildChannel = Context.Channel as SocketGuildChannel;
+			ReturnMessage[] responses = await Commands.Counter.WhatIfUserCount(Context.User.Id.ToString(), pointsArgs, guildChannel);
 
 			Log.WriteVerbose("What-if calculated successfully. Sending responses.");
 			await Reply.SendToCommandContextAsync(Context, responses);
@@ -105,10 +109,16 @@ public static class Message
 		[Summary("Returns server points leaderboard.")]
 		public async Task SendServerLeaderboardCommand()
 		{
+			if (Context.Channel is not SocketGuildChannel guildChannel)
+			{
+				_ = await Context.Message.ReplyAsync("This command is available on servers.");
+				return;
+			}
+
 			Log.WriteInfo($"Retrieving server points leaderboard (guild ID {Context.Guild.Id}).");
 			await Context.Channel.TriggerTypingAsync();
 
-			ReturnMessage response = await Leaderboard.GetServerLeaderboard(Context.Guild.Id.ToString());
+			ReturnMessage response = await Leaderboard.GetServerLeaderboard(guildChannel);
 
 			Log.WriteVerbose("Leaderboard retrieved successfully. Sending embed response.");
 			await Reply.SendToCommandContextAsync(Context, response);
@@ -423,7 +433,8 @@ public static class Message
 		string embedUsername = Parser.ParseUsernameFromBathbotEmbedTitle(countEmbed.Title);
 		Log.WriteInfo($"Calculating points for osu! user {embedUsername}.");
 
-		ReturnMessage[] responses = await Commands.Counter.CountBathbotLeaderboardPointsAsync(countEmbed, context.Guild);
+		SocketGuildChannel? guildChannel = context.Channel as SocketGuildChannel;
+		ReturnMessage[] responses = await Commands.Counter.CountBathbotLeaderboardPointsAsync(countEmbed, guildChannel);
 
 		Log.WriteVerbose("Points calculated successfully. Sending responses.");
 		await Reply.SendToCommandContextAsync(context, responses);

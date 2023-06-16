@@ -15,8 +15,39 @@ public static class Channel
 {
 	public const string SNIPEID_DISCORD_ID = "862267167100502046";
 
-	public static async Task<(bool, string?)> IsClientCommandsAllowedAsync(DatabaseTransaction transaction, string guildDiscordId, string channelId)
+	public enum GuildChannelType
 	{
+		COMMANDS,
+		VERIFY,
+		LEADERBOARDS
+	}
+
+	public static async Task CheckCommandChannelAsync(DatabaseTransaction transaction, SocketGuildChannel guildChannel, GuildChannelType type)
+	{
+		Log.WriteVerbose($"Determining whether command is allowed in channel ({guildChannel.Id}).");
+
+		bool isChannelAllowed;
+		string? allowedChannelId;
+
+		(isChannelAllowed, allowedChannelId) = type switch
+		{
+			GuildChannelType.COMMANDS => await IsClientCommandsAllowedAsync(transaction, guildChannel),
+			GuildChannelType.VERIFY => await IsVerifyCommandsAllowedAsync(transaction, guildChannel),
+			GuildChannelType.LEADERBOARDS => await IsLeaderboardCommandsAllowedAsync(transaction, guildChannel),
+			_ => throw new InvalidOperationException("Invalid guild channel type."),
+		};
+
+		if (!isChannelAllowed)
+		{
+			throw new SendMessageException($"This command is usable in <#{allowedChannelId}> channel.");
+		}
+	}
+
+	public static async Task<(bool, string?)> IsClientCommandsAllowedAsync(DatabaseTransaction transaction, SocketGuildChannel guildChannel)
+	{
+		string guildDiscordId = guildChannel.Guild.Id.ToString();
+		string channelId = guildChannel.Id.ToString();
+
 		Log.WriteVerbose($"Checking whether client commands are allowed in the channel (guild ID {guildDiscordId}, channel ID {channelId}).");
 
 		Servers.ServersTableData? guildData = CacheManager.Instance.GuildCacheInstance.GetDatabaseCache(guildDiscordId);
@@ -36,14 +67,19 @@ public static class Channel
 			}
 		}
 
-		bool isAllowed = guildData.Value.CommandsChannelID == null || guildData.Value.CommandsChannelID.Equals(channelId);
-		string? allowedChannelId = guildData.Value.CommandsChannelID;
+		if (guildData.Value.CommandsChannelID != null && !guildData.Value.CommandsChannelID.Equals(channelId))
+		{
+			return (false, guildData.Value.CommandsChannelID);
+		}
 
-		return (isAllowed, allowedChannelId);
+		return (true, null);
 	}
 
-	public static async Task<(bool, string?)> IsVerifyCommandsAllowedAsync(DatabaseTransaction transaction, string guildDiscordId, string channelId)
+	public static async Task<(bool, string?)> IsVerifyCommandsAllowedAsync(DatabaseTransaction transaction, SocketGuildChannel guildChannel)
 	{
+		string guildDiscordId = guildChannel.Guild.Id.ToString();
+		string channelId = guildChannel.Id.ToString();
+
 		Log.WriteVerbose($"Checking whether verification commands are allowed in the channel (guild ID {guildDiscordId}, channel ID {channelId}).");
 
 		Servers.ServersTableData? guildData = CacheManager.Instance.GuildCacheInstance.GetDatabaseCache(guildDiscordId);
@@ -63,20 +99,28 @@ public static class Channel
 			}
 		}
 
-		// check commands channel, then verification
-		bool isAllowed = guildData.Value.CommandsChannelID == null || guildData.Value.CommandsChannelID.Equals(channelId);
-		if (!string.IsNullOrWhiteSpace(guildData.Value.VerifyChannelID))
+		// check verification channel, if null check commands channel
+		if (guildData.Value.VerifyChannelID != null || guildData.Value.CommandsChannelID != null)
 		{
-			isAllowed = guildData.Value.VerifyChannelID.Equals(channelId);
+			if (guildData.Value.VerifyChannelID != null && !guildData.Value.VerifyChannelID.Equals(channelId))
+			{
+				return (false, guildData.Value.VerifyChannelID);
+			}
+
+			if (guildData.Value.CommandsChannelID != null && !guildData.Value.CommandsChannelID.Equals(channelId))
+			{
+				return (false, guildData.Value.CommandsChannelID);
+			}
 		}
 
-		string? allowedChannelId = guildData.Value.VerifyChannelID ?? guildData.Value.CommandsChannelID;
-
-		return (isAllowed, allowedChannelId);
+		return (true, null);
 	}
 
-	public static async Task<(bool, string?)> IsLeaderboardCommandsAllowedAsync(DatabaseTransaction transaction, string guildDiscordId, string channelId)
+	public static async Task<(bool, string?)> IsLeaderboardCommandsAllowedAsync(DatabaseTransaction transaction, SocketGuildChannel guildChannel)
 	{
+		string guildDiscordId = guildChannel.Guild.Id.ToString();
+		string channelId = guildChannel.Id.ToString();
+
 		Log.WriteVerbose($"Checking whether leaderboard commands are allowed in the channel (guild ID {guildDiscordId}, channel ID {channelId}).");
 
 		Servers.ServersTableData? guildData = CacheManager.Instance.GuildCacheInstance.GetDatabaseCache(guildDiscordId);
@@ -96,16 +140,21 @@ public static class Channel
 			}
 		}
 
-		// check commands channel, then leaderboards
-		bool isAllowed = guildData.Value.CommandsChannelID == null || guildData.Value.CommandsChannelID.Equals(channelId);
-		if (!string.IsNullOrWhiteSpace(guildData.Value.LeaderboardsChannelID))
+		// check leaderboards channel, if null check commands channel
+		if (guildData.Value.LeaderboardsChannelID != null || guildData.Value.CommandsChannelID != null)
 		{
-			isAllowed = guildData.Value.LeaderboardsChannelID.Equals(channelId);
+			if (guildData.Value.LeaderboardsChannelID != null && !guildData.Value.LeaderboardsChannelID.Equals(channelId))
+			{
+				return (false, guildData.Value.LeaderboardsChannelID);
+			}
+
+			if (guildData.Value.CommandsChannelID != null && !guildData.Value.CommandsChannelID.Equals(channelId))
+			{
+				return (false, guildData.Value.CommandsChannelID);
+			}
 		}
 
-		string? allowedChannelId = guildData.Value.LeaderboardsChannelID ?? guildData.Value.CommandsChannelID;
-
-		return (isAllowed, allowedChannelId);
+		return (true, null);
 	}
 
 	public static bool IsSnipeIDGuild(string? guildDiscordId) => guildDiscordId != null && guildDiscordId.Equals(SNIPEID_DISCORD_ID);
