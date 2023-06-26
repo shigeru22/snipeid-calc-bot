@@ -156,7 +156,10 @@ public static class User
 
 		return new ReturnMessage()
 		{
-			Embed = Embeds.User.CreateLinkedEmbed(user.Id.ToString(), osuUser.Username, osuId)
+			Embed = Embeds.User.CreateLinkedEmbed(user.Id.ToString(),
+				osuUser.Username,
+				osuId,
+				guildChannel != null && Actions.Channel.IsSnipeIDGuild(guildChannel.Guild))
 		};
 	}
 }

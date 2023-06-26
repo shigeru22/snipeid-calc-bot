@@ -7,16 +7,16 @@ namespace LeaderpointsBot.Client.Embeds;
 
 public static class User
 {
-	public static Embed CreateLinkedEmbed(string userDiscordId, string osuUsername, int osuId)
+	public static Embed CreateLinkedEmbed(string userDiscordId, string osuUsername, int osuId, bool useLegacyServer = false)
 	{
 		string osuUserLink = $"https://osu.ppy.sh/users/{osuId}";
 		string osuUserImageLink = $"https://a.ppy.sh/{osuId}";
 
 		return new EmbedBuilder().WithTitle("osu! User Linkage")
 			.WithDescription($"Linked <@{userDiscordId}> to osu! user **[{osuUsername}]({osuUserLink})**.\n" +
-				"Welcome to osu!leaderpoints!")
+				$"Welcome to {(useLegacyServer ? "osu!snipe Indonesia" : "osu!leaderpoints")}!")
 			.WithThumbnailUrl(osuUserImageLink)
-			.WithColor(BorderColor.Success)
+			.WithColor(useLegacyServer ? LegacyBorderColor.Normal : BorderColor.Success)
 			.Build();
 	}
 }
