@@ -90,14 +90,18 @@ public static class Counter
 		{
 			PointsMessage = assignmentResult.LastUpdate.HasValue switch
 			{
-				true => $"<@{assignmentResult.UserDiscordID}> has {(assignmentResult.DeltaPoints >= 0 ? "gained" : "lost")} **{assignmentResult.DeltaPoints}** point{(Math.Abs(assignmentResult.DeltaPoints) != 1 ? "s" : string.Empty)} since {Date.DeltaTimeToString(assignmentResult.LastUpdate.Value - DateTime.UtcNow)} ago.",
+				true => $"<@{assignmentResult.UserDiscordID}> has {(assignmentResult.DeltaPoints >= 0 ? "gained" : "lost")} " +
+					$"**{assignmentResult.DeltaPoints}** point{(Math.Abs(assignmentResult.DeltaPoints) != 1 ? "s" : string.Empty)} " +
+					$"since {Date.DeltaTimeToString(assignmentResult.LastUpdate.Value - DateTime.UtcNow)} ago.",
 				_ => $"<@{assignmentResult.UserDiscordID}> achieved {points} points. Go for those leaderboards!"
 			},
 			RoleMessage = assignmentResult.OldRole.HasValue switch
 			{
 				true => assignmentResult.NewRole.RoleDiscordID.Equals(assignmentResult.OldRole?.RoleDiscordID) switch
 				{
-					false => $"You have been {(assignmentResult.DeltaPoints > 0 ? "promoted" : "demoted")} to **{assignmentResult.NewRole.RoleName}** role. {(assignmentResult.DeltaPoints > 0 ? "Nice job!" : "Fight back for those leaderboards!")}",
+					false => $"You have been {(assignmentResult.DeltaPoints > 0 ? "promoted" : "demoted")} " +
+						$"to **{assignmentResult.NewRole.RoleName}** role. " +
+						$"{(assignmentResult.DeltaPoints > 0 ? "Nice job!" : "Fight back for those leaderboards!")}",
 					_ => null
 				},
 				_ => null

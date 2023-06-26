@@ -33,35 +33,29 @@ public static class Date
 		return $"{tempTime.Month}/{tempTime.Day}/{tempTime.Year}, {tempTime.Hour.ToString().PadLeft(2, '0')}:{tempTime.Minute.ToString().PadLeft(2, '0')} ({(useUtc ? "UTC" : "local time")})";
 	}
 
-	public static string DeltaTimeToString(TimeSpan time)
+	public static string DeltaTimeToString(TimeSpan deltaTime)
 	{
-		DateTime deltaTime = zeroTime - time;
-
-		if (deltaTime.Year - 1 >= 1)
+		// days
+		int absTimeValue = Math.Abs(deltaTime.Days);
+		if (absTimeValue >= 1)
 		{
-			return $"{deltaTime.Year - 1} year{(deltaTime.Year - 1 != 1 ? "s" : string.Empty)}";
+			return $"{absTimeValue} day{(absTimeValue != 1 ? "s" : string.Empty)}";
 		}
 
-		if (deltaTime.Month - 1 >= 1)
+		// hours
+		absTimeValue = Math.Abs(deltaTime.Hours);
+		if (absTimeValue >= 1)
 		{
-			return $"{deltaTime.Month} month{(deltaTime.Month - 1 != 1 ? "s" : string.Empty)}";
+			return $"{absTimeValue - 1} hour{(absTimeValue - 1 != 1 ? "s" : string.Empty)}";
 		}
 
-		if (deltaTime.DayOfYear - 1 >= 1)
+		// minutes
+		absTimeValue = Math.Abs(deltaTime.Seconds);
+		if (absTimeValue >= 1)
 		{
-			return $"{deltaTime.DayOfYear} day{(deltaTime.DayOfYear - 1 != 1 ? "s" : string.Empty)}";
+			return $"{absTimeValue - 1} minute{(absTimeValue - 1 != 1 ? "s" : string.Empty)}";
 		}
 
-		if (deltaTime.Hour - 1 >= 1)
-		{
-			return $"{deltaTime.Hour - 1} hour{(deltaTime.Hour - 1 != 1 ? "s" : string.Empty)}";
-		}
-
-		if (deltaTime.Minute >= 1)
-		{
-			return $"{deltaTime.Minute - 1} minute{(deltaTime.Minute - 1 != 1 ? "s" : string.Empty)}";
-		}
-
-		return $"{deltaTime.Second - 1} second{(deltaTime.Second - 1 != 1 ? "s" : string.Empty)}";
+		return "<1 minute";
 	}
 }

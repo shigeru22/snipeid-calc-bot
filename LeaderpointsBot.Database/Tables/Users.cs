@@ -453,11 +453,11 @@ public static class Users
 			UPDATE users
 			SET
 				points = ($1),
-				lastupdate = ($2){(username != null || countryCode != null ? "," : string.Empty)}
-				{(username != null ? "username = $3" : string.Empty)}{(username != null && countryCode != null ? "," : string.Empty)}
-				{(countryCode != null ? $"country = {(username != null ? "$4" : "$3")}" : string.Empty)}
+				lastupdate = (NOW() AT TIME ZONE 'UTC'){(username != null || countryCode != null ? "," : string.Empty)}
+				{(username != null ? "username = $2" : string.Empty)}{(username != null && countryCode != null ? "," : string.Empty)}
+				{(countryCode != null ? $"country = {(username != null ? "$3" : "$2")}" : string.Empty)}
 			WHERE
-				osuid = {(username != null && countryCode != null ? "$5" : (username != null || countryCode != null ? "$4" : "$3"))}
+				osuid = {(username != null && countryCode != null ? "$4" : (username != null || countryCode != null ? "$3" : "$2"))}
 		";
 
 		NpgsqlCommand command;
@@ -469,7 +469,6 @@ public static class Users
 				Parameters =
 				{
 					new NpgsqlParameter() { Value = points },
-					new NpgsqlParameter() { Value = DateTime.UtcNow },
 					new NpgsqlParameter() { Value = username },
 					new NpgsqlParameter() { Value = countryCode },
 					new NpgsqlParameter() { Value = osuId }
@@ -485,7 +484,6 @@ public static class Users
 					Parameters =
 					{
 						new NpgsqlParameter() { Value = points },
-						new NpgsqlParameter() { Value = DateTime.UtcNow },
 						new NpgsqlParameter() { Value = username },
 						new NpgsqlParameter() { Value = osuId }
 					}
@@ -498,7 +496,6 @@ public static class Users
 					Parameters =
 					{
 						new NpgsqlParameter() { Value = points },
-						new NpgsqlParameter() { Value = DateTime.UtcNow },
 						new NpgsqlParameter() { Value = countryCode },
 						new NpgsqlParameter() { Value = osuId }
 					}
@@ -513,7 +510,6 @@ public static class Users
 					Parameters =
 					{
 						new NpgsqlParameter() { Value = points },
-						new NpgsqlParameter() { Value = DateTime.UtcNow },
 						new NpgsqlParameter() { Value = osuId }
 					}
 				};
@@ -526,7 +522,6 @@ public static class Users
 				Parameters =
 				{
 					new NpgsqlParameter() { Value = points },
-					new NpgsqlParameter() { Value = DateTime.UtcNow },
 					new NpgsqlParameter() { Value = osuId }
 				}
 			};
