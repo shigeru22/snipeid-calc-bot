@@ -99,7 +99,7 @@ public static class Log
 			ConsoleColor currentColor = Console.ForegroundColor;
 			Console.ForegroundColor = ConsoleColor.Red;
 
-			Console.WriteLine(GenerateLogMessage(Discord.LogSeverity.Critical, message, source));
+			Console.Error.WriteLine(GenerateLogMessage(Discord.LogSeverity.Critical, message, source));
 
 			Console.ForegroundColor = currentColor;
 		}
@@ -112,7 +112,7 @@ public static class Log
 			ConsoleColor currentColor = Console.ForegroundColor;
 			Console.ForegroundColor = ConsoleColor.Red;
 
-			Console.WriteLine(GenerateLogMessage(Discord.LogSeverity.Error, message, source));
+			Console.Error.WriteLine(GenerateLogMessage(Discord.LogSeverity.Error, message, source));
 
 			Console.ForegroundColor = currentColor;
 		}

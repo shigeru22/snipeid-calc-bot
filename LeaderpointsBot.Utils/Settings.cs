@@ -111,7 +111,7 @@ public class Settings
 		}
 		catch (EnvironmentVariableValueException e)
 		{
-			Console.WriteLine(e.Message);
+			Console.Error.WriteLine(e.Message);
 			Environment.Exit(1);
 		}
 
@@ -159,7 +159,7 @@ public class Settings
 
 		if (shouldInitializeDatabase && shouldMigrateDatabase)
 		{
-			Console.WriteLine("Argument error: Both -d and -md must not be used together.");
+			Console.Error.WriteLine("Argument error: Both -d and -md must not be used together.");
 			Console.WriteLine("Help: LeaderpointsBot.Client --help");
 			Environment.Exit(1);
 		}
@@ -385,10 +385,10 @@ public class Settings
 
 		if (string.IsNullOrWhiteSpace(client.BotToken))
 		{
-			Console.WriteLine(client.BotTokens.Length);
+			// Console.WriteLine(client.BotTokens.Length);
 			if (client.BotTokens.Where(token => !string.IsNullOrWhiteSpace(token)).Count() < 2)
 			{
-				Console.WriteLine("Configuration error: Bot token must be specified.");
+				Console.Error.WriteLine("Configuration error: Bot token must be specified.");
 				isValid = false;
 			}
 		}
@@ -401,25 +401,25 @@ public class Settings
 		}
 		else if (client.Logging.LogSeverity > 5)
 		{
-			Console.WriteLine("Configuration error: Bot token must be specified.");
+			Console.Error.WriteLine("Configuration error: Bot token must be specified.");
 			isValid = false;
 		}
 
 		if (string.IsNullOrWhiteSpace(database.HostName))
 		{
-			Console.WriteLine("Configuration error: Logging severity must be specified [1(critical)-5(debug)].");
+			Console.Error.WriteLine("Configuration error: Logging severity must be specified [1(critical)-5(debug)].");
 			isValid = false;
 		}
 
 		if (database.Port is < 1 or > ushort.MaxValue)
 		{
-			Console.WriteLine("Configuration error: Database port must be specified [1-65535].");
+			Console.Error.WriteLine("Configuration error: Database port must be specified [1-65535].");
 			isValid = false;
 		}
 
 		if (string.IsNullOrWhiteSpace(database.Username))
 		{
-			Console.WriteLine("Configuration error: Database username must be specified.");
+			Console.Error.WriteLine("Configuration error: Database username must be specified.");
 			isValid = false;
 		}
 
@@ -427,25 +427,25 @@ public class Settings
 
 		if (string.IsNullOrWhiteSpace(database.DatabaseName))
 		{
-			Console.WriteLine("Configuration error: Database name must be specified.");
+			Console.Error.WriteLine("Configuration error: Database name must be specified.");
 			isValid = false;
 		}
 
 		if (osuApi.ClientID is < 1)
 		{
-			Console.WriteLine("Configuration error: osu!api client ID must be specified.");
+			Console.Error.WriteLine("Configuration error: osu!api client ID must be specified.");
 			isValid = false;
 		}
 
 		if (string.IsNullOrWhiteSpace(osuApi.ClientSecret))
 		{
-			Console.WriteLine("Configuration error: osu!api client secret must be specified.");
+			Console.Error.WriteLine("Configuration error: osu!api client secret must be specified.");
 			isValid = false;
 		}
 
 		if (!isValid)
 		{
-			Console.WriteLine("Configuration error occurred. See help for configuration options.");
+			Console.Error.WriteLine("Configuration error occurred. See help for configuration options.");
 		}
 
 		return isValid;
